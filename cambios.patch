@@ -1,0 +1,1390 @@
+diff --git a/forma/sysman.git/Kernel/sysmanJsf/src/main/java/com/sysman/services/RegistroDataModelImpl.java b/forma/sysman.git/Kernel/sysmanJsf/src/main/java/com/sysman/services/RegistroDataModelImpl.java
+index 1393aa49..5e2eed3c 100644
+--- a/forma/sysman.git/Kernel/sysmanJsf/src/main/java/com/sysman/services/RegistroDataModelImpl.java
++++ b/forma/sysman.git/Kernel/sysmanJsf/src/main/java/com/sysman/services/RegistroDataModelImpl.java
+@@ -6,6 +6,7 @@ import com.sysman.jsfutil.JsfUtil;
+ import com.sysman.jsfutil.RegistroConverter;
+ import com.sysman.kernel.api.clientwso2.beans.Parameter;
+ import com.sysman.kernel.api.clientwso2.connectors.RequestManager;
++import com.sysman.kernel.api.clientwso2.dbs.ListaConTotal;
+ 
+ import java.util.ArrayList;
+ import java.util.HashMap;
+@@ -241,10 +242,10 @@ public class RegistroDataModelImpl extends LazyDataModel<Registro> {
+ 
+             recorrerParametros(parametros);
+             try {
+-                List<Parameter> list = requestManager.getList(url, parametros);
+-                Parameter tem = requestManager.get(urlConteo, parametros);
++                ListaConTotal resultado = requestManager.getListConTotal(url, urlConteo, parametros);
++                List<Parameter> list = resultado.getFilas();
+ 
+-                int total = (Integer) tem.getFields().get("TOTAL");
++                int total = resultado.getTotal();
+                 total = vacio
+                                 ? ((total / 10) + ((total % 10) == 0 ? 0 : 1)) * 11
+                                     : total;
+@@ -407,8 +408,7 @@ public class RegistroDataModelImpl extends LazyDataModel<Registro> {
+         }
+         parametros.putAll(params);
+         try {
+-            Parameter tem = requestManager.get(urlConteo, parametros);
+-            int total = (Integer) tem.getFields().get("TOTAL");
++            int total = requestManager.getConteo(url, urlConteo, parametros);
+             parametros.put(PAGINICIO, "0");
+             parametros.put(PAGTAMANIO, total);
+             List<Parameter> list = requestManager.getList(url,
+diff --git a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/connectors/RequestManager.java b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/connectors/RequestManager.java
+index 8d3f63f8..a4452454 100644
+--- a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/connectors/RequestManager.java
++++ b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/connectors/RequestManager.java
+@@ -18,6 +18,8 @@ import com.sysman.kernel.api.clientwso2.beans.Parameter;
+ import com.sysman.kernel.api.clientwso2.beans.Token;
+ import com.sysman.kernel.api.clientwso2.config.ClientConfig;
+ import com.sysman.kernel.api.clientwso2.converters.JsonConverter;
++import com.sysman.kernel.api.clientwso2.dbs.DbsDispatcherConfig;
++import com.sysman.kernel.api.clientwso2.dbs.ListaConTotal;
+ import com.sysman.kernel.api.clientwso2.tokens.TokenManager;
+ import com.sysman.kernel.api.clientwso2.util.enums.HeaderEnum;
+ import com.sysman.kernel.api.clientwso2.util.enums.HttpMethodEnum;
+@@ -58,6 +60,50 @@ public class RequestManager {
+         serviceHost = ClientConfig.getInstance().getServiceHost();
+     }
+ 
++    /**
++     * Extrae el CODIGO de una URL sintetica local (ver
++     * DbsDispatcherConfig.PREFIJO_LOCAL). Solo debe llamarse cuando
++     * ya se verifico que url.startsWith(PREFIJO_LOCAL).
++     */
++    private static String extraerCodigoLocal(String url) {
++        return url.substring(DbsDispatcherConfig.PREFIJO_LOCAL.length());
++    }
++
++    /**
++     * Punto unico de despacho para GET/DELETE con parametros (sin
++     * payload JSON armado todavia). Si la URL es una URL sintetica
++     * local, ejecuta contra el .dbs correspondiente sin tocar la red;
++     * si no, sigue el camino de siempre (directo o via API Manager).
++     */
++    private String resolverJsonConParams(String url, Map<String, Object> params,
++        HttpMethodEnum httpMethodEnum) throws IOException, SystemException {
++        if (url != null && url.startsWith(DbsDispatcherConfig.PREFIJO_LOCAL)) {
++            return DbsDispatcherConfig.getInstance()
++                            .ejecutarJson(extraerCodigoLocal(url), params);
++        }
++        return !ClientConfig.getInstance().isTokenRequest()
++            ? processRequestUrl(url, params, httpMethodEnum)
++            : processRequestAPI(url, params, httpMethodEnum);
++    }
++
++    /**
++     * Punto unico de despacho para POST/PUT (con payload JSON ya
++     * armado para el camino remoto). El mapa original (antes de
++     * serializar) se conserva aparte para poder bindearlo tal cual
++     * contra el .dbs cuando la URL es local.
++     */
++    private String resolverJsonConPayload(String url, String jsonContentSend,
++        Map<String, Object> paramsOriginales, HttpMethodEnum httpMethodEnum)
++                    throws IOException, SystemException {
++        if (url != null && url.startsWith(DbsDispatcherConfig.PREFIJO_LOCAL)) {
++            return DbsDispatcherConfig.getInstance()
++                            .ejecutarJson(extraerCodigoLocal(url), paramsOriginales);
++        }
++        return !ClientConfig.getInstance().isTokenRequest()
++            ? processRequestJson(url, jsonContentSend, httpMethodEnum)
++            : processRequestAPI(url, jsonContentSend, httpMethodEnum);
++    }
++
+     /* Construye todos los par�metros de la URL */
+     private static String buildUrl(String url, Map<String, Object> params)
+                     throws SystemException {
+@@ -302,13 +348,7 @@ public class RequestManager {
+     public List<Parameter> getList(String url, Map<String, Object> params)
+                     throws SystemException {
+         try {
+-
+-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
+-                ? processRequestUrl(url, params,
+-                                HttpMethodEnum.GET)
+-                : processRequestAPI(url,
+-
+-                                params, HttpMethodEnum.GET);
++            String jsonContent = resolverJsonConParams(url, params, HttpMethodEnum.GET);
+             return JsonConverter.toRegistroList(jsonContent, JsonEnum.DEFAULT);
+         }
+         catch (IOException | SysmanException e) {
+@@ -322,6 +362,45 @@ public class RequestManager {
+         }
+     }
+ 
++    /**
++     * Igual que getList + get(urlConteo) juntos, pero en una sola
++     * llamada: si la URL es local, trae filas y total en un solo
++     * viaje contra el .dbs (sin segunda consulta HTTP); si es
++     * remota, mantiene el comportamiento de siempre (dos llamadas,
++     * una por cada URL).
++     *
++     * @throws SystemException
++     */
++    public ListaConTotal getListConTotal(String url, String urlConteo,
++        Map<String, Object> params) throws SystemException {
++        if (url != null && url.startsWith(DbsDispatcherConfig.PREFIJO_LOCAL)) {
++            return DbsDispatcherConfig.getInstance()
++                            .ejecutarListaConConteo(extraerCodigoLocal(url), params);
++        }
++        List<Parameter> list = getList(url, params);
++        Parameter tem = get(urlConteo, params);
++        int total = (Integer) tem.getFields().get("TOTAL");
++        return new ListaConTotal(list, total);
++    }
++
++    /**
++     * Igual que get(urlConteo,...) para obtener solo el TOTAL, con
++     * despacho local/remoto. Se usa cuando el conteo se necesita
++     * antes de pedir la lista completa (por ejemplo, para traer
++     * "todos los seleccionados" de una sola vez).
++     *
++     * @throws SystemException
++     */
++    public int getConteo(String url, String urlConteo, Map<String, Object> params)
++                    throws SystemException {
++        if (url != null && url.startsWith(DbsDispatcherConfig.PREFIJO_LOCAL)) {
++            return DbsDispatcherConfig.getInstance()
++                            .ejecutarConteo(extraerCodigoLocal(url), params);
++        }
++        Parameter tem = get(urlConteo, params);
++        return (Integer) tem.getFields().get("TOTAL");
++    }
++
+     /**
+      * Permite obtener un objeto Parameter a traves de la URL
+      * suminstrada (Servicio REST, DSS, etc).
+@@ -332,11 +411,7 @@ public class RequestManager {
+                     throws SystemException {
+         Parameter parameter = new Parameter();
+         try {
+-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
+-                ? processRequestUrl(url, params,
+-                                HttpMethodEnum.GET)
+-                : processRequestAPI(url,
+-                                params, HttpMethodEnum.GET);
++            String jsonContent = resolverJsonConParams(url, params, HttpMethodEnum.GET);
+             parameter = JsonConverter.toRegistro(jsonContent, JsonEnum.DEFAULT);
+             return parameter;
+         }
+@@ -369,12 +444,8 @@ public class RequestManager {
+             jsonContentSend = JsonConverter.toJson(serviceName,
+                             parameter,
+                             true);
+-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
+-                ? processRequestJson(url, jsonContentSend,
+-                                HttpMethodEnum.POST)
+-                : processRequestAPI(url,
+-                                jsonContentSend,
+-                                HttpMethodEnum.POST);
++            String jsonContent = resolverJsonConPayload(url, jsonContentSend,
++                            parameter.getFields(), HttpMethodEnum.POST);
+             rta = JsonConverter.toRegistro(jsonContent, JsonEnum.DEFAULT);
+ 
+             return rta.getFields();
+@@ -410,12 +481,8 @@ public class RequestManager {
+         try {
+             jsonContentSend = JsonConverter.toJson(serviceName,
+                             reqParameter, true);
+-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
+-                ? processRequestJson(url, jsonContentSend,
+-                                HttpMethodEnum.POST)
+-                : processRequestAPI(url,
+-                                jsonContentSend,
+-                                HttpMethodEnum.POST);
++            String jsonContent = resolverJsonConPayload(url, jsonContentSend,
++                            parameterMap, HttpMethodEnum.POST);
+             rta = JsonConverter.toRegistro(jsonContent, JsonEnum.DEFAULT);
+ 
+             return rta.getFields();
+@@ -488,12 +555,8 @@ public class RequestManager {
+         try {
+             jsonContentSend = JsonConverter.toJson(serviceName,
+                             reqParameter, true);
+-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
+-                ? processRequestJson(url, jsonContentSend,
+-                                HttpMethodEnum.POST)
+-                : processRequestAPI(url,
+-                                jsonContentSend,
+-                                HttpMethodEnum.POST);
++            String jsonContent = resolverJsonConPayload(url, jsonContentSend,
++                            parameterMap, HttpMethodEnum.POST);
+             rta = JsonConverter.toRegistro(jsonContent, JsonEnum.DEFAULT);
+             return extraerTotal(rta);
+ 
+@@ -549,12 +612,8 @@ public class RequestManager {
+         try {
+             jsonContentSend = JsonConverter.toJson(serviceName, registro,
+                             false);
+-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
+-                ? processRequestJson(url, jsonContentSend,
+-                                HttpMethodEnum.PUT)
+-                : processRequestAPI(url,
+-                                jsonContentSend,
+-                                HttpMethodEnum.PUT);
++            String jsonContent = resolverJsonConPayload(url, jsonContentSend,
++                            registro.getFields(), HttpMethodEnum.PUT);
+             parameter = JsonConverter.toRegistro(jsonContent, JsonEnum.DEFAULT);
+             return extraerTotal(parameter);
+ 
+@@ -589,12 +648,8 @@ public class RequestManager {
+             registro.getFields().putAll(llaves);
+             jsonContentSend = JsonConverter.toJson(serviceName, registro,
+                             false);
+-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
+-                ? processRequestJson(url, jsonContentSend,
+-                                HttpMethodEnum.PUT)
+-                : processRequestAPI(url,
+-                                jsonContentSend,
+-                                HttpMethodEnum.PUT);
++            String jsonContent = resolverJsonConPayload(url, jsonContentSend,
++                            registro.getFields(), HttpMethodEnum.PUT);
+             parameter = JsonConverter.toRegistro(jsonContent, JsonEnum.DEFAULT);
+             return extraerTotal(parameter);
+ 
+@@ -621,11 +676,7 @@ public class RequestManager {
+                     throws SystemException {
+         Parameter parameter = new Parameter();
+         try {
+-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
+-                ? processRequestUrl(url, params,
+-                                HttpMethodEnum.DELETE)
+-                : processRequestAPI(url, params,
+-                                HttpMethodEnum.DELETE);
++            String jsonContent = resolverJsonConParams(url, params, HttpMethodEnum.DELETE);
+             parameter = JsonConverter.toRegistro(jsonContent, JsonEnum.DEFAULT);
+             return extraerTotal(parameter);
+         }
+diff --git a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/connectors/UrlServiceUtil.java b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/connectors/UrlServiceUtil.java
+index 1c1bcf6a..717df4d8 100644
+--- a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/connectors/UrlServiceUtil.java
++++ b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/connectors/UrlServiceUtil.java
+@@ -10,6 +10,7 @@
+ package com.sysman.kernel.api.clientwso2.connectors;
+ 
+ import com.sysman.kernel.api.clientwso2.beans.UrlBean;
++import com.sysman.kernel.api.clientwso2.dbs.DbsDispatcherConfig;
+ import com.sysman.kernel.api.clientwso2.util.enums.UrlServiceUtilEnum;
+ 
+ /**
+@@ -70,17 +71,25 @@ public class UrlServiceUtil {
+      * @return Objeto UrlBean con el id ingresado por parametro
+      */
+     public UrlBean getUrlServiceByUrlByEnumID(String urlEnumId) {
+-        UrlBean urlBean;
+-        Map<String, Object> params = new TreeMap<>();
+-        params.put("CODIGO", urlEnumId);
++        if (urls.containsKey(urlEnumId)) {
++            return urls.get(urlEnumId);
++        }
+ 
+-        if (!urls.containsKey(urlEnumId)) {
+-            urlBean = buscarGuardarUrl(params);
+-        } else {
+-            urlBean = urls.get(urlEnumId);
++        // Si el CODIGO esta migrado a local (dbs-switch.properties),
++        // no se consulta WSO2 en absoluto: se arma un UrlBean
++        // sintetico con un prefijo artificial que RequestManager
++        // reconoce y despacha localmente contra el .dbs.
++        if (DbsDispatcherConfig.getInstance().esLocal(urlEnumId)) {
++            UrlBean urlBean = new UrlBean(urlEnumId,
++                            DbsDispatcherConfig.PREFIJO_LOCAL + urlEnumId,
++                            urlEnumId, null);
++            urls.put(urlEnumId, urlBean);
++            return urlBean;
+         }
+ 
+-        return urlBean;
++        Map<String, Object> params = new TreeMap<>();
++        params.put("CODIGO", urlEnumId);
++        return buscarGuardarUrl(params);
+     }
+ 
+     /**
+diff --git a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DataSourceResolver.java b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DataSourceResolver.java
+new file mode 100644
+index 00000000..5e43d379
+--- /dev/null
++++ b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DataSourceResolver.java
+@@ -0,0 +1,55 @@
++package com.sysman.kernel.api.clientwso2.dbs;
++
++import javax.naming.InitialContext;
++import javax.sql.DataSource;
++import java.io.InputStream;
++import java.util.Properties;
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.logging.Logger;
++
++/**
++ * Traduce el "carbon_datasource_name" declarado en un .dbs (ej.
++ * SYSMANIRISST) al recurso JNDI real configurado en WildFly, y
++ * cachea las DataSource ya resueltas.
++ *
++ * El mapeo vive en config/dbs-datasource.properties, para no tocar
++ * los .dbs ni hardcodear nombres JNDI en el codigo.
++ */
++public class DataSourceResolver {
++
++    private static final Logger LOG = Logger.getLogger(DataSourceResolver.class.getName());
++
++    private final Properties mapeo = new Properties();
++    private final ConcurrentHashMap<String, DataSource> cache = new ConcurrentHashMap<>();
++
++    public DataSourceResolver() {
++        try (InputStream in = getClass().getClassLoader()
++            .getResourceAsStream("config/dbs-datasource.properties")) {
++            if (in != null) {
++                mapeo.load(in);
++            }
++        }
++        catch (Exception e) {
++            LOG.warning("No se pudo cargar dbs-datasource.properties: " + e.getMessage());
++        }
++    }
++
++    public DataSource resolve(String dataSourceConfigId) throws Exception {
++        return cache.computeIfAbsent(dataSourceConfigId, id -> {
++            try {
++                String jndiName = mapeo.getProperty(id, mapeo.getProperty("default"));
++                if (jndiName == null) {
++                    throw new IllegalStateException(
++                        "No hay JNDI mapeado para el datasource logico '" + id
++                            + "'. Revisa config/dbs-datasource.properties");
++                }
++                InitialContext ic = new InitialContext();
++                return (DataSource) ic.lookup(jndiName);
++            }
++            catch (Exception e) {
++                throw new RuntimeException(
++                    "No fue posible resolver el datasource '" + id + "'", e);
++            }
++        });
++    }
++}
+diff --git a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsDispatcherConfig.java b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsDispatcherConfig.java
+new file mode 100644
+index 00000000..32a63311
+--- /dev/null
++++ b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsDispatcherConfig.java
+@@ -0,0 +1,149 @@
++package com.sysman.kernel.api.clientwso2.dbs;
++
++import com.sysman.exception.SystemException;
++import com.sysman.kernel.api.clientwso2.beans.Parameter;
++import com.sysman.kernel.api.clientwso2.converters.JsonConverter;
++import com.sysman.kernel.api.commons.util.enums.JsonEnum;
++
++import java.nio.file.Path;
++import java.nio.file.Paths;
++import java.util.List;
++import java.util.Map;
++import java.util.logging.Level;
++import java.util.logging.Logger;
++
++/**
++ * Singleton que centraliza la migracion local/WSO2 por CODIGO (el
++ * mismo idioma que ClientConfig/UrlServiceUtil ya usan en este
++ * paquete). Punto unico de entrada para:
++ *
++ * - UrlServiceUtil.getUrlServiceByUrlByEnumID: decide si un CODIGO
++ *   debe resolverse local (sin ir nunca a buscar su UrlBean en WSO2).
++ * - RequestManager: ejecuta localmente cuando la URL recibida trae el
++ *   PREFIJO_LOCAL en vez de una URL real.
++ *
++ * Se activa definiendo la system property "sysman.dbs.dir" con la
++ * ruta a un directorio externo del filesystem donde viven los .dbs
++ * migrados. Si no esta definida, esLocal(...) siempre devuelve false
++ * y todo sigue yendo por WSO2 como hasta ahora.
++ */
++public class DbsDispatcherConfig {
++
++    private static final Logger LOG = Logger.getLogger(DbsDispatcherConfig.class.getName());
++
++    /** Prefijo artificial que jamas puede colisionar con una URL real de WSO2. */
++    public static final String PREFIJO_LOCAL = "dbs-local://";
++
++    public static final String PROP_DIR_EXTERNO = "sysman.dbs.dir";
++
++    private static final DbsDispatcherConfig instance = new DbsDispatcherConfig();
++
++    private final boolean activo;
++    private final DbsRegistryHolder registry;
++    private final DbsSwitch dbsSwitch;
++    private final DbsQueryExecutor executor;
++
++    private DbsDispatcherConfig() {
++        String dir = System.getProperty(PROP_DIR_EXTERNO);
++        if (dir == null || dir.trim().isEmpty()) {
++            LOG.info("system property '" + PROP_DIR_EXTERNO
++                + "' no definida: el dispatcher local queda inactivo, todo va por WSO2.");
++            activo = false;
++            registry = null;
++            dbsSwitch = null;
++            executor = null;
++            return;
++        }
++
++        Path directorio = Paths.get(dir.trim());
++        registry = new DbsRegistryHolder(directorio);
++        registry.iniciarVigilancia();
++
++        Path archivoSwitch = directorio.resolve("dbs-switch.properties");
++        dbsSwitch = DbsSwitch.cargarDesdeArchivo(archivoSwitch);
++
++        executor = new DbsQueryExecutor(registry, new DataSourceResolver());
++        activo = true;
++        LOG.info("Dispatcher local activo, leyendo .dbs desde " + directorio);
++    }
++
++    public static DbsDispatcherConfig getInstance() {
++        return instance;
++    }
++
++    /** Detiene la vigilancia del directorio; llamar al apagar el contexto de la aplicacion. */
++    public void detener() {
++        if (activo) {
++            registry.detener();
++        }
++    }
++
++    public boolean esLocal(String codigo) {
++        return activo && codigo != null && dbsSwitch.esLocal(codigo);
++    }
++
++    /** Ejecuta local un GET/POST/PUT/DELETE de un solo registro, devolviendo el JSON crudo. */
++    public String ejecutarJson(String codigo, Map<String, Object> params) throws SystemException {
++        try {
++            DbsResource recurso = obtenerRecurso(codigo);
++            return executor.execute(recurso, params);
++        }
++        catch (Exception e) {
++            throw new SystemException(e.getMessage(), e);
++        }
++    }
++
++    /**
++     * Ejecuta local un recurso de tipo grilla/combo (gridKey),
++     * trayendo filas + total en la misma llamada, sin necesitar una
++     * segunda consulta por urlConteo.
++     */
++    public ListaConTotal ejecutarListaConConteo(String codigo, Map<String, Object> params)
++                    throws SystemException {
++        try {
++            DbsResource recurso = obtenerRecurso(codigo);
++            String jsonFilas = executor.execute(recurso, params);
++            List<Parameter> filas = JsonConverter.toRegistroList(jsonFilas, JsonEnum.DEFAULT);
++
++            int total = recurso.getQueryIdConteo() != null
++                ? executor.ejecutarConteo(recurso, params)
++                : filas.size();
++
++            return new ListaConTotal(filas, total);
++        }
++        catch (SystemException e) {
++            throw e;
++        }
++        catch (Exception e) {
++            throw new SystemException(e.getMessage(), e);
++        }
++    }
++
++    /** Ejecuta solo el conteo de un recurso local (usado cuando se necesita el total antes de pedir la lista). */
++    public int ejecutarConteo(String codigo, Map<String, Object> params) throws SystemException {
++        try {
++            DbsResource recurso = obtenerRecurso(codigo);
++            if (recurso.getQueryIdConteo() == null) {
++                throw new IllegalStateException(
++                    "El recurso '" + codigo + "' no declara <call-query-conteo> en su .dbs.");
++            }
++            return executor.ejecutarConteo(recurso, params);
++        }
++        catch (SystemException e) {
++            throw e;
++        }
++        catch (Exception e) {
++            throw new SystemException(e.getMessage(), e);
++        }
++    }
++
++    private DbsResource obtenerRecurso(String codigo) throws SystemException {
++        DbsResource recurso = registry.getResource(codigo);
++        if (recurso == null) {
++            throw new SystemException("El CODIGO '" + codigo
++                + "' esta marcado como local en dbs-switch.properties, pero no hay ningun "
++                + ".dbs que declare <resource codigo=\"" + codigo + "\">.");
++        }
++        return recurso;
++    }
++}
+diff --git a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsParam.java b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsParam.java
+new file mode 100644
+index 00000000..2da954d4
+--- /dev/null
++++ b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsParam.java
+@@ -0,0 +1,24 @@
++package com.sysman.kernel.api.clientwso2.dbs;
++
++/**
++ * Representa un &lt;param name="..." sqlType="..."/&gt; dentro de un
++ * &lt;query&gt; de un archivo .dbs.
++ */
++public class DbsParam {
++
++    private final String name;
++    private final String sqlType;
++
++    public DbsParam(String name, String sqlType) {
++        this.name = name;
++        this.sqlType = sqlType;
++    }
++
++    public String getName() {
++        return name;
++    }
++
++    public String getSqlType() {
++        return sqlType;
++    }
++}
+diff --git a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsQuery.java b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsQuery.java
+new file mode 100644
+index 00000000..dd979714
+--- /dev/null
++++ b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsQuery.java
+@@ -0,0 +1,43 @@
++package com.sysman.kernel.api.clientwso2.dbs;
++
++import java.util.ArrayList;
++import java.util.List;
++
++/**
++ * Representa un elemento &lt;query&gt; de un archivo .dbs: el SQL tal
++ * cual esta declarado (con parametros con nombre ":NOMBRE"), la lista
++ * de parametros esperados y el id logico del datasource a usar.
++ */
++public class DbsQuery {
++
++    private final String id;
++    private final String sql;
++    private final String dataSourceConfigId;
++    private final List<DbsParam> params = new ArrayList<>();
++
++    public DbsQuery(String id, String sql, String dataSourceConfigId) {
++        this.id = id;
++        this.sql = sql;
++        this.dataSourceConfigId = dataSourceConfigId;
++    }
++
++    public void addParam(DbsParam param) {
++        params.add(param);
++    }
++
++    public String getId() {
++        return id;
++    }
++
++    public String getSql() {
++        return sql;
++    }
++
++    public String getDataSourceConfigId() {
++        return dataSourceConfigId;
++    }
++
++    public List<DbsParam> getParams() {
++        return params;
++    }
++}
+diff --git a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsQueryExecutor.java b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsQueryExecutor.java
+new file mode 100644
+index 00000000..bbb24e1a
+--- /dev/null
++++ b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsQueryExecutor.java
+@@ -0,0 +1,214 @@
++package com.sysman.kernel.api.clientwso2.dbs;
++
++import javax.json.Json;
++import javax.json.JsonArrayBuilder;
++import javax.json.JsonObjectBuilder;
++import javax.sql.DataSource;
++import java.sql.Connection;
++import java.sql.PreparedStatement;
++import java.sql.ResultSet;
++import java.sql.ResultSetMetaData;
++import java.sql.Types;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Map;
++import java.util.regex.Matcher;
++import java.util.regex.Pattern;
++
++/**
++ * Ejecuta localmente (sin WSO2 DSS) la misma consulta declarada en un
++ * .dbs, y devuelve el resultado en el mismo contrato JSON que ya
++ * espera el resto de la aplicacion:
++ *
++ * {"elementos":{"elemento":[ {campo: valor, ...}, ... ]}}
++ *
++ * Esto es lo unico que le importa a JsonConverter en el proyecto
++ * original: no hace falta reproducir el motor de plantillas de WSO2.
++ */
++public class DbsQueryExecutor {
++
++    private static final Pattern PARAM_PATTERN = Pattern.compile(":([A-Za-z_][A-Za-z0-9_]*)");
++
++    private final DbsRegistryProvider registry;
++    private final DataSourceResolver dataSourceResolver;
++
++    public DbsQueryExecutor(DbsRegistryProvider registry, DataSourceResolver dataSourceResolver) {
++        this.registry = registry;
++        this.dataSourceResolver = dataSourceResolver;
++    }
++
++    public String execute(DbsResource resource, Map<String, Object> params) throws Exception {
++        return ejecutarQueryComoJson(resource.getQueryId(), params);
++    }
++
++    /**
++     * Ejecuta la query de conteo asociada al recurso (resource.getQueryIdConteo())
++     * y devuelve el TOTAL como int, sin pasar por JSON ni por una
++     * segunda llamada de red: es una sola consulta SQL mas, en el
++     * mismo proceso.
++     *
++     * El SQL de esa query debe devolver una unica fila con una unica
++     * columna numerica (tipicamente "SELECT COUNT(*) ... "). Si el
++     * recurso no declaro queryIdConteo, lanza IllegalStateException:
++     * quien llama debe revisar antes con resource.getQueryIdConteo() != null.
++     */
++    public int ejecutarConteo(DbsResource resource, Map<String, Object> params) throws Exception {
++        if (resource.getQueryIdConteo() == null) {
++            throw new IllegalStateException(
++                "El recurso '" + resource.getCodigo() + "' no declara <call-query-conteo>.");
++        }
++        DbsQuery query = registry.getQuery(resource.getQueryIdConteo());
++        if (query == null) {
++            throw new IllegalStateException(
++                "No se encontro la query de conteo '" + resource.getQueryIdConteo()
++                    + "' para el recurso " + resource.getCodigo());
++        }
++
++        try (ConexionYSentencia cys = prepararSentencia(query, params)) {
++            try (ResultSet rs = cys.ps.executeQuery()) {
++                if (rs.next()) {
++                    return rs.getInt(1);
++                }
++                return 0;
++            }
++        }
++    }
++
++    private String ejecutarQueryComoJson(String queryId, Map<String, Object> params) throws Exception {
++        DbsQuery query = registry.getQuery(queryId);
++        if (query == null) {
++            throw new IllegalStateException("No se encontro la query '" + queryId + "'");
++        }
++
++        try (ConexionYSentencia cys = prepararSentencia(query, params)) {
++            boolean esSelect = query.getSql().trim().toUpperCase().startsWith("SELECT");
++            if (esSelect) {
++                try (ResultSet rs = cys.ps.executeQuery()) {
++                    return resultSetAJson(rs);
++                }
++            }
++            else {
++                int filas = cys.ps.executeUpdate();
++                return totalAJson(filas);
++            }
++        }
++    }
++
++    /** Agrupa Connection + PreparedStatement ya con los parametros bindeados, cerrando ambos juntos. */
++    private ConexionYSentencia prepararSentencia(DbsQuery query, Map<String, Object> params) throws Exception {
++        // Traduce ":NOMBRE" -> "?" preservando el orden de aparicion
++        List<String> nombresEnOrden = new ArrayList<>();
++        Matcher m = PARAM_PATTERN.matcher(query.getSql());
++        StringBuffer jdbcSql = new StringBuffer();
++        while (m.find()) {
++            nombresEnOrden.add(m.group(1));
++            m.appendReplacement(jdbcSql, "?");
++        }
++        m.appendTail(jdbcSql);
++
++        DataSource ds = dataSourceResolver.resolve(query.getDataSourceConfigId());
++        Connection conn = ds.getConnection();
++        try {
++            PreparedStatement ps = conn.prepareStatement(jdbcSql.toString());
++            for (int i = 0; i < nombresEnOrden.size(); i++) {
++                String nombre = nombresEnOrden.get(i);
++                Object valor = params == null ? null : params.get(nombre);
++                bindParam(ps, i + 1, valor);
++            }
++            return new ConexionYSentencia(conn, ps);
++        }
++        catch (Exception e) {
++            conn.close();
++            throw e;
++        }
++    }
++
++    private static final class ConexionYSentencia implements AutoCloseable {
++        final Connection conn;
++        final PreparedStatement ps;
++
++        ConexionYSentencia(Connection conn, PreparedStatement ps) {
++            this.conn = conn;
++            this.ps = ps;
++        }
++
++        @Override
++        public void close() throws Exception {
++            try {
++                ps.close();
++            }
++            finally {
++                conn.close();
++            }
++        }
++    }
++
++    private void bindParam(PreparedStatement ps, int index, Object valor) throws Exception {
++        if (valor == null) {
++            ps.setNull(index, Types.VARCHAR);
++        }
++        else if (valor instanceof Integer) {
++            ps.setInt(index, (Integer) valor);
++        }
++        else if (valor instanceof Long) {
++            ps.setLong(index, (Long) valor);
++        }
++        else if (valor instanceof Double || valor instanceof Float) {
++            ps.setDouble(index, ((Number) valor).doubleValue());
++        }
++        else if (valor instanceof java.util.Date) {
++            ps.setTimestamp(index, new java.sql.Timestamp(((java.util.Date) valor).getTime()));
++        }
++        else {
++            ps.setString(index, String.valueOf(valor));
++        }
++    }
++
++    private String resultSetAJson(ResultSet rs) throws Exception {
++        ResultSetMetaData meta = rs.getMetaData();
++        int columnas = meta.getColumnCount();
++
++        JsonArrayBuilder elementos = Json.createArrayBuilder();
++        while (rs.next()) {
++            JsonObjectBuilder fila = Json.createObjectBuilder();
++            for (int c = 1; c <= columnas; c++) {
++                String nombreColumna = meta.getColumnLabel(c);
++                Object valor = rs.getObject(c);
++                agregarCampo(fila, nombreColumna, valor);
++            }
++            elementos.add(fila);
++        }
++
++        return Json.createObjectBuilder()
++            .add("elementos", Json.createObjectBuilder().add("elemento", elementos))
++            .build()
++            .toString();
++    }
++
++    private String totalAJson(int total) {
++        return Json.createObjectBuilder()
++            .add("elementos", Json.createObjectBuilder().add("elemento",
++                Json.createArrayBuilder().add(Json.createObjectBuilder().add("TOTAL", total))))
++            .build()
++            .toString();
++    }
++
++    private void agregarCampo(JsonObjectBuilder builder, String nombre, Object valor) {
++        if (valor == null) {
++            builder.addNull(nombre);
++        }
++        else if (valor instanceof Integer) {
++            builder.add(nombre, (Integer) valor);
++        }
++        else if (valor instanceof Long) {
++            builder.add(nombre, (Long) valor);
++        }
++        else if (valor instanceof Double || valor instanceof Float
++            || valor instanceof java.math.BigDecimal) {
++            builder.add(nombre, ((Number) valor).doubleValue());
++        }
++        else {
++            builder.add(nombre, String.valueOf(valor));
++        }
++    }
++}
+diff --git a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsRegistry.java b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsRegistry.java
+new file mode 100644
+index 00000000..935c61b5
+--- /dev/null
++++ b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsRegistry.java
+@@ -0,0 +1,191 @@
++package com.sysman.kernel.api.clientwso2.dbs;
++
++import org.w3c.dom.Document;
++import org.w3c.dom.Element;
++import org.w3c.dom.Node;
++import org.w3c.dom.NodeList;
++
++import javax.xml.parsers.DocumentBuilder;
++import javax.xml.parsers.DocumentBuilderFactory;
++import java.io.InputStream;
++import java.nio.file.DirectoryStream;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.Map;
++import java.util.Set;
++import java.util.logging.Level;
++import java.util.logging.Logger;
++
++/**
++ * Carga en memoria todos los archivos .dbs encontrados bajo un
++ * directorio externo del filesystem, y expone un indice por:
++ * - id de query -&gt; DbsQuery
++ * - CODIGO (el mismo que GenericUrlEnum: readKey, createKey,
++ *   updateKey, deleteKey, gridKey) -&gt; DbsResource
++ *
++ * No modifica ni reescribe los .dbs: los lee y ejecuta la misma
++ * consulta SQL localmente, sin pasar por WSO2 DSS.
++ *
++ * Esquema esperado de <resource>:
++ *
++ * <resource codigo="320001">
++ *     <call-query href="spEmpresasConvenioQuery"/>
++ *     <call-query-conteo href="spEmpresasConvenioConteoQuery"/> <!-- opcional -->
++ * </resource>
++ */
++public class DbsRegistry implements DbsRegistryProvider {
++
++    private static final Logger LOG = Logger.getLogger(DbsRegistry.class.getName());
++
++    private final Map<String, DbsQuery> queriesById = new HashMap<>();
++    private final Map<String, DbsResource> resourcesPorCodigo = new HashMap<>();
++
++    /**
++     * Lee los .dbs desde un directorio real del filesystem (fuera del
++     * .war), por ejemplo /opt/sysman/servicios. Permite agregar o
++     * modificar .dbs sin recompilar ni redesplegar la aplicacion.
++     */
++    public static DbsRegistry cargarDesdeDirectorio(Path directorio) {
++        DbsRegistry registry = new DbsRegistry();
++        if (directorio == null || !Files.isDirectory(directorio)) {
++            LOG.warning("Directorio de .dbs externo no valido: " + directorio);
++            return registry;
++        }
++        for (Path ruta : listarArchivosDbs(directorio)) {
++            try (InputStream in = Files.newInputStream(ruta)) {
++                registry.parsearArchivo(in, ruta.toString());
++            }
++            catch (Exception e) {
++                LOG.log(Level.SEVERE, "Error parseando .dbs: " + ruta, e);
++            }
++        }
++        LOG.info("DbsRegistry cargado desde " + directorio + ": " + registry.queriesById.size()
++            + " queries, " + registry.resourcesPorCodigo.size() + " recursos.");
++        return registry;
++    }
++
++    private static Set<Path> listarArchivosDbs(Path directorio) {
++        Set<Path> encontrados = new HashSet<>();
++        try (DirectoryStream<Path> stream = Files.newDirectoryStream(directorio)) {
++            for (Path entrada : stream) {
++                if (Files.isDirectory(entrada)) {
++                    encontrados.addAll(listarArchivosDbs(entrada));
++                }
++                else if (entrada.toString().toLowerCase().endsWith(".dbs")) {
++                    encontrados.add(entrada);
++                }
++            }
++        }
++        catch (Exception e) {
++            LOG.log(Level.SEVERE, "Error listando .dbs en " + directorio, e);
++        }
++        return encontrados;
++    }
++
++    private void parsearArchivo(InputStream in, String rutaOrigen) throws Exception {
++        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
++        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
++        DocumentBuilder builder = factory.newDocumentBuilder();
++        Document doc = builder.parse(in);
++        doc.getDocumentElement().normalize();
++
++        Element root = doc.getDocumentElement(); // <data>
++
++        // 1) Config: id logico -> propiedad carbon_datasource_name
++        Map<String, String> dataSourcePorConfigId = new HashMap<>();
++        NodeList configs = root.getElementsByTagName("config");
++        for (int i = 0; i < configs.getLength(); i++) {
++            Element config = (Element) configs.item(i);
++            String configId = config.getAttribute("id");
++            String dsName = configId;
++            NodeList props = config.getElementsByTagName("property");
++            for (int j = 0; j < props.getLength(); j++) {
++                Element prop = (Element) props.item(j);
++                if ("carbon_datasource_name".equals(prop.getAttribute("name"))) {
++                    dsName = textoDe(prop);
++                }
++            }
++            dataSourcePorConfigId.put(configId, dsName);
++        }
++
++        // 2) Queries
++        NodeList queries = root.getElementsByTagName("query");
++        for (int i = 0; i < queries.getLength(); i++) {
++            Element q = (Element) queries.item(i);
++            String id = q.getAttribute("id");
++            String useConfig = q.getAttribute("useConfig");
++            String dsName = dataSourcePorConfigId.getOrDefault(useConfig, useConfig);
++
++            String sql = null;
++            NodeList sqlNodes = q.getElementsByTagName("sql");
++            if (sqlNodes.getLength() > 0) {
++                sql = textoDe((Element) sqlNodes.item(0));
++            }
++
++            DbsQuery dbsQuery = new DbsQuery(id, sql, dsName);
++
++            NodeList params = q.getElementsByTagName("param");
++            for (int j = 0; j < params.getLength(); j++) {
++                Element p = (Element) params.item(j);
++                dbsQuery.addParam(new DbsParam(p.getAttribute("name"), p.getAttribute("sqlType")));
++            }
++
++            queriesById.put(id, dbsQuery);
++        }
++
++        // 3) Resources, indexados por CODIGO
++        NodeList resources = root.getElementsByTagName("resource");
++        for (int i = 0; i < resources.getLength(); i++) {
++            Element r = (Element) resources.item(i);
++            String codigo = r.getAttribute("codigo");
++            if (codigo == null || codigo.trim().isEmpty()) {
++                LOG.warning("Elemento <resource> sin 'codigo' en " + rutaOrigen + ", se omite.");
++                continue;
++            }
++
++            String queryId = primerHrefDe(r, "call-query");
++            if (queryId == null) {
++                LOG.warning("<resource codigo=\"" + codigo + "\"> sin <call-query href=\"...\"/> en "
++                    + rutaOrigen + ", se omite.");
++                continue;
++            }
++            String queryIdConteo = primerHrefDe(r, "call-query-conteo"); // opcional
++
++            DbsResource resource = new DbsResource(codigo, queryId, queryIdConteo);
++            resourcesPorCodigo.put(resource.getCodigo(), resource);
++        }
++    }
++
++    private static String primerHrefDe(Element resourceEl, String nombreTag) {
++        NodeList nodos = resourceEl.getElementsByTagName(nombreTag);
++        if (nodos.getLength() == 0) {
++            return null;
++        }
++        String href = ((Element) nodos.item(0)).getAttribute("href");
++        return href == null || href.trim().isEmpty() ? null : href;
++    }
++
++    private static String textoDe(Element el) {
++        StringBuilder sb = new StringBuilder();
++        NodeList hijos = el.getChildNodes();
++        for (int i = 0; i < hijos.getLength(); i++) {
++            Node n = hijos.item(i);
++            if (n.getNodeType() == Node.TEXT_NODE || n.getNodeType() == Node.CDATA_SECTION_NODE) {
++                sb.append(n.getNodeValue());
++            }
++        }
++        return sb.toString().trim();
++    }
++
++    @Override
++    public DbsQuery getQuery(String queryId) {
++        return queriesById.get(queryId);
++    }
++
++    @Override
++    public DbsResource getResource(String codigo) {
++        return resourcesPorCodigo.get(codigo == null ? null : codigo.trim());
++    }
++}
+diff --git a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsRegistryHolder.java b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsRegistryHolder.java
+new file mode 100644
+index 00000000..e36d06f1
+--- /dev/null
++++ b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsRegistryHolder.java
+@@ -0,0 +1,189 @@
++package com.sysman.kernel.api.clientwso2.dbs;
++
++import java.io.IOException;
++import java.nio.file.ClosedWatchServiceException;
++import java.nio.file.FileSystems;
++import java.nio.file.FileVisitResult;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.nio.file.SimpleFileVisitor;
++import java.nio.file.WatchEvent;
++import java.nio.file.WatchKey;
++import java.nio.file.WatchService;
++import java.nio.file.attribute.BasicFileAttributes;
++import java.util.Map;
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.concurrent.TimeUnit;
++import java.util.logging.Level;
++import java.util.logging.Logger;
++
++import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
++import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
++import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
++import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
++
++/**
++ * Envoltorio "vivo" sobre DbsRegistry: carga los .dbs desde un
++ * directorio externo del filesystem y, si se activa la vigilancia,
++ * los recarga automaticamente (todos juntos, como un snapshot nuevo)
++ * apenas detecta que algun .dbs se creo, modifico o borro.
++ *
++ * No hace falta reiniciar WildFly ni redesplegar la aplicacion:
++ * basta con reemplazar el archivo .dbs en el directorio externo.
++ */
++public class DbsRegistryHolder implements DbsRegistryProvider {
++
++    private static final Logger LOG = Logger.getLogger(DbsRegistryHolder.class.getName());
++
++    /** Tiempo de calma sin nuevos eventos antes de recargar (evita recargar N veces
++     *  cuando se copian varios .dbs juntos, por ejemplo con "cp *.dbs destino/"). */
++    private static final long DEBOUNCE_MS = 500;
++
++    private final Path directorio;
++    private volatile DbsRegistry actual;
++
++    private WatchService watchService;
++    private Thread hiloVigilancia;
++    private final Map<WatchKey, Path> clavesPorDirectorio = new ConcurrentHashMap<>();
++    private volatile boolean activo = false;
++
++    public DbsRegistryHolder(Path directorio) {
++        this.directorio = directorio;
++        this.actual = DbsRegistry.cargarDesdeDirectorio(directorio);
++    }
++
++    @Override
++    public DbsQuery getQuery(String queryId) {
++        return actual.getQuery(queryId);
++    }
++
++    @Override
++    public DbsResource getResource(String codigo) {
++        return actual.getResource(codigo);
++    }
++
++    /** Recarga inmediata y sincrona, por si se quiere exponer un boton "recargar ahora". */
++    public void recargar() {
++        this.actual = DbsRegistry.cargarDesdeDirectorio(directorio);
++        LOG.info("DbsRegistry recargado desde " + directorio);
++    }
++
++    /**
++     * Arranca un hilo daemon que vigila el directorio (y subdirectorios
++     * creados despues) con WatchService y dispara recargar() cuando
++     * detecta cambios relevantes (.dbs creado/modificado/borrado).
++     */
++    public synchronized void iniciarVigilancia() {
++        if (activo) {
++            return;
++        }
++        try {
++            watchService = FileSystems.getDefault().newWatchService();
++            registrarRecursivo(directorio);
++        }
++        catch (IOException e) {
++            LOG.log(Level.SEVERE, "No se pudo iniciar la vigilancia de " + directorio, e);
++            return;
++        }
++
++        activo = true;
++        hiloVigilancia = new Thread(this::bucleVigilancia, "dbs-watch-" + directorio.getFileName());
++        hiloVigilancia.setDaemon(true);
++        hiloVigilancia.start();
++        LOG.info("Vigilancia de cambios activa sobre " + directorio);
++    }
++
++    /** Detiene el hilo de vigilancia; llamar desde contextDestroyed. */
++    public synchronized void detener() {
++        activo = false;
++        if (hiloVigilancia != null) {
++            hiloVigilancia.interrupt();
++        }
++        try {
++            if (watchService != null) {
++                watchService.close();
++            }
++        }
++        catch (IOException ignored) {
++        }
++    }
++
++    private void registrarRecursivo(Path base) throws IOException {
++        Files.walkFileTree(base, new SimpleFileVisitor<Path>() {
++            @Override
++            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
++                WatchKey key = dir.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
++                clavesPorDirectorio.put(key, dir);
++                return FileVisitResult.CONTINUE;
++            }
++        });
++    }
++
++    private void bucleVigilancia() {
++        long ultimoEventoRelevante = 0;
++        while (activo) {
++            WatchKey key;
++            try {
++                key = watchService.poll(DEBOUNCE_MS, TimeUnit.MILLISECONDS);
++            }
++            catch (InterruptedException e) {
++                Thread.currentThread().interrupt();
++                break;
++            }
++            catch (ClosedWatchServiceException e) {
++                break;
++            }
++
++            boolean huboCambioRelevante = false;
++
++            if (key != null) {
++                Path dir = clavesPorDirectorio.get(key);
++                for (WatchEvent<?> evento : key.pollEvents()) {
++                    WatchEvent.Kind<?> kind = evento.kind();
++                    if (kind == OVERFLOW) {
++                        huboCambioRelevante = true;
++                        continue;
++                    }
++
++                    Path nombre = (Path) evento.context();
++                    Path completo = dir == null ? null : dir.resolve(nombre);
++
++                    // Si se creo un subdirectorio nuevo, hay que vigilarlo tambien.
++                    if (completo != null && kind == ENTRY_CREATE && Files.isDirectory(completo)) {
++                        try {
++                            registrarRecursivo(completo);
++                        }
++                        catch (IOException ignored) {
++                        }
++                    }
++
++                    if (completo == null || completo.toString().toLowerCase().endsWith(".dbs")) {
++                        huboCambioRelevante = true;
++                    }
++                }
++
++                boolean valido = key.reset();
++                if (!valido) {
++                    clavesPorDirectorio.remove(key);
++                }
++            }
++
++            if (huboCambioRelevante) {
++                ultimoEventoRelevante = System.currentTimeMillis();
++            }
++
++            // Recarga una sola vez, cuando paso el periodo de calma desde
++            // el ultimo evento relevante.
++            if (ultimoEventoRelevante != 0
++                && System.currentTimeMillis() - ultimoEventoRelevante >= DEBOUNCE_MS) {
++                try {
++                    recargar();
++                }
++                catch (Exception e) {
++                    LOG.log(Level.SEVERE, "Error recargando .dbs tras cambio detectado", e);
++                }
++                ultimoEventoRelevante = 0;
++            }
++        }
++    }
++}
+diff --git a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsRegistryProvider.java b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsRegistryProvider.java
+new file mode 100644
+index 00000000..d88a2ec4
+--- /dev/null
++++ b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsRegistryProvider.java
+@@ -0,0 +1,16 @@
++package com.sysman.kernel.api.clientwso2.dbs;
++
++/**
++ * Contrato comun para obtener queries y recursos .dbs por CODIGO
++ * (el mismo identificador que ya usa GenericUrlEnum/UrlServiceUtil),
++ * sin importar si vienen de un snapshot fijo (DbsRegistry, cargado
++ * una sola vez) o de un registro "vivo" que se recarga
++ * automaticamente cuando cambian los archivos en un directorio
++ * externo (DbsRegistryHolder).
++ */
++public interface DbsRegistryProvider {
++
++    DbsQuery getQuery(String queryId);
++
++    DbsResource getResource(String codigo);
++}
+diff --git a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsResource.java b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsResource.java
+new file mode 100644
+index 00000000..898eab34
+--- /dev/null
++++ b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsResource.java
+@@ -0,0 +1,35 @@
++package com.sysman.kernel.api.clientwso2.dbs;
++
++/**
++ * Representa un elemento &lt;resource codigo="..."&gt; de un archivo
++ * .dbs, que enlaza un CODIGO (el mismo que usa UrlServiceUtil /
++ * GenericUrlEnum: createKey, readKey, updateKey, deleteKey, gridKey)
++ * a una query principal por su id, y opcionalmente a una segunda
++ * query de conteo (solo para recursos de tipo grilla/combo, cuando
++ * se quiere traer el TOTAL integrado sin una segunda consulta).
++ */
++public class DbsResource {
++
++    private final String codigo;
++    private final String queryId;
++    private final String queryIdConteo;
++
++    public DbsResource(String codigo, String queryId, String queryIdConteo) {
++        this.codigo = codigo == null ? null : codigo.trim();
++        this.queryId = queryId;
++        this.queryIdConteo = queryIdConteo;
++    }
++
++    public String getCodigo() {
++        return codigo;
++    }
++
++    public String getQueryId() {
++        return queryId;
++    }
++
++    /** Puede ser null: no todo recurso necesita conteo (solo grillas/combos paginados). */
++    public String getQueryIdConteo() {
++        return queryIdConteo;
++    }
++}
+diff --git a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsSwitch.java b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsSwitch.java
+new file mode 100644
+index 00000000..1a24051b
+--- /dev/null
++++ b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/DbsSwitch.java
+@@ -0,0 +1,70 @@
++package com.sysman.kernel.api.clientwso2.dbs;
++
++import java.io.InputStream;
++import java.nio.file.Files;
++import java.nio.file.Path;
++import java.util.Properties;
++import java.util.logging.Level;
++import java.util.logging.Logger;
++
++/**
++ * Decide, para un CODIGO dado (el mismo que GenericUrlEnum: readKey,
++ * createKey, updateKey, deleteKey, gridKey), si debe resolverse local
++ * (esta clase) o seguir yendo por WSO2, leyendo dbs-switch.properties.
++ *
++ * Esto es lo que permite migrar .dbs de a uno y hacer rollback
++ * inmediato: basta con cambiar el valor y esperar a que se recargue
++ * (o reiniciar el nodo si se cargo desde el classpath).
++ */
++public class DbsSwitch {
++
++    private static final Logger LOG = Logger.getLogger(DbsSwitch.class.getName());
++
++    private final Properties valores = new Properties();
++
++    /** Carga dbs-switch.properties desde el classpath (config/). */
++    public static DbsSwitch cargarDesdeClasspath() {
++        DbsSwitch dbsSwitch = new DbsSwitch();
++        try (InputStream in = DbsSwitch.class.getClassLoader()
++            .getResourceAsStream("config/dbs-switch.properties")) {
++            if (in != null) {
++                dbsSwitch.valores.load(in);
++            }
++            else {
++                LOG.warning("No se encontro config/dbs-switch.properties en el classpath; "
++                    + "todo se resuelve remoto por defecto.");
++            }
++        }
++        catch (Exception e) {
++            LOG.log(Level.SEVERE, "No se pudo cargar dbs-switch.properties", e);
++        }
++        return dbsSwitch;
++    }
++
++    /**
++     * Carga dbs-switch.properties desde un archivo en el mismo
++     * directorio externo que los .dbs, para poder migrar sin tocar
++     * el .war (ni siquiera reiniciar, si se recarga junto con el
++     * resto del directorio).
++     */
++    public static DbsSwitch cargarDesdeArchivo(Path archivo) {
++        DbsSwitch dbsSwitch = new DbsSwitch();
++        if (archivo == null || !Files.isRegularFile(archivo)) {
++            LOG.warning("No existe dbs-switch.properties en " + archivo
++                + "; todo se resuelve remoto por defecto.");
++            return dbsSwitch;
++        }
++        try (InputStream in = Files.newInputStream(archivo)) {
++            dbsSwitch.valores.load(in);
++        }
++        catch (Exception e) {
++            LOG.log(Level.SEVERE, "No se pudo cargar " + archivo, e);
++        }
++        return dbsSwitch;
++    }
++
++    public boolean esLocal(String codigo) {
++        String valor = valores.getProperty(codigo, valores.getProperty("default", "remoto"));
++        return "local".equalsIgnoreCase(valor);
++    }
++}
+diff --git a/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/ListaConTotal.java b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/ListaConTotal.java
+new file mode 100644
+index 00000000..14e0b658
+--- /dev/null
++++ b/forma/sysman.git/core/Librerias/ClientWSO2-api/src/main/java/com/sysman/kernel/api/clientwso2/dbs/ListaConTotal.java
+@@ -0,0 +1,30 @@
++package com.sysman.kernel.api.clientwso2.dbs;
++
++import com.sysman.kernel.api.clientwso2.beans.Parameter;
++
++import java.util.List;
++
++/**
++ * Resultado de ejecutar localmente un recurso de tipo grilla/combo:
++ * la pagina de filas y el total de registros, obtenidos en la misma
++ * llamada a DbsDispatcherConfig (sin la segunda consulta de conteo
++ * por URL que hace falta en el camino remoto por WSO2).
++ */
++public class ListaConTotal {
++
++    private final List<Parameter> filas;
++    private final int total;
++
++    public ListaConTotal(List<Parameter> filas, int total) {
++        this.filas = filas;
++        this.total = total;
++    }
++
++    public List<Parameter> getFilas() {
++        return filas;
++    }
++
++    public int getTotal() {
++        return total;
++    }
++}

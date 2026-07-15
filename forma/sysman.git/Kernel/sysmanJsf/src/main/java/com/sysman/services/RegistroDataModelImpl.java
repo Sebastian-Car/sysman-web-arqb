@@ -6,6 +6,7 @@ import com.sysman.jsfutil.JsfUtil;
 import com.sysman.jsfutil.RegistroConverter;
 import com.sysman.kernel.api.clientwso2.beans.Parameter;
 import com.sysman.kernel.api.clientwso2.connectors.RequestManager;
+import com.sysman.kernel.api.clientwso2.dbs.ListaConTotal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -241,10 +242,10 @@ public class RegistroDataModelImpl extends LazyDataModel<Registro> {
 
             recorrerParametros(parametros);
             try {
-                List<Parameter> list = requestManager.getList(url, parametros);
-                Parameter tem = requestManager.get(urlConteo, parametros);
+                ListaConTotal resultado = requestManager.getListConTotal(url, urlConteo, parametros);
+                List<Parameter> list = resultado.getFilas();
 
-                int total = (Integer) tem.getFields().get("TOTAL");
+                int total = resultado.getTotal();
                 total = vacio
                                 ? ((total / 10) + ((total % 10) == 0 ? 0 : 1)) * 11
                                     : total;
@@ -407,8 +408,7 @@ public class RegistroDataModelImpl extends LazyDataModel<Registro> {
         }
         parametros.putAll(params);
         try {
-            Parameter tem = requestManager.get(urlConteo, parametros);
-            int total = (Integer) tem.getFields().get("TOTAL");
+            int total = requestManager.getConteo(url, urlConteo, parametros);
             parametros.put(PAGINICIO, "0");
             parametros.put(PAGTAMANIO, total);
             List<Parameter> list = requestManager.getList(url,

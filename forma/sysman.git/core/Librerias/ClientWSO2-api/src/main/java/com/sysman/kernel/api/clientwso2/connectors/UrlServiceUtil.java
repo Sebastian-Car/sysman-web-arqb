@@ -10,6 +10,7 @@
 package com.sysman.kernel.api.clientwso2.connectors;
 
 import com.sysman.kernel.api.clientwso2.beans.UrlBean;
+import com.sysman.kernel.api.clientwso2.dbs.DbsDispatcherConfig;
 import com.sysman.kernel.api.clientwso2.util.enums.UrlServiceUtilEnum;
 
 /**
@@ -70,17 +71,25 @@ public class UrlServiceUtil {
      * @return Objeto UrlBean con el id ingresado por parametro
      */
     public UrlBean getUrlServiceByUrlByEnumID(String urlEnumId) {
-        UrlBean urlBean;
-        Map<String, Object> params = new TreeMap<>();
-        params.put("CODIGO", urlEnumId);
-
-        if (!urls.containsKey(urlEnumId)) {
-            urlBean = buscarGuardarUrl(params);
-        } else {
-            urlBean = urls.get(urlEnumId);
+        if (urls.containsKey(urlEnumId)) {
+            return urls.get(urlEnumId);
         }
 
-        return urlBean;
+        // Si el CODIGO esta migrado a local (dbs-switch.properties),
+        // no se consulta WSO2 en absoluto: se arma un UrlBean
+        // sintetico con un prefijo artificial que RequestManager
+        // reconoce y despacha localmente contra el .dbs.
+        if (DbsDispatcherConfig.getInstance().esLocal(urlEnumId)) {
+            UrlBean urlBean = new UrlBean(urlEnumId,
+                            DbsDispatcherConfig.PREFIJO_LOCAL + urlEnumId,
+                            urlEnumId, null);
+            urls.put(urlEnumId, urlBean);
+            return urlBean;
+        }
+
+        Map<String, Object> params = new TreeMap<>();
+        params.put("CODIGO", urlEnumId);
+        return buscarGuardarUrl(params);
     }
 
     /**

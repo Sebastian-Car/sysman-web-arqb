@@ -18,6 +18,8 @@ import com.sysman.kernel.api.clientwso2.beans.Parameter;
 import com.sysman.kernel.api.clientwso2.beans.Token;
 import com.sysman.kernel.api.clientwso2.config.ClientConfig;
 import com.sysman.kernel.api.clientwso2.converters.JsonConverter;
+import com.sysman.kernel.api.clientwso2.dbs.DbsDispatcherConfig;
+import com.sysman.kernel.api.clientwso2.dbs.ListaConTotal;
 import com.sysman.kernel.api.clientwso2.tokens.TokenManager;
 import com.sysman.kernel.api.clientwso2.util.enums.HeaderEnum;
 import com.sysman.kernel.api.clientwso2.util.enums.HttpMethodEnum;
@@ -56,6 +58,50 @@ public class RequestManager {
     public RequestManager() {
         clienteHttp = new HttpClient();
         serviceHost = ClientConfig.getInstance().getServiceHost();
+    }
+
+    /**
+     * Extrae el CODIGO de una URL sintetica local (ver
+     * DbsDispatcherConfig.PREFIJO_LOCAL). Solo debe llamarse cuando
+     * ya se verifico que url.startsWith(PREFIJO_LOCAL).
+     */
+    private static String extraerCodigoLocal(String url) {
+        return url.substring(DbsDispatcherConfig.PREFIJO_LOCAL.length());
+    }
+
+    /**
+     * Punto unico de despacho para GET/DELETE con parametros (sin
+     * payload JSON armado todavia). Si la URL es una URL sintetica
+     * local, ejecuta contra el .dbs correspondiente sin tocar la red;
+     * si no, sigue el camino de siempre (directo o via API Manager).
+     */
+    private String resolverJsonConParams(String url, Map<String, Object> params,
+        HttpMethodEnum httpMethodEnum) throws IOException, SystemException {
+        if (url != null && url.startsWith(DbsDispatcherConfig.PREFIJO_LOCAL)) {
+            return DbsDispatcherConfig.getInstance()
+                            .ejecutarJson(extraerCodigoLocal(url), params);
+        }
+        return !ClientConfig.getInstance().isTokenRequest()
+            ? processRequestUrl(url, params, httpMethodEnum)
+            : processRequestAPI(url, params, httpMethodEnum);
+    }
+
+    /**
+     * Punto unico de despacho para POST/PUT (con payload JSON ya
+     * armado para el camino remoto). El mapa original (antes de
+     * serializar) se conserva aparte para poder bindearlo tal cual
+     * contra el .dbs cuando la URL es local.
+     */
+    private String resolverJsonConPayload(String url, String jsonContentSend,
+        Map<String, Object> paramsOriginales, HttpMethodEnum httpMethodEnum)
+                    throws IOException, SystemException {
+        if (url != null && url.startsWith(DbsDispatcherConfig.PREFIJO_LOCAL)) {
+            return DbsDispatcherConfig.getInstance()
+                            .ejecutarJson(extraerCodigoLocal(url), paramsOriginales);
+        }
+        return !ClientConfig.getInstance().isTokenRequest()
+            ? processRequestJson(url, jsonContentSend, httpMethodEnum)
+            : processRequestAPI(url, jsonContentSend, httpMethodEnum);
     }
 
     /* Construye todos los par�metros de la URL */
@@ -302,13 +348,7 @@ public class RequestManager {
     public List<Parameter> getList(String url, Map<String, Object> params)
                     throws SystemException {
         try {
-
-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
-                ? processRequestUrl(url, params,
-                                HttpMethodEnum.GET)
-                : processRequestAPI(url,
-
-                                params, HttpMethodEnum.GET);
+            String jsonContent = resolverJsonConParams(url, params, HttpMethodEnum.GET);
             return JsonConverter.toRegistroList(jsonContent, JsonEnum.DEFAULT);
         }
         catch (IOException | SysmanException e) {
@@ -323,6 +363,45 @@ public class RequestManager {
     }
 
     /**
+     * Igual que getList + get(urlConteo) juntos, pero en una sola
+     * llamada: si la URL es local, trae filas y total en un solo
+     * viaje contra el .dbs (sin segunda consulta HTTP); si es
+     * remota, mantiene el comportamiento de siempre (dos llamadas,
+     * una por cada URL).
+     *
+     * @throws SystemException
+     */
+    public ListaConTotal getListConTotal(String url, String urlConteo,
+        Map<String, Object> params) throws SystemException {
+        if (url != null && url.startsWith(DbsDispatcherConfig.PREFIJO_LOCAL)) {
+            return DbsDispatcherConfig.getInstance()
+                            .ejecutarListaConConteo(extraerCodigoLocal(url), params);
+        }
+        List<Parameter> list = getList(url, params);
+        Parameter tem = get(urlConteo, params);
+        int total = (Integer) tem.getFields().get("TOTAL");
+        return new ListaConTotal(list, total);
+    }
+
+    /**
+     * Igual que get(urlConteo,...) para obtener solo el TOTAL, con
+     * despacho local/remoto. Se usa cuando el conteo se necesita
+     * antes de pedir la lista completa (por ejemplo, para traer
+     * "todos los seleccionados" de una sola vez).
+     *
+     * @throws SystemException
+     */
+    public int getConteo(String url, String urlConteo, Map<String, Object> params)
+                    throws SystemException {
+        if (url != null && url.startsWith(DbsDispatcherConfig.PREFIJO_LOCAL)) {
+            return DbsDispatcherConfig.getInstance()
+                            .ejecutarConteo(extraerCodigoLocal(url), params);
+        }
+        Parameter tem = get(urlConteo, params);
+        return (Integer) tem.getFields().get("TOTAL");
+    }
+
+    /**
      * Permite obtener un objeto Parameter a traves de la URL
      * suminstrada (Servicio REST, DSS, etc).
      * 
@@ -332,11 +411,7 @@ public class RequestManager {
                     throws SystemException {
         Parameter parameter = new Parameter();
         try {
-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
-                ? processRequestUrl(url, params,
-                                HttpMethodEnum.GET)
-                : processRequestAPI(url,
-                                params, HttpMethodEnum.GET);
+            String jsonContent = resolverJsonConParams(url, params, HttpMethodEnum.GET);
             parameter = JsonConverter.toRegistro(jsonContent, JsonEnum.DEFAULT);
             return parameter;
         }
@@ -369,12 +444,8 @@ public class RequestManager {
             jsonContentSend = JsonConverter.toJson(serviceName,
                             parameter,
                             true);
-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
-                ? processRequestJson(url, jsonContentSend,
-                                HttpMethodEnum.POST)
-                : processRequestAPI(url,
-                                jsonContentSend,
-                                HttpMethodEnum.POST);
+            String jsonContent = resolverJsonConPayload(url, jsonContentSend,
+                            parameter.getFields(), HttpMethodEnum.POST);
             rta = JsonConverter.toRegistro(jsonContent, JsonEnum.DEFAULT);
 
             return rta.getFields();
@@ -410,12 +481,8 @@ public class RequestManager {
         try {
             jsonContentSend = JsonConverter.toJson(serviceName,
                             reqParameter, true);
-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
-                ? processRequestJson(url, jsonContentSend,
-                                HttpMethodEnum.POST)
-                : processRequestAPI(url,
-                                jsonContentSend,
-                                HttpMethodEnum.POST);
+            String jsonContent = resolverJsonConPayload(url, jsonContentSend,
+                            parameterMap, HttpMethodEnum.POST);
             rta = JsonConverter.toRegistro(jsonContent, JsonEnum.DEFAULT);
 
             return rta.getFields();
@@ -488,12 +555,8 @@ public class RequestManager {
         try {
             jsonContentSend = JsonConverter.toJson(serviceName,
                             reqParameter, true);
-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
-                ? processRequestJson(url, jsonContentSend,
-                                HttpMethodEnum.POST)
-                : processRequestAPI(url,
-                                jsonContentSend,
-                                HttpMethodEnum.POST);
+            String jsonContent = resolverJsonConPayload(url, jsonContentSend,
+                            parameterMap, HttpMethodEnum.POST);
             rta = JsonConverter.toRegistro(jsonContent, JsonEnum.DEFAULT);
             return extraerTotal(rta);
 
@@ -549,12 +612,8 @@ public class RequestManager {
         try {
             jsonContentSend = JsonConverter.toJson(serviceName, registro,
                             false);
-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
-                ? processRequestJson(url, jsonContentSend,
-                                HttpMethodEnum.PUT)
-                : processRequestAPI(url,
-                                jsonContentSend,
-                                HttpMethodEnum.PUT);
+            String jsonContent = resolverJsonConPayload(url, jsonContentSend,
+                            registro.getFields(), HttpMethodEnum.PUT);
             parameter = JsonConverter.toRegistro(jsonContent, JsonEnum.DEFAULT);
             return extraerTotal(parameter);
 
@@ -589,12 +648,8 @@ public class RequestManager {
             registro.getFields().putAll(llaves);
             jsonContentSend = JsonConverter.toJson(serviceName, registro,
                             false);
-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
-                ? processRequestJson(url, jsonContentSend,
-                                HttpMethodEnum.PUT)
-                : processRequestAPI(url,
-                                jsonContentSend,
-                                HttpMethodEnum.PUT);
+            String jsonContent = resolverJsonConPayload(url, jsonContentSend,
+                            registro.getFields(), HttpMethodEnum.PUT);
             parameter = JsonConverter.toRegistro(jsonContent, JsonEnum.DEFAULT);
             return extraerTotal(parameter);
 
@@ -621,11 +676,7 @@ public class RequestManager {
                     throws SystemException {
         Parameter parameter = new Parameter();
         try {
-            String jsonContent = !ClientConfig.getInstance().isTokenRequest()
-                ? processRequestUrl(url, params,
-                                HttpMethodEnum.DELETE)
-                : processRequestAPI(url, params,
-                                HttpMethodEnum.DELETE);
+            String jsonContent = resolverJsonConParams(url, params, HttpMethodEnum.DELETE);
             parameter = JsonConverter.toRegistro(jsonContent, JsonEnum.DEFAULT);
             return extraerTotal(parameter);
         }
