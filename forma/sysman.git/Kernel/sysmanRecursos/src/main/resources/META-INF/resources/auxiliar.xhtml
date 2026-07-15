@@ -1,0 +1,659 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+                if("#{auxiliaresControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TG_CODIGOS_DE_AUXILIARES_GENERALES}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{auxiliaresControlador.cargarLista}" />
+		<section class="radius">
+			<h:form id="FR298">
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="lista" widgetVar="lista"
+					visible="#{auxiliaresControlador.accion==null}">
+					<p:confirmDialog global="true" showEffect="fade" id="confFR298"
+						widgetVar="confFR298"
+						rendered="#{auxiliaresControlador.permisos[1]}">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:dataTable id="TBFR298" widgetVar="TBFR298" var="reg"
+						value="#{auxiliaresControlador.listaInicial}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" paginator="true" lazy="true">
+						<f:facet name="{Exporters}"
+							rendered="#{auxiliaresControlador.permisos[4] }">
+							<h:commandLink rendered="#{auxiliaresControlador.permisos[4] }"
+								title="#{idm.TI_VER_EXCEL}">
+								<p:graphicImage name="/images/general/excel.png" width="24" />
+								<p:dataExporter type="xls" target="TBFR298" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+							<h:commandLink rendered="#{auxiliaresControlador.permisos[4] }"
+								title="#{idm.TI_VER_PDF}">
+								<p:graphicImage name="/images/general/pdf.png" width="24" />
+								<p:dataExporter type="pdf" target="TBFR298" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+						</f:facet>
+						<f:facet name="header">
+							<div style="position: relative; height: 50px">
+								<h:panelGroup class="acme"
+									rendered="#{auxiliaresControlador.permisos[0] }">
+									<p:commandLink
+										action="#{auxiliaresControlador.cargarRegistroNuevo}"
+										update=":FR298_nuevo:nuevoPanel"
+										rendered="#{auxiliaresControlador.permisos[0]}"
+										onclick="try { PF('blockLista').show(); PF('TBCB1385').nuevo=true;} catch (e) { }"
+										oncomplete="try{ asignarEventoContGrande();
+validarCargaGrandes();
+  PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+										title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+										id="btNuevo">
+										<center>
+											<p:graphicImage name="/images/menus/32/add.png" />
+											<div>#{idm.TI_NUEVO}</div>
+										</center>
+									</p:commandLink>
+								</h:panelGroup>
+								<div class="acme">
+									<h:outputLink value="#{request.contextPath}/menu.sysman"
+										title="#{idm.TI_VOLVER}" style="padding-top: 10px;">
+										<center>
+											<p:graphicImage name="/images/menus/32/close.png" />
+											<div>#{idm.TI_CERRAR}</div>
+										</center>
+									</h:outputLink>
+								</div>
+							</div>
+                            #{idm.TG_CODIGOS_DE_AUXILIARES_GENERALES}
+                        </f:facet>
+						<p:column headerText="#{idm.TG_ANIO3}"
+							filterBy="#{reg.campos['ANO']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="20%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['ANO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_CODIGO7}"
+							filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="20%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['CODIGO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_NOMBRE3}"
+							filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+							style="text-align:center; " width="60%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column width="150" headerText="Acciones"
+							style="text-align: center" exportable="false">
+							<p:commandButton icon="ui-icon-search"
+								title="#{idm.TI_VER_REGISTRO}"
+								action="#{auxiliaresControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+								update=":FR298_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB1385').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{auxiliaresControlador.permisos[3]}"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-document-b"
+								title="#{idm.TI_EDITAR_REGISTRO}"
+								action="#{auxiliaresControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+								update=":FR298_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB1385').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{auxiliaresControlador.permisos[2] }"
+								oncomplete="try{asignarEventoContGrande();
+validarCargaGrandes();
+ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-trash"
+								title="#{idm.TI_ELIMINAR_REGISTRO}"
+								onclick="PF('blockListaGuardar').show()"
+								action="#{auxiliaresControlador.eliminarReg(reg)}"
+								update=":FR298:TBFR298,:FR298:alert"
+								rendered="#{auxiliaresControlador.permisos[1] }"
+								oncomplete=" PF('blockListaGuardar').hide();">
+								<p:confirm header="#{sessionBean.tituloMensajes}"
+									message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR298">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+			<h:form id="FR298_nuevo" style="margin-top: -20px;">
+				<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA"
+					my="left bottom" at="left bottom" for="BTBUSQUEDA"
+					hideEffect="fade" rendered="#{auxiliaresControlador.accion!='i'}"
+					style="width: 500px">
+					<p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA" var="reg"
+						value="#{auxiliaresControlador.listaInicialF}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" selectionMode="single"
+						rowKey="#{reg.llave}" paginator="true" lazy="true">
+						<p:ajax event="rowSelect"
+							listener="#{auxiliaresControlador.seleccionarFilaBusqueda}"
+							onstart="PF('blockNuevo').show()"
+							oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();    "
+							update="@form" />
+						<p:column headerText="#{idm.TG_ANIO3}"
+							filterBy="#{reg.campos['ANO']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="20%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['ANO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_CODIGO7}"
+							filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="35%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['CODIGO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_NOMBRE3}"
+							filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+							style="text-align:center; " width="45%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+					</p:dataTable>
+				</p:overlayPanel>
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="nuevoPanel"
+					visible="#{auxiliaresControlador.accion!=null}"
+					widgetVar="nuevoPanel">
+					<div
+						style="position: relative; height: 50px; padding-bottom: 80px;">
+						<div class="acme"
+							style="display:#{auxiliaresControlador.accion=='v'?'none':'block'}">
+							<p:commandLink
+								action="#{auxiliaresControlador.agregarRegistroNuevo(false)}"
+								rendered="#{auxiliaresControlador.accion!='v'}"
+								update=":FR298_nuevo,#{!auxiliaresControlador.permisos[2]?':FR298':'' }"
+								onclick="if (!validarVacios(['CB1271','CP9596','CP10770'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+								title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+								oncomplete="asignarEventoContGrande(); validarCargaGrandes(); ">
+								<center>
+									<p:graphicImage name="/images/menus/32/save.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{auxiliaresControlador.accion=='v' or !auxiliaresControlador.permisos[0]?'none':'block'}">
+							<p:commandLink action="#{auxiliaresControlador.guardarNuevo}"
+								rendered="#{auxiliaresControlador.accion!='v' and auxiliaresControlador.permisos[0]}"
+								update=":FR298_nuevo"
+								onclick="if (!validarVacios(['CB1271','CP9596','CP10770'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{auxiliaresControlador.accion!='i'  and auxiliaresControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+								oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+								title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}"
+								style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/savenew.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{auxiliaresControlador.accion=='i' or !auxiliaresControlador.permisos[0]?'none':'block'}">
+							<p:commandLink id="BTBUSQUEDA"
+								rendered="#{auxiliaresControlador.accion!='i' and auxiliaresControlador.permisos[0]}"
+								title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/search.png" />
+									<div style="height: 30px">#{idm.TI_BUSCAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme">
+							<p:commandLink update=":FR298:TBFR298"
+								onclick="try {
+		           PF('TBFR298').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+								title="#{idm.TI_ATRAS}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/back.png" />
+									<div style="height: 30px">#{idm.TI_VOLVER}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<p:panel
+							rendered="#{auxiliaresControlador.accion!='i'  and auxiliaresControlador.rid==null }"
+							styleClass="acme"
+							style="min-width: 350px; width:30%; padding: 10px;">
+							<center style="margin: 2px;">
+								<p:commandButton icon="ui-icon-seek-first"
+									action="#{auxiliaresControlador.irPrimero()}"
+									title="#{idm.TI_PRIMER_REGISTRO}" update=":FR298_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-prev"
+									action="#{auxiliaresControlador.irAnterior()}"
+									title="#{idm.TI_REGISTRO_ANTERIOR}" update=":FR298_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:outputLabel
+									value="#{idm.TI_REGISTRO} #{auxiliaresControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{auxiliaresControlador.listaInicial.rowCount} " />
+								<p:commandButton icon="ui-icon-seek-next"
+									title="#{idm.TI_REGISTRO_SIGUIENTE}"
+									action="#{auxiliaresControlador.irSiguiente()}"
+									update=":FR298_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-end"
+									title="#{idm.TI_ULTIMO_REGISTRO}"
+									action="#{auxiliaresControlador.irUltimo()}"
+									update=":FR298_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+							</center>
+						</p:panel>
+						<p:panel styleClass="acme" style="width:21%; min-width:260px">
+							<h:panelGrid columns="3"
+								style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+								<h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}" />
+								<p:inputText id="CPCREADO" readonly="true" widgetVar="CPCREADO"
+									value="#{auxiliaresControlador.registro.campos['CREATED_BY']}"
+									placeholder="#{idm.TI_CREADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPCREADOF" widgetVar="CPCREADOF"
+									value="#{auxiliaresControlador.registro.campos['DATE_CREATED']}"
+									disabled="true" />
+								<h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+								<p:inputText id="CPMODIFICADO" readonly="true"
+									widgetVar="CPMODIFICADO"
+									value="#{auxiliaresControlador.registro.campos['MODIFIED_BY']}"
+									placeholder="#{idm.TI_MODIFICADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPMODIFICADOF" widgetVar="CPMODIFICADOF"
+									value="#{auxiliaresControlador.registro.campos['DATE_MODIFIED']}"
+									disabled="true" />
+							</h:panelGrid>
+						</p:panel>
+					</div>
+					<div id="PL647" class="
+"
+						style="position: relative; height: 48px;">
+						<h:outputLabel id="LB7997" value="#{auxiliaresControlador.titulo}"
+							style="position: absolute; width:340px; height: 25px; left: 149px;   top: 10px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 18px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+					</div>
+					<div id="PL648" class="
+"
+						style="position: relative; height: 378px;">
+						<p:inputText id="CP9595" widgetVar="CP9595" styleClass="inputTab"
+							value="#{auxiliaresControlador.registro.campos['PREDECESOR']}"
+							placeholder="#{idm.AC_CP9595}" readonly="true" tabindex="1"
+							style="position: absolute; width:0px; height: 0px; text-decoration:none; left: 351px;   top: 0px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:none; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:tabView id="TS19" widgetVar="TS19"
+							style="top:0px; left:0px; width:611px; height:374px; display:block;"
+							tabindex="2">
+							<p:tab title="#{idm.TG_DATOS_GENERALES2}" id="PG74">
+								<div style="position: relative;">
+									<p:selectOneMenu filter="true" editable="false" effect="fade"
+										id="CB1271" widgetVar="CB1271"
+										value="#{auxiliaresControlador.registro.campos['ANO']}"
+										disabled="#{auxiliaresControlador.accion=='m' or auxiliaresControlador.accion=='v' or  auxiliaresControlador.accion=='v'?true:false}"
+										tabindex="1"
+										style="position: absolute; width:125px; height: 22px; left: 199px;   top: 26px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+										<p:ajax listener="#{auxiliaresControlador.cambiarAnio}"
+											update="@this" />
+										<f:selectItem />
+										<f:selectItems value="#{auxiliaresControlador.listaAnio}"
+											var="regc" itemLabel="#{regc.campos['NUMERO']}"
+											itemValue="#{regc.campos['NUMERO']}" />
+									</p:selectOneMenu>
+									<p:inputText id="CP11913" widgetVar="CP11913"
+										styleClass="inputTab"
+										value="#{auxiliaresControlador.registro.campos['NOMBREPROYECTO']}"
+										readonly="true" tabindex="9"
+										rendered="#{loginBean.modulo=='9' or loginBean.modulo=='1' or loginBean.modulo=='2'}"
+										style="position: absolute; width:193px; height: 20px; text-decoration:none; left: 331px;   top: 182px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+									</p:inputText>
+									<p:inputText id="CP10770" widgetVar="CP10770"
+										styleClass="inputTab"
+										value="#{auxiliaresControlador.registro.campos['CODIGO']}"
+										placeholder="#{idm.AC_CP10770}"
+										readonly="#{auxiliaresControlador.accion=='m' or  auxiliaresControlador.accion=='v'?true:false}"
+										tabindex="2"
+										style="position: absolute; width:193px; height: 22px; text-decoration:none; left: 199px;   top: 54px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+										<p:ajax event="change"
+											listener="#{auxiliaresControlador.cambiarCodigo}"
+											update="FR298_nuevo:TS19:CP9596,FR298_nuevo:TS19:CP9597,FR298_nuevo:TS19:CK212" />
+										
+									</p:inputText>
+									<h:outputLabel id="LB10089" value="#{idm.TT_LB10089}"
+										rendered="#{loginBean.modulo=='9' or loginBean.modulo=='1' or loginBean.modulo=='2' or loginBean.modulo=='3'}"
+										style="position: absolute; width:182px; height: 22px; left: 13px;   top: 182px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB10088" value="#{idm.TT_LB10088}"
+										rendered="#{loginBean.modulo=='9' or loginBean.modulo=='1' or loginBean.modulo=='2' or loginBean.modulo=='3'}"
+										style="position: absolute; width:127px; height: 20px; left: 68px;   top: 157px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB10087" value="#{idm.TT_LB10087}"
+										rendered="true"
+										style="position: absolute; width:182px; height: 22px; left: 13px;   top: 212px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB9097" value="#{idm.TG_ANIO4}"
+										style="position: absolute; width:87px; height: 23px; left: 108px;   top: 26px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB58165" value="#{idm.TT_LB58165}"
+										style="position: absolute; width:182px; height: 22px; left: 13px;   top: 240px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{auxiliaresControlador.manejaTipoVigencia? 'block':'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB58347" value="#{idm.TT_LB58347}"  
+										rendered="#{loginBean.modulo=='1'}"     
+										style="position: absolute; width:146px; height: 22px; left: 13px;   top: 270px; text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#000000; border:#000000  none  1px;"   />
+									<p:inputText id="CP11914" widgetVar="CP11914"
+										styleClass="inputTab"
+										value="#{auxiliaresControlador.registro.campos['COD_EQUIVALENTE_PROY']}"
+										placeholder="#{idm.TG_CODIGO_DE_PROYECTO}"
+										readonly="#{auxiliaresControlador.accion=='v'?true:false}"
+										tabindex="7"
+										rendered="#{loginBean.modulo=='9' or loginBean.modulo=='1' or loginBean.modulo=='2' or loginBean.modulo=='3'}"
+										style="position: absolute; width:193px; height: 22px; text-decoration:none; left: 200px;   top: 157px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{auxiliaresControlador.cargarComponentes ? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+									</p:inputText>
+									<p:inputText id="CB1385" widgetVar="CB1385"
+										onfocus="if(!false){PF('BTCB1385').jq.focus();}"
+										onclick="if(!false){PF('PLCB1385').show();}"
+										value="#{auxiliaresControlador.registro.campos['CODIGOBP']}"
+										disabled="#{auxiliaresControlador.accion=='v'?true:false}"
+										tabindex="-1"
+										rendered="#{auxiliaresControlador.cargarComponentes}"
+										style="cursor:pointer; position: absolute; width:100px; height: 22px; left: 200px;   top: 182px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{loginBean.modulo=='9' or loginBean.modulo=='1'  or loginBean.modulo=='2' or loginBean.modulo=='3'?'true':'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+									<p:commandButton id="BTCB1385" onblur="PF('CB1385').jq.blur();"
+										onfocus="PF('CB1385').jq.addClass('ui-state-focus');"
+										widgetVar="BTCB1385"
+										disabled="#{auxiliaresControlador.accion=='v'?true:false}"
+										type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+										style="position: absolute; width:25px; height:  22px; left: 298px;   top: 182px; display:#{loginBean.modulo=='9' or loginBean.modulo=='1'  or loginBean.modulo=='2' or loginBean.modulo=='3'?'true':'none'}; "
+										tabindex="8"
+										rendered="#{auxiliaresControlador.cargarComponentes}" />
+									<p:overlayPanel widgetVar="PLCB1385" id="PLCB1385"
+										onShow="if(PF('TBCB1385').nuevo){ PF('TBCB1385').filter(); PF('TBCB1385').nuevo=false;}"
+										onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB1385').jq.focus();}"
+										my="left" at="" for="BTCB1385" hideEffect="fade"
+										rendered="#{auxiliaresControlador.accion!='v'}"
+										style="width: 780px">
+										<p:dataTable id="TBCB1385" widgetVar="TBCB1385" var="reg"
+											value="#{auxiliaresControlador.listaBanco}" editable="true"
+											emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+											currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+											rows="11" rowIndexVar="rowIndex" selectionMode="single"
+											rowKey="#{reg.campos['CODIGOBP']}" paginator="true"
+											lazy="true">
+											<p:ajax event="rowSelect"
+												listener="#{auxiliaresControlador.seleccionarFilaBanco}"
+												update=":FR298_nuevo:TS19:CB1385,FR298_nuevo:TS19:CP11913"
+												oncomplete="PF('PLCB1385').hide(); " />
+											<p:column headerText="#{idm.TG_CODIGO7}"
+												style="text-align:center; " width="10%"
+												filterBy="#{reg.campos['CODIGOBP']}"
+												filterMatchMode="startsWith" filterStyle="width:100%;">
+												<h:outputText value="#{reg.campos['CODIGOBP']}"
+													style="float:left;  text-align:left;  min-height: 20px;" />
+											</p:column>
+											<p:column headerText="#{idm.TG_NOMBRE_PROYECTO}"
+												style="text-align:center; " width="60%"
+												filterBy="#{reg.campos['NOMBREPROYECTO']}"
+												filterMatchMode="contains" filterStyle="width:100%;">
+												<h:outputText value="#{reg.campos['NOMBREPROYECTO']}"
+													style="float:left;  text-align:left;  min-height: 20px;" />
+											</p:column>
+											<p:column headerText="#{idm.NG_CB1385_2}"
+												style="text-align:center; " width="10%"
+												filterBy="#{reg.campos['VIGENCIAINICIO']}"
+												filterMatchMode="startsWith" filterStyle="width:100%;">
+												<h:outputText value="#{reg.campos['VIGENCIAINICIO']}"
+													style="float:left;  text-align:left;  min-height: 20px;" />
+											</p:column>
+											<p:column headerText="#{idm.TG_VIGENCIA_FINAL}"
+												style="text-align:center; " width="10%"
+												filterBy="#{reg.campos['VIGENCIAFIN']}"
+												filterMatchMode="contains" filterStyle="width:100%;">
+												<h:outputText value="#{reg.campos['VIGENCIAFIN']}"
+													style="float:left;  text-align:left;  min-height: 20px;" />
+											</p:column>
+										</p:dataTable>
+									</p:overlayPanel>
+									<p:commandButton id="BT1693" widgetVar="BT1693"
+										disabled="#{auxiliaresControlador.accion=='i' or auxiliaresControlador.accion=='v' or  auxiliaresControlador.accion=='v'?true:false}"
+										update="@this,:FR298:alert"
+										rendered="#{loginBean.modulo=='3'}" tabindex="11"
+										value="#{idm.TT_BT1693}"
+										actionListener="#{auxiliaresControlador.oprimirgenFuenteRecursos}"
+										style="position: absolute; width:235px; height: 34px; left: 178px;   top: 297px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{auxiliaresControlador.cargarComponentes ? 'block' : 'none'};  color:#0000FF; border:#AAAAAA  solid  1px;">
+									</p:commandButton>
+									<p:selectOneMenu filter="true" editable="false" rendered="true"
+										effect="fade" id="CB6119" widgetVar="CB6119"
+										value="#{auxiliaresControlador.registro.campos['CODIGO_SIA']}"
+										disabled="#{auxiliaresControlador.accion=='v'?true:false}"
+										tabindex="10"
+										style="position: absolute; width:193px; height: 22px; left: 200px;   top: 212px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+										<f:selectItem />
+										<f:selectItems value="#{auxiliaresControlador.listaCodigoSia}"
+											var="regc" itemLabel="#{regc.campos['NOMBRE']}"
+											itemValue="#{regc.campos['CODIGO']}" />
+									</p:selectOneMenu>
+									<p:selectOneMenu filter="true" editable="false" effect="fade"
+										id="CB8881" widgetVar="CB8881"
+										value="#{auxiliaresControlador.registro.campos['TIPOVIGENCIA']}"
+										disabled="#{auxiliaresControlador.accion=='v'?true:false}"
+										tabindex="11"
+										style="position: absolute; width:193px; height: 22px; left: 200px;   top: 240px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{auxiliaresControlador.manejaTipoVigencia? 'block':'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+										<f:selectItem />
+										<f:selectItems
+											value="#{auxiliaresControlador.listaTipoVigencia}" var="regc"
+											itemLabel="#{regc.campos['NOMBRE']}"
+											itemValue="#{regc.campos['CODIGO']}" />
+									</p:selectOneMenu>
+									<p:selectOneMenu filter="true" editable="false"    rendered="#{loginBean.modulo=='1'}"   effect="fade" 
+										id="CB8941"   widgetVar="CB8941"  
+										value="#{auxiliaresControlador.registro.campos['EQUIVALENTE_SIG_VIG']}" 
+										disabled="#{auxiliaresControlador.accion=='v'?true:false}"    
+ 									    style="position: absolute; width:200px; height: 22px; left: 200px;   top: 270px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px;">
+      									<f:selectItem/>
+       									<f:selectItems 
+       										value="#{auxiliaresControlador.listaequivalenteSigVig}" var="regc" 
+       										itemLabel="#{regc.campos['CODIGO']}" 
+       										itemValue="#{regc.campos['CODIGO']}" />
+       								</p:selectOneMenu>
+									<h:outputLabel id="LB7999" value="#{idm.TG_NOMBRE4}"
+										style="position: absolute; width:71px; height: 19px; left: 124px;   top: 81px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB7998" value="#{idm.TG_CODIGO8}"
+										style="position: absolute; width:71px; height: 23px; left: 124px;   top: 54px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<p:inputText id="CP9596" widgetVar="CP9596"
+										styleClass="inputTab"
+										value="#{auxiliaresControlador.registro.campos['NOMBRE']}"
+										placeholder="#{idm.AC_CP9596}"
+										readonly="#{auxiliaresControlador.accion=='v'?true:false}"
+										tabindex="3" maxlength="120"
+										style="position: absolute; width:308px; height: 22px; text-decoration:none; left: 200px;   top: 81px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+									</p:inputText>
+									<p:inputText id="CP9597" widgetVar="CP9597"
+										styleClass="inputTab"
+										value="#{auxiliaresControlador.registro.campos['INVENTARIO']}"
+										placeholder="#{idm.AC_CP9597}"
+										readonly="#{auxiliaresControlador.accion=='v'?true:false}"
+										tabindex="6"
+										rendered="#{loginBean.modulo=='9' or loginBean.modulo=='1' or loginBean.modulo=='2' or loginBean.modulo=='3'}"
+										style="position: absolute; width:193px; height: 22px; text-decoration:none; left: 200px;   top: 130px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+									</p:inputText>
+									<h:outputLabel id="LB8001" value="#{idm.TG_MOVIMIENTO3}"
+										style="position: absolute; width:126px; height: 20px; left: 69px;   top: 107px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB8000" value="#{idm.TT_LB8000}"
+										rendered="#{loginBean.modulo=='9' or loginBean.modulo=='1' or loginBean.modulo=='2' or loginBean.modulo=='3'}"
+										style="position: absolute; width:139px; height: 20px; left: 56px;   top: 130px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<p:selectBooleanCheckbox id="CK212" widgetVar="CK212"
+										value="#{auxiliaresControlador.registro.campos['MOVIMIENTO']}"
+										disabled="#{auxiliaresControlador.accion=='v'?true:false}"
+										tabindex="4"
+										style="position: absolute;  left: 200px;   top: 107px; display:block; ">
+									</p:selectBooleanCheckbox>
+								</div>
+							</p:tab>
+							<p:tab title="#{idm.TG_MOVIMIENTOS}" id="PG75"
+								rendered="#{auxiliaresControlador.cargarComponentes}">
+								<div style="position: relative;">
+									<p:commandButton id="BT566" widgetVar="BT566"
+										onclick="if (!validarVaciosViewModal(['CB1088', 'CB1089', 'CB1090'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                return false;
+                            }"
+										update="FR298:alert" tabindex="5"
+										value="#{idm.TG_PRESUPUESTALES}"
+										actionListener="#{auxiliaresControlador.oprimirPresupuestales}"
+										style="position: absolute; width:121px; height: 23px; left: 341px;   top: 90px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#000000  solid  1px;">
+									</p:commandButton>
+									<p:commandButton id="BT565" widgetVar="BT565"
+										onclick="if (!validarVaciosViewModal(['CB1088', 'CB1089', 'CB1090'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                return false;
+                            }"
+										update="FR298:alert" tabindex="4" value="#{idm.TG_CONTABLES}"
+										actionListener="#{auxiliaresControlador.oprimirContables}"
+										style="position: absolute; width:121px; height: 23px; left: 341px;   top: 62px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#000000  solid  1px;">
+									</p:commandButton>
+									<p:commandButton id="BT567" widgetVar="BT567"
+										onclick="if (!validarVaciosViewModal(['CB1088', 'CB1089', 'CB1090'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                return false;
+                            }"
+										update="FR298:alert"
+										rendered="#{loginBean.modulo!='9' and loginBean.modulo!='3'}"
+										tabindex="6" value="#{idm.TG_ALMACEN}"
+										actionListener="#{auxiliaresControlador.oprimirAlmacen}"
+										style="position: absolute; width:121px; height: 23px; left: 341px;   top: 118px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{loginBean.modulo=='2' or loginBean.modulo=='1'?'none':'block'};  color:#0000FF; border:#000000  solid  1px;">
+									</p:commandButton>
+									<h:outputLabel id="LB8002" value="#{idm.TG_MES_INICIAL4}"
+										style="position: absolute; width:88px; height: 19px; left: 61px;   top: 62px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB8003" value="#{idm.TG_MES_FINAL4}"
+										style="position: absolute; width:81px; height: 20px; left: 68px;   top: 92px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<p:selectOneMenu filter="true" editable="false" effect="fade"
+										id="CB1090" widgetVar="CB1090"
+										value="#{auxiliaresControlador.registro.campos['ANO']}"
+										disabled="true" tabindex="3"
+										style="position: absolute; width:100px; height: 20px; left: 157px;   top: 121px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+										<f:selectItem />
+										<f:selectItems value="#{auxiliaresControlador.listaAno}"
+											var="regc" itemLabel="#{regc.campos['NUMERO']}"
+											itemValue="#{regc.campos['NUMERO']}" />
+									</p:selectOneMenu>
+									<h:outputLabel id="LB8004" value="#{idm.TG_ANIO6}"
+										style="position: absolute; width:45px; height: 20px; left: 104px;   top: 121px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<p:selectOneMenu filter="true" editable="false" effect="fade"
+										id="CB1088" widgetVar="CB1088"
+										value="#{auxiliaresControlador.mesIni}" tabindex="1"
+										style="position: absolute; width:100px; height: 20px; left: 157px;   top: 62px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+										<f:selectItem />
+										<f:selectItem itemValue="1" itemLabel="#{idm.TG_ENERO}" />
+										<f:selectItem itemValue="2" itemLabel="#{idm.TG_FEBRERO}" />
+										<f:selectItem itemValue="3" itemLabel="#{idm.TG_MARZO}" />
+										<f:selectItem itemValue="4" itemLabel="#{idm.TG_ABRIL}" />
+										<f:selectItem itemValue="5" itemLabel="#{idm.TG_MAYO}" />
+										<f:selectItem itemValue="6" itemLabel="#{idm.TG_JUNIO}" />
+										<f:selectItem itemValue="7" itemLabel="#{idm.TG_JULIO}" />
+										<f:selectItem itemValue="8" itemLabel="#{idm.TG_AGOSTO}" />
+										<f:selectItem itemValue="9" itemLabel="#{idm.TG_SEPTIEMBRE}" />
+										<f:selectItem itemValue="10" itemLabel="#{idm.TG_OCTUBRE}" />
+										<f:selectItem itemValue="11" itemLabel="#{idm.TG_NOVIEMBRE}" />
+										<f:selectItem itemValue="12" itemLabel="#{idm.TG_DICIEMBRE}" />
+									</p:selectOneMenu>
+									<p:selectOneMenu filter="true" editable="false" effect="fade"
+										id="CB1089" widgetVar="CB1089"
+										value="#{auxiliaresControlador.mesFin}" tabindex="2"
+										style="position: absolute; width:100px; height: 20px; left: 157px;   top: 92px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+										<f:selectItem />
+										<f:selectItem itemValue="1" itemLabel="#{idm.TG_ENERO}" />
+										<f:selectItem itemValue="2" itemLabel="#{idm.TG_FEBRERO}" />
+										<f:selectItem itemValue="3" itemLabel="#{idm.TG_MARZO}" />
+										<f:selectItem itemValue="4" itemLabel="#{idm.TG_ABRIL}" />
+										<f:selectItem itemValue="5" itemLabel="#{idm.TG_MAYO}" />
+										<f:selectItem itemValue="6" itemLabel="#{idm.TG_JUNIO}" />
+										<f:selectItem itemValue="7" itemLabel="#{idm.TG_JULIO}" />
+										<f:selectItem itemValue="8" itemLabel="#{idm.TG_AGOSTO}" />
+										<f:selectItem itemValue="9" itemLabel="#{idm.TG_SEPTIEMBRE}" />
+										<f:selectItem itemValue="10" itemLabel="#{idm.TG_OCTUBRE}" />
+										<f:selectItem itemValue="11" itemLabel="#{idm.TG_NOVIEMBRE}" />
+										<f:selectItem itemValue="12" itemLabel="#{idm.TG_DICIEMBRE}" />
+									</p:selectOneMenu>
+								</div>
+							</p:tab>
+						</p:tabView>
+					</div>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

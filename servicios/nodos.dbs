@@ -1,0 +1,536 @@
+<data name="nodos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getNodosCodnombreporprocesocodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CODIGO, CONCAT('(',CONCAT(CODIGO,CONCAT(') ',NOMBRE) ) ) NOMBRE FROM NODOS WHERE COMPANIA =:COMPANIA AND CODIGO_PROCESO =:PROCESO AND ESTADO =:ESTADO ORDER BY CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="nodos/codnombreporprocesocod">
+		<call-query href="getNodosCodnombreporprocesocodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNodosPagCodnombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO , NOMBRE  FROM NODOS WHERE COMPANIA = :COMPANIA AND CODIGO_PROCESO = :PROCESO AND ESTADO = :ESTADO AND NODO_FINAL IN(0)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="nodos/codnombre/pag">
+		<call-query href="getNodosPagCodnombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNodosNumCodnombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO , NOMBRE  FROM NODOS WHERE COMPANIA = :COMPANIA AND CODIGO_PROCESO = :PROCESO AND ESTADO = :ESTADO AND NODO_FINAL IN(0)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="nodos/codnombre/num">
+		<call-query href="getNodosNumCodnombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getNodosMincodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CODIGO,NOMBRE FROM NODOS WHERE COMPANIA =:COMPANIA AND CODIGO_PROCESO = :PROCESO AND CODIGO in (SELECT MIN(CODIGO) MINI FROM NODOS WHERE COMPANIA = :COMPANIA AND CODIGO_PROCESO = :PROCESO)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="nodos/mincodigo">
+		<call-query href="getNodosMincodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNodosTodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  MENU  FROM NODOS WHERE COMPANIA = :COMPANIA AND CODIGO_PROCESO = :PROCESO AND CODIGO = :NODO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"MENU":"$MENU(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="nodos/todo">
+		<call-query href="getNodosTodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NODO" query-param="NODO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNodosPagPrepararplantillaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT MODELO_PLANTILLA.CODIGO, MODELO_PLANTILLA.NOMBRE FROM MODELO_PLANTILLA WHERE TIPO = :TIPO AND CODIGO IN ( SELECT TRIM(REGEXP_SUBSTR(FORMATO, '[^,]+', 1, LEVEL)) STR FROM ( SELECT FORMATO FROM NODOS WHERE COMPANIA =:COMPANIA AND CODIGO_PROCESO =:PROCESO AND CODIGO =:NODO ) DATA CONNECT BY INSTR(FORMATO, ',', 1, LEVEL - 1) &gt; 0 )) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NODO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="nodos/prepararplantilla/pag">
+		<call-query href="getNodosPagPrepararplantillaQuery">
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NODO" query-param="NODO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNodosNumPrepararplantillaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT MODELO_PLANTILLA.CODIGO, MODELO_PLANTILLA.NOMBRE FROM MODELO_PLANTILLA WHERE TIPO = :TIPO AND CODIGO IN ( SELECT TRIM(REGEXP_SUBSTR(FORMATO, '[^,]+', 1, LEVEL)) STR FROM ( SELECT FORMATO FROM NODOS WHERE COMPANIA =:COMPANIA AND CODIGO_PROCESO =:PROCESO AND CODIGO =:NODO ) DATA CONNECT BY INSTR(FORMATO, ',', 1, LEVEL - 1) &gt; 0 )) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NODO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="nodos/prepararplantilla/num">
+		<call-query href="getNodosNumPrepararplantillaQuery">
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NODO" query-param="NODO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getNodosPagCodnombreporcompaniayprocesoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO,NOMBRE FROM NODOS WHERE COMPANIA = :COMPANIA AND CODIGO_PROCESO = :PROCESO ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="nodos/codnombreporcompaniayproceso/pag">
+		<call-query href="getNodosPagCodnombreporcompaniayprocesoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNodosNumCodnombreporcompaniayprocesoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO,NOMBRE FROM NODOS WHERE COMPANIA = :COMPANIA AND CODIGO_PROCESO = :PROCESO ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="nodos/codnombreporcompaniayproceso/num">
+		<call-query href="getNodosNumCodnombreporcompaniayprocesoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertNodos" keyColumns="COMPANIA,CODIGO_PROCESO,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO NODOS (COMPANIA, CODIGO_PROCESO, CODIGO, ARCHIVO, RADICADO, NOMBRE, DESCRIPCION, NODO_FINAL, TIEMPO_MINIMO, TIEMPO_MAXIMO, TIEMPO_ESTIMADO, TIPO_CALIDAD, TIPO_OPERACION, TIPO_DIA, MOVIMIENTO, DEPENDENCIA, MANEJA_RADICADO, TIPO_RADICADO, ARCHIVA_DOCUMENTO, SERIE_DOCUMENTAL, RUTA, ESTADO, PREFIJO, FECHA_CREACION, VERSION, ELABORO_FECHA, ELABORO_CARGO, ELABORO_NOMBRE, REVISO_FECHA, REVISO_CARGO, REVISO_NOMBRE, MODIFICO_FECHA, MODIFICO_CARGO, MODIFICO_NOMBRE, TITULO_CALIDAD, FORMATO, MODULO, MENU, FORMATO_FECHA, REQUIERE_FIRMA, IND_ARCHIVO_CENTRAL, PROCEDENCIA_AUT, ENVIA_CORREO, RECEPCION_CORRES, ENVIO_CORRES, PRORROGA, VALIDA_AL_TRAMITAR, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO_PROCESO, :CODIGO, :ARCHIVO, :RADICADO, :NOMBRE, :DESCRIPCION, :NODO_FINAL, :TIEMPO_MINIMO, :TIEMPO_MAXIMO, :TIEMPO_ESTIMADO, :TIPO_CALIDAD, :TIPO_OPERACION, :TIPO_DIA, :MOVIMIENTO, :DEPENDENCIA, :MANEJA_RADICADO, :TIPO_RADICADO, :ARCHIVA_DOCUMENTO, :SERIE_DOCUMENTAL, :RUTA, :ESTADO, :PREFIJO, TO_DATE(:FECHA_CREACION,'DD/MM/YYYY HH24:MI:SS'), :VERSION, TO_DATE(:ELABORO_FECHA,'DD/MM/YYYY HH24:MI:SS'), :ELABORO_CARGO, :ELABORO_NOMBRE, TO_DATE(:REVISO_FECHA,'DD/MM/YYYY HH24:MI:SS'), :REVISO_CARGO, :REVISO_NOMBRE, TO_DATE(:MODIFICO_FECHA,'DD/MM/YYYY HH24:MI:SS'), :MODIFICO_CARGO, :MODIFICO_NOMBRE, :TITULO_CALIDAD, :FORMATO, :MODULO, :MENU, TO_DATE(:FORMATO_FECHA,'DD/MM/YYYY HH24:MI:SS'), :REQUIERE_FIRMA, :IND_ARCHIVO_CENTRAL, :PROCEDENCIA_AUT, :ENVIA_CORREO, :RECEPCION_CORRES, :ENVIO_CORRES, :PRORROGA, :VALIDA_AL_TRAMITAR, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO_PROCESO":"$CODIGO_PROCESO","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_PROCESO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="ARCHIVO" sqlType="STRING"/>
+		<param defaultValue="" name="RADICADO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="0" name="NODO_FINAL" sqlType="STRING"/>
+		<param defaultValue="0" name="TIEMPO_MINIMO" sqlType="STRING"/>
+		<param defaultValue="0" name="TIEMPO_MAXIMO" sqlType="STRING"/>
+		<param defaultValue="0" name="TIEMPO_ESTIMADO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_CALIDAD" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_OPERACION" sqlType="STRING"/>
+		<param defaultValue="28" name="TIPO_DIA" sqlType="STRING"/>
+		<param defaultValue="0" name="MOVIMIENTO" sqlType="STRING"/>
+		<param defaultValue="999999999999" name="DEPENDENCIA" sqlType="STRING"/>
+		<param defaultValue="0" name="MANEJA_RADICADO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_RADICADO" sqlType="STRING"/>
+		<param defaultValue="0" name="ARCHIVA_DOCUMENTO" sqlType="STRING"/>
+		<param defaultValue="" name="SERIE_DOCUMENTAL" sqlType="STRING"/>
+		<param defaultValue="" name="RUTA" sqlType="STRING"/>
+		<param defaultValue="4" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="PREFIJO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_CREACION" sqlType="STRING"/>
+		<param defaultValue="" name="VERSION" sqlType="STRING"/>
+		<param name="ELABORO_FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="ELABORO_CARGO" sqlType="STRING"/>
+		<param defaultValue="" name="ELABORO_NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="REVISO_FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="REVISO_CARGO" sqlType="STRING"/>
+		<param defaultValue="" name="REVISO_NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="MODIFICO_FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="MODIFICO_CARGO" sqlType="STRING"/>
+		<param defaultValue="" name="MODIFICO_NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="TITULO_CALIDAD" sqlType="STRING"/>
+		<param defaultValue="" name="FORMATO" sqlType="STRING"/>
+		<param defaultValue="" name="MODULO" sqlType="STRING"/>
+		<param defaultValue="" name="MENU" sqlType="STRING"/>
+		<param defaultValue="" name="FORMATO_FECHA" sqlType="STRING"/>
+		<param defaultValue="0" name="REQUIERE_FIRMA" sqlType="STRING"/>
+		<param defaultValue="0" name="IND_ARCHIVO_CENTRAL" sqlType="STRING"/>
+		<param defaultValue="0" name="PROCEDENCIA_AUT" sqlType="STRING"/>
+		<param defaultValue="0" name="ENVIA_CORREO" sqlType="STRING"/>
+		<param defaultValue="0" name="RECEPCION_CORRES" sqlType="STRING"/>
+		<param defaultValue="0" name="ENVIO_CORRES" sqlType="STRING"/>
+		<param defaultValue="0" name="PRORROGA" sqlType="STRING"/>
+		<param defaultValue="0" name="VALIDA_AL_TRAMITAR" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="nodos">
+		<call-query href="insertNodos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_PROCESO" query-param="CODIGO_PROCESO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ARCHIVO" query-param="ARCHIVO"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="NODO_FINAL" query-param="NODO_FINAL"/>
+			<with-param name="TIEMPO_MINIMO" query-param="TIEMPO_MINIMO"/>
+			<with-param name="TIEMPO_MAXIMO" query-param="TIEMPO_MAXIMO"/>
+			<with-param name="TIEMPO_ESTIMADO" query-param="TIEMPO_ESTIMADO"/>
+			<with-param name="TIPO_CALIDAD" query-param="TIPO_CALIDAD"/>
+			<with-param name="TIPO_OPERACION" query-param="TIPO_OPERACION"/>
+			<with-param name="TIPO_DIA" query-param="TIPO_DIA"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="MANEJA_RADICADO" query-param="MANEJA_RADICADO"/>
+			<with-param name="TIPO_RADICADO" query-param="TIPO_RADICADO"/>
+			<with-param name="ARCHIVA_DOCUMENTO" query-param="ARCHIVA_DOCUMENTO"/>
+			<with-param name="SERIE_DOCUMENTAL" query-param="SERIE_DOCUMENTAL"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="FECHA_CREACION" query-param="FECHA_CREACION"/>
+			<with-param name="VERSION" query-param="VERSION"/>
+			<with-param name="ELABORO_FECHA" query-param="ELABORO_FECHA"/>
+			<with-param name="ELABORO_CARGO" query-param="ELABORO_CARGO"/>
+			<with-param name="ELABORO_NOMBRE" query-param="ELABORO_NOMBRE"/>
+			<with-param name="REVISO_FECHA" query-param="REVISO_FECHA"/>
+			<with-param name="REVISO_CARGO" query-param="REVISO_CARGO"/>
+			<with-param name="REVISO_NOMBRE" query-param="REVISO_NOMBRE"/>
+			<with-param name="MODIFICO_FECHA" query-param="MODIFICO_FECHA"/>
+			<with-param name="MODIFICO_CARGO" query-param="MODIFICO_CARGO"/>
+			<with-param name="MODIFICO_NOMBRE" query-param="MODIFICO_NOMBRE"/>
+			<with-param name="TITULO_CALIDAD" query-param="TITULO_CALIDAD"/>
+			<with-param name="FORMATO" query-param="FORMATO"/>
+			<with-param name="MODULO" query-param="MODULO"/>
+			<with-param name="MENU" query-param="MENU"/>
+			<with-param name="FORMATO_FECHA" query-param="FORMATO_FECHA"/>
+			<with-param name="REQUIERE_FIRMA" query-param="REQUIERE_FIRMA"/>
+			<with-param name="IND_ARCHIVO_CENTRAL" query-param="IND_ARCHIVO_CENTRAL"/>
+			<with-param name="PROCEDENCIA_AUT" query-param="PROCEDENCIA_AUT"/>
+			<with-param name="ENVIA_CORREO" query-param="ENVIA_CORREO"/>
+			<with-param name="RECEPCION_CORRES" query-param="RECEPCION_CORRES"/>
+			<with-param name="ENVIO_CORRES" query-param="ENVIO_CORRES"/>
+			<with-param name="PRORROGA" query-param="PRORROGA"/>
+			<with-param name="VALIDA_AL_TRAMITAR" query-param="VALIDA_AL_TRAMITAR"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteNodos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM NODOS WHERE NODOS.COMPANIA= :KEY_COMPANIA AND NODOS.CODIGO_PROCESO= :KEY_CODIGO_PROCESO AND NODOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO_PROCESO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="nodos">
+		<call-query href="deleteNodos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO_PROCESO" query-param="KEY_CODIGO_PROCESO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNodosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  N.COMPANIA , N.CODIGO , N.NOMBRE , N.CODIGO_PROCESO , P.NOMBRE PROCESO_NOM  FROM NODOS N INNER JOIN PROCESOS P ON N.COMPANIA = P.COMPANIA AND N.CODIGO_PROCESO = P.CODIGO WHERE N.COMPANIA = :COMPANIA AND N.CODIGO_PROCESO = :PROCESO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END)  LIKE UPPER( '%' || :PROCESO_NOM || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","CODIGO_PROCESO":"$CODIGO_PROCESO","PROCESO_NOM":"$PROCESO_NOM"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="nodos">
+		<call-query href="getNodosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNodosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  N.COMPANIA , N.CODIGO , N.NOMBRE , N.CODIGO_PROCESO , P.NOMBRE PROCESO_NOM  FROM NODOS N INNER JOIN PROCESOS P ON N.COMPANIA = P.COMPANIA AND N.CODIGO_PROCESO = P.CODIGO WHERE N.COMPANIA = :COMPANIA AND N.CODIGO_PROCESO = :PROCESO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END)  LIKE UPPER( '%' || :PROCESO_NOM || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="nodos/numero">
+		<call-query href="getNodosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+
+		</call-query>
+	</resource>
+	<query id="getNodosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT NODOS.COMPANIA, NODOS.CODIGO_PROCESO, PROCESOS.NOMBRE PROCESO_NOM, NODOS.CODIGO, NODOS.ARCHIVO, NODOS.RADICADO, NODOS.NOMBRE, NODOS.DESCRIPCION,(CASE NODOS.NODO_FINAL WHEN 0 THEN 'false' ELSE 'true' END) NODO_FINAL, NODOS.TIEMPO_MINIMO, NODOS.TIEMPO_MAXIMO, NODOS.TIEMPO_ESTIMADO, NODOS.TIPO_CALIDAD, NODOS.TIPO_OPERACION, NODOS.TIPO_DIA,(CASE NODOS.MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO, NODOS.DEPENDENCIA, DEPENDENCIA.NOMBRE DEPENDENCIA_NOM,(CASE NODOS.MANEJA_RADICADO WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_RADICADO, NODOS.TIPO_RADICADO,(CASE NODOS.ARCHIVA_DOCUMENTO WHEN 0 THEN 'false' ELSE 'true' END) ARCHIVA_DOCUMENTO, NODOS.SERIE_DOCUMENTAL, SERIEDOCUMENTAL.NOMBRE SERIE_DOC_NOM, NODOS.RUTA, NODOS.ESTADO, NODOS.PREFIJO,(TO_CHAR(NODOS.FECHA_CREACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_CREACION, NODOS.VERSION,(TO_CHAR(NODOS.ELABORO_FECHA,'DD/MM/YYYY HH24:MI:SS')) ELABORO_FECHA, NODOS.ELABORO_CARGO, NODOS.ELABORO_NOMBRE,(TO_CHAR(NODOS.REVISO_FECHA,'DD/MM/YYYY HH24:MI:SS')) REVISO_FECHA, NODOS.REVISO_CARGO, NODOS.REVISO_NOMBRE,(TO_CHAR(NODOS.MODIFICO_FECHA,'DD/MM/YYYY HH24:MI:SS')) MODIFICO_FECHA, NODOS.MODIFICO_CARGO, NODOS.MODIFICO_NOMBRE, NODOS.TITULO_CALIDAD, NODOS.FORMATO, NODOS.MODULO, NODOS.MENU, CONCAT(NODOS.FORMATO,TO_CHAR(NODOS.FORMATO_FECHA,'DD/MM/YYYY') ) ID_FORMATO,(TO_CHAR(NODOS.FORMATO_FECHA,'DD/MM/YYYY HH24:MI:SS')) FORMATO_FECHA,(CASE NODOS.REQUIERE_FIRMA WHEN 0 THEN 'false' ELSE 'true' END) REQUIERE_FIRMA,(TO_CHAR(NODOS.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED,(TO_CHAR(NODOS.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, NODOS.CREATED_BY, NODOS.MODIFIED_BY,(CASE NODOS.IND_ARCHIVO_CENTRAL WHEN 0 THEN 'false' ELSE 'true' END) IND_ARCHIVO_CENTRAL,(CASE PROCEDENCIA_AUT WHEN 0 THEN 'false' ELSE 'true' END) PROCEDENCIA_AUT,(CASE ENVIA_CORREO WHEN 0 THEN 'false' ELSE 'true' END) ENVIA_CORREO,(CASE RECEPCION_CORRES WHEN 0 THEN 'false' ELSE 'true' END) RECEPCION_CORRES,(CASE ENVIO_CORRES WHEN 0 THEN 'false' ELSE 'true' END) ENVIO_CORRES,(CASE PRORROGA WHEN 0 THEN 'false' ELSE 'true' END) PRORROGA,(CASE NODOS.VALIDA_AL_TRAMITAR WHEN 0 THEN 'false' ELSE 'true' END) VALIDA_AL_TRAMITAR FROM NODOS INNER JOIN PROCESOS ON NODOS.COMPANIA = PROCESOS.COMPANIA AND NODOS.CODIGO_PROCESO = PROCESOS.CODIGO LEFT JOIN DEPENDENCIA ON NODOS.COMPANIA = DEPENDENCIA.COMPANIA AND NODOS.DEPENDENCIA = DEPENDENCIA.CODIGO LEFT JOIN SERIEDOCUMENTAL ON NODOS.COMPANIA = SERIEDOCUMENTAL.COMPANIA AND NODOS.SERIE_DOCUMENTAL = SERIEDOCUMENTAL.CODIGO WHERE NODOS.COMPANIA= :KEY_COMPANIA AND NODOS.CODIGO_PROCESO= :KEY_CODIGO_PROCESO AND NODOS.CODIGO= :KEY_CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO_PROCESO":"$CODIGO_PROCESO","PROCESO_NOM":"$PROCESO_NOM","CODIGO":"$CODIGO","ARCHIVO":"$ARCHIVO","RADICADO":"$RADICADO","NOMBRE":"$NOMBRE","DESCRIPCION":"$DESCRIPCION","NODO_FINAL":"$NODO_FINAL(type:boolean)","TIEMPO_MINIMO":"$TIEMPO_MINIMO","TIEMPO_MAXIMO":"$TIEMPO_MAXIMO","TIEMPO_ESTIMADO":"$TIEMPO_ESTIMADO","TIPO_CALIDAD":"$TIPO_CALIDAD(type:integer)","TIPO_OPERACION":"$TIPO_OPERACION(type:integer)","TIPO_DIA":"$TIPO_DIA(type:integer)","MOVIMIENTO":"$MOVIMIENTO(type:boolean)","DEPENDENCIA":"$DEPENDENCIA","DEPENDENCIA_NOM":"$DEPENDENCIA_NOM","MANEJA_RADICADO":"$MANEJA_RADICADO(type:boolean)","TIPO_RADICADO":"$TIPO_RADICADO(type:integer)","ARCHIVA_DOCUMENTO":"$ARCHIVA_DOCUMENTO(type:boolean)","SERIE_DOCUMENTAL":"$SERIE_DOCUMENTAL","SERIE_DOC_NOM":"$SERIE_DOC_NOM","RUTA":"$RUTA","ESTADO":"$ESTADO(type:integer)","PREFIJO":"$PREFIJO","FECHA_CREACION":"$FECHA_CREACION","VERSION":"$VERSION","ELABORO_FECHA":"$ELABORO_FECHA","ELABORO_CARGO":"$ELABORO_CARGO","ELABORO_NOMBRE":"$ELABORO_NOMBRE","REVISO_FECHA":"$REVISO_FECHA","REVISO_CARGO":"$REVISO_CARGO","REVISO_NOMBRE":"$REVISO_NOMBRE","MODIFICO_FECHA":"$MODIFICO_FECHA","MODIFICO_CARGO":"$MODIFICO_CARGO","MODIFICO_NOMBRE":"$MODIFICO_NOMBRE","TITULO_CALIDAD":"$TITULO_CALIDAD","FORMATO":"$FORMATO","MODULO":"$MODULO(type:integer)","MENU":"$MENU(type:long)","ID_FORMATO":"$ID_FORMATO","FORMATO_FECHA":"$FORMATO_FECHA","REQUIERE_FIRMA":"$REQUIERE_FIRMA(type:boolean)","DATE_CREATED":"$DATE_CREATED","DATE_MODIFIED":"$DATE_MODIFIED","CREATED_BY":"$CREATED_BY","MODIFIED_BY":"$MODIFIED_BY","IND_ARCHIVO_CENTRAL":"$IND_ARCHIVO_CENTRAL(type:boolean)","PROCEDENCIA_AUT":"$PROCEDENCIA_AUT(type:boolean)","ENVIA_CORREO":"$ENVIA_CORREO(type:boolean)","RECEPCION_CORRES":"$RECEPCION_CORRES(type:boolean)","ENVIO_CORRES":"$ENVIO_CORRES(type:boolean)","PRORROGA":"$PRORROGA(type:boolean)","VALIDA_AL_TRAMITAR":"$VALIDA_AL_TRAMITAR(type:boolean)"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO_PROCESO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="nodos/data">
+		<call-query href="getNodosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO_PROCESO" query-param="KEY_CODIGO_PROCESO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateNodos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE NODOS SET CODIGO_PROCESO=:CODIGO_PROCESO, CODIGO=:CODIGO, ARCHIVO=:ARCHIVO, RADICADO=:RADICADO, NOMBRE=:NOMBRE, DESCRIPCION=:DESCRIPCION, NODO_FINAL=:NODO_FINAL, TIEMPO_MINIMO=:TIEMPO_MINIMO, TIEMPO_MAXIMO=:TIEMPO_MAXIMO, TIEMPO_ESTIMADO=:TIEMPO_ESTIMADO, TIPO_CALIDAD=:TIPO_CALIDAD, TIPO_OPERACION=:TIPO_OPERACION, TIPO_DIA=:TIPO_DIA, MOVIMIENTO=:MOVIMIENTO, DEPENDENCIA=:DEPENDENCIA, MANEJA_RADICADO=:MANEJA_RADICADO, TIPO_RADICADO=:TIPO_RADICADO, ARCHIVA_DOCUMENTO=:ARCHIVA_DOCUMENTO, SERIE_DOCUMENTAL=:SERIE_DOCUMENTAL, RUTA=:RUTA, ESTADO=:ESTADO, PREFIJO=:PREFIJO, FECHA_CREACION=TO_DATE(:FECHA_CREACION,'DD/MM/YYYY HH24:MI:SS'), VERSION=:VERSION, ELABORO_FECHA=TO_DATE(:ELABORO_FECHA,'DD/MM/YYYY HH24:MI:SS'), ELABORO_CARGO=:ELABORO_CARGO, ELABORO_NOMBRE=:ELABORO_NOMBRE, REVISO_FECHA=TO_DATE(:REVISO_FECHA,'DD/MM/YYYY HH24:MI:SS'), REVISO_CARGO=:REVISO_CARGO, REVISO_NOMBRE=:REVISO_NOMBRE, MODIFICO_FECHA=TO_DATE(:MODIFICO_FECHA,'DD/MM/YYYY HH24:MI:SS'), MODIFICO_CARGO=:MODIFICO_CARGO, MODIFICO_NOMBRE=:MODIFICO_NOMBRE, TITULO_CALIDAD=:TITULO_CALIDAD, FORMATO=:FORMATO, MODULO=:MODULO, MENU=:MENU, FORMATO_FECHA=TO_DATE(:FORMATO_FECHA,'DD/MM/YYYY HH24:MI:SS'), REQUIERE_FIRMA=:REQUIERE_FIRMA, IND_ARCHIVO_CENTRAL=:IND_ARCHIVO_CENTRAL, PROCEDENCIA_AUT=:PROCEDENCIA_AUT, ENVIA_CORREO=:ENVIA_CORREO, RECEPCION_CORRES=:RECEPCION_CORRES, ENVIO_CORRES=:ENVIO_CORRES, PRORROGA=:PRORROGA, VALIDA_AL_TRAMITAR=:VALIDA_AL_TRAMITAR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE NODOS.COMPANIA= :KEY_COMPANIA AND NODOS.CODIGO_PROCESO= :KEY_CODIGO_PROCESO AND NODOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO_PROCESO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ARCHIVO" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="NODO_FINAL" sqlType="STRING"/>
+		<param name="TIEMPO_MINIMO" sqlType="STRING"/>
+		<param name="TIEMPO_MAXIMO" sqlType="STRING"/>
+		<param name="TIEMPO_ESTIMADO" sqlType="STRING"/>
+		<param name="TIPO_CALIDAD" sqlType="STRING"/>
+		<param name="TIPO_OPERACION" sqlType="STRING"/>
+		<param name="TIPO_DIA" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="MANEJA_RADICADO" sqlType="STRING"/>
+		<param name="TIPO_RADICADO" sqlType="STRING"/>
+		<param name="ARCHIVA_DOCUMENTO" sqlType="STRING"/>
+		<param name="SERIE_DOCUMENTAL" sqlType="STRING"/>
+		<param name="RUTA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PREFIJO" sqlType="STRING"/>
+		<param name="FECHA_CREACION" sqlType="STRING"/>
+		<param name="VERSION" sqlType="STRING"/>
+		<param name="ELABORO_FECHA" sqlType="STRING"/>
+		<param name="ELABORO_CARGO" sqlType="STRING"/>
+		<param name="ELABORO_NOMBRE" sqlType="STRING"/>
+		<param name="REVISO_FECHA" sqlType="STRING"/>
+		<param name="REVISO_CARGO" sqlType="STRING"/>
+		<param name="REVISO_NOMBRE" sqlType="STRING"/>
+		<param name="MODIFICO_FECHA" sqlType="STRING"/>
+		<param name="MODIFICO_CARGO" sqlType="STRING"/>
+		<param name="MODIFICO_NOMBRE" sqlType="STRING"/>
+		<param name="TITULO_CALIDAD" sqlType="STRING"/>
+		<param name="FORMATO" sqlType="STRING"/>
+		<param name="MODULO" sqlType="STRING"/>
+		<param name="MENU" sqlType="STRING"/>
+		<param name="FORMATO_FECHA" sqlType="STRING"/>
+		<param name="REQUIERE_FIRMA" sqlType="STRING"/>
+		<param name="IND_ARCHIVO_CENTRAL" sqlType="STRING"/>
+		<param name="PROCEDENCIA_AUT" sqlType="STRING"/>
+		<param name="ENVIA_CORREO" sqlType="STRING"/>
+		<param name="RECEPCION_CORRES" sqlType="STRING"/>
+		<param name="ENVIO_CORRES" sqlType="STRING"/>
+		<param name="PRORROGA" sqlType="STRING"/>
+		<param name="VALIDA_AL_TRAMITAR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO_PROCESO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="nodos">
+		<call-query href="updateNodos">
+			<with-param name="CODIGO_PROCESO" query-param="CODIGO_PROCESO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ARCHIVO" query-param="ARCHIVO"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="NODO_FINAL" query-param="NODO_FINAL"/>
+			<with-param name="TIEMPO_MINIMO" query-param="TIEMPO_MINIMO"/>
+			<with-param name="TIEMPO_MAXIMO" query-param="TIEMPO_MAXIMO"/>
+			<with-param name="TIEMPO_ESTIMADO" query-param="TIEMPO_ESTIMADO"/>
+			<with-param name="TIPO_CALIDAD" query-param="TIPO_CALIDAD"/>
+			<with-param name="TIPO_OPERACION" query-param="TIPO_OPERACION"/>
+			<with-param name="TIPO_DIA" query-param="TIPO_DIA"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="MANEJA_RADICADO" query-param="MANEJA_RADICADO"/>
+			<with-param name="TIPO_RADICADO" query-param="TIPO_RADICADO"/>
+			<with-param name="ARCHIVA_DOCUMENTO" query-param="ARCHIVA_DOCUMENTO"/>
+			<with-param name="SERIE_DOCUMENTAL" query-param="SERIE_DOCUMENTAL"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="FECHA_CREACION" query-param="FECHA_CREACION"/>
+			<with-param name="VERSION" query-param="VERSION"/>
+			<with-param name="ELABORO_FECHA" query-param="ELABORO_FECHA"/>
+			<with-param name="ELABORO_CARGO" query-param="ELABORO_CARGO"/>
+			<with-param name="ELABORO_NOMBRE" query-param="ELABORO_NOMBRE"/>
+			<with-param name="REVISO_FECHA" query-param="REVISO_FECHA"/>
+			<with-param name="REVISO_CARGO" query-param="REVISO_CARGO"/>
+			<with-param name="REVISO_NOMBRE" query-param="REVISO_NOMBRE"/>
+			<with-param name="MODIFICO_FECHA" query-param="MODIFICO_FECHA"/>
+			<with-param name="MODIFICO_CARGO" query-param="MODIFICO_CARGO"/>
+			<with-param name="MODIFICO_NOMBRE" query-param="MODIFICO_NOMBRE"/>
+			<with-param name="TITULO_CALIDAD" query-param="TITULO_CALIDAD"/>
+			<with-param name="FORMATO" query-param="FORMATO"/>
+			<with-param name="MODULO" query-param="MODULO"/>
+			<with-param name="MENU" query-param="MENU"/>
+			<with-param name="FORMATO_FECHA" query-param="FORMATO_FECHA"/>
+			<with-param name="REQUIERE_FIRMA" query-param="REQUIERE_FIRMA"/>
+			<with-param name="IND_ARCHIVO_CENTRAL" query-param="IND_ARCHIVO_CENTRAL"/>
+			<with-param name="PROCEDENCIA_AUT" query-param="PROCEDENCIA_AUT"/>
+			<with-param name="ENVIA_CORREO" query-param="ENVIA_CORREO"/>
+			<with-param name="RECEPCION_CORRES" query-param="RECEPCION_CORRES"/>
+			<with-param name="ENVIO_CORRES" query-param="ENVIO_CORRES"/>
+			<with-param name="PRORROGA" query-param="PRORROGA"/>
+			<with-param name="VALIDA_AL_TRAMITAR" query-param="VALIDA_AL_TRAMITAR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO_PROCESO" query-param="KEY_CODIGO_PROCESO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	
+		<query id="getNodosNodoprorrogaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE PRORROGA WHEN 0 THEN 'false' ELSE 'true' END) PRORROGA FROM NODOS WHERE NODOS.COMPANIA = :COMPANIA AND      CODIGO_PROCESO = :PROCESO AND CODIGO = :NODO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PRORROGA":"$PRORROGA(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="nodos/nodoprorroga">
+		<call-query href="getNodosNodoprorrogaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NODO" query-param="NODO"/>
+
+		</call-query>
+	</resource>
+
+	<query id="getNodosValiddependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE VALIDA_AL_TRAMITAR WHEN 0 THEN 'false' ELSE 'true' END) VALIDA_AL_TRAMITAR FROM NODOS WHERE COMPANIA = :COMPANIA AND CODIGO_PROCESO = :CODIGO_PROCESO AND CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VALIDA_AL_TRAMITAR":"$VALIDA_AL_TRAMITAR(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_PROCESO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="nodos/validdependencia">
+		<call-query href="getNodosValiddependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_PROCESO" query-param="CODIGO_PROCESO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+		<query id="getNodosValidacheckdependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT NVL(( SELECT 1 FROM NODOS N INNER JOIN PROCESOS P ON P.COMPANIA = N.COMPANIA AND P.CODIGO = N.CODIGO_PROCESO WHERE N.COMPANIA = :COMPANIA AND N.CODIGO = :NODO_ACTUAL AND P.CODIGO = :CODIGOPROCESO AND N.VALIDA_AL_TRAMITAR = -1 AND ROWNUM = 1 ), 0) AS RESULTADO FROM DUAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESULTADO":"$RESULTADO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NODO_ACTUAL" sqlType="STRING"/>
+		<param name="CODIGOPROCESO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="nodos/validacheckdependencia">
+		<call-query href="getNodosValidacheckdependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NODO_ACTUAL" query-param="NODO_ACTUAL"/>
+			<with-param name="CODIGOPROCESO" query-param="CODIGOPROCESO"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,156 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html >
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui">
+
+    
+	<ui:define name="script">
+
+		<div
+			style="display: grid; position: fixed; align-items: end; height: 100%; right: 16px; top: 40px; z-index: 1000;">
+			<div id="tarjeta" class="ocultarTarjeta">
+				<div>
+					<div style="display: flex;">
+						<p:commandButton id="closeButton" type="button" icon="ui-icon-close" style="cursor: pointer; width: 20px; height: 20px; margin-right: 10px;" />
+						<h6 style="margin-top: 0px">¡Hola! ¿En qué puedo ayudarte hoy?</h6>
+					</div>
+					<object id="iframeBot" data=""
+						style="height: 404px; width: 277px; border: none !important;"></object>
+				</div>
+			</div>
+			<img id="imagenSimona" class="mantenerImgSimona"
+				src="images/general/Simona.png" />
+		</div>
+		
+		<script src="js/botsimona.js"> </script>
+		
+		<script src="js/menu.js"></script>
+		
+		<script>
+	     	var cambiando = false;
+            $(document).ready(function () {
+                 load();
+                 setXml('#{loginBean.user.opcionesMenu}');
+                 pintarMenus('#{loginBean.menu}');
+                 rcVigenciaContrasena();
+                 rcVigenciaCertificado();
+                 rcNotificacionInicio();
+                 
+				
+                 var validacion =  setInterval(function () {
+
+                	var dialogo =	document.getElementsByClassName('overFlowVisible')[0];
+
+						if(dialogo){
+							dialog.style.zIndex=999999
+							}
+                	
+                 	if (!cambiando){                     
+                 		rcCambioContrasena();                 	
+                 	} 
+                 	//console.log('#{loginBean.contrasenaValida}','aa');
+//                  	if('#{loginBean.contrasenaValida}'){
+//                      	console.log("Validacaion finalizada")
+// 						clearInterval(validacion);
+//                      	}
+                 }, 1000);                             
+            });                
+
+            function cambiarEstado(estado){
+				cambiando = estado;
+				
+				if(!estado){
+					var mensaje = document.getElementById("primefacesmessagedlg");
+				
+					if(mensaje){
+						mensaje.style.zIndex = 99999;
+					
+					}
+					
+				}
+            }
+            mostrarBot(0); 
+        </script>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView" listener="#{loginBean.iniciarMenu}" />
+		<f:event type="preRenderView" listener="#{calendarioBean.inicializar}" />
+
+		<h:form id="opsMenu">
+			<p:remoteCommand name="menuAditoria"
+				actionListener="#{loginBean.generarBitacoraMenu}" />
+			<p:menubar id="menuBarra" model="#{loginBean.modeloMenu}"
+				styleClass="menuBarra" />
+			<p:remoteCommand name="rcMenuBarra" update="menuBarra"
+				actionListener="#{loginBean.generaMenuBarra}" />
+			<p:remoteCommand name="rcCambioContrasena" update="@([id$=alert])"
+				actionListener="#{loginBean.validarCambioContrasena}"
+				oncomplete="cambiarEstado(false)" onstart="cambiarEstado(true)" />
+			<p:remoteCommand name="rcVigenciaContrasena" update="@([id$=alert])"
+				actionListener="#{loginBean.validarDiasNotificacion}" />
+			<p:remoteCommand name="rcVigenciaCertificado" update="@([id$=alert])"
+				actionListener="#{loginBean.validarVigenciaCertificado}" />
+			<p:remoteCommand name="rcNotificacionInicio" update="@([id$=alert])"
+				actionListener="#{loginBean.validarNotificacionInicio}"/>
+			<p:growl id="alert" showDetail="true" sticky="false"
+				widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+			<p:inputText type="hidden" widgetVar="men" value="#{loginBean.menu}" />
+			<p:inputText type="hidden" widgetVar="form" value="#{loginBean.form}" />
+			<p:inputText type="hidden" widgetVar="mod"
+				value="#{loginBean.modulo}" />
+			<p:inputText type="hidden" widgetVar="com"
+				value="#{loginBean.comando}" />
+			<p:inputText type="hidden" widgetVar="fil"
+				value="#{loginBean.formato}" />
+			<p:inputText type="hidden" widgetVar="menAct"
+				value="#{loginBean.menuActual}" />
+			<content>
+			<section id="seccionContenido" class="radius"
+				style="display: block; min-height: 18px;">
+				<div id="contenidoMenus" class="row display">
+					<img class="imgCompania" src="#{loginBean.imagenCompania}" />
+					<div class="eight columns"
+						style="padding-left: 0px; padding-right: 0;">
+						<div id="panelAccion" class="row panelAccion"></div>
+						<div id="panelAux" style="display: none">
+							<aside>
+								<p:commandLink id="menu-10" actionListener="#{loginBean.ir}"
+									update="alert"
+									oncomplete="$('iframe')[0].contentWindow.focus();">
+									<p:ajax event="dialogReturn"
+										listener="#{loginBean.redirecionarModal}" />
+								</p:commandLink>
+							</aside>
+						</div>
+						<div id="panelMenu"
+							style="position: relative; left: -1000px; background-color: red;">
+							<aside>
+								<p:commandLink id="menu-1" process=""
+									actionListener="#{loginBean.ir}" update="alert">
+
+								</p:commandLink>
+							</aside>
+
+						</div>
+					</div>
+					<div class="four columns">
+						<ui:insert name="calendario">
+							<ui:include src="calendario.xhtml" />
+						</ui:insert>
+					</div>
+				</div>
+			</section>
+			</content>
+			<p:blockUI block="opsMenu" widgetVar="blockNuevo">
+                Cargando<br />
+				<p:graphicImage name="/images/general/loading.gif" />
+			</p:blockUI>
+		</h:form>
+	</ui:define>
+</ui:composition>
+
+

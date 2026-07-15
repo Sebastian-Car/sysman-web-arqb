@@ -1,0 +1,106 @@
+﻿<data name="tiposeventosdevolutivos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="deleteTiposeventosdevolutivos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TIPO_EVENTO_DEVOLUTIVO WHERE TIPO_EVENTO_DEVOLUTIVO.COMPANIA= :KEY_COMPANIA AND TIPO_EVENTO_DEVOLUTIVO.TIPO_EVENTO= :KEY_TIPO_EVENTO AND TIPO_EVENTO_DEVOLUTIVO.ELEMENTO_DEVOLUTIVO= :KEY_ELEMENTO_DEVOLUTIVO AND TIPO_EVENTO_DEVOLUTIVO.SERIE_DEVOLUTIVO= :KEY_SERIE_DEVOLUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPO_EVENTO" sqlType="INTEGER"/>
+		<param name="KEY_ELEMENTO_DEVOLUTIVO" sqlType="STRING"/>
+		<param name="KEY_SERIE_DEVOLUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="tiposeventosdevolutivos">
+		<call-query href="deleteTiposeventosdevolutivos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPO_EVENTO" query-param="KEY_TIPO_EVENTO"/>
+			<with-param name="KEY_ELEMENTO_DEVOLUTIVO" query-param="KEY_ELEMENTO_DEVOLUTIVO"/>
+			<with-param name="KEY_SERIE_DEVOLUTIVO" query-param="KEY_SERIE_DEVOLUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposeventosdevolutivosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TIPO_EVENTO_DEVOLUTIVO.COMPANIA, TIPO_EVENTO_DEVOLUTIVO.TIPO_EVENTO, TIPO_EVENTO_DEVOLUTIVO.ELEMENTO_DEVOLUTIVO, TIPO_EVENTO_DEVOLUTIVO.SERIE_DEVOLUTIVO, TIPO_EVENTO.NOMBRE NOM_TIPO_EVENTO  FROM TIPO_EVENTO_DEVOLUTIVO INNER JOIN TIPO_EVENTO ON TIPO_EVENTO_DEVOLUTIVO.COMPANIA = TIPO_EVENTO.COMPANIA AND TIPO_EVENTO_DEVOLUTIVO.TIPO_EVENTO = TIPO_EVENTO.CODIGO WHERE TIPO_EVENTO_DEVOLUTIVO.COMPANIA = :COMPANIA AND TIPO_EVENTO_DEVOLUTIVO.ELEMENTO_DEVOLUTIVO = :ELEMENTO AND TIPO_EVENTO_DEVOLUTIVO.SERIE_DEVOLUTIVO = :SERIE) WHERE (CASE WHEN TIPO_EVENTO IS NULL THEN ' ' ELSE UPPER(TIPO_EVENTO) END)  LIKE UPPER(:TIPO_EVENTO || '%')  AND (CASE WHEN ELEMENTO_DEVOLUTIVO IS NULL THEN ' ' ELSE UPPER(ELEMENTO_DEVOLUTIVO) END)  LIKE UPPER(:ELEMENTO_DEVOLUTIVO || '%')  AND (CASE WHEN SERIE_DEVOLUTIVO IS NULL THEN ' ' ELSE UPPER(SERIE_DEVOLUTIVO) END)  LIKE UPPER( '%' || :SERIE_DEVOLUTIVO || '%')  AND (CASE WHEN NOM_TIPO_EVENTO IS NULL THEN ' ' ELSE UPPER(NOM_TIPO_EVENTO) END)  LIKE UPPER( '%' || :NOM_TIPO_EVENTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPO_EVENTO":"$TIPO_EVENTO(type:integer)","ELEMENTO_DEVOLUTIVO":"$ELEMENTO_DEVOLUTIVO","SERIE_DEVOLUTIVO":"$SERIE_DEVOLUTIVO","NOM_TIPO_EVENTO":"$NOM_TIPO_EVENTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="SERIE" sqlType="STRING"/>
+		<param name="TIPO_EVENTO" sqlType="STRING"/>
+		<param name="ELEMENTO_DEVOLUTIVO" sqlType="STRING"/>
+		<param name="SERIE_DEVOLUTIVO" sqlType="STRING"/>
+		<param name="NOM_TIPO_EVENTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tiposeventosdevolutivos">
+		<call-query href="getTiposeventosdevolutivosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="SERIE" query-param="SERIE"/>
+			<with-param name="TIPO_EVENTO" query-param="TIPO_EVENTO"/>
+			<with-param name="ELEMENTO_DEVOLUTIVO" query-param="ELEMENTO_DEVOLUTIVO"/>
+			<with-param name="SERIE_DEVOLUTIVO" query-param="SERIE_DEVOLUTIVO"/>
+			<with-param name="NOM_TIPO_EVENTO" query-param="NOM_TIPO_EVENTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposeventosdevolutivosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TIPO_EVENTO_DEVOLUTIVO.COMPANIA, TIPO_EVENTO_DEVOLUTIVO.TIPO_EVENTO, TIPO_EVENTO_DEVOLUTIVO.ELEMENTO_DEVOLUTIVO, TIPO_EVENTO_DEVOLUTIVO.SERIE_DEVOLUTIVO, TIPO_EVENTO.NOMBRE NOM_TIPO_EVENTO  FROM TIPO_EVENTO_DEVOLUTIVO INNER JOIN TIPO_EVENTO ON TIPO_EVENTO_DEVOLUTIVO.COMPANIA = TIPO_EVENTO.COMPANIA AND TIPO_EVENTO_DEVOLUTIVO.TIPO_EVENTO = TIPO_EVENTO.CODIGO WHERE TIPO_EVENTO_DEVOLUTIVO.COMPANIA = :COMPANIA AND TIPO_EVENTO_DEVOLUTIVO.ELEMENTO_DEVOLUTIVO = :ELEMENTO AND TIPO_EVENTO_DEVOLUTIVO.SERIE_DEVOLUTIVO = :SERIE) WHERE (CASE WHEN TIPO_EVENTO IS NULL THEN ' ' ELSE UPPER(TIPO_EVENTO) END)  LIKE UPPER(:TIPO_EVENTO || '%')  AND (CASE WHEN ELEMENTO_DEVOLUTIVO IS NULL THEN ' ' ELSE UPPER(ELEMENTO_DEVOLUTIVO) END)  LIKE UPPER( '%' || :ELEMENTO_DEVOLUTIVO || '%')  AND (CASE WHEN SERIE_DEVOLUTIVO IS NULL THEN ' ' ELSE UPPER(SERIE_DEVOLUTIVO) END)  LIKE UPPER( '%' || :SERIE_DEVOLUTIVO || '%')  AND (CASE WHEN NOM_TIPO_EVENTO IS NULL THEN ' ' ELSE UPPER(NOM_TIPO_EVENTO) END)  LIKE UPPER( '%' || :NOM_TIPO_EVENTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="SERIE" sqlType="STRING"/>
+		<param name="TIPO_EVENTO" sqlType="STRING"/>
+		<param name="ELEMENTO_DEVOLUTIVO" sqlType="STRING"/>
+		<param name="SERIE_DEVOLUTIVO" sqlType="STRING"/>
+		<param name="NOM_TIPO_EVENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tiposeventosdevolutivos/numero">
+		<call-query href="getTiposeventosdevolutivosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="SERIE" query-param="SERIE"/>
+			<with-param name="TIPO_EVENTO" query-param="TIPO_EVENTO"/>
+			<with-param name="ELEMENTO_DEVOLUTIVO" query-param="ELEMENTO_DEVOLUTIVO"/>
+			<with-param name="SERIE_DEVOLUTIVO" query-param="SERIE_DEVOLUTIVO"/>
+			<with-param name="NOM_TIPO_EVENTO" query-param="NOM_TIPO_EVENTO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTiposeventosdevolutivos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TIPO_EVENTO_DEVOLUTIVO SET TIPO_EVENTO=:TIPO_EVENTO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TIPO_EVENTO_DEVOLUTIVO.COMPANIA= :KEY_COMPANIA AND TIPO_EVENTO_DEVOLUTIVO.TIPO_EVENTO= :KEY_TIPO_EVENTO AND TIPO_EVENTO_DEVOLUTIVO.ELEMENTO_DEVOLUTIVO= :KEY_ELEMENTO_DEVOLUTIVO AND TIPO_EVENTO_DEVOLUTIVO.SERIE_DEVOLUTIVO= :KEY_SERIE_DEVOLUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="TIPO_EVENTO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPO_EVENTO" sqlType="STRING"/>
+		<param name="KEY_ELEMENTO_DEVOLUTIVO" sqlType="STRING"/>
+		<param name="KEY_SERIE_DEVOLUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tiposeventosdevolutivos">
+		<call-query href="updateTiposeventosdevolutivos">
+			<with-param name="TIPO_EVENTO" query-param="TIPO_EVENTO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPO_EVENTO" query-param="KEY_TIPO_EVENTO"/>
+			<with-param name="KEY_ELEMENTO_DEVOLUTIVO" query-param="KEY_ELEMENTO_DEVOLUTIVO"/>
+			<with-param name="KEY_SERIE_DEVOLUTIVO" query-param="KEY_SERIE_DEVOLUTIVO"/>
+
+		</call-query>
+	</resource>
+
+</data>

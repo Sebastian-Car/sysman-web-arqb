@@ -1,0 +1,85 @@
+﻿<data name="logmenus" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertLogmenusMenus" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql> INSERT INTO LOG_MENUS ( ID, CUK, USUARIO, NIT, SUCURSAL, FECHAHORA, MENU, APLICACION, COMPANIA, CREATED_BY, DATE_CREATED, RUTA ) VALUES ( S_LOG_MENUS.NEXTVAL, CONCAT(LPAD(NVL(:NIT, ' '), 18, ' '), TO_CHAR(SYSDATE, 'DD/MM/YYYY')), :USUARIO, :NIT, :SUCURSAL, TO_DATE(SYSDATE, 'DD/MM/YYYY HH24:MI:SS'), :MENU, :APLICACION, :COMPANIA, :USUARIO, SYSDATE, :RUTA )</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NIT" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="MENU" sqlType="STRING"/>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="" name="RUTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="logmenus/menus">
+		<call-query href="insertLogmenusMenus">
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="MENU" query-param="MENU"/>
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+
+		</call-query>
+	</resource>
+	<query id="getLogmenusPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT ID, CUK, USUARIO, NIT, SUCURSAL,(TO_CHAR(FECHAHORA,'DD/MM/YYYY HH24:MI:SS')) FECHAHORA, MENU, APLICACION , COMPANIA, RUTA FROM LOG_MENUS) INI WHERE (CASE WHEN CUK IS NULL THEN ' ' ELSE UPPER(CUK) END) LIKE UPPER(CONCAT(CONCAT('%',:CUK), '%')) AND (CASE WHEN USUARIO IS NULL THEN ' ' ELSE UPPER(USUARIO) END) LIKE UPPER(CONCAT(CONCAT('%',:USUARIO), '%')) AND (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END) LIKE UPPER(CONCAT(:NIT, '%')) AND (CASE WHEN FECHAHORA IS NULL THEN ' ' ELSE UPPER(FECHAHORA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHAHORA), '%')) AND (CASE WHEN MENU IS NULL THEN ' ' ELSE UPPER(MENU) END) LIKE UPPER(CONCAT(:MENU, '%')) AND (CASE WHEN APLICACION IS NULL THEN ' ' ELSE UPPER(APLICACION) END) LIKE UPPER(CONCAT(:APLICACION, '%')) AND (CASE WHEN RUTA IS NULL THEN ' ' ELSE UPPER(RUTA) END) LIKE UPPER(CONCAT(CONCAT('%',:RUTA), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","CUK":"$CUK","USUARIO":"$USUARIO","NIT":"$NIT","SUCURSAL":"$SUCURSAL","FECHAHORA":"$FECHAHORA","MENU":"$MENU(type:long)","APLICACION":"$APLICACION(type:integer)","COMPANIA":"$COMPANIA","RUTA":"$RUTA"}]}}		</result>
+		<param name="CUK" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="FECHAHORA" sqlType="STRING"/>
+		<param name="MENU" sqlType="STRING"/>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="RUTA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="logmenus">
+		<call-query href="getLogmenusPaginaQuery">
+			<with-param name="CUK" query-param="CUK"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="FECHAHORA" query-param="FECHAHORA"/>
+			<with-param name="MENU" query-param="MENU"/>
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getLogmenusNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT ID, CUK, USUARIO, NIT, SUCURSAL,(TO_CHAR(FECHAHORA,'DD/MM/YYYY HH24:MI:SS')) FECHAHORA, MENU, APLICACION , COMPANIA, RUTA FROM LOG_MENUS) INI WHERE (CASE WHEN CUK IS NULL THEN ' ' ELSE UPPER(CUK) END) LIKE UPPER(CONCAT(CONCAT('%',:CUK), '%')) AND (CASE WHEN USUARIO IS NULL THEN ' ' ELSE UPPER(USUARIO) END) LIKE UPPER(CONCAT(CONCAT('%',:USUARIO), '%')) AND (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END) LIKE UPPER(CONCAT(:NIT, '%')) AND (CASE WHEN FECHAHORA IS NULL THEN ' ' ELSE UPPER(FECHAHORA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHAHORA), '%')) AND (CASE WHEN MENU IS NULL THEN ' ' ELSE UPPER(MENU) END) LIKE UPPER(CONCAT(:MENU, '%')) AND (CASE WHEN APLICACION IS NULL THEN ' ' ELSE UPPER(APLICACION) END) LIKE UPPER(CONCAT(:APLICACION, '%')) AND (CASE WHEN RUTA IS NULL THEN ' ' ELSE UPPER(RUTA) END) LIKE UPPER(CONCAT(CONCAT('%',:RUTA), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CUK" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="FECHAHORA" sqlType="STRING"/>
+		<param name="MENU" sqlType="STRING"/>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="RUTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="logmenus/numero">
+		<call-query href="getLogmenusNumeroQuery">
+			<with-param name="CUK" query-param="CUK"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="FECHAHORA" query-param="FECHAHORA"/>
+			<with-param name="MENU" query-param="MENU"/>
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+
+		</call-query>
+	</resource>
+
+</data>

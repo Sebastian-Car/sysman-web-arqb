@@ -1,0 +1,134 @@
+﻿<data name="ipformatocertificados" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getIpformatocertificadosTodosPorCertificadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  FORMATO,NOMBRE  FROM IP_FORMATO_CERTIFICADOS</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FORMATO":"$FORMATO","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="ipformatocertificados/todosporcertificado">
+		<call-query href="getIpformatocertificadosTodosPorCertificadoQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getIpformatocertificadosFormatosconnombreporcompQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  FORMATO, NOMBRE  FROM IP_FORMATO_CERTIFICADOS FORMATO_CERTIFICADOS WHERE FORMATO_CERTIFICADOS.COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FORMATO":"$FORMATO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipformatocertificados/formatosconnombreporcomp">
+		<call-query href="getIpformatocertificadosFormatosconnombreporcompQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertIpformatocertificados" keyColumns="COMPANIA,FORMATO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_FORMATO_CERTIFICADOS (COMPANIA, FORMATO, NOMBRE, MODELORESOLUCION, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :FORMATO, :NOMBRE, :MODELORESOLUCION, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_FORMATO":"$FORMATO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FORMATO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MODELORESOLUCION" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="ipformatocertificados">
+		<call-query href="insertIpformatocertificados">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FORMATO" query-param="FORMATO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MODELORESOLUCION" query-param="MODELORESOLUCION"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteIpformatocertificados" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM IP_FORMATO_CERTIFICADOS WHERE IP_FORMATO_CERTIFICADOS.COMPANIA= :KEY_COMPANIA AND IP_FORMATO_CERTIFICADOS.FORMATO= :KEY_FORMATO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_FORMATO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="ipformatocertificados">
+		<call-query href="deleteIpformatocertificados">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_FORMATO" query-param="KEY_FORMATO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpformatocertificadosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_FORMATO_CERTIFICADOS.COMPANIA, IP_FORMATO_CERTIFICADOS.FORMATO, IP_FORMATO_CERTIFICADOS.NOMBRE, IP_FORMATO_CERTIFICADOS.MODELORESOLUCION  FROM IP_FORMATO_CERTIFICADOS WHERE IP_FORMATO_CERTIFICADOS.COMPANIA = :COMPANIA) WHERE (CASE WHEN FORMATO IS NULL THEN ' ' ELSE UPPER(FORMATO) END)  LIKE UPPER(:FORMATO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN MODELORESOLUCION IS NULL THEN ' ' ELSE UPPER(MODELORESOLUCION) END)  LIKE UPPER( '%' || :MODELORESOLUCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","FORMATO":"$FORMATO","NOMBRE":"$NOMBRE","MODELORESOLUCION":"$MODELORESOLUCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FORMATO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MODELORESOLUCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ipformatocertificados">
+		<call-query href="getIpformatocertificadosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FORMATO" query-param="FORMATO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MODELORESOLUCION" query-param="MODELORESOLUCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpformatocertificadosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_FORMATO_CERTIFICADOS.COMPANIA, IP_FORMATO_CERTIFICADOS.FORMATO, IP_FORMATO_CERTIFICADOS.NOMBRE, IP_FORMATO_CERTIFICADOS.MODELORESOLUCION  FROM IP_FORMATO_CERTIFICADOS WHERE IP_FORMATO_CERTIFICADOS.COMPANIA = :COMPANIA) WHERE (CASE WHEN FORMATO IS NULL THEN ' ' ELSE UPPER(FORMATO) END)  LIKE UPPER(:FORMATO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN MODELORESOLUCION IS NULL THEN ' ' ELSE UPPER(MODELORESOLUCION) END)  LIKE UPPER( '%' || :MODELORESOLUCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FORMATO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MODELORESOLUCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipformatocertificados/numero">
+		<call-query href="getIpformatocertificadosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FORMATO" query-param="FORMATO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MODELORESOLUCION" query-param="MODELORESOLUCION"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpformatocertificados" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_FORMATO_CERTIFICADOS SET FORMATO=:FORMATO, NOMBRE=:NOMBRE, MODELORESOLUCION=:MODELORESOLUCION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE IP_FORMATO_CERTIFICADOS.COMPANIA= :KEY_COMPANIA AND IP_FORMATO_CERTIFICADOS.FORMATO= :KEY_FORMATO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="FORMATO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MODELORESOLUCION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_FORMATO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipformatocertificados">
+		<call-query href="updateIpformatocertificados">
+			<with-param name="FORMATO" query-param="FORMATO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MODELORESOLUCION" query-param="MODELORESOLUCION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_FORMATO" query-param="KEY_FORMATO"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,296 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	template="/templateModalDatos.xhtml" xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+              asignarEventoContGrande();
+validarCargaGrandes();
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{frmestpreviounspscsControlador.titulo}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<section class="radiusModal">
+			<f:event type="preRenderView"
+				listener="#{frmestpreviounspscsControlador.cargarForma}" />
+			<div id="FR1065" style="height: auto;">
+				<h:form style="height: 100%;" id="FRFR1065">
+					<p:growl id="alert" showDetail="true" sticky="false"
+						widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+					<p:overlayPanel widgetVar="PLCB3480" id="PLCB3480"
+						onShow="if(PF('TBCB3480').nuevo){ PF('TBCB3480').filter(); PF('TBCB3480').nuevo=false;}"
+						onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB3480').jq.focus();}"
+						my="center top" at="center top" for="BTCB3480" hideEffect="fade"
+						style="width: 385px">
+						<p:dataTable id="TBCB3480" widgetVar="TBCB3480" var="reg"
+							value="#{frmestpreviounspscsControlador.listatxtCodigo}"
+							editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="11" rowIndexVar="rowIndex" selectionMode="single"
+							rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+							<p:ajax event="rowSelect"
+								listener="#{frmestpreviounspscsControlador.seleccionarFilatxtCodigo}"
+								update=":FRFR1065:CB3480,:FRFR1065:BTCB3480,FRFR1065:CP32792"
+								oncomplete="PF('PLCB3480').hide(); $('#speCB3480').remove();  " />
+							<p:column headerText="#{idm.TG_CODIGO7}"
+								style="text-align:center; " width="70"
+								filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['CODIGO']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE3}"
+								style="text-align:center; " width="270"
+								filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NOMBRE']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+						</p:dataTable>
+					</p:overlayPanel>
+					<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}" id="dlg"
+						widgetVar="dlg" resizable="false" modal="true"
+						rendered="#{frmestpreviounspscsControlador.permisos[0]}"
+						position="center top" onHide="restaurarCampos(['CB3480'])">
+						<h:panelGrid columns="2" cellpadding="2">
+							<h:outputLabel value="#{idm.TG_CODIGO7}:" id="LCB3480"
+								class="cont-inst-element" />
+							<h:panelGroup>
+								<p:inputText id="CB3480" widgetVar="CB3480"
+									onfocus="if(!false){PF('BTCB3480').jq.focus();}"
+									onclick="if(!false){PF('PLCB3480').show();}"
+									value="#{frmestpreviounspscsControlador.registro.campos['COD_UNSPSC']}"
+									style="cursor:pointer; width: 80%;" tabindex="-1"
+									class="cont-inst-element" />
+								<p:commandButton id="BTCB3480" widgetVar="BTCB3480"
+									onclick="PF('PLCB3480').show();"
+									onblur="PF('CB3480').jq.blur();"
+									onfocus="PF('CB3480').jq.addClass('ui-state-focus');"
+									type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+									style="width:25px; height:  23px; top:3px; border-left-width: 0; "
+									class="cont-inst-element" />
+							</h:panelGroup>
+							<h:outputLabel value="#{idm.TG_NOMBRE3}:" id="LCP32792"
+								style="display:true;" class="cont-inst-element" />
+							<p:inputText id="CP32792" readonly="true" widgetVar="CP32792"
+								styleClass="inputTab"
+								value="#{frmestpreviounspscsControlador.registro.campos['NOMBRE']}"
+								label="LCP32792" style="display:true; width: 95%; float: left;"
+								class="cont-inst-element">
+							</p:inputText>
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TI_GUARDAR}"
+										style="padding:10px;" update="FRFR1065,"
+										actionListener="#{frmestpreviounspscsControlador.agregarRegistroNuevo}"
+										oncomplete="PF('dlg').hide(); PF('blockGuardar').hide();"
+										onclick="     if (!validarVaciosModal(['CB3480'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockGuardar').show();" />
+									<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+										href="#" onclick="PF('dlg').hide();" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<p:confirmDialog global="true" showEffect="fade">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<div id="PL2049" class="dobleScroll"
+						style="position: relative; height: 475px;">
+						<center>
+							<p:inputText id="HCB3480" rendered="true" widgetVar="HCB3480"
+								value="#{frmestpreviounspscsControlador.auxiliar}"
+								style="width: 0px; height: 0px; border: #ffffff; background: #FFFFFF; box-shadow: none"
+								disabled="true" />
+						</center>
+						<p:overlayPanel widgetVar="PLSCB3480" id="PLSCB3480"
+							rendered="true"
+							onShow="if(PF('TBSCB3480').nuevo){ PF('TBSCB3480').clearFilters(); PF('TBSCB3480').nuevo=false;}"
+							onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){aux= aux.replace(':BT',':'); aux=aux.replace(/:/g,'\\:'); $('#'+aux).focus();}"
+							for="HCB3480" hideEffect="fade" style="width:385px; ">
+							<p:dataTable id="TBSCB3480" widgetVar="TBSCB3480" var="reg"
+								value="#{frmestpreviounspscsControlador.listatxtCodigoE}"
+								editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+								currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+								rows="11" rowIndexVar="rowIndex" selectionMode="single"
+								rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+								<p:ajax event="rowSelect"
+									listener="#{frmestpreviounspscsControlador.seleccionarFilatxtCodigoE}"
+									update=":FRFR1065:HCB3480"
+									oncomplete=" aux= aux.replace(':BT',':'); aux=aux.replace(/:/g,'\\:'); $('#'+aux)[0].value=PF('HCB3480').jq[0].value;  PF('PLSCB3480').hide();  $('#'+aux).change(); ind=false; " />
+								<p:column headerText="#{idm.TG_CODIGO7}"
+									style="text-align:center; " width="70"
+									filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['CODIGO']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_NOMBRE3}"
+									style="text-align:center; " width="270"
+									filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NOMBRE']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+							</p:dataTable>
+						</p:overlayPanel>
+						<p:remoteCommand name="refreshTab" update="TBFR1065"
+							oncomplete="PF('blockGuardar').hide();" />
+						<p:dataTable id="TBFR1065" var="reg"
+							value="#{frmestpreviounspscsControlador.listaInicial}"
+							editable="true" widgetVar="TBFR1065"
+							emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="10" rowIndexVar="rowNun" paginator="true" scrollable="true"
+							scrollWidth="100%" lazy="true">
+							<f:facet name="{Exporters}"
+								rendered="#{frmestpreviounspscsControlador.permisos[4] }">
+								<h:commandLink
+									rendered="#{frmestpreviounspscsControlador.permisos[4] }"
+									title="#{idm.TI_VER_EXCEL}">
+									<p:graphicImage name="/images/general/excel.png" width="24" />
+									<p:dataExporter type="xls" target="TBFR1065" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+								<h:commandLink
+									rendered="#{frmestpreviounspscsControlador.permisos[4] }"
+									title="#{idm.TI_VER_PDF}">
+									<p:graphicImage name="/images/general/pdf.png" width="24" />
+									<p:dataExporter type="pdf" target="TBFR1065" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+							</f:facet>
+							<p:ajax event="rowEdit" update=":FRFR1065:alert,"
+								listener="#{frmestpreviounspscsControlador.editar}"
+								oncomplete="refreshTab(); mostarEditor();"
+								onstart="PF('blockGuardar').show();" />
+							<p:ajax event="rowEditCancel"
+								listener="#{frmestpreviounspscsControlador.cancelarEdicion}"
+								oncomplete="  mostarEditor();" />
+							<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+							<f:facet name="header">
+								<div style="position: relative; height: 50px">
+									<h:panelGroup class="acme"
+										rendered="#{frmestpreviounspscsControlador.permisos[0] and !frmestpreviounspscsControlador.visualizar }">
+										<h:outputLink value="javascript:void(0)"
+											onclick="
+		PF('dlg').show();
+		"
+											title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;">
+											<center>
+												<p:graphicImage name="/images/menus/32/add.png" />
+												<div>#{idm.TI_NUEVO}</div>
+											</center>
+										</h:outputLink>
+									</h:panelGroup>
+									<h:panelGroup class="acme">
+										<p:commandLink
+											action="#{frmestpreviounspscsControlador.cerrarFormulario}"
+											title="#{idm.TI_CERRAR_FORMULARIO}"
+											style="padding-top: 10px;" id="btCerrar">
+											<center>
+												<p:graphicImage name="/images/menus/32/close.png" />
+												<div>#{idm.TI_CERRAR}</div>
+											</center>
+										</p:commandLink>
+									</h:panelGroup>
+								</div>	 
+                            #{frmestpreviounspscsControlador.titulo}
+                            </f:facet>
+							<p:column headerText="#{idm.TG_CODIGO7}"
+								filterBy="#{reg.campos['COD_UNSPSC']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="96" rendered="true">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['COD_UNSPSC']}" />
+									</f:facet>
+									<f:facet name="input">
+										<h:panelGroup>
+											<p:inputText id="CB3480"
+												onfocus="if(!false){onfocusCBG('#{component.clientId}');}"
+												onchange="return ind;" value="#{reg.campos['COD_UNSPSC']}"
+												onclick="if(!false){ PF('PLSCB3480').show('#{component.clientId}');}  aux= '#{component.clientId}'; ind = true;"
+												tabindex="-1" style="cursor:pointer; width: 75%;">
+												<p:ajax
+													listener="#{frmestpreviounspscsControlador.cambiartxtCodigoC(rowNun)}"
+													update="CP32792" />
+											</p:inputText>
+											<p:commandButton id="BTCB3480" type="button"
+												icon="ui-icon ui-icon-triangle-1-s ui-c"
+												onclick="PF('PLSCB3480').show('#{component.clientId}'); aux= '#{component.clientId}';  ind = true;"
+												onblur="onblurBTCBG('#{component.clientId}');"
+												onfocus="onfocusBTCBG('#{component.clientId}');"
+												style="width:25px; height:  20px; top:4px; border-left-width: 0; " />
+										</h:panelGroup>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE3}"
+								filterBy="#{reg.campos['NOMBRE']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="100" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['NOMBRE']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP32792" styleClass="inputTab"
+											value="#{reg.campos['NOMBRE']}" style="width:100%"
+											readonly="true">
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column width="30" exportable="false"
+								rendered="#{frmestpreviounspscsControlador.permisos[2] and !frmestpreviounspscsControlador.visualizar}">
+								<p:rowEditor />
+							</p:column>
+							<p:column width="30" exportable="false"
+								rendered="#{frmestpreviounspscsControlador.permisos[1] and !frmestpreviounspscsControlador.visualizar}">
+								<p:commandButton icon="ui-icon-trash"
+									title="#{idm.TI_ELIMINAR_REGISTRO}"
+									onclick="PF('blockGuardar').show()"
+									action="#{frmestpreviounspscsControlador.eliminarReg(reg)}"
+									oncomplete="refreshTab(); PF('blockGuardar').hide();"
+									update=":FRFR1065:alert,"
+									style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;">
+									<p:confirm header="#{sessionBean.tituloMensajes}"
+										message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+								</p:commandButton>
+							</p:column>
+						</p:dataTable>
+						<p:blockUI block="FRFR1065" widgetVar="blockGuardar">
+                        #{idm.TI_GUARDANDO_CAMBIOS}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+						<p:blockUI block="FRFR1065" widgetVar="blockCarga"
+							trigger="TBFR1065,">
+                        #{idm.TI_CARGANDO}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+					</div>
+				</h:form>
+			</div>
+		</section>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,167 @@
+/*
+ * TercerosControladorEnum
+ *
+ * 1.0
+ *
+ * 09/09/2016
+ *
+ * Copyright Stefanini Sysman
+ */
+package com.sysman.general.enums;
+
+/**
+ * @author Processors-api
+ * 
+ * @version 1.0
+ * 
+ * Enumeración que permite clasificar cada uno de los parámetros
+ * identificados en el refactoring, para ser convertidos
+ * Map<String,String> y disponibles en dicha enumeración.
+ */
+public enum TercerosControladorEnum {
+    NITCONSORCIO("NITCONSORCIO"),
+
+    LBFECHAINSCRIPCION("LBFECHAINSCRIPCION"),
+
+    LBFECHAAUTORIZACION("LBFECHAAUTORIZACION"),
+
+    LBTIPOCUENTA("LBTIPOCUENTA"),
+
+    LBESTADO_CUENTA("LBESTADO_CUENTA"),
+
+    NOMBREBANCO("NOMBREBANCO"),
+
+    PROCESO("PROCESO"),
+
+    NRODOCUMENTO_EMBARGO("NRODOCUMENTO_EMBARGO"),
+
+    VALORDEMANDA("VALORDEMANDA"),
+
+    VALOR_EMBARGO("VALOR_EMBARGO"),
+
+    FECHA_EMBARGO("FECHA_EMBARGO"),
+
+    TELEFONOS("TELEFONOS"),
+
+    REGIMEN("REGIMEN"),
+
+    EXPEDIDACEDULA("EXPEDIDACEDULA"),
+
+    INSCRIPCION_PROPONENTE("INSCRIPCION_PROPONENTE"),
+
+    DIGITOVERIFICACION("DIGITOVERIFICACION"),
+
+    VALORULTIMAFACTURA("VALORULTIMAFACTURA"),
+
+    VLRMAXCARTERA("VLRMAXCARTERA"),
+
+    MAX_CREDITO("MAX_CREDITO"),
+
+    DIAS_PRMD_CARTERA("DIAS_PRMD_CARTERA"),
+
+    PRMD_CARTERA("PRMD_CARTERA"),
+
+    KPROVEEDOR("KPROVEEDOR"),
+
+    KCONSULTORING("KCONSULTORING"),
+
+    KCONSULTOR("KCONSULTOR"),
+
+    KCONSTRUCTOR("KCONSTRUCTOR"),
+
+    CALIFICACIONCC("CALIFICACIONCC"),
+
+    PORCDESCUENTO("PORCDESCUENTO"),
+
+    SUCURSALAPODERADO("SUCURSALAPODERADO"),
+
+    NITAPODERADO("NITAPODERADO"),
+
+    FECHAAUTORIZACION("FECHAAUTORIZACION"),
+
+    ESTADO_CUENTA("ESTADO_CUENTA"),
+
+    GRADO("GRADO"),
+
+    PAIS("PAIS"),
+
+    TERCEROPAGOS("TERCEROPAGOS"),
+
+    TERCEROOPS("TERCERO_OPS"),
+
+    CONSORCIADOS("CONSORCIADOS"),
+
+    NIT("NIT"),
+
+    PARAM0("PARAM0"),
+
+    CACTIVA("ACTIVA"),
+
+    CAPELLIDOUNO("APELLIDO1"),
+
+    CAPELLIDODOS("APELLIDO2"),
+
+    CCOMPANIA("COMPANIA"),
+
+    CEMBARGO("EMBARGO"),
+
+    CFUERZA("FUERZA"),
+
+    CGRADO("GRADO"),
+
+    CTRANSACCIONINTERRUMPIDA("MSM_TRANS_INTERRUMPIDA"),
+
+    CNOMBRE("NOMBRE"),
+
+    CNOMBREUNO("NOMBRE1"),
+
+    CNOMBREDOS("NOMBRE2"),
+
+    CPORCPARTICIPACION("PORCPARTICIPACION"),
+
+    CSUCURSAL("SUCURSAL"),
+
+    CTB32("TB_TB32"),
+
+    CTB33("TB_TB33"),
+
+    CTB34("TB_TB34"),
+
+    CTIPOID("TIPOID"),
+
+    CTIPOCONTRATISTA("TIPO_CONTRATISTA"),
+
+    CANOQR("anoQr"),
+
+    CCODTERCERO("codTercero"),
+
+    CFORMULARIO("formulario"),
+
+    CMESFINALQR("mesFinalQr"),
+
+    CMESINICIALQR("mesInicialQr"),
+
+    CNOMBRETERCERO("nombreTercero"),
+
+    CSUCURSALTERCERO("sucursalTercero"),
+
+    CSYSDATE("SYSDATE"),
+
+    CTERCERO("TERCERO"),
+
+    CADENANUEVES("99999999999"),
+
+    CADNUEVES("999"),
+
+    CIIU("CIIU");
+
+    private final String value;
+
+    private TercerosControladorEnum(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}

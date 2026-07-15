@@ -1,0 +1,36 @@
+CREATE OR REPLACE TRIGGER "AU_SST_TIPO_ACTIVIDAD"  
+/*
+      NAME              : AU_SST_TIPO_ACTIVIDAD
+      AUTHORS           : STEFANINI SYSMAN SAS
+      AUTHOR MIGRACION  : YESIKA PAOLA BECERRA CASTRO
+      DATE MIGRADOR     : 02/05/2018
+      TIME              : 09:03 AM
+      SOURCE MODULE     : 
+      MODIFIER          : 
+      DATE MODIFIED     : 
+      TIME              : 
+      DESCRIPTION       : REALIZA LA ACTUALIZACIÓN DEL CODIGO DE LA PLANTILLA A LA TABLA SST_TRANSACCION_ACTIVIDAD
+                               
+  */
+FOR UPDATE OF CODIGO_PLANTILLA ON SST_TIPO_ACTIVIDAD 
+COMPOUND TRIGGER
+    MI_COMPANIA             PCK_SUBTIPOS.TI_COMPANIA;
+    MI_CODIGO               SST_TIPO_ACTIVIDAD.CODIGO%TYPE;
+    MI_TIPO_TRANSACCION     SST_TIPO_ACTIVIDAD.TIPO_TRANSACCION%TYPE;
+
+  AFTER EACH ROW IS
+  BEGIN 
+    IF UPDATING THEN 
+          MI_COMPANIA           := :OLD.COMPANIA;
+          MI_TIPO_TRANSACCION   := :OLD.TIPO_TRANSACCION;
+          MI_CODIGO             := :OLD.CODIGO;
+    END IF;
+  END AFTER EACH ROW; 
+  AFTER STATEMENT IS 
+      BEGIN 
+        PCK_HOJAS_DE_VIDA.PR_ACTUALIZAPLANTILLA(    UN_COMPANIA         => MI_COMPANIA,
+                                                    UN_TIPOTRANSACCION  => MI_TIPO_TRANSACCION,
+                                                    UN_ACTIVIDAD        => MI_CODIGO);
+    END AFTER STATEMENT;
+                                              
+  END;

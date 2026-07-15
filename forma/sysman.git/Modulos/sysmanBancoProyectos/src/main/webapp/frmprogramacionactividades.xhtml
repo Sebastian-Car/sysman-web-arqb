@@ -1,0 +1,876 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	template="/templateModalDatos.xhtml" xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+                if("#{frmprogramacionactividadesControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TG_PROGRAMACION_DE_ACTIVIDADES2}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{frmprogramacionactividadesControlador.cargarLista}" />
+		<section class="radiusModal">
+			<h:form id="FR304"
+				style="display: #{frmprogramacionactividadesControlador.accion==null?'block':'none'}; margin-top: 2px">
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="lista" widgetVar="lista"
+					visible="#{frmprogramacionactividadesControlador.accion==null}"
+					style="border-width: 0">
+					<p:confirmDialog global="true" showEffect="fade" id="confFR304"
+						widgetVar="confFR304"
+						rendered="#{frmprogramacionactividadesControlador.permisos[1]}">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:dataTable id="TBFR304" widgetVar="TBFR304" var="reg"
+						value="#{frmprogramacionactividadesControlador.listaInicial}"
+						editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" paginator="true" lazy="true">
+						<f:facet name="{Exporters}"
+							rendered="#{frmprogramacionactividadesControlador.permisos[4] }">
+							<h:commandLink
+								rendered="#{frmprogramacionactividadesControlador.permisos[4] }"
+								title="#{idm.TI_VER_EXCEL}">
+								<p:graphicImage name="/images/general/excel.png" width="24" />
+								<p:dataExporter type="xls" target="TBFR304" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+							<h:commandLink
+								rendered="#{frmprogramacionactividadesControlador.permisos[4] }"
+								title="#{idm.TI_VER_PDF}">
+								<p:graphicImage name="/images/general/pdf.png" width="24" />
+								<p:dataExporter type="pdf" target="TBFR304" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+						</f:facet>
+						<f:facet name="header">
+							<div style="position: relative; height: 50px">
+								<h:panelGroup class="acme"
+									rendered="#{frmprogramacionactividadesControlador.permisos[0] }">
+									<p:commandLink
+										action="#{frmprogramacionactividadesControlador.cargarRegistroNuevo}"
+										update=":FR304_nuevo"
+										rendered="#{frmprogramacionactividadesControlador.permisos[0]}"
+										onclick="try { PF('blockLista').show(); PF('TBCB1154').nuevo=true;} catch (e) { }"
+										oncomplete="try{ asignarEventoContGrande();
+validarCargaGrandes();
+  PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+										title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+										id="btNuevo">
+										<center>
+											<p:graphicImage name="/images/menus/32/add.png" />
+											<div>#{idm.TI_NUEVO}</div>
+										</center>
+									</p:commandLink>
+								</h:panelGroup>
+								<h:panelGroup class="acme">
+									<p:commandLink
+										action="#{frmprogramacionactividadesControlador.cerrarFormulario}"
+										title="#{idm.TI_CERRAR_FORMULARIO}" style="padding-top: 10px;"
+										id="btCerrar">
+										<center>
+											<p:graphicImage name="/images/menus/32/close.png" />
+											<div>#{idm.TI_CERRAR}</div>
+										</center>
+									</p:commandLink>
+								</h:panelGroup>
+							</div>
+                            #{idm.TG_PROGRAMACION_DE_ACTIVIDADES2}
+                        </f:facet>
+						<p:column headerText="#{idm.TG_CODIGO7}"
+							filterBy="#{reg.campos['CODIGOACTIVIDAD']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="70" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['CODIGOACTIVIDAD']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_ACTIVIDAD2}"
+							filterBy="#{reg.campos['NOMBREACTIVIDAD']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="300" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBREACTIVIDAD']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_VIGENCIA3}"
+							filterBy="#{reg.campos['VIGENCIA']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="70" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['VIGENCIA']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_FR304_3}"
+							filterBy="#{reg.campos['NOMBRETIPOESTADO']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="100" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRETIPOESTADO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column width="150" headerText="Acciones"
+							style="text-align: center" exportable="false">
+							<p:commandButton icon="ui-icon-search"
+								title="#{idm.TI_VER_REGISTRO}"
+								action="#{frmprogramacionactividadesControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+								update=":FR304_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB1154').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{frmprogramacionactividadesControlador.permisos[3]}"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-document-b"
+								title="#{idm.TI_EDITAR_REGISTRO}"
+								action="#{frmprogramacionactividadesControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+								update=":FR304_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB1154').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{frmprogramacionactividadesControlador.permisos[2] }"
+								oncomplete="try{asignarEventoContGrande();
+validarCargaGrandes();
+ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-trash"
+								title="#{idm.TI_ELIMINAR_REGISTRO}"
+								onclick="PF('blockListaGuardar').show()"
+								action="#{frmprogramacionactividadesControlador.eliminarReg(reg)}"
+								update=":FR304:TBFR304,:FR304:alert"
+								rendered="#{frmprogramacionactividadesControlador.permisos[1] }"
+								oncomplete=" PF('blockListaGuardar').hide();">
+								<p:confirm header="#{sessionBean.tituloMensajes}"
+									message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR304">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+			<h:form id="FR304_nuevo"
+				style="margin-top: 2px;  display: #{frmprogramacionactividadesControlador.accion!=null?'block':'none'}">
+				<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA"
+					my="left bottom" at="left bottom" for="BTBUSQUEDA"
+					hideEffect="fade"
+					rendered="#{frmprogramacionactividadesControlador.accion!='i'}"
+					style="width: 500px">
+					<p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA" var="reg"
+						value="#{frmprogramacionactividadesControlador.listaInicialF}"
+						editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" selectionMode="single"
+						rowKey="#{reg.llave}" paginator="true" lazy="true">
+						<p:ajax event="rowSelect"
+							listener="#{frmprogramacionactividadesControlador.seleccionarFilaBusqueda}"
+							onstart="PF('blockNuevo').show()"
+							oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();    "
+							update="@form" />
+						<p:column headerText="#{idm.TG_ACTIVIDAD2}"
+							filterBy="#{reg.campos['NOMBREACTIVIDAD']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="300" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBREACTIVIDAD']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_VIGENCIA3}"
+							filterBy="#{reg.campos['VIGENCIA']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="70" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['VIGENCIA']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_FR304_3}"
+							filterBy="#{reg.campos['NOMBRETIPOESTADO']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="100" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRETIPOESTADO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+					</p:dataTable>
+				</p:overlayPanel>
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="nuevoPanel"
+					visible="#{frmprogramacionactividadesControlador.accion!=null}"
+					widgetVar="nuevoPanel" style="border-width: 0">
+					<div
+						style="position: relative; height: 50px; padding-bottom: 80px;">
+						<div class="acme"
+							style="display:#{frmprogramacionactividadesControlador.accion=='v'?'none':'block'}">
+							<p:commandLink
+								action="#{frmprogramacionactividadesControlador.agregarRegistroNuevo(false)}"
+								rendered="#{frmprogramacionactividadesControlador.accion!='v'}"
+								update=":FR304_nuevo,#{!frmprogramacionactividadesControlador.permisos[2]?':FR304':'' }"
+								onclick="if (!validarVacios(['CB1154','CP9942','CP9943','CP9945','CP9946','CP9947','CP9948','CP9949','CP9950','CP9951','CP9952','CP9953','CP9954','CP9955','CP9956','CP9957','CP9958','CP9959','CP9960','CP9961','CP9962','CP9963','CP9964','CP9965','CP9966','CP9967','CP9968','CP9969'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+								title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+								oncomplete="asignarEventoContGrande(); validarCargaGrandes(); ">
+								<center>
+									<p:graphicImage name="/images/menus/32/save.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{frmprogramacionactividadesControlador.accion=='v' or !frmprogramacionactividadesControlador.permisos[0]?'none':'block'}">
+							<p:commandLink
+								action="#{frmprogramacionactividadesControlador.guardarNuevo}"
+								rendered="#{frmprogramacionactividadesControlador.accion!='v' and frmprogramacionactividadesControlador.permisos[0]}"
+								update=":FR304_nuevo"
+								onclick="if (!validarVacios(['CB1154','CP9942','CP9943','CP9945','CP9946','CP9947','CP9948','CP9949','CP9950','CP9951','CP9952','CP9953','CP9954','CP9955','CP9956','CP9957','CP9958','CP9959','CP9960','CP9961','CP9962','CP9963','CP9964','CP9965','CP9966','CP9967','CP9968','CP9969'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{frmprogramacionactividadesControlador.accion!='i'  and frmprogramacionactividadesControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+								oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+								title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}"
+								style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/savenew.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{frmprogramacionactividadesControlador.accion=='i' or !frmprogramacionactividadesControlador.permisos[0]?'none':'block'}">
+							<p:commandLink id="BTBUSQUEDA"
+								rendered="#{frmprogramacionactividadesControlador.accion!='i' and frmprogramacionactividadesControlador.permisos[0]}"
+								title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/search.png" />
+									<div style="height: 30px">#{idm.TI_BUSCAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme">
+							<p:commandLink update=":FR304:TBFR304"
+								onclick="try {
+		           PF('TBFR304').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+								title="#{idm.TI_ATRAS}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/back.png" />
+									<div style="height: 30px">#{idm.TI_VOLVER}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<p:panel
+							rendered="#{frmprogramacionactividadesControlador.accion!='i'  and frmprogramacionactividadesControlador.rid==null }"
+							styleClass="acme"
+							style="min-width: 350px; width:30%; padding: 10px;">
+							<center style="margin: 2px;">
+								<p:commandButton icon="ui-icon-seek-first"
+									action="#{frmprogramacionactividadesControlador.irPrimero()}"
+									title="#{idm.TI_PRIMER_REGISTRO}" update=":FR304_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-prev"
+									action="#{frmprogramacionactividadesControlador.irAnterior()}"
+									title="#{idm.TI_REGISTRO_ANTERIOR}" update=":FR304_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:outputLabel
+									value="#{idm.TI_REGISTRO} #{frmprogramacionactividadesControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{frmprogramacionactividadesControlador.listaInicial.rowCount} " />
+								<p:commandButton icon="ui-icon-seek-next"
+									title="#{idm.TI_REGISTRO_SIGUIENTE}"
+									action="#{frmprogramacionactividadesControlador.irSiguiente()}"
+									update=":FR304_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-end"
+									title="#{idm.TI_ULTIMO_REGISTRO}"
+									action="#{frmprogramacionactividadesControlador.irUltimo()}"
+									update=":FR304_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+							</center>
+						</p:panel>
+						<p:panel styleClass="acme" style="width:21%; min-width:260px">
+							<h:panelGrid columns="3"
+								style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+								<h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}" />
+								<p:inputText id="CPCREADO" readonly="true" widgetVar="CPCREADO"
+									value="#{frmprogramacionactividadesControlador.registro.campos['CREATED_BY']}"
+									placeholder="#{idm.TI_CREADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPCREADOF" widgetVar="CPCREADOF"
+									value="#{frmprogramacionactividadesControlador.registro.campos['DATE_CREATED']}"
+									disabled="true" />
+								<h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+								<p:inputText id="CPMODIFICADO" readonly="true"
+									widgetVar="CPMODIFICADO"
+									value="#{frmprogramacionactividadesControlador.registro.campos['MODIFIED_BY']}"
+									placeholder="#{idm.TI_MODIFICADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPMODIFICADOF" widgetVar="CPMODIFICADOF"
+									value="#{frmprogramacionactividadesControlador.registro.campos['DATE_MODIFIED']}"
+									disabled="true" />
+							</h:panelGrid>
+						</p:panel>
+					</div>
+					<div id="PL671" class="
+"
+						style="position: relative; height: 29px;">
+						<h:outputLabel id="LB8400"
+							value="#{idm.TG_PROGRAMACION_DE_ACTIVIDADES}"
+							style="position: absolute; width:813px; height: 29px; left: 0px;   top: 0px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<div id="PL672" class="
+"
+						style="position: relative; height: 400px;">
+						<p:inputText id="CB1154" widgetVar="CB1154"
+							onfocus="if(!false){PF('BTCB1154').jq.focus();}"
+							onclick="if(!false){PF('PLCB1154').show();}"
+							value="#{frmprogramacionactividadesControlador.registro.campos['CODIGOACTIVIDAD']}"
+							disabled="#{frmprogramacionactividadesControlador.css!=null}"
+							tabindex="-1"
+							style="cursor:pointer; position: absolute; width:200px; height: 20px; left: 232px;   top: 97px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+						<p:commandButton id="BTCB1154" onblur="PF('CB1154').jq.blur();"
+							onfocus="PF('CB1154').jq.addClass('ui-state-focus');"
+							widgetVar="BTCB1154"
+							disabled="#{frmprogramacionactividadesControlador.css!=null}"
+							type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+							style="position: absolute; width:25px; height:  20px; left: 430px;   top: 97px; display:block; "
+							tabindex="5" />
+						<p:overlayPanel widgetVar="PLCB1154" id="PLCB1154"
+							onShow="if(PF('TBCB1154').nuevo){ PF('TBCB1154').filter(); PF('TBCB1154').nuevo=false;}"
+							onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB1154').jq.focus();}"
+							my="center" at="center" for="BTCB1154" hideEffect="fade"
+							rendered="#{frmprogramacionactividadesControlador.accion!='v'}"
+							style="width: 500px">
+							<p:dataTable id="TBCB1154" widgetVar="TBCB1154" var="reg"
+								value="#{frmprogramacionactividadesControlador.listaCodigoActividad}"
+								editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+								currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+								rows="11" rowIndexVar="rowIndex" selectionMode="single"
+								rowKey="#{reg.campos['ACTIVIDAD']}" paginator="true" lazy="true">
+								<p:ajax event="rowSelect"
+									listener="#{frmprogramacionactividadesControlador.seleccionarFilaCodigoActividad}"
+									update=":FR304_nuevo:CB1154,FR304_nuevo:CP9943,FR304_nuevo:CP9942"
+									oncomplete="PF('PLCB1154').hide(); " />
+								<p:column headerText="#{idm.TG_CODIGO7}"
+									style="text-align:center; " width="150"
+									filterBy="#{reg.campos['ACTIVIDAD']}"
+									filterMatchMode="startsWith" filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['ACTIVIDAD']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_NOMBRE3}"
+									style="text-align:center; " width="400"
+									filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NOMBRE']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+							</p:dataTable>
+						</p:overlayPanel>
+						<h:outputLabel id="LB8401" value="#{idm.TT_LB8401}"
+							style="position: absolute; width:154px; height: 20px; left: 73px;   top: 148px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+						<h:outputLabel id="LB8402" value="#{idm.TG_VALOR_TOTAL5}"
+							style="position: absolute; width:88px; height: 20px; left: 463px;   top: 148px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+						<h:outputLabel id="LB8403" value="#{idm.TG_CANTIDAD3}"
+							style="position: absolute; width:88px; height: 20px; left: 463px;   top: 123px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+						<h:outputLabel id="LB8404" value="#{idm.TG_CODIGO8}"
+							style="position: absolute; width:88px; height: 20px; left: 463px;   top: 97px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+						<h:outputLabel id="LB8405" value="#{idm.TG_ACTIVIDAD3}"
+							style="position: absolute; width:154px; height: 20px; left: 73px;   top: 97px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+						<h:outputLabel id="LB8406" value="#{idm.TT_LB8406}"
+							style="position: absolute; width:154px; height: 20px; left: 73px;   top: 123px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+						<h:outputLabel id="LB8407" value="#{idm.TT_LB8407}"
+							style="position: absolute; width:122px; height: 20px; left: 671px;   top: 192px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[3]}; background:#FFFFFF; color:#0000FF; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8408" value="#{idm.TT_LB8408}"
+							style="position: absolute; width:63px; height: 20px; left: 603px;   top: 192px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[3]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8409" value="#{idm.TT_LB8409}"
+							style="position: absolute; width:122px; height: 20px; left: 476px;   top: 192px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[2]}; background:#FFFFFF; color:#0000FF; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8410" value="#{idm.TT_LB8410}"
+							style="position: absolute; width:63px; height: 20px; left: 408px;   top: 192px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[2]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8411" value="#{idm.TT_LB8411}"
+							style="position: absolute; width:122px; height: 20px; left: 281px;   top: 192px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[1]}; background:#FFFFFF; color:#0000FF; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8412" value="#{idm.TT_LB8412}"
+							style="position: absolute; width:63px; height: 20px; left: 214px;   top: 192px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[1]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8413" value="#{idm.TT_LB8413}"
+							style="position: absolute; width:122px; height: 20px; left: 87px;   top: 192px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[0]}; background:#FFFFFF; color:#0000FF; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8414" value="#{idm.TT_LB8414}"
+							style="position: absolute; width:63px; height: 20px; left: 19px;   top: 192px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[0]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8415" value="#{idm.TT_LB8415}"
+							style="position: absolute; width:63px; height: 20px; left: 603px;   top: 294px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[11]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8416" value="#{idm.TT_LB8416}"
+							style="position: absolute; width:122px; height: 20px; left: 671px;   top: 294px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[11]}; background:#FFFFFF; color:#0000FF; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8417" value="#{idm.TT_LB8417}"
+							style="position: absolute; width:63px; height: 20px; left: 408px;   top: 294px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[10]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8418" value="#{idm.TT_LB8418}"
+							style="position: absolute; width:122px; height: 20px; left: 476px;   top: 294px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[10]}; background:#FFFFFF; color:#0000FF; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8419" value="#{idm.TT_LB8419}"
+							style="position: absolute; width:63px; height: 20px; left: 214px;   top: 294px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[9]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8420" value="#{idm.TT_LB8420}"
+							style="position: absolute; width:122px; height: 20px; left: 281px;   top: 294px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[9]}; background:#FFFFFF; color:#0000FF; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8421" value="#{idm.TT_LB8421}"
+							style="position: absolute; width:63px; height: 20px; left: 19px;   top: 294px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[8]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8422" value="#{idm.TT_LB8422}"
+							style="position: absolute; width:122px; height: 20px; left: 87px;   top: 294px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[8]}; background:#FFFFFF; color:#0000FF; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8423" value="#{idm.TT_LB8423}"
+							style="position: absolute; width:122px; height: 20px; left: 87px;   top: 243px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[4]}; background:#FFFFFF; color:#0000FF; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8424" value="#{idm.TT_LB8424}"
+							style="position: absolute; width:63px; height: 20px; left: 19px;   top: 243px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[4]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8425" value="#{idm.TT_LB8425}"
+							style="position: absolute; width:122px; height: 20px; left: 281px;   top: 243px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[5]}; background:#FFFFFF; color:#0000FF; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8426" value="#{idm.TT_LB8426}"
+							style="position: absolute; width:63px; height: 20px; left: 214px;   top: 243px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[5]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8427" value="#{idm.TT_LB8427}"
+							style="position: absolute; width:63px; height: 20px; left: 603px;   top: 243px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[7]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8428" value="#{idm.TT_LB8428}"
+							style="position: absolute; width:122px; height: 20px; left: 671px;   top: 243px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[7]}; background:#FFFFFF; color:#0000FF; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8429" value="#{idm.TT_LB8429}"
+							style="position: absolute; width:63px; height: 20px; left: 408px;   top: 243px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[6]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8430" value="#{idm.TT_LB8430}"
+							style="position: absolute; width:122px; height: 20px; left: 476px;   top: 243px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[6]}; background:#FFFFFF; color:#0000FF; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB8629" value="#{idm.TG_VIGENCIA4}"
+							style="position: absolute; width:89px; height: 20px; left: 463px;   top: 29px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+						<h:outputLabel id="LB8630" value="#{idm.TG_COMPONENTE3}"
+							style="position: absolute; width:154px; height: 20px; left: 73px;   top: 55px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+						<h:outputLabel id="LB8631" value="#{idm.TG_PROYECTO5}"
+							style="position: absolute; width:154px; height: 20px; left: 73px;   top: 29px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+						<h:outputLabel id="LB8632" value="#{idm.TT_LB8632}"
+							style="position: absolute; width:89px; height: 20px; left: 463px;   top: 55px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+						<p:inputText id="CP9941" widgetVar="CP9941" styleClass="inputTab"
+							value="#{frmprogramacionactividadesControlador.registro.campos['TIPOT_QUEAPRUEBA']}"
+							readonly="#{frmprogramacionactividadesControlador.accion=='v'?true:false}"
+							tabindex="9" maxlength="3"
+							style="position: absolute; width:225px; height: 20px; text-decoration:none; left: 232px;   top: 148px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<pe:inputNumber id="CP9942" widgetVar="CP9942"
+							styleClass="inputTab"
+							value="#{frmprogramacionactividadesControlador.registro.campos['VALORTOTAL']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="10" maxValue="999999999999999999.99"
+							minValue="-999999999999999999.99" converter="convertidorDouble"
+							style="position: absolute; width:191px; height: 20px; text-decoration:none; left: 556px;   top: 148px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9943" widgetVar="CP9943"
+							styleClass="inputTab"
+							value="#{frmprogramacionactividadesControlador.registro.campos['CANTIDAD']}"
+							decimalPlaces="0" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="8" maxValue="999999999999999999"
+							minValue="-999999999999999999" converter="convertidorDouble"
+							style="position: absolute; width:191px; height: 20px; text-decoration:none; left: 556px;   top: 123px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<p:inputText id="CP9944" widgetVar="CP9944" styleClass="inputTab"
+							value="#{frmprogramacionactividadesControlador.registro.campos['CODIGO']}"
+							readonly="true" tabindex="6"
+							style="position: absolute; width:191px; height: 20px; text-decoration:none; left: 556px;   top: 97px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP9945" widgetVar="CP9945" styleClass="inputTab"
+							value="#{frmprogramacionactividadesControlador.registro.campos['CODIGO_QUEAPRUEBA']}"
+							placeholder="#{idm.TG_CODIGO_INTERNO2}"
+							readonly="#{frmprogramacionactividadesControlador.accion=='v'?true:false}"
+							tabindex="7" maxlength="22"
+							style="position: absolute; width:225px; height: 20px; text-decoration:none; left: 232px;   top: 123px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<pe:inputNumber id="CP9946" widgetVar="CP9946"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['VALOR4']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="#{frmprogramacionactividadesControlador.accion=='v'?true:false}"
+							tabindex="18" maxValue="999999999999999999.99" minValue="0"
+							converter="convertidorDouble"
+							style="position: absolute; width:122px; height: 20px; text-decoration:none; left: 671px;   top: 218px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[3]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+							<p:ajax event="change"
+								listener="#{frmprogramacionactividadesControlador.cambiarValorCuatro}"
+								update="@form"
+								onstart="if (!validarVaciosViewModal(['CB1154', 'CP9943'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                PF('CP9946').setValue(0);
+                                return false;
+                            }" />
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9947" widgetVar="CP9947"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['PORCENTAJE4']}"
+							decimalPlaces="4" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="17" maxValue="99999.9999"
+							minValue="-99999.9999" converter="convertidorDouble"
+							style="position: absolute; width:63px; height: 20px; text-decoration:none; left: 603px;   top: 218px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[3]}; background:#C0C0C0; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9948" widgetVar="CP9948"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['VALOR3']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="#{frmprogramacionactividadesControlador.accion=='v'?true:false}"
+							tabindex="16" maxValue="999999999999999999.99" minValue="0"
+							converter="convertidorDouble"
+							style="position: absolute; width:122px; height: 20px; text-decoration:none; left: 476px;   top: 218px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[2]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+							<p:ajax event="change"
+								listener="#{frmprogramacionactividadesControlador.cambiarValorTres}"
+								update="@form"
+								onstart="if (!validarVaciosViewModal(['CB1154', 'CP9943'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                PF('CP9948').setValue(0);
+                                return false;
+                            }" />
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9949" widgetVar="CP9949"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['PORCENTAJE3']}"
+							decimalPlaces="4" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="15" maxValue="99999.9999"
+							minValue="-99999.9999" converter="convertidorDouble"
+							style="position: absolute; width:63px; height: 20px; text-decoration:none; left: 408px;   top: 218px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[2]}; background:#C0C0C0; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9950" widgetVar="CP9950"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['VALOR2']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="#{frmprogramacionactividadesControlador.accion=='v'?true:false}"
+							tabindex="14" maxValue="999999999999999999.99" minValue="0"
+							converter="convertidorDouble"
+							style="position: absolute; width:122px; height: 20px; text-decoration:none; left: 281px;   top: 218px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[1]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+							<p:ajax event="change"
+								listener="#{frmprogramacionactividadesControlador.cambiarValorDos}"
+								update="@form"
+								onstart="if (!validarVaciosViewModal(['CB1154', 'CP9943'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                PF('CP9950').setValue(0);
+                                return false;
+                            }" />
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9951" widgetVar="CP9951"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['PORCENTAJE2']}"
+							decimalPlaces="4" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="13" maxValue="99999.9999"
+							minValue="-99999.9999" converter="convertidorDouble"
+							style="position: absolute; width:63px; height: 20px; text-decoration:none; left: 214px;   top: 218px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[1]}; background:#C0C0C0; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9952" widgetVar="CP9952"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['VALOR1']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="#{frmprogramacionactividadesControlador.accion=='v'?true:false}"
+							tabindex="12" maxValue="999999999999999999.99" minValue="0"
+							converter="convertidorDouble"
+							style="position: absolute; width:122px; height: 20px; text-decoration:none; left: 87px;   top: 218px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[0]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+							<p:ajax event="change"
+								listener="#{frmprogramacionactividadesControlador.cambiarValorUno}"
+								update="@form"
+								onstart="if (!validarVaciosViewModal(['CB1154', 'CP9943'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                PF('CP9952').setValue(0);
+                                return false;
+}" />
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9953" widgetVar="CP9953"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['PORCENTAJE1']}"
+							decimalPlaces="4" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="11" maxValue="99999.9999"
+							minValue="-99999.9999" converter="convertidorDouble"
+							style="position: absolute; width:63px; height: 20px; text-decoration:none; left: 19px;   top: 218px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[0]}; background:#C0C0C0; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9954" widgetVar="CP9954"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['PORCENTAJE12']}"
+							decimalPlaces="4" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="33" maxValue="99999.9999"
+							minValue="-99999.9999" converter="convertidorDouble"
+							style="position: absolute; width:63px; height: 20px; text-decoration:none; left: 603px;   top: 319px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[11]}; background:#C0C0C0; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9955" widgetVar="CP9955"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['VALOR12']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="#{frmprogramacionactividadesControlador.accion=='v'?true:false}"
+							tabindex="34" maxValue="999999999999999999.99" minValue="0"
+							converter="convertidorDouble"
+							style="position: absolute; width:122px; height: 20px; text-decoration:none; left: 671px;   top: 319px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[11]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+							<p:ajax event="change"
+								listener="#{frmprogramacionactividadesControlador.cambiarValorDoce}"
+								update="@form"
+								onstart="if (!validarVaciosViewModal(['CB1154', 'CP9943'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                PF('CP9955').setValue(0);
+                                return false;
+                            }" />
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9956" widgetVar="CP9956"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['PORCENTAJE11']}"
+							decimalPlaces="4" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="31" maxValue="99999.9999"
+							minValue="-99999.9999" converter="convertidorDouble"
+							style="position: absolute; width:63px; height: 20px; text-decoration:none; left: 408px;   top: 319px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[10]}; background:#C0C0C0; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9957" widgetVar="CP9957"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['VALOR11']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="#{frmprogramacionactividadesControlador.accion=='v'?true:false}"
+							tabindex="32" maxValue="999999999999999999.99" minValue="0"
+							converter="convertidorDouble"
+							style="position: absolute; width:122px; height: 20px; text-decoration:none; left: 476px;   top: 319px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[10]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+							<p:ajax event="change"
+								listener="#{frmprogramacionactividadesControlador.cambiarValorOnce}"
+								update="@form"
+								onstart="if (!validarVaciosViewModal(['CB1154', 'CP9943'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                PF('CP9957').setValue(0);
+                                return false;
+                            }" />
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9958" widgetVar="CP9958"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['PORCENTAJE10']}"
+							decimalPlaces="4" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="29" maxValue="99999.9999"
+							minValue="-99999.9999" converter="convertidorDouble"
+							style="position: absolute; width:63px; height: 20px; text-decoration:none; left: 214px;   top: 319px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[9]}; background:#C0C0C0; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9959" widgetVar="CP9959"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['VALOR10']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="#{frmprogramacionactividadesControlador.accion=='v'?true:false}"
+							tabindex="30" maxValue="999999999999999999.99" minValue="0"
+							converter="convertidorDouble"
+							style="position: absolute; width:122px; height: 20px; text-decoration:none; left: 281px;   top: 319px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[9]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+							<p:ajax event="change"
+								listener="#{frmprogramacionactividadesControlador.cambiarValorDiez}"
+								update="@form"
+								onstart="if (!validarVaciosViewModal(['CB1154', 'CP9943'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                PF('CP9959').setValue(0);
+                                return false;
+                            }" />
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9960" widgetVar="CP9960"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['PORCENTAJE9']}"
+							decimalPlaces="4" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="27" maxValue="99999.9999"
+							minValue="-99999.9999" converter="convertidorDouble"
+							style="position: absolute; width:63px; height: 20px; text-decoration:none; left: 19px;   top: 319px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[8]}; background:#C0C0C0; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9961" widgetVar="CP9961"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['VALOR9']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="#{frmprogramacionactividadesControlador.accion=='v'?true:false}"
+							tabindex="28" maxValue="999999999999999999.99" minValue="0"
+							converter="convertidorDouble"
+							style="position: absolute; width:122px; height: 20px; text-decoration:none; left: 87px;   top: 319px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[8]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+							<p:ajax event="change"
+								listener="#{frmprogramacionactividadesControlador.cambiarValorNueve}"
+								update="@form"
+								onstart="if (!validarVaciosViewModal(['CB1154', 'CP9943'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                PF('CP9961').setValue(0);
+                                return false;
+                            }" />
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9962" widgetVar="CP9962"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['VALOR5']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="#{frmprogramacionactividadesControlador.accion=='v'?true:false}"
+							tabindex="20" maxValue="999999999999999999.99" minValue="0"
+							converter="convertidorDouble"
+							style="position: absolute; width:122px; height: 20px; text-decoration:none; left: 87px;   top: 269px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[4]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+							<p:ajax event="change"
+								listener="#{frmprogramacionactividadesControlador.cambiarValorCinco}"
+								update="@form"
+								onstart="if (!validarVaciosViewModal(['CB1154', 'CP9943'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                PF('CP9962').setValue(0);
+                                return false;
+                            }" />
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9963" widgetVar="CP9963"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['PORCENTAJE5']}"
+							decimalPlaces="4" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="19" maxValue="99999.9999"
+							minValue="-99999.9999" converter="convertidorDouble"
+							style="position: absolute; width:63px; height: 20px; text-decoration:none; left: 19px;   top: 269px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[4]}; background:#C0C0C0; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9964" widgetVar="CP9964"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['VALOR6']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="#{frmprogramacionactividadesControlador.accion=='v'?true:false}"
+							tabindex="22" maxValue="999999999999999999.99" minValue="0"
+							converter="convertidorDouble"
+							style="position: absolute; width:122px; height: 20px; text-decoration:none; left: 281px;   top: 269px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[5]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+							<p:ajax event="change"
+								listener="#{frmprogramacionactividadesControlador.cambiarValorSeis}"
+								update="@form"
+								onstart="if (!validarVaciosViewModal(['CB1154', 'CP9943'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                PF('CP9964').setValue(0);
+                                return false;
+                            }" />
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9965" widgetVar="CP9965"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['PORCENTAJE6']}"
+							decimalPlaces="4" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="21" maxValue="99999.9999"
+							minValue="-99999.9999" converter="convertidorDouble"
+							style="position: absolute; width:63px; height: 20px; text-decoration:none; left: 214px;   top: 269px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[5]}; background:#C0C0C0; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9966" widgetVar="CP9966"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['PORCENTAJE7']}"
+							decimalPlaces="4" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="23" maxValue="99999.9999"
+							minValue="-99999.9999" converter="convertidorDouble"
+							style="position: absolute; width:63px; height: 20px; text-decoration:none; left: 408px;   top: 269px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[6]}; background:#C0C0C0; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9967" widgetVar="CP9967"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['VALOR7']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="#{frmprogramacionactividadesControlador.accion=='v'?true:false}"
+							tabindex="24" maxValue="999999999999999999.99" minValue="0"
+							converter="convertidorDouble"
+							style="position: absolute; width:122px; height: 20px; text-decoration:none; left: 476px;   top: 269px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[6]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+							<p:ajax event="change"
+								listener="#{frmprogramacionactividadesControlador.cambiarValorSiete}"
+								update="@form"
+								onstart="if (!validarVaciosViewModal(['CB1154', 'CP9943'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                PF('CP9967').setValue(0);
+                                return false;
+                            }" />
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9968" widgetVar="CP9968"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['PORCENTAJE8']}"
+							decimalPlaces="4" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="25" maxValue="99999.9999"
+							minValue="-99999.9999" converter="convertidorDouble"
+							style="position: absolute; width:63px; height: 20px; text-decoration:none; left: 603px;   top: 269px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[7]}; background:#C0C0C0; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP9969" widgetVar="CP9969"
+							styleClass="inputTab numericoDerechaNegr"
+							value="#{frmprogramacionactividadesControlador.registro.campos['VALOR8']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="#{frmprogramacionactividadesControlador.accion=='v'?true:false}"
+							tabindex="26" maxValue="999999999999999999.99" minValue="0"
+							converter="convertidorDouble"
+							style="position: absolute; width:122px; height: 20px; text-decoration:none; left: 671px;   top: 269px; text-align: right; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmprogramacionactividadesControlador.valoresVisibles[7]}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+							<p:ajax event="change"
+								listener="#{frmprogramacionactividadesControlador.cambiarValorOcho}"
+								update="@form"
+								onstart="if (!validarVaciosViewModal(['CB1154', 'CP9943'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                PF('CP9969').setValue(0);
+                                return false;
+                            }" />
+						</pe:inputNumber>
+						<p:inputText id="CP10180" widgetVar="CP10180"
+							styleClass="inputTab"
+							value="#{frmprogramacionactividadesControlador.proyecto}"
+							readonly="true" tabindex="1"
+							style="position: absolute; width:226px; height: 20px; text-decoration:none; left: 232px;   top: 29px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP10181" widgetVar="CP10181"
+							styleClass="inputTab"
+							value="#{frmprogramacionactividadesControlador.registro.campos['CODIGOACTIVIDAD']}"
+							readonly="true" tabindex="3"
+							style="position: absolute; width:226px; height: 20px; text-decoration:none; left: 232px;   top: 55px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP10182" widgetVar="CP10182"
+							styleClass="inputTab"
+							value="#{frmprogramacionactividadesControlador.registro.campos['VIGENCIA']}"
+							readonly="true" tabindex="2"
+							style="position: absolute; width:94px; height: 20px; text-decoration:none; left: 557px;   top: 29px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP10183" widgetVar="CP10183"
+							styleClass="inputTab"
+							value="#{frmprogramacionactividadesControlador.registro.campos['NOMBRETIPOESTADO']}"
+							readonly="true" tabindex="4"
+							style="position: absolute; width:162px; height: 20px; text-decoration:none; left: 557px;   top: 55px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+					</div>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

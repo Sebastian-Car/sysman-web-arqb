@@ -1,0 +1,65 @@
+﻿<data name="gruposcompanias" transports="http https local">
+	<config enableOData="false" id="sysmanirisst">
+		<property name="carbon_datasource_name">SYSMANIRISST</property>
+	</config>
+	<query id="getGruposcompaniasPorGrupoQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  GC.COMPANIA CODIGO, C.NOMBRE  FROM GRUPO_COMPANIA GC INNER JOIN COMPANIA C ON GC.COMPANIA=C.CODIGO WHERE GC.GRUPO= :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="gruposcompanias/porgrupo">
+		<call-query href="getGruposcompaniasPorGrupoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertGruposcompanias" keyColumns="COMPANIA,GRUPO" returnGeneratedKeys="true" useConfig="sysmanirisst">
+		<sql>INSERT INTO GRUPO_COMPANIA (COMPANIA, GRUPO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :GRUPO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_GRUPO":"$GRUPO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="gruposcompanias">
+		<call-query href="insertGruposcompanias">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteGruposcompanias" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>DELETE FROM GRUPO_COMPANIA WHERE GRUPO_COMPANIA.COMPANIA= :KEY_COMPANIA AND GRUPO_COMPANIA.GRUPO= :KEY_GRUPO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_GRUPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="gruposcompanias">
+		<call-query href="deleteGruposcompanias">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_GRUPO" query-param="KEY_GRUPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getGruposcompaniasPaginaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  GC.COMPANIA , GC.GRUPO, C.NOMBRE  FROM GRUPO_COMPANIA GC INNER JOIN COMPANIA C ON GC.COMPANIA=C.CODIGO WHERE GC.GRUPO= :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","GRUPO":"$GRUPO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="gruposcompanias">
+		<call-query href="getGruposcompaniasPaginaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

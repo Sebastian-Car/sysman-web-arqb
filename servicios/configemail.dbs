@@ -1,0 +1,145 @@
+﻿<data name="configemail" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getConfigemailConestadoactivoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, CODIGO, APLICACION, DOMINIO, EMAIL, PASSWORD,(CASE ESTADO WHEN 0 THEN 'false' ELSE 'true' END) ESTADO FROM CONFIG_EMAIL WHERE COMPANIA = :COMPANIA AND APLICACION = :APLICACION AND ESTADO NOT IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","APLICACION":"$APLICACION(type:integer)","DOMINIO":"$DOMINIO","EMAIL":"$EMAIL","PASSWORD":"$PASSWORD","ESTADO":"$ESTADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="APLICACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="configemail/conestadoactivo">
+		<call-query href="getConfigemailConestadoactivoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="APLICACION" query-param="APLICACION"/>
+
+		</call-query>
+	</resource>
+	<query id="insertConfigemail" keyColumns="COMPANIA,CODIGO,APLICACION" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CONFIG_EMAIL (COMPANIA, CODIGO, APLICACION, DOMINIO, EMAIL, PASSWORD, ESTADO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :APLICACION, :DOMINIO, :EMAIL, :PASSWORD, :ESTADO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO","KEY_APLICACION":"$APLICACION(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param defaultValue="" name="DOMINIO" sqlType="STRING"/>
+		<param defaultValue="" name="EMAIL" sqlType="STRING"/>
+		<param defaultValue="" name="PASSWORD" sqlType="STRING"/>
+		<param defaultValue="0" name="ESTADO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="configemail">
+		<call-query href="insertConfigemail">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="DOMINIO" query-param="DOMINIO"/>
+			<with-param name="EMAIL" query-param="EMAIL"/>
+			<with-param name="PASSWORD" query-param="PASSWORD"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="getConfigemailPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CODIGO, APLICACION, CASE DOMINIO WHEN 'smtp.gmail.com' THEN 'Gmail' WHEN 'smtp.live.com' THEN 'Outlook/Hotmail' END DOMINIO, EMAIL,(CASE ESTADO WHEN 0 THEN 'false' ELSE 'true' END) ESTADO FROM CONFIG_EMAIL WHERE COMPANIA = :COMPANIA AND APLICACION = :APLICACION) WHERE (CASE WHEN DOMINIO IS NULL THEN ' ' ELSE UPPER(DOMINIO) END)  LIKE UPPER( '%' || :DOMINIO || '%')  AND (CASE WHEN EMAIL IS NULL THEN ' ' ELSE UPPER(EMAIL) END)  LIKE UPPER( '%' || :EMAIL || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","APLICACION":"$APLICACION(type:integer)","DOMINIO":"$DOMINIO","EMAIL":"$EMAIL","ESTADO":"$ESTADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="DOMINIO" sqlType="STRING"/>
+		<param name="EMAIL" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="configemail">
+		<call-query href="getConfigemailPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="DOMINIO" query-param="DOMINIO"/>
+			<with-param name="EMAIL" query-param="EMAIL"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getConfigemailNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CODIGO, APLICACION, CASE DOMINIO WHEN 'smtp.gmail.com' THEN 'Gmail' WHEN 'smtp.live.com' THEN 'Outlook/Hotmail' END DOMINIO, EMAIL,(CASE ESTADO WHEN 0 THEN 'false' ELSE 'true' END) ESTADO FROM CONFIG_EMAIL WHERE COMPANIA = :COMPANIA AND APLICACION = :APLICACION) WHERE (CASE WHEN DOMINIO IS NULL THEN ' ' ELSE UPPER(DOMINIO) END)  LIKE UPPER( '%' || :DOMINIO || '%')  AND (CASE WHEN EMAIL IS NULL THEN ' ' ELSE UPPER(EMAIL) END)  LIKE UPPER( '%' || :EMAIL || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="DOMINIO" sqlType="STRING"/>
+		<param name="EMAIL" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="configemail/numero">
+		<call-query href="getConfigemailNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="DOMINIO" query-param="DOMINIO"/>
+			<with-param name="EMAIL" query-param="EMAIL"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getConfigemailRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COMPANIA, CODIGO, APLICACION, DOMINIO, CASE DOMINIO WHEN 'smtp.gmail.com' THEN 'Gmail' WHEN 'smtp.live.com' THEN 'Outlook/Hotmail' END DOMINIO_NOM, EMAIL,PASSWORD,(CASE ESTADO WHEN 0 THEN 'false' ELSE 'true' END) ESTADO FROM CONFIG_EMAIL WHERE CONFIG_EMAIL.COMPANIA= :KEY_COMPANIA AND CONFIG_EMAIL.CODIGO= :KEY_CODIGO AND CONFIG_EMAIL.APLICACION= :KEY_APLICACION</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","APLICACION":"$APLICACION(type:integer)","DOMINIO":"$DOMINIO","DOMINIO_NOM":"$DOMINIO_NOM","EMAIL":"$EMAIL","PASSWORD":"$PASSWORD","ESTADO":"$ESTADO(type:boolean)"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_APLICACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="configemail/data">
+		<call-query href="getConfigemailRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_APLICACION" query-param="KEY_APLICACION"/>
+
+		</call-query>
+	</resource>
+	<query id="updateConfigemail" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CONFIG_EMAIL SET COMPANIA=:COMPANIA, CODIGO=:CODIGO, APLICACION=:APLICACION, DOMINIO=:DOMINIO, EMAIL=:EMAIL, PASSWORD=:PASSWORD, ESTADO=:ESTADO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CONFIG_EMAIL.COMPANIA= :KEY_COMPANIA AND CONFIG_EMAIL.CODIGO= :KEY_CODIGO AND CONFIG_EMAIL.APLICACION= :KEY_APLICACION</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="DOMINIO" sqlType="STRING"/>
+		<param name="EMAIL" sqlType="STRING"/>
+		<param name="PASSWORD" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_APLICACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="configemail">
+		<call-query href="updateConfigemail">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="DOMINIO" query-param="DOMINIO"/>
+			<with-param name="EMAIL" query-param="EMAIL"/>
+			<with-param name="PASSWORD" query-param="PASSWORD"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_APLICACION" query-param="KEY_APLICACION"/>
+
+		</call-query>
+	</resource>
+
+</data>

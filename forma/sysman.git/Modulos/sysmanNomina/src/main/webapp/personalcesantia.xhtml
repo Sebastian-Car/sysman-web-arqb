@@ -1,0 +1,751 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+              asignarEventoContGrande();
+validarCargaGrandes();
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TG_CESANTIAS2}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<section class="radius">
+			<f:event type="preRenderView"
+				listener="#{personalcesantiasControlador.cargarForma}" />
+			<div id="FR42" style="height: auto;">
+				<h:form style="height: 100%;" id="FRFR42">
+					<p:growl id="alert" showDetail="true" sticky="false"
+						widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+					<p:dialog dynamic="true" closable="false" closeOnEscape="false"
+						header="#{sessionBean.tituloMensajes}" id="DG213"
+						widgetVar="DG213" resizable="false" modal="true" width="320"
+						visible="#{personalcesantiasControlador.dialogo}">
+						<h:outputLabel value="" style="width: 100%;" escape="false" />
+						<h:panelGrid columns="2" cellpadding="2" width="100%">
+							<h:outputLabel value="#{idm.TG_FECHA_INICIAL}:" id="LCP49881"
+								style="display:true;" class="cont-inst-element" />
+							<p:calendar locale="es" navigator="true" mask="true"
+								pattern="dd/MM/yyyy" id="CP49881" widgetVar="CP49881"
+								value="#{personalcesantiasControlador.fechaInicial}"
+								label="LCP49881" style="display:true;float: left;"
+								class="cont-inst-element">
+							</p:calendar>
+							<h:outputLabel value="#{idm.TG_FECHA_FINAL2}:" id="LCP49880"
+								style="display:true;" class="cont-inst-element" />
+							<p:calendar locale="es" navigator="true" mask="true"
+								pattern="dd/MM/yyyy" id="CP49880" widgetVar="CP49880"
+								value="#{personalcesantiasControlador.fechaFinal}"
+								label="LCP49880" style="display:true;float: left;"
+								class="cont-inst-element">
+							</p:calendar>
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TG_ACEPTAR}"
+										style="padding:10px; width: 48%;" update="alert,@form"
+										ajax="false"
+										oncomplete=" if(false){ PF('DG213').hide(); PF('blockCarga').hide();}  "
+										onclick="  if(false){ PF('blockCarga').show(); }else{    PF('DG213').hide(); }  "
+										actionListener="#{personalcesantiasControlador.aceptarentreFechas}">
+										<p:fileDownload
+											value="#{personalcesantiasControlador.archivoDescarga}" />
+									</p:commandButton>
+									<p:button value="#{idm.TG_CANCELAR}"
+										style="padding:10px; width: 48%;" href="#"
+										onclick="PF('DG213').hide();" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<div id="PL99" class="
+"
+						style="position: relative; height: 173px;">
+						<p:inputText id="CB5241" widgetVar="CB5241"
+							onfocus="if(!false){PF('BTCB5241').jq.focus();}"
+							onclick="if(!false){PF('PLCB5241').show();}"
+							value="#{personalcesantiasControlador.registro.campos['ID_DE_EMPLEADO']}"
+							tabindex="-1"
+							style="cursor:pointer; position: absolute; width:95px; height: 20px; left: 77px;   top: 89px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+						<p:commandButton id="BTCB5241" onblur="PF('CB5241').jq.blur();"
+							onfocus="PF('CB5241').jq.addClass('ui-state-focus');"
+							widgetVar="BTCB5241" type="button"
+							icon="ui-icon ui-icon-triangle-1-s ui-c"
+							style="position: absolute; width:25px; height:  20px; left: 170px;   top: 89px; display:block; "
+							tabindex="6" />
+						<p:overlayPanel widgetVar="PLCB5241" id="PLCB5241"
+							onShow="if(PF('TBCB5241').nuevo){ PF('TBCB5241').filter(); PF('TBCB5241').nuevo=false;}"
+							onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB5241').jq.focus();}"
+							my="left bottom" at="left bottom" for="BTCB5241"
+							hideEffect="fade" style="width: 500px">
+							<p:dataTable id="TBCB5241" widgetVar="TBCB5241" var="reg"
+								value="#{personalcesantiasControlador.listaEmpleado}"
+								editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+								currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+								rows="11" rowIndexVar="rowIndex" selectionMode="single"
+								rowKey="#{reg.campos['ID_DE_EMPLEADO']}" paginator="true"
+								lazy="true">
+								<p:ajax event="rowSelect"
+									listener="#{personalcesantiasControlador.seleccionarFilaEmpleado}"
+									update=":FRFR42:CB5241,@([id$=CP49476]),FRFR42:TBFR42,@([id$=BT35]),@([id$=BT36]),@([id$=BT37]),@([id$=BT38]),@([id$=BT39])"
+									oncomplete="PF('PLCB5241').hide(); " />
+								<p:column headerText="#{idm.TG_CODIGO7}"
+									style="text-align:center; " width="20%"
+									filterBy="#{reg.campos['ID_DE_EMPLEADO']}"
+									filterMatchMode="startsWith" filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['ID_DE_EMPLEADO']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_CEDULA4}"
+									style="text-align:center; " width="20%"
+									filterBy="#{reg.campos['NUMERO_DCTO']}"
+									filterMatchMode="startsWith" filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NUMERO_DCTO']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_NOMBRE3}"
+									style="text-align:center; " width="60%"
+									filterBy="#{reg.campos['NOM']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NOM']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+							</p:dataTable>
+						</p:overlayPanel>
+						<p:commandButton id="BT37" widgetVar="BT37"
+							disabled="#{personalcesantiasControlador.estado}" ajax="false"
+							tabindex="4" value="#{idm.TT_BT37}"
+							actionListener="#{personalcesantiasControlador.oprimirlistadocesempleado}"
+							style="position: absolute; width:94px; height: 46px; left: 504px;   top: 73px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#AAAAAA  solid  1px;">
+							<p:fileDownload
+								value="#{personalcesantiasControlador.archivoDescarga}" />
+						</p:commandButton>
+						<p:commandButton id="BT38" widgetVar="BT38"
+							disabled="#{personalcesantiasControlador.estado}"
+							update="@([id$=DG213])" ajax="false" tabindex="5"
+							value="#{idm.TT_BT38}"
+							actionListener="#{personalcesantiasControlador.oprimircesantiasentrefechas}"
+							style="position: absolute; width:107px; height: 46px; left: 855px;   top: 72px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#AAAAAA  solid  1px;">
+						</p:commandButton>
+						<p:commandButton id="BT39" widgetVar="BT39"
+							disabled="#{personalcesantiasControlador.estado}" ajax="false"
+							tabindex="7" value="#{idm.TT_BT39}"
+							actionListener="#{personalcesantiasControlador.oprimirMIGRAR}"
+							style="position: absolute; width:226px; height: 46px; left: 967px;   top: 72px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#AAAAAA  solid  1px;">
+						</p:commandButton>
+						<p:commandButton id="BT35" widgetVar="BT35"
+							disabled="#{personalcesantiasControlador.estado}" ajax="false"
+							tabindex="1" value="#{idm.TT_BT35}"
+							actionListener="#{personalcesantiasControlador.oprimirRESUMEN}"
+							style="position: absolute; width:89px; height: 46px; left: 409px;   top: 73px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#AAAAAA  solid  1px;">
+							<p:fileDownload
+								value="#{personalcesantiasControlador.archivoDescarga}" />
+						</p:commandButton>
+						<p:commandButton id="BT36" widgetVar="BT36"
+							disabled="#{personalcesantiasControlador.estado}" ajax="false"
+							tabindex="3" value="#{idm.TT_BT36}"
+							actionListener="#{personalcesantiasControlador.oprimirFECHAS}"
+							style="position: absolute; width:94px; height: 46px; left: 755px;   top: 72px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#AAAAAA  solid  1px;">
+							<p:fileDownload
+								value="#{personalcesantiasControlador.archivoDescarga}" />
+						</p:commandButton>
+						<p:calendar locale="es" navigator="true" mask="true"
+							pattern="dd/MM/yyyy" id="CP366" widgetVar="CP366"
+							value="#{personalcesantiasControlador.registro.campos['#ORIGENCONTROL#']}"
+							placeholder="#{idm.TG_FECHA_A_REALIZAR_EL_ABONO_EN_LAS_CUENTAS}"
+							tabindex="2"
+							style="position: absolute; width:143px; height: 20px; left: 604px;   top: 95px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:none; background:#FFFFFF; color:#000000; border:#000000  none  1px ;">
+						</p:calendar>
+						<p:inputText id="CP49476" widgetVar="CP49476"
+							styleClass="inputTab"
+							value="#{personalcesantiasControlador.registro.campos['NOMBRE']}"
+							readonly="true" tabindex="8"
+							style="position: absolute; width:206px; height: 20px; text-decoration:none; left: 197px;   top: 89px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<h:outputLabel id="LB40640" value="#{idm.TT_LB40640}"
+							style="position: absolute; width:616px; height: 38px; left: 10px;   top: 130px; text-align: left; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#2F3699; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB230" value="#{idm.TG_CODIGO8}"
+							style="position: absolute; width:66px; height: 20px; left: 5px;   top: 89px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB229" value="#{idm.TG_FECHA_DEL_REPORTE}"
+							style="position: absolute; width:149px; height: 19px; left: 600px;   top: 75px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:none; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB227" value="#{idm.TT_LB227}"
+							style="position: absolute; width:823px; height: 39px; left: 0px;   top: 5px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}" id="dlg"
+						widgetVar="dlg" resizable="false" modal="true"
+						rendered="#{personalcesantiasControlador.permisos[0]}"
+						onHide="restaurarCampos(['CP49372','CP49373','CP49375','CP49376','CP49377','CP49378','CP49379','CP49446'])">
+						<h:panelGrid columns="2" cellpadding="2">
+							<h:outputLabel value="#{idm.TC_CK1437}:" id="LCK1437"
+								style="display:block" class="cont-inst-element" />
+							<p:selectBooleanCheckbox id="CK1437" widgetVar="CK1437"
+								value="#{personalcesantiasControlador.registro.campos['CONSIGNADAS']}"
+								label="LCK1437" style="min-width: 80px; display:block"
+								class="cont-inst-element">
+							</p:selectBooleanCheckbox>
+							<h:outputLabel value="#{idm.TC_CP49370}:" id="LCP49370"
+								class="cont-inst-element" />
+							<p:inputText id="CP49370" widgetVar="CP49370"
+								styleClass="inputTab"
+								value="#{personalcesantiasControlador.registro.campos['NUMRESOLUCION']}"
+								label="LCP49370" style=" width: 95%; float: left;"
+								class="cont-inst-element">
+							</p:inputText>
+							<h:outputLabel value="#{idm.TG_FECHA4}:" id="LCP49371"
+								class="cont-inst-element" />
+							<p:calendar locale="es" navigator="true" mask="true"
+								pattern="dd/MM/yyyy" id="CP49371" widgetVar="CP49371"
+								value="#{personalcesantiasControlador.registro.campos['FECHARESOLUCION']}"
+								label="LCP49371" style="float: left;" class="cont-inst-element">
+							</p:calendar>
+							<h:outputLabel value="#{idm.TC_CP49372}:" id="LCP49372"
+								class="cont-inst-element" />
+							<pe:inputNumber id="CP49372" widgetVar="CP49372"
+								value="#{personalcesantiasControlador.registro.campos['CESANTIA']}"
+								label="LCP49372" decimalPlaces="2" thousandSeparator=","
+								decimalSeparator="." styleClass="inputTab"
+								maxValue="999999999999999999.99"
+								minValue="-999999999999999999.99" converter="convertidorDouble"
+								style=" width: 95%;float: left;" class="cont-inst-element">
+							</pe:inputNumber>
+							<h:outputLabel value="#{idm.TC_CP49373}:" id="LCP49373"
+								class="cont-inst-element" />
+							<pe:inputNumber id="CP49373" widgetVar="CP49373"
+								value="#{personalcesantiasControlador.registro.campos['INTERES']}"
+								label="LCP49373" decimalPlaces="2" thousandSeparator=","
+								decimalSeparator="." styleClass="inputTab"
+								maxValue="999999999999999999.99"
+								minValue="-999999999999999999.99" converter="convertidorDouble"
+								style=" width: 95%;float: left;" class="cont-inst-element">
+							</pe:inputNumber>
+							<h:outputLabel value="#{idm.TC_CP49374}:" id="LCP49374"
+								class="cont-inst-element" />
+							<p:calendar locale="es" navigator="true" mask="true"
+								pattern="dd/MM/yyyy" id="CP49374" widgetVar="CP49374"
+								value="#{personalcesantiasControlador.registro.campos['FECHA_INI_ANT_CES']}"
+								label="LCP49374" style="float: left;" class="cont-inst-element">
+							</p:calendar>
+							<h:outputLabel value="#{idm.TC_CP49375}:" id="LCP49375"
+								class="cont-inst-element" />
+							<p:calendar locale="es" navigator="true" mask="true"
+								pattern="dd/MM/yyyy" id="CP49375" widgetVar="CP49375"
+								value="#{personalcesantiasControlador.registro.campos['FECHA']}"
+								label="LCP49375" style="float: left;" class="cont-inst-element">
+							</p:calendar>
+							<h:outputLabel value="#{idm.TC_CP49376}:" id="LCP49376"
+								class="cont-inst-element" />
+							<pe:inputNumber id="CP49376" widgetVar="CP49376"
+								value="#{personalcesantiasControlador.registro.campos['PROMVARIABLES']}"
+								label="LCP49376" decimalPlaces="2" thousandSeparator=","
+								decimalSeparator="." styleClass="inputTab"
+								maxValue="999999999999999999.99"
+								minValue="-999999999999999999.99" converter="convertidorDouble"
+								style=" width: 95%;float: left;" class="cont-inst-element">
+							</pe:inputNumber>
+							<h:outputLabel value="#{idm.TC_CP49377}:" id="LCP49377"
+								class="cont-inst-element" />
+							<pe:inputNumber id="CP49377" widgetVar="CP49377"
+								value="#{personalcesantiasControlador.registro.campos['RETIRADAS']}"
+								label="LCP49377" decimalPlaces="2" thousandSeparator=","
+								decimalSeparator="." styleClass="inputTab"
+								maxValue="999999999999999999.99"
+								minValue="-999999999999999999.99" converter="convertidorDouble"
+								style=" width: 95%;float: left;" class="cont-inst-element">
+							</pe:inputNumber>
+							<h:outputLabel value="#{idm.TG_DIAS2}:" id="LCP49378"
+								class="cont-inst-element" />
+							<p:inputText id="CP49378" widgetVar="CP49378"
+								styleClass="inputTab"
+								value="#{personalcesantiasControlador.registro.campos['DIAS']}"
+								label="LCP49378" style=" width: 95%; float: left;"
+								class="cont-inst-element" maxlength="10">
+								<pe:keyFilter mask="pint" />
+							</p:inputText>
+							<h:outputLabel value="#{idm.TG_DIAS_LIC}:" id="LCP49379"
+								class="cont-inst-element" />
+							<p:inputText id="CP49379" widgetVar="CP49379"
+								styleClass="inputTab"
+								value="#{personalcesantiasControlador.registro.campos['DIAS_LICENCIAS']}"
+								label="LCP49379" style=" width: 95%; float: left;"
+								class="cont-inst-element" maxlength="10">
+								<pe:keyFilter mask="pint" />
+							</p:inputText>
+							<h:outputLabel value="#{idm.TC_CP49446}:" id="LCP49446"
+								class="cont-inst-element" />
+							<p:inputText id="CP49446" widgetVar="CP49446"
+								styleClass="inputTab"
+								value="#{personalcesantiasControlador.registro.campos['PARCIALES']}"
+								label="LCP49446" style=" width: 95%; float: left;"
+								class="cont-inst-element" maxlength="10">
+								<pe:keyFilter mask="pint" />
+							</p:inputText>
+							<h:outputLabel value="#{idm.TG_OBSERVACIONES3}:" id="LCP49447"
+								class="cont-inst-element" />
+							<p:inputText id="CP49447" widgetVar="CP49447"
+								styleClass="inputTab"
+								value="#{personalcesantiasControlador.registro.campos['OBSERVACIONES_C']}"
+								label="LCP49447" style=" width: 95%; float: left;"
+								class="cont-inst-element">
+							</p:inputText>
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TI_GUARDAR}"
+										style="padding:10px;" update="FRFR42,"
+										actionListener="#{personalcesantiasControlador.agregarRegistroNuevo}"
+										oncomplete="PF('dlg').hide(); PF('blockGuardar').hide();"
+										onclick="     if (!validarVaciosModal(['CP49372','CP49373','CP49375','CP49376','CP49377','CP49378','CP49379','CP49446'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockGuardar').show();" />
+									<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+										href="#" onclick="PF('dlg').hide();" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<p:confirmDialog global="true" showEffect="fade">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<div id="PL100" class="
+"
+						style="position: relative; height: auto;">
+						<p:remoteCommand name="refreshTab" update="TBFR42"
+							oncomplete="PF('blockGuardar').hide();" />
+						<p:dataTable id="TBFR42" var="reg"
+							value="#{personalcesantiasControlador.listaInicial}"
+							editable="true" widgetVar="TBFR42"
+							emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="10" rowIndexVar="rowNun" paginator="true" scrollable="true"
+							scrollWidth="100%" lazy="true">
+							<f:facet name="{Exporters}"
+								rendered="#{personalcesantiasControlador.permisos[4] }">
+								<h:commandLink
+									rendered="#{personalcesantiasControlador.permisos[4] }"
+									title="#{idm.TI_VER_EXCEL}">
+									<p:graphicImage name="/images/general/excel.png" width="24" />
+									<p:dataExporter type="xls" target="TBFR42" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+								<h:commandLink
+									rendered="#{personalcesantiasControlador.permisos[4] }"
+									title="#{idm.TI_VER_PDF}">
+									<p:graphicImage name="/images/general/pdf.png" width="24" />
+									<p:dataExporter type="pdf" target="TBFR42" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+							</f:facet>
+							<p:ajax event="rowEdit" update=":FRFR42:alert,"
+								listener="#{personalcesantiasControlador.editar}"
+								oncomplete="refreshTab(); mostarEditor();"
+								onstart="PF('blockGuardar').show();" />
+							<p:ajax event="rowEditCancel"
+								listener="#{personalcesantiasControlador.cancelarEdicion}"
+								oncomplete="  mostarEditor();" />
+							<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+							<f:facet name="header">
+								<div style="position: relative; height: 50px">
+									<h:panelGroup class="acme"
+										rendered="#{personalcesantiasControlador.permisos[0]  }">
+										<h:outputLink value="javascript:void(0)"
+											onclick="
+		PF('dlg').show();
+		"
+											title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;">
+											<center>
+												<p:graphicImage name="/images/menus/32/add.png" />
+												<div>#{idm.TI_NUEVO}</div>
+											</center>
+										</h:outputLink>
+									</h:panelGroup>
+									<div class="acme">
+										<h:outputLink value="#{request.contextPath}/menu.sysman"
+											title="Volver al menú" style="padding-top: 10px;">
+											<center>
+												<p:graphicImage name="/images/menus/32/close.png" />
+												<div>#{idm.TI_CERRAR}</div>
+											</center>
+										</h:outputLink>
+									</div>
+								</div>	 
+                            #{idm.TG_CESANTIAS2}
+                            </f:facet>
+							<p:column width="30" exportable="false"
+								rendered="#{personalcesantiasControlador.permisos[2] }">
+								<p:rowEditor />
+							</p:column>
+							<p:column width="30" exportable="false"
+								rendered="#{personalcesantiasControlador.permisos[1] }">
+								<p:commandButton icon="ui-icon-trash"
+									title="#{idm.TI_ELIMINAR_REGISTRO}"
+									onclick="PF('blockGuardar').show()"
+									action="#{personalcesantiasControlador.eliminarReg(reg)}"
+									oncomplete="refreshTab(); PF('blockGuardar').hide();"
+									update=":FRFR42:alert,"
+									style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;">
+									<p:confirm header="#{sessionBean.tituloMensajes}"
+										message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+								</p:commandButton>
+							</p:column>
+							<p:column headerText="#{idm.TC_CK1437}"
+								filterBy="#{reg.campos['CONSIGNADAS']}" filterMatchMode="exact"
+								width="150" rendered="true" styleClass="
+">
+								<f:facet name="filter">
+									<p:selectOneMenu onchange="PF('TBFR42').filter()">
+										<f:selectItem itemLabel="#{idm.TI_TODOS}" itemValue="" />
+										<f:selectItem itemLabel="#{idm.TI_SI}" itemValue="true" />
+										<f:selectItem itemLabel="#{idm.TI_NO}" itemValue="false" />
+									</p:selectOneMenu>
+								</f:facet>
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText
+											value="#{reg.campos['CONSIGNADAS']=='false'? 'No':'Si'}" />
+									</f:facet>
+									<f:facet name="input">
+										<center>
+											<h:selectBooleanCheckbox id="CK1437"
+												value="#{reg.campos['CONSIGNADAS']}">
+											</h:selectBooleanCheckbox>
+										</center>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CP49370}"
+								filterBy="#{reg.campos['NUMRESOLUCION']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="150"
+								rendered="true" styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['NUMRESOLUCION']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP49370" styleClass="inputTab"
+											value="#{reg.campos['NUMRESOLUCION']}" style="width:100%">
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_FECHA4}"
+								filterBy="#{reg.campos['FECHARESOLUCION']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="150"
+								rendered="true" styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['FECHARESOLUCION']}">
+											<f:convertDateTime pattern="dd/MM/yyyy"
+												timeZone="#{sessionBean.timeZone}" />
+										</h:outputText>
+									</f:facet>
+									<f:facet name="input">
+										<p:calendar locale="es" navigator="true" mask="true"
+											pattern="dd/MM/yyyy" id="CP49371" widgetVar="CP49371"
+											value="#{reg.campos['FECHARESOLUCION']}" style="width:100%">
+										</p:calendar>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CP49372}"
+								filterBy="#{reg.campos['CESANTIA']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="150" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['CESANTIA']}"
+											converter="convertidorDoubleContinuo"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<pe:inputNumber id="CP49372" styleClass="inputTab"
+											value="#{reg.campos['CESANTIA']}" decimalPlaces="2"
+											thousandSeparator="," decimalSeparator="."
+											maxValue="999999999999999999.99"
+											minValue="-999999999999999999.99"
+											converter="convertidorDouble" style="width: 95%">
+										</pe:inputNumber>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CP49373}"
+								filterBy="#{reg.campos['INTERES']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="150" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['INTERES']}"
+											converter="convertidorDoubleContinuo"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<pe:inputNumber id="CP49373" styleClass="inputTab"
+											value="#{reg.campos['INTERES']}" decimalPlaces="2"
+											thousandSeparator="," decimalSeparator="."
+											maxValue="999999999999999999.99"
+											minValue="-999999999999999999.99"
+											converter="convertidorDouble" style="width: 95%">
+										</pe:inputNumber>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CP49374}"
+								filterBy="#{reg.campos['FECHA_INI_ANT_CES']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="150"
+								rendered="true" styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['FECHA_INI_ANT_CES']}">
+											<f:convertDateTime pattern="dd/MM/yyyy"
+												timeZone="#{sessionBean.timeZone}" />
+										</h:outputText>
+									</f:facet>
+									<f:facet name="input">
+										<p:calendar locale="es" navigator="true" mask="true"
+											pattern="dd/MM/yyyy" id="CP49374" widgetVar="CP49374"
+											value="#{reg.campos['FECHA_INI_ANT_CES']}" style="width:100%">
+										</p:calendar>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CP49375}"
+								filterBy="#{reg.campos['FECHA']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="150" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['FECHA']}">
+											<f:convertDateTime pattern="dd/MM/yyyy"
+												timeZone="#{sessionBean.timeZone}" />
+										</h:outputText>
+									</f:facet>
+									<f:facet name="input">
+										<p:calendar locale="es" navigator="true" mask="true"
+											pattern="dd/MM/yyyy" id="CP49375" widgetVar="CP49375"
+											value="#{reg.campos['FECHA']}" style="width:100%">
+										</p:calendar>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CP49376}"
+								filterBy="#{reg.campos['PROMVARIABLES']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="150"
+								rendered="true" styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['PROMVARIABLES']}"
+											converter="convertidorDoubleContinuo"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<pe:inputNumber id="CP49376" styleClass="inputTab"
+											value="#{reg.campos['PROMVARIABLES']}" decimalPlaces="2"
+											thousandSeparator="," decimalSeparator="."
+											maxValue="999999999999999999.99"
+											minValue="-999999999999999999.99"
+											converter="convertidorDouble" style="width: 95%">
+										</pe:inputNumber>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CP49377}"
+								filterBy="#{reg.campos['RETIRADAS']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="150" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['RETIRADAS']}"
+											converter="convertidorDoubleContinuo"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<pe:inputNumber id="CP49377" styleClass="inputTab"
+											value="#{reg.campos['RETIRADAS']}" decimalPlaces="2"
+											thousandSeparator="," decimalSeparator="."
+											maxValue="999999999999999999.99"
+											minValue="-999999999999999999.99"
+											converter="convertidorDouble" style="width: 95%">
+										</pe:inputNumber>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_DIAS2}"
+								filterBy="#{reg.campos['DIAS']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="150" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['DIAS']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP49378" styleClass="inputTab"
+											value="#{reg.campos['DIAS']}" style="width:100%"
+											maxlength="10">
+											<pe:keyFilter mask="pint" />
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_DIAS_LIC}"
+								filterBy="#{reg.campos['DIAS_LICENCIAS']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="150"
+								rendered="true" styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['DIAS_LICENCIAS']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP49379" styleClass="inputTab"
+											value="#{reg.campos['DIAS_LICENCIAS']}" style="width:100%"
+											maxlength="10">
+											<pe:keyFilter mask="pint" />
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CP49446}"
+								filterBy="#{reg.campos['PARCIALES']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="150" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['PARCIALES']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP49446" styleClass="inputTab"
+											value="#{reg.campos['PARCIALES']}" style="width:100%"
+											maxlength="10">
+											<pe:keyFilter mask="pint" />
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_OBSERVACIONES3}"
+								filterBy="#{reg.campos['OBSERVACIONES_C']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="150"
+								rendered="true" styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['OBSERVACIONES_C']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP49447" styleClass="inputTab"
+											value="#{reg.campos['OBSERVACIONES_C']}" style="width:100%">
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:columnGroup type="footer">
+								<p:row style="height: 0px; border: none">
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" />
+									<p:column style="border:1px solid transparent;" />
+								</p:row>
+								<p:row>
+									<p:column id="LP306" footerText="#{idm.TG_TOTALES5}"
+										colspan="5"
+										style="text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+									<p:column id="LP297"
+										footerText="#{personalcesantiasControlador.anticipoCesantias}"
+										colspan="1"
+										style="text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+									<p:column id="LP298"
+										footerText="#{personalcesantiasControlador.interes}"
+										colspan="1"
+										style="text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+									<p:column id="LP301"
+										footerText="#{personalcesantiasControlador.baseCesantias}"
+										colspan="3"
+										style="text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+									<p:column id="LP302"
+										footerText="#{personalcesantiasControlador.entregasRetiradas}"
+										colspan="1"
+										style="text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+									<p:column id="LP303"
+										footerText="#{personalcesantiasControlador.dias}" colspan="1"
+										style="text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+									<p:column id="LP304"
+										footerText="#{personalcesantiasControlador.diaslicencias}"
+										colspan="1"
+										style="text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+									<p:column id="LP305"
+										footerText="#{personalcesantiasControlador.parciales}"
+										colspan="4"
+										style="text-align: left; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+								</p:row>
+							</p:columnGroup>
+							<p:column width="30" exportable="false"
+								rendered="#{personalcesantiasControlador.permisos[2] }">
+								<p:rowEditor />
+							</p:column>
+							<p:column width="30" exportable="false"
+								rendered="#{personalcesantiasControlador.permisos[1] }">
+								<p:commandButton icon="ui-icon-trash"
+									title="#{idm.TI_ELIMINAR_REGISTRO}"
+									onclick="PF('blockGuardar').show()"
+									action="#{personalcesantiasControlador.eliminarReg(reg)}"
+									oncomplete="refreshTab(); PF('blockGuardar').hide();"
+									update=":FRFR42:alert,"
+									style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;">
+									<p:confirm header="#{sessionBean.tituloMensajes}"
+										message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+								</p:commandButton>
+							</p:column>
+						</p:dataTable>
+						<p:blockUI block="FRFR42" widgetVar="blockGuardar">
+                        #{idm.TI_GUARDANDO_CAMBIOS}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+						<p:blockUI block="FRFR42" widgetVar="blockCarga" trigger="TBFR42,">
+                        #{idm.TI_CARGANDO}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+					</div>
+				</h:form>
+			</div>
+		</section>
+	</ui:define>
+</ui:composition>

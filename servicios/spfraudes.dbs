@@ -1,0 +1,439 @@
+﻿<data name="spfraudes" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSpfraudesPagNoRegistradosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_FRAUDES.COMPANIA, SP_FRAUDES.CONSECUTIVO, SP_FRAUDES.NOMBRE, SP_FRAUDES.DIRECCION, SP_FRAUDES.BARRIO, BARRIOS.NOMBRE NOMBREBARRIO, SP_FRAUDES.TIPO, SP_FRAUDES_TIPO.NOMBRE NOMBRETIPO, CASE WHEN SP_FRAUDES.ESTADO ='A' THEN 'Abierto' WHEN SP_FRAUDES.ESTADO= 'C' THEN 'Cerrado' END ESTADO  FROM SP_FRAUDES LEFT JOIN BARRIOS ON SP_FRAUDES.BARRIO = BARRIOS.CODIGO INNER JOIN SP_FRAUDES_TIPO ON SP_FRAUDES.COMPANIA = SP_FRAUDES_TIPO.COMPANIA AND SP_FRAUDES.TIPO = SP_FRAUDES_TIPO.CONSECUTIVO WHERE SP_FRAUDES.COMPANIA = :COMPANIA AND SP_FRAUDES.CICLO = :CICLO AND SP_FRAUDES.EXTERNO NOT IN (0)) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN DIRECCION IS NULL THEN ' ' ELSE UPPER(DIRECCION) END)  LIKE UPPER( '%' || :DIRECCION || '%')  AND (CASE WHEN NOMBREBARRIO IS NULL THEN ' ' ELSE UPPER(NOMBREBARRIO) END)  LIKE UPPER( '%' || :NOMBREBARRIO || '%')  AND (CASE WHEN NOMBRETIPO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPO) END)  LIKE UPPER( '%' || :NOMBRETIPO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO","NOMBRE":"$NOMBRE","DIRECCION":"$DIRECCION","BARRIO":"$BARRIO","NOMBREBARRIO":"$NOMBREBARRIO","TIPO":"$TIPO","NOMBRETIPO":"$NOMBRETIPO","ESTADO":"$ESTADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DIRECCION" sqlType="STRING"/>
+		<param name="NOMBREBARRIO" sqlType="STRING"/>
+		<param name="NOMBRETIPO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spfraudes/noregistrados/pag">
+		<call-query href="getSpfraudesPagNoRegistradosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="NOMBREBARRIO" query-param="NOMBREBARRIO"/>
+			<with-param name="NOMBRETIPO" query-param="NOMBRETIPO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpfraudesNumNoRegistradosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_FRAUDES.COMPANIA, SP_FRAUDES.CONSECUTIVO, SP_FRAUDES.NOMBRE, SP_FRAUDES.DIRECCION, SP_FRAUDES.BARRIO, BARRIOS.NOMBRE NOMBREBARRIO, SP_FRAUDES.TIPO, SP_FRAUDES_TIPO.NOMBRE NOMBRETIPO, CASE WHEN SP_FRAUDES.ESTADO ='A' THEN 'Abierto' WHEN SP_FRAUDES.ESTADO= 'C' THEN 'Cerrado' END ESTADO  FROM SP_FRAUDES LEFT JOIN BARRIOS ON SP_FRAUDES.BARRIO = BARRIOS.CODIGO INNER JOIN SP_FRAUDES_TIPO ON SP_FRAUDES.COMPANIA = SP_FRAUDES_TIPO.COMPANIA AND SP_FRAUDES.TIPO = SP_FRAUDES_TIPO.CONSECUTIVO WHERE SP_FRAUDES.COMPANIA = :COMPANIA AND SP_FRAUDES.CICLO = :CICLO AND SP_FRAUDES.EXTERNO NOT IN (0)) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN DIRECCION IS NULL THEN ' ' ELSE UPPER(DIRECCION) END)  LIKE UPPER( '%' || :DIRECCION || '%')  AND (CASE WHEN NOMBREBARRIO IS NULL THEN ' ' ELSE UPPER(NOMBREBARRIO) END)  LIKE UPPER( '%' || :NOMBREBARRIO || '%')  AND (CASE WHEN NOMBRETIPO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPO) END)  LIKE UPPER( '%' || :NOMBRETIPO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DIRECCION" sqlType="STRING"/>
+		<param name="NOMBREBARRIO" sqlType="STRING"/>
+		<param name="NOMBRETIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfraudes/noregistrados/num">
+		<call-query href="getSpfraudesNumNoRegistradosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="NOMBREBARRIO" query-param="NOMBREBARRIO"/>
+			<with-param name="NOMBRETIPO" query-param="NOMBRETIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpfraudesTodosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_FRAUDES.COMPANIA, SP_FRAUDES.CONSECUTIVO, SP_FRAUDES.CICLO, SP_FRAUDES.CODIGORUTA, PCK_SERVICIOS_PUBLICOS.FC_NOMBREPERIODO(SP_FRAUDES.COMPANIA, SP_FRAUDES.ANO, SP_FRAUDES.PERIODO, NULL) PER, SP_FRAUDES.ANO, SP_FRAUDES.PERIODO, SP_FRAUDES.TIPO,(TO_CHAR(SP_FRAUDES.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, SP_FRAUDES.ESTADO, SP_FRAUDES.ANOCOBRO, SP_FRAUDES.PERIODOCOBRO, SP_FRAUDES.VALORACOBRAR, SP_FRAUDES.CUOTASDECOBRO,(TO_CHAR(SP_FRAUDES.FECHAINSPECCION,'DD/MM/YYYY HH24:MI:SS')) FECHAINSPECCION,(TO_CHAR(SP_FRAUDES.FECHANOTIFICACION,'DD/MM/YYYY HH24:MI:SS')) FECHANOTIFICACION, SP_FRAUDES.DECISION,(TO_CHAR(SP_FRAUDES.FECHACIERRE,'DD/MM/YYYY HH24:MI:SS')) FECHACIERRE, SP_FRAUDES.ANOCIERRE, SP_FRAUDES.PERIODOCIERRE,(TO_CHAR(SP_FRAUDES.FECHAMEDIACION,'DD/MM/YYYY HH24:MI:SS')) FECHAMEDIACION, SP_FRAUDES.METROSCOBRAR, SP_FRAUDES.NOMBRE, SP_FRAUDES.DIRECCION, SP_FRAUDES.BARRIO, SP_FRAUDES.PERIODOINSCRIPCION,(TO_CHAR(SP_FRAUDES.FECHAINSCRIPCION,'DD/MM/YYYY HH24:MI:SS')) FECHAINSCRIPCION,(CASE SP_FRAUDES.EXTERNO WHEN 0 THEN 'false' ELSE 'true' END) EXTERNO, SP_FRAUDES.CREATED_BY, SP_FRAUDES.MODIFIED_BY,(TO_CHAR(SP_FRAUDES.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED,(TO_CHAR(SP_FRAUDES.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED FROM SP_FRAUDES WHERE COMPANIA= :KEY_COMPANIA AND CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO","CICLO":"$CICLO(type:integer)","CODIGORUTA":"$CODIGORUTA","PER":"$PER","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO","TIPO":"$TIPO","FECHA":"$FECHA","ESTADO":"$ESTADO","ANOCOBRO":"$ANOCOBRO(type:integer)","PERIODOCOBRO":"$PERIODOCOBRO","VALORACOBRAR":"$VALORACOBRAR","CUOTASDECOBRO":"$CUOTASDECOBRO","FECHAINSPECCION":"$FECHAINSPECCION","FECHANOTIFICACION":"$FECHANOTIFICACION","DECISION":"$DECISION","FECHACIERRE":"$FECHACIERRE","ANOCIERRE":"$ANOCIERRE(type:integer)","PERIODOCIERRE":"$PERIODOCIERRE","FECHAMEDIACION":"$FECHAMEDIACION","METROSCOBRAR":"$METROSCOBRAR(type:integer)","NOMBRE":"$NOMBRE","DIRECCION":"$DIRECCION","BARRIO":"$BARRIO","PERIODOINSCRIPCION":"$PERIODOINSCRIPCION","FECHAINSCRIPCION":"$FECHAINSCRIPCION","EXTERNO":"$EXTERNO(type:boolean)","CREATED_BY":"$CREATED_BY","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","DATE_CREATED":"$DATE_CREATED"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfraudes/todos">
+		<call-query href="getSpfraudesTodosQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpfraudesExisteSubclaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  'X' EXISTE  FROM SP_FRAUDES INNER JOIN SP_FRAUDES_CARTA ON SP_FRAUDES.COMPANIA = SP_FRAUDES_CARTA.COMPANIA AND SP_FRAUDES.CONSECUTIVO = SP_FRAUDES_CARTA.FRAUDE WHERE SP_FRAUDES.COMPANIA = :COMPANIA AND SP_FRAUDES.CONSECUTIVO = :CONSECUTIVO AND SP_FRAUDES_CARTA.SUBCLASE = :SUBCLASE AND SP_FRAUDES.CICLO = :CICLO AND SP_FRAUDES.CODIGORUTA = :CODIGORUTA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"EXISTE":"$EXISTE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="SUBCLASE" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfraudes/existesubclase">
+		<call-query href="getSpfraudesExisteSubclaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="SUBCLASE" query-param="SUBCLASE"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpfraudesConsultarExistenciaPorCodigorutaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  'X' X  FROM SP_FRAUDES INNER JOIN SP_FRAUDES_CARTA ON SP_FRAUDES.COMPANIA = SP_FRAUDES_CARTA.COMPANIA AND SP_FRAUDES.CONSECUTIVO = SP_FRAUDES_CARTA.FRAUDE WHERE SP_FRAUDES.COMPANIA = :COMPANIA AND SP_FRAUDES.CONSECUTIVO = :CONSECUTIVO AND SP_FRAUDES_CARTA.SUBCLASE = :SUBCLASE AND SP_FRAUDES.CICLO = :CICLO AND SP_FRAUDES.CODIGORUTA = :CODIGORUTA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"X":"$X"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="SUBCLASE" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfraudes/consultarexistenciaporcodigoruta">
+		<call-query href="getSpfraudesConsultarExistenciaPorCodigorutaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="SUBCLASE" query-param="SUBCLASE"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpfraudesNoRegistrados" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_FRAUDES SET CONSECUTIVO=:CONSECUTIVO, CODIGORUTA=:CODIGORUTA, ESTADO=:ESTADO, CICLO=:CICLO, ANO=:ANO, PERIODO=:PERIODO, TIPO=:TIPO, ANOCOBRO=:ANOCOBRO, PERIODOCOBRO=:PERIODOCOBRO, VALORACOBRAR=:VALORACOBRAR, CUOTASDECOBRO=:CUOTASDECOBRO, DECISION=:DECISION, PERIODOCIERRE=:PERIODOCIERRE, METROSCOBRAR=:METROSCOBRAR, EXTERNO=:EXTERNO, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), FECHACIERRE=TO_DATE(:FECHACIERRE,'DD/MM/YYYY HH24:MI:SS'), FECHANOTIFICACION=TO_DATE(:FECHANOTIFICACION,'DD/MM/YYYY HH24:MI:SS'), FECHAMEDIACION=TO_DATE(:FECHAMEDIACION,'DD/MM/YYYY HH24:MI:SS'), FECHAINSPECCION=TO_DATE(:FECHAINSPECCION,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), ANOCIERRE=:ANOCIERRE, NOMBRE=:NOMBRE, DIRECCION=:DIRECCION, BARRIO=:BARRIO, PERIODOINSCRIPCION=:PERIODOINSCRIPCION, FECHAINSCRIPCION=TO_DATE(:FECHAINSCRIPCION,'DD/MM/YYYY HH24:MI:SS') WHERE SP_FRAUDES.COMPANIA= :KEY_COMPANIA AND SP_FRAUDES.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="ANOCOBRO" sqlType="STRING"/>
+		<param name="PERIODOCOBRO" sqlType="STRING"/>
+		<param name="VALORACOBRAR" sqlType="STRING"/>
+		<param name="CUOTASDECOBRO" sqlType="STRING"/>
+		<param name="DECISION" sqlType="STRING"/>
+		<param name="PERIODOCIERRE" sqlType="STRING"/>
+		<param name="METROSCOBRAR" sqlType="STRING"/>
+		<param name="EXTERNO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="FECHACIERRE" sqlType="STRING"/>
+		<param name="FECHANOTIFICACION" sqlType="STRING"/>
+		<param name="FECHAMEDIACION" sqlType="STRING"/>
+		<param name="FECHAINSPECCION" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="ANOCIERRE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DIRECCION" sqlType="STRING"/>
+		<param name="BARRIO" sqlType="STRING"/>
+		<param name="PERIODOINSCRIPCION" sqlType="STRING"/>
+		<param name="FECHAINSCRIPCION" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spfraudes/noregistrados">
+		<call-query href="updateSpfraudesNoRegistrados">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="ANOCOBRO" query-param="ANOCOBRO"/>
+			<with-param name="PERIODOCOBRO" query-param="PERIODOCOBRO"/>
+			<with-param name="VALORACOBRAR" query-param="VALORACOBRAR"/>
+			<with-param name="CUOTASDECOBRO" query-param="CUOTASDECOBRO"/>
+			<with-param name="DECISION" query-param="DECISION"/>
+			<with-param name="PERIODOCIERRE" query-param="PERIODOCIERRE"/>
+			<with-param name="METROSCOBRAR" query-param="METROSCOBRAR"/>
+			<with-param name="EXTERNO" query-param="EXTERNO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FECHACIERRE" query-param="FECHACIERRE"/>
+			<with-param name="FECHANOTIFICACION" query-param="FECHANOTIFICACION"/>
+			<with-param name="FECHAMEDIACION" query-param="FECHAMEDIACION"/>
+			<with-param name="FECHAINSPECCION" query-param="FECHAINSPECCION"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="ANOCIERRE" query-param="ANOCIERRE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="BARRIO" query-param="BARRIO"/>
+			<with-param name="PERIODOINSCRIPCION" query-param="PERIODOINSCRIPCION"/>
+			<with-param name="FECHAINSCRIPCION" query-param="FECHAINSCRIPCION"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpfraudesTodosPorCicloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT CODIGORUTA  FROM SP_FRAUDES WHERE COMPANIA = :COMPANIA AND CICLO = CASE WHEN TO_NUMBER(:CICLO) NOT IN (0) THEN TO_NUMBER(:CICLO) ELSE CICLO END ORDER BY CODIGORUTA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGORUTA":"$CODIGORUTA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfraudes/todosporciclo">
+		<call-query href="getSpfraudesTodosPorCicloQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpfraudesTodosPorCicloCodigoinicQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT CODIGORUTA  FROM SP_FRAUDES WHERE COMPANIA = :COMPANIA AND CICLO = CASE WHEN TO_NUMBER(:CICLO) NOT IN (0) THEN TO_NUMBER(:CICLO) ELSE CICLO END AND CODIGORUTA &gt;= :CODIGORUTA ORDER BY CODIGORUTA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGORUTA":"$CODIGORUTA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfraudes/todosporciclocodigoinic">
+		<call-query href="getSpfraudesTodosPorCicloCodigoinicQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpfraudesCantporcicloycodrutayestadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(CONSECUTIVO) CANT  FROM SP_FRAUDES WHERE COMPANIA = :COMPANIA AND CICLO = :CICLO AND CODIGORUTA = :CODIGORUTA AND ESTADO = :ESTADO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CANT":"$CANT(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfraudes/cantporcicloycodrutayestado">
+		<call-query href="getSpfraudesCantporcicloycodrutayestadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSpfraudes" keyColumns="COMPANIA,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_FRAUDES (COMPANIA, CONSECUTIVO, CODIGORUTA, ESTADO, CICLO, ANO, PERIODO, TIPO, ANOCOBRO, PERIODOCOBRO, VALORACOBRAR, CUOTASDECOBRO, DECISION, PERIODOCIERRE, METROSCOBRAR, EXTERNO, FECHA, FECHACIERRE, FECHANOTIFICACION, FECHAMEDIACION, FECHAINSPECCION, ANOCIERRE, NOMBRE, DIRECCION, BARRIO, PERIODOINSCRIPCION, FECHAINSCRIPCION, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CONSECUTIVO, :CODIGORUTA, :ESTADO, :CICLO, :ANO, :PERIODO, :TIPO, :ANOCOBRO, :PERIODOCOBRO, :VALORACOBRAR, :CUOTASDECOBRO, :DECISION, :PERIODOCIERRE, :METROSCOBRAR, :EXTERNO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHACIERRE,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHANOTIFICACION,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHAMEDIACION,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHAINSPECCION,'DD/MM/YYYY HH24:MI:SS'), :ANOCIERRE, :NOMBRE, :DIRECCION, :BARRIO, :PERIODOINSCRIPCION, TO_DATE(:FECHAINSCRIPCION,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADO" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param defaultValue="" name="ANOCOBRO" sqlType="STRING"/>
+		<param defaultValue="" name="PERIODOCOBRO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORACOBRAR" sqlType="STRING"/>
+		<param defaultValue="0" name="CUOTASDECOBRO" sqlType="STRING"/>
+		<param defaultValue="" name="DECISION" sqlType="STRING"/>
+		<param defaultValue="" name="PERIODOCIERRE" sqlType="STRING"/>
+		<param defaultValue="0" name="METROSCOBRAR" sqlType="STRING"/>
+		<param defaultValue="0" name="EXTERNO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHACIERRE" sqlType="STRING"/>
+		<param defaultValue="" name="FECHANOTIFICACION" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAMEDIACION" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAINSPECCION" sqlType="STRING"/>
+		<param defaultValue="" name="ANOCIERRE" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="DIRECCION" sqlType="STRING"/>
+		<param defaultValue="" name="BARRIO" sqlType="STRING"/>
+		<param defaultValue="" name="PERIODOINSCRIPCION" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAINSCRIPCION" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="spfraudes">
+		<call-query href="insertSpfraudes">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="ANOCOBRO" query-param="ANOCOBRO"/>
+			<with-param name="PERIODOCOBRO" query-param="PERIODOCOBRO"/>
+			<with-param name="VALORACOBRAR" query-param="VALORACOBRAR"/>
+			<with-param name="CUOTASDECOBRO" query-param="CUOTASDECOBRO"/>
+			<with-param name="DECISION" query-param="DECISION"/>
+			<with-param name="PERIODOCIERRE" query-param="PERIODOCIERRE"/>
+			<with-param name="METROSCOBRAR" query-param="METROSCOBRAR"/>
+			<with-param name="EXTERNO" query-param="EXTERNO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FECHACIERRE" query-param="FECHACIERRE"/>
+			<with-param name="FECHANOTIFICACION" query-param="FECHANOTIFICACION"/>
+			<with-param name="FECHAMEDIACION" query-param="FECHAMEDIACION"/>
+			<with-param name="FECHAINSPECCION" query-param="FECHAINSPECCION"/>
+			<with-param name="ANOCIERRE" query-param="ANOCIERRE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="BARRIO" query-param="BARRIO"/>
+			<with-param name="PERIODOINSCRIPCION" query-param="PERIODOINSCRIPCION"/>
+			<with-param name="FECHAINSCRIPCION" query-param="FECHAINSCRIPCION"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSpfraudes" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SP_FRAUDES WHERE SP_FRAUDES.COMPANIA= :KEY_COMPANIA AND SP_FRAUDES.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="spfraudes">
+		<call-query href="deleteSpfraudes">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpfraudesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_FRAUDES.COMPANIA, SP_FRAUDES.CONSECUTIVO, SP_FRAUDES.CODIGORUTA, SP_USUARIO.NOMBRES, SP_USUARIO.PRIMERAPELLIDO, SP_USUARIO.SEGUNDOAPELLIDO, CASE WHEN SP_FRAUDES.ESTADO = 'A' THEN 'Abierto' WHEN SP_FRAUDES.ESTADO = 'C' THEN 'Cerrado' END ESTADO  FROM SP_FRAUDES INNER JOIN SP_USUARIO ON SP_FRAUDES.COMPANIA = SP_USUARIO.COMPANIA AND SP_FRAUDES.CICLO = SP_USUARIO.CICLO AND SP_FRAUDES.CODIGORUTA = SP_USUARIO.CODIGORUTA WHERE SP_FRAUDES.COMPANIA = :COMPANIA AND SP_FRAUDES.CICLO = :CICLO AND SP_FRAUDES.EXTERNO IN(0)) WHERE (CASE WHEN CODIGORUTA IS NULL THEN ' ' ELSE UPPER(CODIGORUTA) END)  LIKE UPPER(:CODIGORUTA || '%')  AND (CASE WHEN NOMBRES IS NULL THEN ' ' ELSE UPPER(NOMBRES) END)  LIKE UPPER( '%' || :NOMBRES || '%')  AND (CASE WHEN PRIMERAPELLIDO IS NULL THEN ' ' ELSE UPPER(PRIMERAPELLIDO) END)  LIKE UPPER( '%' || :PRIMERAPELLIDO || '%')  AND (CASE WHEN SEGUNDOAPELLIDO IS NULL THEN ' ' ELSE UPPER(SEGUNDOAPELLIDO) END)  LIKE UPPER( '%' || :SEGUNDOAPELLIDO || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER(:ESTADO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO","CODIGORUTA":"$CODIGORUTA","NOMBRES":"$NOMBRES","PRIMERAPELLIDO":"$PRIMERAPELLIDO","SEGUNDOAPELLIDO":"$SEGUNDOAPELLIDO","ESTADO":"$ESTADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="NOMBRES" sqlType="STRING"/>
+		<param name="PRIMERAPELLIDO" sqlType="STRING"/>
+		<param name="SEGUNDOAPELLIDO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spfraudes">
+		<call-query href="getSpfraudesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="NOMBRES" query-param="NOMBRES"/>
+			<with-param name="PRIMERAPELLIDO" query-param="PRIMERAPELLIDO"/>
+			<with-param name="SEGUNDOAPELLIDO" query-param="SEGUNDOAPELLIDO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpfraudesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_FRAUDES.COMPANIA, SP_FRAUDES.CONSECUTIVO, SP_FRAUDES.CODIGORUTA, SP_USUARIO.NOMBRES, SP_USUARIO.PRIMERAPELLIDO, SP_USUARIO.SEGUNDOAPELLIDO, CASE WHEN SP_FRAUDES.ESTADO = 'A' THEN 'Abierto' WHEN SP_FRAUDES.ESTADO = 'C' THEN 'Cerrado' END ESTADO  FROM SP_FRAUDES INNER JOIN SP_USUARIO ON SP_FRAUDES.COMPANIA = SP_USUARIO.COMPANIA AND SP_FRAUDES.CICLO = SP_USUARIO.CICLO AND SP_FRAUDES.CODIGORUTA = SP_USUARIO.CODIGORUTA WHERE SP_FRAUDES.COMPANIA = :COMPANIA AND SP_FRAUDES.CICLO = :CICLO AND SP_FRAUDES.EXTERNO IN(0)) WHERE (CASE WHEN CODIGORUTA IS NULL THEN ' ' ELSE UPPER(CODIGORUTA) END)  LIKE UPPER(:CODIGORUTA || '%')  AND (CASE WHEN NOMBRES IS NULL THEN ' ' ELSE UPPER(NOMBRES) END)  LIKE UPPER( '%' || :NOMBRES || '%')  AND (CASE WHEN PRIMERAPELLIDO IS NULL THEN ' ' ELSE UPPER(PRIMERAPELLIDO) END)  LIKE UPPER( '%' || :PRIMERAPELLIDO || '%')  AND (CASE WHEN SEGUNDOAPELLIDO IS NULL THEN ' ' ELSE UPPER(SEGUNDOAPELLIDO) END)  LIKE UPPER( '%' || :SEGUNDOAPELLIDO || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="NOMBRES" sqlType="STRING"/>
+		<param name="PRIMERAPELLIDO" sqlType="STRING"/>
+		<param name="SEGUNDOAPELLIDO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfraudes/numero">
+		<call-query href="getSpfraudesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="NOMBRES" query-param="NOMBRES"/>
+			<with-param name="PRIMERAPELLIDO" query-param="PRIMERAPELLIDO"/>
+			<with-param name="SEGUNDOAPELLIDO" query-param="SEGUNDOAPELLIDO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpfraudesRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT SP_FRAUDES.COMPANIA, SP_FRAUDES.CONSECUTIVO, SP_FRAUDES.CODIGORUTA, CONCAT(SP_USUARIO.NOMBRES,CONCAT(' ',CONCAT(SP_USUARIO.PRIMERAPELLIDO,CONCAT(' ',SP_USUARIO.SEGUNDOAPELLIDO) ) ) ) NOMBRERUTA , SP_FRAUDES.ESTADO, SP_FRAUDES.CICLO, PCK_SERVICIOS_PUBLICOS.FC_NOMBREPERIODO(SP_USUARIO.COMPANIA,SP_FRAUDES.ANO,SP_FRAUDES.PERIODO,NULL) AS PER, SP_FRAUDES.ANO, SP_FRAUDES.PERIODO, SP_FRAUDES.TIPO, SP_FRAUDES.ANOCOBRO, SP_FRAUDES.PERIODOCOBRO, SP_FRAUDES.VALORACOBRAR, SP_FRAUDES.CUOTASDECOBRO, SP_FRAUDES.DECISION, SP_USUARIO.ANO ANOCIERREP, SP_USUARIO.PERIODO PERIODOCIERREP, CASE WHEN SP_FRAUDES.ANOCIERRE IS NULL THEN ' ' ELSE PCK_SERVICIOS_PUBLICOS.FC_NOMBREPERIODO(SP_USUARIO.COMPANIA,SP_FRAUDES.ANOCIERRE,SP_FRAUDES.PERIODOCIERRE,NULL) END PERCIERRE, SP_FRAUDES.PERIODOCIERRE, SP_FRAUDES.METROSCOBRAR,(CASE SP_FRAUDES.EXTERNO WHEN 0 THEN 'false' ELSE 'true' END) EXTERNO,(TO_CHAR(SP_FRAUDES.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,(TO_CHAR(SP_FRAUDES.FECHACIERRE,'DD/MM/YYYY HH24:MI:SS')) FECHACIERRE,(TO_CHAR(SP_FRAUDES.FECHANOTIFICACION,'DD/MM/YYYY HH24:MI:SS')) FECHANOTIFICACION,(TO_CHAR(SP_FRAUDES.FECHAMEDIACION,'DD/MM/YYYY HH24:MI:SS')) FECHAMEDIACION,(TO_CHAR(SP_FRAUDES.FECHAINSPECCION,'DD/MM/YYYY HH24:MI:SS')) FECHAINSPECCION, SP_FRAUDES.MODIFIED_BY,(TO_CHAR(SP_FRAUDES.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, SP_FRAUDES.CREATED_BY,(TO_CHAR(SP_FRAUDES.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM SP_FRAUDES INNER JOIN SP_USUARIO ON SP_FRAUDES.COMPANIA = SP_USUARIO.COMPANIA AND SP_FRAUDES.CICLO = SP_USUARIO.CICLO AND SP_FRAUDES.CODIGORUTA = SP_USUARIO.CODIGORUTA WHERE SP_FRAUDES.COMPANIA= :KEY_COMPANIA AND SP_FRAUDES.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO","CODIGORUTA":"$CODIGORUTA","NOMBRERUTA":"$NOMBRERUTA","ESTADO":"$ESTADO","CICLO":"$CICLO(type:integer)","PER":"$PER","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO","TIPO":"$TIPO","ANOCOBRO":"$ANOCOBRO(type:integer)","PERIODOCOBRO":"$PERIODOCOBRO","VALORACOBRAR":"$VALORACOBRAR","CUOTASDECOBRO":"$CUOTASDECOBRO","DECISION":"$DECISION","ANOCIERREP":"$ANOCIERREP(type:integer)","PERIODOCIERREP":"$PERIODOCIERREP","PERCIERRE":"$PERCIERRE","PERIODOCIERRE":"$PERIODOCIERRE","METROSCOBRAR":"$METROSCOBRAR(type:integer)","EXTERNO":"$EXTERNO(type:boolean)","FECHA":"$FECHA","FECHACIERRE":"$FECHACIERRE","FECHANOTIFICACION":"$FECHANOTIFICACION","FECHAMEDIACION":"$FECHAMEDIACION","FECHAINSPECCION":"$FECHAINSPECCION","MODIFIED_BY":"$MODIFIED_BY","DATE_CREATED":"$DATE_CREATED","CREATED_BY":"$CREATED_BY","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfraudes/data">
+		<call-query href="getSpfraudesRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpfraudes" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_FRAUDES SET CODIGORUTA=:CODIGORUTA, ESTADO=:ESTADO, CICLO=:CICLO, ANO=:ANO, PERIODO=:PERIODO, TIPO=:TIPO, ANOCOBRO=:ANOCOBRO, PERIODOCOBRO=:PERIODOCOBRO, VALORACOBRAR=:VALORACOBRAR, CUOTASDECOBRO=:CUOTASDECOBRO, DECISION=:DECISION, PERIODOCIERRE=:PERIODOCIERRE, METROSCOBRAR=:METROSCOBRAR, EXTERNO=:EXTERNO, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), FECHACIERRE=TO_DATE(:FECHACIERRE,'DD/MM/YYYY HH24:MI:SS'), FECHANOTIFICACION=TO_DATE(:FECHANOTIFICACION,'DD/MM/YYYY HH24:MI:SS'), FECHAMEDIACION=TO_DATE(:FECHAMEDIACION,'DD/MM/YYYY HH24:MI:SS'), FECHAINSPECCION=TO_DATE(:FECHAINSPECCION,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE SP_FRAUDES.COMPANIA= :KEY_COMPANIA AND SP_FRAUDES.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="ANOCOBRO" sqlType="STRING"/>
+		<param name="PERIODOCOBRO" sqlType="STRING"/>
+		<param name="VALORACOBRAR" sqlType="STRING"/>
+		<param name="CUOTASDECOBRO" sqlType="STRING"/>
+		<param name="DECISION" sqlType="STRING"/>
+		<param name="PERIODOCIERRE" sqlType="STRING"/>
+		<param name="METROSCOBRAR" sqlType="STRING"/>
+		<param name="EXTERNO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="FECHACIERRE" sqlType="STRING"/>
+		<param name="FECHANOTIFICACION" sqlType="STRING"/>
+		<param name="FECHAMEDIACION" sqlType="STRING"/>
+		<param name="FECHAINSPECCION" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spfraudes">
+		<call-query href="updateSpfraudes">
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="ANOCOBRO" query-param="ANOCOBRO"/>
+			<with-param name="PERIODOCOBRO" query-param="PERIODOCOBRO"/>
+			<with-param name="VALORACOBRAR" query-param="VALORACOBRAR"/>
+			<with-param name="CUOTASDECOBRO" query-param="CUOTASDECOBRO"/>
+			<with-param name="DECISION" query-param="DECISION"/>
+			<with-param name="PERIODOCIERRE" query-param="PERIODOCIERRE"/>
+			<with-param name="METROSCOBRAR" query-param="METROSCOBRAR"/>
+			<with-param name="EXTERNO" query-param="EXTERNO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FECHACIERRE" query-param="FECHACIERRE"/>
+			<with-param name="FECHANOTIFICACION" query-param="FECHANOTIFICACION"/>
+			<with-param name="FECHAMEDIACION" query-param="FECHAMEDIACION"/>
+			<with-param name="FECHAINSPECCION" query-param="FECHAINSPECCION"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+
+</data>

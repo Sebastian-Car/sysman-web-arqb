@@ -1,0 +1,85 @@
+﻿<data name="tablasauditar" transports="http https local">
+	<config enableOData="false" id="sysmanauditoria">
+		<property name="carbon_datasource_name">SYSMANAUDITORIA</property>
+	</config>
+	<query id="getTablasauditarPaginaQuery"  useConfig="sysmanauditoria">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CONSECUTIVO, NOMBRE_BD, NOMBRE_TABLA,(CASE IND_INSERTAR WHEN 0 THEN 'false' ELSE 'true' END) IND_INSERTAR,(CASE IND_EDITAR WHEN 0 THEN 'false' ELSE 'true' END) IND_EDITAR,(CASE IND_ELIMINAR WHEN 0 THEN 'false' ELSE 'true' END) IND_ELIMINAR FROM TABLAS_AUDITAR WHERE COMPANIA = :COMPANIA ORDER BY NOMBRE_TABLA) WHERE (CASE WHEN NOMBRE_BD IS NULL THEN ' ' ELSE UPPER(NOMBRE_BD) END)  LIKE UPPER( '%' || :NOMBRE_BD || '%')  AND (CASE WHEN NOMBRE_TABLA IS NULL THEN ' ' ELSE UPPER(NOMBRE_TABLA) END)  LIKE UPPER( '%' || :NOMBRE_TABLA || '%')  AND (CASE WHEN IND_INSERTAR IS NULL THEN ' ' ELSE UPPER(IND_INSERTAR) END)  LIKE UPPER( '%' || :IND_INSERTAR || '%')  AND (CASE WHEN IND_EDITAR IS NULL THEN ' ' ELSE UPPER(IND_EDITAR) END)  LIKE UPPER( '%' || :IND_EDITAR || '%')  AND (CASE WHEN IND_ELIMINAR IS NULL THEN ' ' ELSE UPPER(IND_ELIMINAR) END)  LIKE UPPER( '%' || :IND_ELIMINAR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO(type:integer)","NOMBRE_BD":"$NOMBRE_BD","NOMBRE_TABLA":"$NOMBRE_TABLA","IND_INSERTAR":"$IND_INSERTAR(type:boolean)","IND_EDITAR":"$IND_EDITAR(type:boolean)","IND_ELIMINAR":"$IND_ELIMINAR(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE_BD" sqlType="STRING"/>
+		<param name="NOMBRE_TABLA" sqlType="STRING"/>
+		<param name="IND_INSERTAR" sqlType="STRING"/>
+		<param name="IND_EDITAR" sqlType="STRING"/>
+		<param name="IND_ELIMINAR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tablasauditar">
+		<call-query href="getTablasauditarPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE_BD" query-param="NOMBRE_BD"/>
+			<with-param name="NOMBRE_TABLA" query-param="NOMBRE_TABLA"/>
+			<with-param name="IND_INSERTAR" query-param="IND_INSERTAR"/>
+			<with-param name="IND_EDITAR" query-param="IND_EDITAR"/>
+			<with-param name="IND_ELIMINAR" query-param="IND_ELIMINAR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTablasauditarNumeroQuery"  useConfig="sysmanauditoria">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CONSECUTIVO, NOMBRE_BD, NOMBRE_TABLA,(CASE IND_INSERTAR WHEN 0 THEN 'false' ELSE 'true' END) IND_INSERTAR,(CASE IND_EDITAR WHEN 0 THEN 'false' ELSE 'true' END) IND_EDITAR,(CASE IND_ELIMINAR WHEN 0 THEN 'false' ELSE 'true' END) IND_ELIMINAR FROM TABLAS_AUDITAR WHERE COMPANIA = :COMPANIA ORDER BY NOMBRE_TABLA) WHERE (CASE WHEN NOMBRE_BD IS NULL THEN ' ' ELSE UPPER(NOMBRE_BD) END)  LIKE UPPER( '%' || :NOMBRE_BD || '%')  AND (CASE WHEN NOMBRE_TABLA IS NULL THEN ' ' ELSE UPPER(NOMBRE_TABLA) END)  LIKE UPPER( '%' || :NOMBRE_TABLA || '%')  AND (CASE WHEN IND_INSERTAR IS NULL THEN ' ' ELSE UPPER(IND_INSERTAR) END)  LIKE UPPER( '%' || :IND_INSERTAR || '%')  AND (CASE WHEN IND_EDITAR IS NULL THEN ' ' ELSE UPPER(IND_EDITAR) END)  LIKE UPPER( '%' || :IND_EDITAR || '%')  AND (CASE WHEN IND_ELIMINAR IS NULL THEN ' ' ELSE UPPER(IND_ELIMINAR) END)  LIKE UPPER( '%' || :IND_ELIMINAR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE_BD" sqlType="STRING"/>
+		<param name="NOMBRE_TABLA" sqlType="STRING"/>
+		<param name="IND_INSERTAR" sqlType="STRING"/>
+		<param name="IND_EDITAR" sqlType="STRING"/>
+		<param name="IND_ELIMINAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tablasauditar/numero">
+		<call-query href="getTablasauditarNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE_BD" query-param="NOMBRE_BD"/>
+			<with-param name="NOMBRE_TABLA" query-param="NOMBRE_TABLA"/>
+			<with-param name="IND_INSERTAR" query-param="IND_INSERTAR"/>
+			<with-param name="IND_EDITAR" query-param="IND_EDITAR"/>
+			<with-param name="IND_ELIMINAR" query-param="IND_ELIMINAR"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTablasauditar" returnUpdatedRowCount="true" useConfig="sysmanauditoria">
+		<sql>UPDATE TABLAS_AUDITAR SET NOMBRE_TABLA=:NOMBRE_TABLA, IND_INSERTAR=:IND_INSERTAR, IND_EDITAR=:IND_EDITAR, IND_ELIMINAR=:IND_ELIMINAR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TABLAS_AUDITAR.COMPANIA= :KEY_COMPANIA AND TABLAS_AUDITAR.CONSECUTIVO= :KEY_CONSECUTIVO AND TABLAS_AUDITAR.NOMBRE_TABLA= :KEY_NOMBRE_TABLA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NOMBRE_TABLA" sqlType="STRING"/>
+		<param name="IND_INSERTAR" sqlType="STRING"/>
+		<param name="IND_EDITAR" sqlType="STRING"/>
+		<param name="IND_ELIMINAR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+		<param name="KEY_NOMBRE_TABLA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tablasauditar">
+		<call-query href="updateTablasauditar">
+			<with-param name="NOMBRE_TABLA" query-param="NOMBRE_TABLA"/>
+			<with-param name="IND_INSERTAR" query-param="IND_INSERTAR"/>
+			<with-param name="IND_EDITAR" query-param="IND_EDITAR"/>
+			<with-param name="IND_ELIMINAR" query-param="IND_ELIMINAR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+			<with-param name="KEY_NOMBRE_TABLA" query-param="KEY_NOMBRE_TABLA"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,138 @@
+﻿<data name="reclasificarniif" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertReclasificarniif" keyColumns="COMPANIA,ANO,NUMERO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO RECLASIFICAR_NIIF (COMPANIA, ANO, NUMERO, FECHA, USUARIO, CREATED_BY, DATE_CREATED) VALUES (:COMPANIA, :ANO, :NUMERO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :USUARIO, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_NUMERO":"$NUMERO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="reclasificarniif">
+		<call-query href="insertReclasificarniif">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteReclasificarniif" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM RECLASIFICAR_NIIF WHERE RECLASIFICAR_NIIF.COMPANIA= :KEY_COMPANIA AND RECLASIFICAR_NIIF.ANO= :KEY_ANO AND RECLASIFICAR_NIIF.NUMERO= :KEY_NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="reclasificarniif">
+		<call-query href="deleteReclasificarniif">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getReclasificarniifPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, ANO, NUMERO, TO_CHAR(FECHA, 'DD/MM/YYYY')FECHA, USUARIO,(CASE REALIZADO WHEN 0 THEN 'false' ELSE 'true' END) REALIZADO FROM RECLASIFICAR_NIIF ORDER BY ANO, NUMERO) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN USUARIO IS NULL THEN ' ' ELSE UPPER(USUARIO) END)  LIKE UPPER( '%' || :USUARIO || '%')  AND (CASE WHEN REALIZADO IS NULL THEN ' ' ELSE UPPER(REALIZADO) END)  LIKE UPPER(:REALIZADO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","NUMERO":"$NUMERO(type:long)","FECHA":"$FECHA","USUARIO":"$USUARIO","REALIZADO":"$REALIZADO(type:boolean)"}]}}		</result>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="REALIZADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="reclasificarniif">
+		<call-query href="getReclasificarniifPaginaQuery">
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="REALIZADO" query-param="REALIZADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getReclasificarniifNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, ANO, NUMERO, TO_CHAR(FECHA, 'DD/MM/YYYY')FECHA, USUARIO,(CASE REALIZADO WHEN 0 THEN 'false' ELSE 'true' END) REALIZADO FROM RECLASIFICAR_NIIF ORDER BY ANO, NUMERO) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER( '%' || :NUMERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN USUARIO IS NULL THEN ' ' ELSE UPPER(USUARIO) END)  LIKE UPPER( '%' || :USUARIO || '%')  AND (CASE WHEN REALIZADO IS NULL THEN ' ' ELSE UPPER(REALIZADO) END)  LIKE UPPER( '%' || :REALIZADO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="REALIZADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="reclasificarniif/numero">
+		<call-query href="getReclasificarniifNumeroQuery">
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="REALIZADO" query-param="REALIZADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getReclasificarniifRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, ANO, NUMERO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, USUARIO,(CASE REALIZADO WHEN 0 THEN 'false' ELSE 'true' END) REALIZADO, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM RECLASIFICAR_NIIF WHERE RECLASIFICAR_NIIF.COMPANIA= :KEY_COMPANIA AND RECLASIFICAR_NIIF.ANO= :KEY_ANO AND RECLASIFICAR_NIIF.NUMERO= :KEY_NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","NUMERO":"$NUMERO(type:long)","FECHA":"$FECHA","USUARIO":"$USUARIO","REALIZADO":"$REALIZADO(type:boolean)","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="reclasificarniif/data">
+		<call-query href="getReclasificarniifRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateReclasificarniif" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE RECLASIFICAR_NIIF SET FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), USUARIO=:USUARIO, REALIZADO=:REALIZADO, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE RECLASIFICAR_NIIF.COMPANIA= :KEY_COMPANIA AND RECLASIFICAR_NIIF.ANO= :KEY_ANO AND RECLASIFICAR_NIIF.NUMERO= :KEY_NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="REALIZADO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="reclasificarniif">
+		<call-query href="updateReclasificarniif">
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="REALIZADO" query-param="REALIZADO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+
+</data>

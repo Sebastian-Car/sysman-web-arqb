@@ -1,0 +1,176 @@
+﻿<data name="certificado_inexistencia" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getCertificado_inexistenciaNocertificadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT NUMERO FROM CERTIFICADO_INEXISTENCIA WHERE COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="certificado_inexistencia/nocertificado">
+		<call-query href="getCertificado_inexistenciaNocertificadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertCertificado_inexistencia" keyColumns="COMPANIA,NUMERO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CERTIFICADO_INEXISTENCIA (COMPANIA, NUMERO, DEPENDENCIA, SOLICITANTE, FECHA_RAD_SOL, FECHA_EXP, COD_INEXISTENCIA, FORMACION, EXPERIENCIA, COD_PROYECTO, RADICADO, CREATED_BY, DATE_CREATED) VALUES (:COMPANIA, :NUMERO, :DEPENDENCIA, :SOLICITANTE, TO_DATE(:FECHA_RAD_SOL,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHA_EXP,'DD/MM/YYYY HH24:MI:SS'), :COD_INEXISTENCIA, :FORMACION, :EXPERIENCIA, :COD_PROYECTO, :RADICADO, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_NUMERO":"$NUMERO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="SOLICITANTE" sqlType="STRING"/>
+		<param name="FECHA_RAD_SOL" sqlType="STRING"/>
+		<param name="FECHA_EXP" sqlType="STRING"/>
+		<param name="COD_INEXISTENCIA" sqlType="STRING"/>
+		<param name="FORMACION" sqlType="STRING"/>
+		<param name="EXPERIENCIA" sqlType="STRING"/>
+		<param defaultValue="" name="COD_PROYECTO" sqlType="STRING"/>
+		<param defaultValue="" name="RADICADO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="certificado_inexistencia">
+		<call-query href="insertCertificado_inexistencia">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="SOLICITANTE" query-param="SOLICITANTE"/>
+			<with-param name="FECHA_RAD_SOL" query-param="FECHA_RAD_SOL"/>
+			<with-param name="FECHA_EXP" query-param="FECHA_EXP"/>
+			<with-param name="COD_INEXISTENCIA" query-param="COD_INEXISTENCIA"/>
+			<with-param name="FORMACION" query-param="FORMACION"/>
+			<with-param name="EXPERIENCIA" query-param="EXPERIENCIA"/>
+			<with-param name="COD_PROYECTO" query-param="COD_PROYECTO"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCertificado_inexistencia" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CERTIFICADO_INEXISTENCIA WHERE CERTIFICADO_INEXISTENCIA.COMPANIA= :KEY_COMPANIA AND CERTIFICADO_INEXISTENCIA.NUMERO= :KEY_NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="certificado_inexistencia">
+		<call-query href="deleteCertificado_inexistencia">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCertificado_inexistenciaPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CERTIFICADO_INEXISTENCIA.COMPANIA,NUMERO,RADICADO,COD_PROYECTO,TO_CHAR(FECHA_EXP, 'DD/MM/YYYY') FECHA_EXP,NOMBRE_ROL SOLICITANTE FROM CERTIFICADO_INEXISTENCIA LEFT JOIN ROL_SOLICITUDES ON CERTIFICADO_INEXISTENCIA.COMPANIA = ROL_SOLICITUDES.COMPANIA AND CERTIFICADO_INEXISTENCIA.SOLICITANTE = ROL_SOLICITUDES.CODIGO WHERE CERTIFICADO_INEXISTENCIA.COMPANIA = :COMPANIA ORDER BY NUMERO) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN RADICADO IS NULL THEN ' ' ELSE UPPER(RADICADO) END) LIKE UPPER(CONCAT(CONCAT('%',:RADICADO), '%')) AND (CASE WHEN COD_PROYECTO IS NULL THEN ' ' ELSE UPPER(COD_PROYECTO) END) LIKE UPPER(CONCAT(CONCAT('%',:COD_PROYECTO), '%')) AND (CASE WHEN FECHA_EXP IS NULL THEN ' ' ELSE UPPER(FECHA_EXP) END) LIKE UPPER(CONCAT(:FECHA_EXP, '%')) AND (CASE WHEN SOLICITANTE IS NULL THEN ' ' ELSE UPPER(SOLICITANTE) END) LIKE UPPER(CONCAT(CONCAT('%',:SOLICITANTE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NUMERO":"$NUMERO(type:long)","RADICADO":"$RADICADO","COD_PROYECTO":"$COD_PROYECTO","FECHA_EXP":"$FECHA_EXP","SOLICITANTE":"$SOLICITANTE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="COD_PROYECTO" sqlType="STRING"/>
+		<param name="FECHA_EXP" sqlType="STRING"/>
+		<param name="SOLICITANTE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="certificado_inexistencia">
+		<call-query href="getCertificado_inexistenciaPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="COD_PROYECTO" query-param="COD_PROYECTO"/>
+			<with-param name="FECHA_EXP" query-param="FECHA_EXP"/>
+			<with-param name="SOLICITANTE" query-param="SOLICITANTE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCertificado_inexistenciaNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CERTIFICADO_INEXISTENCIA.COMPANIA,NUMERO,RADICADO,COD_PROYECTO,TO_CHAR(FECHA_EXP, 'DD/MM/YYYY') FECHA_EXP,NOMBRE_ROL SOLICITANTE FROM CERTIFICADO_INEXISTENCIA LEFT JOIN ROL_SOLICITUDES ON CERTIFICADO_INEXISTENCIA.COMPANIA = ROL_SOLICITUDES.COMPANIA AND CERTIFICADO_INEXISTENCIA.SOLICITANTE = ROL_SOLICITUDES.CODIGO WHERE CERTIFICADO_INEXISTENCIA.COMPANIA = :COMPANIA ORDER BY NUMERO) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN RADICADO IS NULL THEN ' ' ELSE UPPER(RADICADO) END) LIKE UPPER(CONCAT(CONCAT('%',:RADICADO), '%')) AND (CASE WHEN COD_PROYECTO IS NULL THEN ' ' ELSE UPPER(COD_PROYECTO) END) LIKE UPPER(CONCAT(CONCAT('%',:COD_PROYECTO), '%')) AND (CASE WHEN FECHA_EXP IS NULL THEN ' ' ELSE UPPER(FECHA_EXP) END) LIKE UPPER(CONCAT(:FECHA_EXP, '%')) AND (CASE WHEN SOLICITANTE IS NULL THEN ' ' ELSE UPPER(SOLICITANTE) END) LIKE UPPER(CONCAT(CONCAT('%',:SOLICITANTE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="COD_PROYECTO" sqlType="STRING"/>
+		<param name="FECHA_EXP" sqlType="STRING"/>
+		<param name="SOLICITANTE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="certificado_inexistencia/numero">
+		<call-query href="getCertificado_inexistenciaNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="COD_PROYECTO" query-param="COD_PROYECTO"/>
+			<with-param name="FECHA_EXP" query-param="FECHA_EXP"/>
+			<with-param name="SOLICITANTE" query-param="SOLICITANTE"/>
+
+		</call-query>
+	</resource>
+	<query id="getCertificado_inexistenciaRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CERTIFICADO_INEXISTENCIA.COMPANIA,CERTIFICADO_INEXISTENCIA.NUMERO,CERTIFICADO_INEXISTENCIA.DEPENDENCIA,DEPENDENCIA.NOMBRE NOMBRE_DEP,CERTIFICADO_INEXISTENCIA.SOLICITANTE, ROL_SOLICITUDES.NOMBRE_ROL NOMBRE_SOLICITANTE,(TO_CHAR(CERTIFICADO_INEXISTENCIA.FECHA_RAD_SOL, 'DD/MM/YYYY HH24:MI:SS')) FECHA_RAD_SOL, (TO_CHAR(CERTIFICADO_INEXISTENCIA.FECHA_EXP, 'DD/MM/YYYY HH24:MI:SS')) FECHA_EXP, CERTIFICADO_INEXISTENCIA.COD_INEXISTENCIA, CAUSALES_INEXISTENCIA.DESCRIPCION NOMBRE_CAUSAL, CERTIFICADO_INEXISTENCIA.FORMACION, CERTIFICADO_INEXISTENCIA.EXPERIENCIA,CERTIFICADO_INEXISTENCIA.COD_PROYECTO,PROYECTOS.NOMBREPROYECTO NOMBRE_PROYECTO,CERTIFICADO_INEXISTENCIA.RADICADO,CERTIFICADO_INEXISTENCIA.CREATED_BY,(TO_CHAR(CERTIFICADO_INEXISTENCIA.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED,CERTIFICADO_INEXISTENCIA.MODIFIED_BY,(TO_CHAR(CERTIFICADO_INEXISTENCIA.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM CERTIFICADO_INEXISTENCIA LEFT JOIN DEPENDENCIA ON CERTIFICADO_INEXISTENCIA.COMPANIA = DEPENDENCIA.COMPANIA AND CERTIFICADO_INEXISTENCIA.DEPENDENCIA = DEPENDENCIA.CODIGO LEFT JOIN ROL_SOLICITUDES ON CERTIFICADO_INEXISTENCIA.COMPANIA = ROL_SOLICITUDES.COMPANIA AND CERTIFICADO_INEXISTENCIA.SOLICITANTE = ROL_SOLICITUDES.CODIGO LEFT JOIN CAUSALES_INEXISTENCIA ON CERTIFICADO_INEXISTENCIA.COMPANIA = CAUSALES_INEXISTENCIA.COMPANIA AND CERTIFICADO_INEXISTENCIA.COD_INEXISTENCIA = CAUSALES_INEXISTENCIA.CODIGO LEFT JOIN PROYECTOS ON CERTIFICADO_INEXISTENCIA.COMPANIA = PROYECTOS.COMPANIA AND CERTIFICADO_INEXISTENCIA.COD_PROYECTO = PROYECTOS.CODIGO WHERE CERTIFICADO_INEXISTENCIA.COMPANIA= :KEY_COMPANIA AND CERTIFICADO_INEXISTENCIA.NUMERO= :KEY_NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NUMERO":"$NUMERO(type:long)","DEPENDENCIA":"$DEPENDENCIA","NOMBRE_DEP":"$NOMBRE_DEP","SOLICITANTE":"$SOLICITANTE","NOMBRE_SOLICITANTE":"$NOMBRE_SOLICITANTE","FECHA_RAD_SOL":"$FECHA_RAD_SOL","FECHA_EXP":"$FECHA_EXP","COD_INEXISTENCIA":"$COD_INEXISTENCIA","NOMBRE_CAUSAL":"$NOMBRE_CAUSAL","FORMACION":"$FORMACION","EXPERIENCIA":"$EXPERIENCIA","COD_PROYECTO":"$COD_PROYECTO","NOMBRE_PROYECTO":"$NOMBRE_PROYECTO","RADICADO":"$RADICADO","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="certificado_inexistencia/data">
+		<call-query href="getCertificado_inexistenciaRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCertificado_inexistencia" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CERTIFICADO_INEXISTENCIA SET COMPANIA=:COMPANIA, NUMERO=:NUMERO, DEPENDENCIA=:DEPENDENCIA, SOLICITANTE=:SOLICITANTE, FECHA_RAD_SOL=TO_DATE(:FECHA_RAD_SOL,'DD/MM/YYYY HH24:MI:SS'), FECHA_EXP=TO_DATE(:FECHA_EXP,'DD/MM/YYYY HH24:MI:SS'), COD_INEXISTENCIA=:COD_INEXISTENCIA, FORMACION=:FORMACION, EXPERIENCIA=:EXPERIENCIA, COD_PROYECTO=:COD_PROYECTO, RADICADO=:RADICADO, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE CERTIFICADO_INEXISTENCIA.COMPANIA= :KEY_COMPANIA AND CERTIFICADO_INEXISTENCIA.NUMERO= :KEY_NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="SOLICITANTE" sqlType="STRING"/>
+		<param name="FECHA_RAD_SOL" sqlType="STRING"/>
+		<param name="FECHA_EXP" sqlType="STRING"/>
+		<param name="COD_INEXISTENCIA" sqlType="STRING"/>
+		<param name="FORMACION" sqlType="STRING"/>
+		<param name="EXPERIENCIA" sqlType="STRING"/>
+		<param name="COD_PROYECTO" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="certificado_inexistencia">
+		<call-query href="updateCertificado_inexistencia">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="SOLICITANTE" query-param="SOLICITANTE"/>
+			<with-param name="FECHA_RAD_SOL" query-param="FECHA_RAD_SOL"/>
+			<with-param name="FECHA_EXP" query-param="FECHA_EXP"/>
+			<with-param name="COD_INEXISTENCIA" query-param="COD_INEXISTENCIA"/>
+			<with-param name="FORMACION" query-param="FORMACION"/>
+			<with-param name="EXPERIENCIA" query-param="EXPERIENCIA"/>
+			<with-param name="COD_PROYECTO" query-param="COD_PROYECTO"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+
+</data>

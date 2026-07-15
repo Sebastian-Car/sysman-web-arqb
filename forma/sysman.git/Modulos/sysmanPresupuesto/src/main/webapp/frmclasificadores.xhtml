@@ -1,0 +1,266 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TT_FR2331}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<section class="radius">
+			<f:event type="preRenderView"
+				listener="#{frmclasificadoresControlador.cargarForma}" />
+			<div id="FR2331" style="height: 800px;">
+				<h:form style="height: 100%;" id="FRFR2331">
+					<p:growl id="alert" showDetail="true" sticky="false"
+						widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+					<p:dialog dynamic="true" closable="false" closeOnEscape="false"
+						header="#{sessionBean.tituloMensajes}" id="DG243"
+						widgetVar="DG243" resizable="false" modal="true" width="250"
+						visible="#{frmclasificadoresControlador.preparaAnio}">
+						<h:outputLabel value="#{idm.TG_DIGITE_EL_ANIO_QUE_DESEA_PREPARAR}"
+							style="width: 100%;" escape="false" />
+						<h:panelGrid columns="2" cellpadding="2" width="100%">
+							<h:outputLabel value="#{idm.TG_ANIO3}:" id="LCP71180"
+								style="display:true;" class="cont-inst-element" />
+							<pe:inputNumber id="CP71180" widgetVar="CP71180"
+								value="#{frmclasificadoresControlador.anioPreparar}"
+								label="LCP71180" decimalPlaces="0" thousandSeparator=""
+								decimalSeparator="" styleClass="inputTab" maxValue="9999"
+								minValue="-9999" converter="convertidorDouble"
+								style="display:true; width: 95%;float: left;"
+								class="cont-inst-element">
+							</pe:inputNumber>
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TG_ACEPTAR}"
+										style="padding:10px; width: 48%;"
+										oncomplete=" if(true){ PF('DG243').hide(); PF('blockCarga').hide();}  "
+										onclick="  if(true){ PF('blockCarga').show(); }else{    PF('DG243').hide(); }  "
+										actionListener="#{frmclasificadoresControlador.aceptarDialogoPrepararAnio}" />
+									<p:commandButton value="#{idm.TG_CANCELAR}"
+										style="padding:10px; width: 48%;"
+										oncomplete=" if(true){ PF('DG243').hide(); PF('blockCarga').hide();} "
+										onclick=" if(true){ PF('blockCarga').show(); }else{    PF('DG243').hide(); }  "
+										actionListener="#{frmclasificadoresControlador.cancelarDialogoPrepararAnio}" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<p:confirmDialog global="true" showEffect="fade">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<div id="PL4503" class="
+"
+						style="position: relative; height: 420px;">
+						<h:inputHidden id="HINDEX"
+							value="#{frmclasificadoresControlador.indice}" />
+						<p:remoteCommand name="refreshTab" update="TBFR2331"
+							oncomplete="PF('blockGuardar').hide();" />
+						<p:dataTable id="TBFR2331" var="reg"
+							value="#{frmclasificadoresControlador.listaInicial}"
+							editable="true" widgetVar="TBFR2331"
+							emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="10" rowIndexVar="rowNun" paginator="true" scrollable="true"
+							scrollWidth="100%" lazy="true">
+							<f:facet name="{Exporters}"
+								rendered="#{frmclasificadoresControlador.permisos[4] }">
+								<h:commandLink
+									rendered="#{frmclasificadoresControlador.permisos[4] }"
+									title="#{idm.TI_VER_EXCEL}">
+									<p:graphicImage name="/images/general/excel.png" width="24" />
+									<p:dataExporter type="xls" target="TBFR2331" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+								<h:commandLink
+									rendered="#{frmclasificadoresControlador.permisos[4] }"
+									title="#{idm.TI_VER_PDF}">
+									<p:graphicImage name="/images/general/pdf.png" width="24" />
+									<p:dataExporter type="pdf" target="TBFR2331" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+							</f:facet>
+							<p:ajax event="rowEdit" update=":FRFR2331:alert,"
+								listener="#{frmclasificadoresControlador.editar}"
+								oncomplete="refreshTab(); mostarEditor();"
+								onstart="PF('blockGuardar').show();" />
+							<p:ajax event="rowEditCancel"
+								listener="#{frmclasificadoresControlador.cancelarEdicion}"
+								oncomplete="  mostarEditor();" />
+							<p:ajax event="rowEditInit" update=":FRFR2331:HINDEX,@([id$=CP72181]) "
+								listener="#{frmclasificadoresControlador.activarEdicion(reg)}"
+								oncomplete="ocultarEditor(); " />
+							<f:facet name="header">
+								<div style="position: relative; height: 50px">
+									<div class="acme">
+										<h:outputLink value="#{request.contextPath}/menu.sysman"
+											title="Volver al menú" style="padding-top: 10px;">
+											<center>
+												<p:graphicImage name="/images/menus/32/close.png" />
+												<div>#{idm.TI_CERRAR}</div>
+											</center>
+										</h:outputLink>
+									</div>
+								</div>	 
+                            #{idm.TT_FR2331}
+                            </f:facet>
+							<p:column headerText="#{idm.TG_ANIO3}"
+								filterBy="#{reg.campos['ANO']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="85" rendered="true">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['ANO']}" />
+									</f:facet>
+									<f:facet name="input">
+										<h:selectOneMenu id="CB7936" value="#{reg.campos['ANO']}"
+											style="width:100%" disabled="true" onchange="">
+											<f:selectItem />
+											<f:selectItems
+												value="#{frmclasificadoresControlador.listaAno}" var="regc"
+												itemLabel="#{regc.campos['NUMERO']}"
+												itemValue="#{regc.campos['NUMERO']}" />
+										</h:selectOneMenu>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_CODIGO7}"
+								filterBy="#{reg.campos['CODIGO']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="89" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['CODIGO']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP71181" styleClass="inputTab"
+											value="#{reg.campos['CODIGO']}" style="width:100%"
+											readonly="true" maxlength="5">
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE3}"
+								filterBy="#{reg.campos['NOMBRE']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="300" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['NOMBRE']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP71182" styleClass="inputTab"
+											value="#{reg.campos['NOMBRE']}" style="width:100%"
+											readonly="true" maxlength="255">
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CB7938}"
+								filterBy="#{reg.campos['NOMBREAPLICACION']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="163"
+								rendered="true">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['NOMBREAPLICACION']}" />
+									</f:facet>
+									<f:facet name="input">
+										<h:selectOneMenu id="CB7938"
+											value="#{reg.campos['APLICACION']}" style="width:100%"
+											onchange="">
+											<f:selectItem />
+											<f:selectItem itemValue="0" itemLabel="#{idm.OD_CB7938_0}" />
+											<f:selectItem itemValue="1" itemLabel="#{idm.TG_RUBRO2}" />
+											<f:selectItem itemValue="2" itemLabel="#{idm.TG_DETALLE2}" />
+										</h:selectOneMenu>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_INGRESOS}"
+								filterBy="#{reg.campos['NOMAPLIINGRE']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="163"
+								rendered="true">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['NOMAPLIINGRE']}" />
+									</f:facet>
+									<f:facet name="input">
+										<h:selectOneMenu id="CB8079"
+											value="#{reg.campos['APLICACIONINGRESOS']}"
+											style="width:100%" onchange="">
+											<f:selectItem />
+											<f:selectItem itemValue="0" itemLabel="#{idm.OD_CB8079_0}" />
+											<f:selectItem itemValue="1" itemLabel="#{idm.TG_RUBRO2}" />
+											<f:selectItem itemValue="2" itemLabel="#{idm.TG_DETALLE2}" />
+										</h:selectOneMenu>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_ORDEN}"
+								filterBy="#{reg.campos['ORDEN']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="50" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['ORDEN']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP72181" styleClass="inputTab"
+											value="#{reg.campos['ORDEN']}" style="width:100%"
+											disabled="#{frmclasificadoresControlador.bloqOrden}"
+											maxlength="2">
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column width="30" exportable="false"
+								rendered="#{frmclasificadoresControlador.permisos[2] }">
+								<p:rowEditor />
+							</p:column>
+						</p:dataTable>
+						<p:blockUI block="FRFR2331" widgetVar="blockGuardar">
+                        #{idm.TI_GUARDANDO_CAMBIOS}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+						<p:blockUI block="FRFR2331" widgetVar="blockCarga"
+							trigger="TBFR2331,">
+                        #{idm.TI_CARGANDO}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+					</div>
+					<div id="PL4502" class="
+"
+						style="position: relative; height: 2px;">
+						<p:commandButton id="BT4019" widgetVar="BT4019"
+							update="DG243,alert" tabindex="6"
+							value="#{idm.TG_PREPARAR_SIGUIENTE_ANIO}"
+							actionListener="#{frmclasificadoresControlador.oprimirPreparar}"
+							style="position: absolute; width:177px; height: 34px; left: 10x;   top: 27px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#000000  solid  1px;">
+						</p:commandButton>
+					</div>
+				</h:form>
+			</div>
+		</section>
+	</ui:define>
+</ui:composition>

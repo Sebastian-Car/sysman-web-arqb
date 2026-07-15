@@ -1,0 +1,303 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:ezcomp="http://java.sun.com/jsf/composite/ezcomp">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TG_COMPROBANTES_A_AFECTAR}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<section class="radius">
+			<h:form id="FR521_nuevo" style="margin: -20px;">
+				<p:remoteCommand name="rcCerrar"
+					actionListener="#{comprobantePptalAfectarControlador.ejecutarrcCerrar()}"
+					update="FR521_nuevo:alert,FR521_nuevo:DG9" />
+				<p:dialog dynamic="true" closable="false" closeOnEscape="false"
+					header="#{idm.TG_SALDO_POR_AFECTAR}" id="DG9" widgetVar="DG9"
+					resizable="false" modal="true" width="300"
+					focus="FR521_nuevo:dSaldo">
+					<h:panelGrid columns="2" cellpadding="2" width="100%">
+						<h:outputLabel id="LdSaldo" value="#{idm.TG_NUEVO_SALDO2}"
+							style="display:true;" />
+						<p:inputText id="dSaldo" widgetVar="dSaldo" styleClass="inputTab"
+							value="#{comprobantePptalAfectarControlador.saldoRegistro.campos['SALDO']}"
+							label="LdSaldo" style="display:true; width: 95%; float: left;"
+							validatorMessage="Solo se permiten números en este campo">
+							<f:validateRegex pattern="^[-+]?[0-9]*\.?[0-9]{1,2}+$"
+								for="dSaldo" />
+						</p:inputText>
+
+						<f:facet name="footer">
+							<center>
+								<p:commandButton value="#{idm.TG_ACEPTAR}"
+									style="padding:10px; width: 48%;" update="@form" ajax="false"
+									oncomplete=" if(false){ PF('DG9').hide(); PF('blockCarga').hide();}  "
+									onclick=" if(false){ PF('blockCarga').show(); }else{    PF('DG9').hide(); }  "
+									action="#{comprobantePptalAfectarControlador.aceptarCambiaSaldo()}" />
+								<p:button value="#{idm.TG_CANCELAR}"
+									style="padding:10px; width: 48%;" href="#"
+									onclick="PF('DG9').hide();" />
+							</center>
+						</f:facet>
+					</h:panelGrid>
+				</p:dialog>
+
+				<p:panel id="nuevoPanel">
+					<div style="position: relative; height: 20px; width: 100%;">
+						<h:outputLabel id="LB14382" value="#{idm.TT_LB14382}"
+							style="position: relative; width:100%; height: 15px; left: 0px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<div style="position: relative; height: 20px; width: 100%;">
+						<h:outputLabel id="LB14383" value="#{idm.TG_VALOR_APLICAR} #{comprobantePptalAfectarControlador.valor}"
+							style="position: relative; width:100%; height: 15px; left: 0px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<div id="PL906" style="position: relative; height: 600px;">
+						<p:growl id="alert" showDetail="true" sticky="false"
+							widgetVar="alert" life="5000" autoUpdate="true" escape="false" />
+						<p:growl id="message" showDetail="true" escape="false" />
+						<p:confirmDialog global="true" showEffect="fade" id="confFR521"
+							widgetVar="confFR521">
+							<p:commandButton value="#{idm.TI_SI}" type="button"
+								styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+							<p:commandButton value="#{idm.TI_NO}" type="button"
+								styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+						</p:confirmDialog>
+
+						<ezcomp:MultipleList idF="LM4" id="LM4" idForm=":FR521_nuevo"
+							value="#{comprobantePptalAfectarControlador.listaLista}"
+							rowKey="INDICE"
+							style="position: absolute; width:100%; height: 560px; left: 5px; top: 1px; padding: 0px; margin:0px; margin-bottom: 1px; margin-top: 1px;"
+							rendered="true">
+							<p:ajax event="rowSelect"
+								listener="#{comprobantePptalAfectarControlador.seleccionarFilaLista}"
+								update="@this," oncomplete="PF('LM4s').filter();" />
+
+							<p:column headerText="#{idm.TG_TIPO3}"
+								style="text-align:center; " width="7%"
+								filterBy="#{reg.campos['TIPO_CPTE']}"
+								filterMatchMode="startsWith" filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['TIPO_CPTE']}"
+									style="float:left;  text-align:left;  min-height: 15px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_NUMERO7}"
+								style="text-align:center; " width="13%"
+								filterBy="#{reg.campos['COMPROBANTE']}"
+								filterMatchMode="contains" filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['COMPROBANTE']}"
+									style="float:left;  text-align:left;  min-height: 15px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_FECHA4}"
+								style="text-align:center; " width="12%"
+								filterBy="#{reg.campos['FECHA']}" filterMatchMode="contains"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['FECHA']}"
+									style="float:left;  text-align:left;  min-height: 15px;">
+									<f:convertDateTime pattern="dd/MM/yyyy"
+										timeZone="#{sessionBean.timeZone}" />
+								</h:outputText>
+							</p:column>
+
+							<p:column headerText="#{idm.TG_DESCRIPCION7}"
+								style="text-align:center; " width="35%"
+								filterBy="#{reg.campos['DESCRIPCION']}"
+								filterMatchMode="contains" filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['DESCRIPCION']}"
+									style="float:left;  text-align:left;  min-height: 15px; " />
+							</p:column>
+							<p:column headerText="#{idm.TG_CONS2}"
+								style="text-align:center; " width="7%"
+								filterBy="#{reg.campos['CONSECUTIVO']}"
+								filterMatchMode="contains" filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['CONSECUTIVO']}"
+									style="float:left;  text-align:center;  min-height: 15px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_RUBRO2}"
+								style="text-align:center; " width="20%"
+								filterBy="#{reg.campos['CUENTA']}" filterMatchMode="contains"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['CUENTA']}"
+									style="float:left;  text-align:rigth;  min-height: 15px;" />
+							</p:column>
+
+							<p:column headerText="#{idm.TG_SALDO2}"
+								style="text-align:center; " width="15%"
+								filterBy="#{reg.campos['SALDO']}" filterMatchMode="startsWith"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['SALDO']}"
+									style="float:left;  text-align:rigth;  min-height: 15px;"
+									converter="convertidorDoubleContinuo" />
+							</p:column>
+							<p:column headerText="#{idm.TG_CENTRO_COSTO}"
+								style="text-align:center; " width="15%"
+								filterBy="#{reg.campos['CENTRO_COSTO_NOM']}"
+								filterMatchMode="startsWith" filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['CENTRO_COSTO_NOM']}"
+									style="float:left;  text-align:left;  min-height: 15px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_FUENTE_DE_RECURSOS}"
+								style="text-align:center; " width="15%"
+								filterBy="#{reg.campos['FUENTE_RECURSOS_NOM']}"
+								filterMatchMode="startsWith" filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['FUENTE_RECURSOS_NOM']}"
+									style="float:left;  text-align:left;  min-height: 15px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_AUXILIAR}"
+								style="text-align:center; " width="15%"
+								filterBy="#{reg.campos['AUXILIAR_NOM']}"
+								filterMatchMode="startsWith" filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['AUXILIAR_NOM']}"
+									style="float:left;  text-align:left;  min-height: 15px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_REFERENCIA}"
+								style="text-align:center; " width="15%"
+								filterBy="#{reg.campos['REFERENCIA_NOM']}"
+								filterMatchMode="startsWith" filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['REFERENCIA_NOM']}"
+									style="float:left;  text-align:left;  min-height: 15px;" />
+							</p:column>
+							<f:facet name="seleccionados" id="selLM4">
+								<p:dataTable id="LM4s" widgetVar="LM4s" var="reg"
+									value="#{comprobantePptalAfectarControlador.listaLista.seleccionados}"
+									filteredValue="#{comprobantePptalAfectarControlador.listaLista.filtradoMultiple}"
+									rowIndexVar="rowIndex" rowKey="#{reg.campos[rowKey]}"
+									scrollHeight="30%" scrollWidth="100%" scrollable="true"
+									emptyMessage="#{idm.TI_EMPTY_MESSAGE}">
+									<p:ajax event="rowSelect" update="@this," />
+									<p:column width="60" exportable="false"
+										headerText="#{idm.TG_FR1540_0}" style="text-align: center">
+										<p:commandButton icon="ui-icon-trash"
+											title="Eliminar seleccion"
+											action="#{comprobantePptalAfectarControlador.listaLista.deselecionar(reg)}"
+											oncomplete="PF('LM4s').clearFilters();PF('LM4s').filter()"
+											update=":FR521_nuevo:LM4:LM4,:FR521_nuevo:LM4:LM4s"
+											style="width: 40%; right:4px">
+										</p:commandButton>
+										<p:commandButton icon="ui-icon-document-b"
+											title="Cambiar Saldo"
+											action="#{comprobantePptalAfectarControlador.cambiarSaldo(reg)}"
+											style="width: 40%" oncomplete="PF('DG9').show()">
+										</p:commandButton>
+									</p:column>
+									<p:column headerText="#{idm.TG_TIPO3}"
+										style="text-align:center; " width="7%"
+										filterBy="#{reg.campos['TIPO_CPTE']}"
+										filterMatchMode="startsWith" filterStyle="width:100%;">
+										<h:outputText value="#{reg.campos['TIPO_CPTE']}"
+											style="float:left;  text-align:left;  min-height: 15px;" />
+									</p:column>
+									<p:column headerText="#{idm.TG_NUMERO7}"
+										style="text-align:center; " width="13%"
+										filterBy="#{reg.campos['COMPROBANTE']}"
+										filterMatchMode="contains" filterStyle="width:100%;">
+										<h:outputText value="#{reg.campos['COMPROBANTE']}"
+											style="float:left;  text-align:left;  min-height: 15px;" />
+									</p:column>
+									<p:column headerText="#{idm.TG_FECHA4}"
+										style="text-align:center; " width="12%"
+										filterBy="#{reg.campos['FECHA']}" filterMatchMode="contains"
+										filterStyle="width:100%;">
+										<h:outputText value="#{reg.campos['FECHA']}"
+											style="float:left;  text-align:left;  min-height: 15px;">
+											<f:convertDateTime pattern="dd/MM/yyyy"
+												timeZone="#{sessionBean.timeZone}" />
+										</h:outputText>
+									</p:column>
+									<p:column headerText="#{idm.TG_DESCRIPCION7}"
+										style="text-align:center; " width="35%"
+										filterBy="#{reg.campos['DESCRIPCION']}"
+										filterMatchMode="contains" filterStyle="width:100%;">
+										<h:outputText value="#{reg.campos['DESCRIPCION']}"
+											style="float:left;  text-align:left;  min-height: 15px;" />
+									</p:column>
+									<p:column headerText="#{idm.TG_CONS2}"
+										style="text-align:center; " width="7%"
+										filterBy="#{reg.campos['CONSECUTIVO']}"
+										filterMatchMode="contains" filterStyle="width:100%;">
+										<h:outputText value="#{reg.campos['CONSECUTIVO']}"
+											style="float:left;  text-align:center;  min-height: 15px;" />
+									</p:column>
+									<p:column headerText="#{idm.TG_RUBRO2}"
+										style="text-align:center; " width="20%"
+										filterBy="#{reg.campos['CUENTA']}" filterMatchMode="contains"
+										filterStyle="width:100%;">
+										<h:outputText value="#{reg.campos['CUENTA']}"
+											style="float:left;  text-align:rigth;  min-height: 15px;" />
+									</p:column>
+
+									<p:column headerText="#{idm.TG_SALDO2}"
+										style="text-align:center; " width="15%"
+										filterBy="#{reg.campos['SALDO']}" filterMatchMode="startsWith"
+										filterStyle="width:100%;">
+										<h:outputText value="#{reg.campos['SALDO']}"
+											style="float:left;  text-align:rigth;  min-height: 15px;"
+											converter="convertidorDoubleContinuo" />
+									</p:column>
+									<p:column headerText="#{idm.TG_CENTRO_COSTO}"
+										style="text-align:center; " width="15%"
+										filterBy="#{reg.campos['CENTRO_COSTO_NOM']}"
+										filterMatchMode="startsWith" filterStyle="width:100%;">
+										<h:outputText value="#{reg.campos['CENTRO_COSTO_NOM']}"
+											style="float:left;  text-align:left;  min-height: 15px;" />
+									</p:column>
+									<p:column headerText="#{idm.TG_FUENTE_DE_RECURSOS}"
+										style="text-align:center; " width="15%"
+										filterBy="#{reg.campos['FUENTE_RECURSOS_NOM']}"
+										filterMatchMode="startsWith" filterStyle="width:100%;">
+										<h:outputText value="#{reg.campos['FUENTE_RECURSOS_NOM']}"
+											style="float:left;  text-align:left;  min-height: 15px;" />
+									</p:column>
+									<p:column headerText="#{idm.TG_AUXILIAR}"
+										style="text-align:center; " width="15%"
+										filterBy="#{reg.campos['AUXILIAR_NOM']}"
+										filterMatchMode="startsWith" filterStyle="width:100%;">
+										<h:outputText value="#{reg.campos['AUXILIAR_NOM']}"
+											style="float:left;  text-align:left;  min-height: 15px;" />
+									</p:column>
+									<p:column headerText="#{idm.TG_REFERENCIA}"
+										style="text-align:center; " width="15%"
+										filterBy="#{reg.campos['REFERENCIA_NOM']}"
+										filterMatchMode="startsWith" filterStyle="width:100%;">
+										<h:outputText value="#{reg.campos['REFERENCIA_NOM']}"
+											style="float:left;  text-align:left;  min-height: 15px;" />
+									</p:column>
+								</p:dataTable>
+							</f:facet>
+						</ezcomp:MultipleList>
+
+						<p:commandButton id="BT1132" widgetVar="BT1132"
+							update="FR521_nuevo:alert" tabindex="2" value="#{idm.TI_GUARDAR}"
+							actionListener="#{comprobantePptalAfectarControlador.oprimirAceptar()}"
+							style="position: absolute; width:135px; height: 34px; left: 30%;   top: 570px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#AAAAAA  solid  1px;">
+						</p:commandButton>
+						<p:commandButton id="BT1133" widgetVar="BT1133" tabindex="3"
+							value="#{idm.TG_SALIR}"
+							actionListener="#{comprobantePptalAfectarControlador.ejecutarrcCerrar()}"
+							style="position: absolute; width:135px; height: 34px; left: 50%;   top: 570px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#FF0000; border:#AAAAAA  solid  1px;">
+						</p:commandButton>
+						<p:blockUI block="FR521_nuevo" widgetVar="blockNuevo"
+							trigger="BT1132">
+#{idm.TI_CARGANDO}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+
+
+					</div>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

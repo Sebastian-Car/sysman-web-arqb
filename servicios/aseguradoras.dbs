@@ -1,0 +1,174 @@
+﻿<data name="aseguradoras" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getAseguradorasTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ASEGURADORA.COMPANIA, ASEGURADORA.NITASEGURADORA, ASEGURADORA.NOMBRE, ASEGURADORA.SUCURSAL  FROM ASEGURADORA WHERE ASEGURADORA.COMPANIA = :COMPANIA ORDER BY ASEGURADORA.NOMBRE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NITASEGURADORA":"$NITASEGURADORA","NOMBRE":"$NOMBRE","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="aseguradoras/todosporcompania">
+		<call-query href="getAseguradorasTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getAseguradorasMaximosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  MAX(D_POLIZAS_ACTIVOS.NUMERO_POLIZA) KEEP (DENSE_RANK LAST ORDER BY ROWNUM) NUMERO_POLIZA, MAX(D_POLIZAS_ACTIVOS.FECHAI) KEEP (DENSE_RANK LAST ORDER BY ROWNUM) FECHAI, MAX(D_POLIZAS_ACTIVOS.FECHAF) KEEP (DENSE_RANK LAST ORDER BY ROWNUM) FECHAF, ASEGURADORA.NOMBRE  FROM ASEGURADORA RIGHT JOIN D_POLIZAS_ACTIVOS RIGHT JOIN DEVOLUTIVO ON D_POLIZAS_ACTIVOS.COMPANIA = DEVOLUTIVO.COMPANIA AND D_POLIZAS_ACTIVOS.SERIE = DEVOLUTIVO.SERIE AND D_POLIZAS_ACTIVOS.ELEMENTO = DEVOLUTIVO.ELEMENTO ON ASEGURADORA.NITASEGURADORA = D_POLIZAS_ACTIVOS.ASEGURADORA INNER JOIN MOVIMIENTO INNER JOIN D_MOVIMIENTO ON MOVIMIENTO.COMPANIA = D_MOVIMIENTO.COMPANIA AND MOVIMIENTO.NUMERO = D_MOVIMIENTO.MOVIMIENTO AND MOVIMIENTO.TIPOMOVIMIENTO = D_MOVIMIENTO.TIPOMOVIMIENTO ON DEVOLUTIVO.COMPANIA = D_MOVIMIENTO.COMPANIA AND DEVOLUTIVO.SERIE = D_MOVIMIENTO.SERIE AND DEVOLUTIVO.ELEMENTO = D_MOVIMIENTO.ELEMENTO INNER JOIN TIPOMOVIMIENTO ON D_MOVIMIENTO.COMPANIA = TIPOMOVIMIENTO.COMPANIA AND D_MOVIMIENTO.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO WHERE D_POLIZAS_ACTIVOS.COMPANIA = :COMPANIA AND D_POLIZAS_ACTIVOS.ELEMENTO = :ELEMENTO AND D_POLIZAS_ACTIVOS.SERIE = :PLACA GROUP BY D_POLIZAS_ACTIVOS.COMPANIA, D_POLIZAS_ACTIVOS.ASEGURADORA, D_POLIZAS_ACTIVOS.SERIE, ASEGURADORA.NOMBRE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO_POLIZA":"$NUMERO_POLIZA","FECHAI":"$FECHAI","FECHAF":"$FECHAF","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="PLACA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="aseguradoras/maximos">
+		<call-query href="getAseguradorasMaximosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="PLACA" query-param="PLACA"/>
+
+		</call-query>
+	</resource>
+	<query id="getAseguradorasPagTodosPorCompaniaNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NITASEGURADORA ,NOMBRE ,SUCURSAL  FROM ASEGURADORA WHERE COMPANIA = :COMPANIA ORDER BY NOMBRE) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NITASEGURADORA":"$NITASEGURADORA","NOMBRE":"$NOMBRE","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="aseguradoras/todosporcompanianombre/pag">
+		<call-query href="getAseguradorasPagTodosPorCompaniaNombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAseguradorasNumTodosPorCompaniaNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NITASEGURADORA ,NOMBRE ,SUCURSAL  FROM ASEGURADORA WHERE COMPANIA = :COMPANIA ORDER BY NOMBRE) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="aseguradoras/todosporcompanianombre/num">
+		<call-query href="getAseguradorasNumTodosPorCompaniaNombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertAseguradoras" keyColumns="COMPANIA,NITASEGURADORA,SUCURSAL" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ASEGURADORA (COMPANIA, NITASEGURADORA, SUCURSAL, NOMBRE, SIRECI, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :NITASEGURADORA, :SUCURSAL, :NOMBRE, :SIRECI, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_NITASEGURADORA":"$NITASEGURADORA","KEY_SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="NITASEGURADORA" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="SIRECI" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="aseguradoras">
+		<call-query href="insertAseguradoras">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NITASEGURADORA" query-param="NITASEGURADORA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SIRECI" query-param="SIRECI"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteAseguradoras" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ASEGURADORA WHERE ASEGURADORA.COMPANIA= :KEY_COMPANIA AND ASEGURADORA.NITASEGURADORA= :KEY_NITASEGURADORA AND ASEGURADORA.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NITASEGURADORA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="aseguradoras">
+		<call-query href="deleteAseguradoras">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NITASEGURADORA" query-param="KEY_NITASEGURADORA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getAseguradorasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ASEGURADORA.COMPANIA, ASEGURADORA.NITASEGURADORA, ASEGURADORA.SUCURSAL, ASEGURADORA.NOMBRE, ASEGURADORA.SIRECI  FROM ASEGURADORA ORDER BY ASEGURADORA.NITASEGURADORA) WHERE (CASE WHEN NITASEGURADORA IS NULL THEN ' ' ELSE UPPER(NITASEGURADORA) END)  LIKE UPPER(:NITASEGURADORA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SIRECI IS NULL THEN ' ' ELSE UPPER(SIRECI) END)  LIKE UPPER( '%' || :SIRECI || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NITASEGURADORA":"$NITASEGURADORA","SUCURSAL":"$SUCURSAL","NOMBRE":"$NOMBRE","SIRECI":"$SIRECI"}]}}		</result>
+		<param name="NITASEGURADORA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SIRECI" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="aseguradoras">
+		<call-query href="getAseguradorasPaginaQuery">
+			<with-param name="NITASEGURADORA" query-param="NITASEGURADORA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SIRECI" query-param="SIRECI"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAseguradorasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ASEGURADORA.COMPANIA, ASEGURADORA.NITASEGURADORA, ASEGURADORA.SUCURSAL, ASEGURADORA.NOMBRE, ASEGURADORA.SIRECI  FROM ASEGURADORA ORDER BY ASEGURADORA.NITASEGURADORA) WHERE (CASE WHEN NITASEGURADORA IS NULL THEN ' ' ELSE UPPER(NITASEGURADORA) END)  LIKE UPPER(:NITASEGURADORA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SIRECI IS NULL THEN ' ' ELSE UPPER(SIRECI) END)  LIKE UPPER( '%' || :SIRECI || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="NITASEGURADORA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SIRECI" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="aseguradoras/numero">
+		<call-query href="getAseguradorasNumeroQuery">
+			<with-param name="NITASEGURADORA" query-param="NITASEGURADORA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SIRECI" query-param="SIRECI"/>
+
+		</call-query>
+	</resource>
+	<query id="updateAseguradoras" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ASEGURADORA SET NITASEGURADORA=:NITASEGURADORA, NOMBRE=:NOMBRE, SIRECI=:SIRECI, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ASEGURADORA.COMPANIA= :KEY_COMPANIA AND ASEGURADORA.NITASEGURADORA= :KEY_NITASEGURADORA AND ASEGURADORA.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NITASEGURADORA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SIRECI" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NITASEGURADORA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="aseguradoras">
+		<call-query href="updateAseguradoras">
+			<with-param name="NITASEGURADORA" query-param="NITASEGURADORA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SIRECI" query-param="SIRECI"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NITASEGURADORA" query-param="KEY_NITASEGURADORA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+
+</data>

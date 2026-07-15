@@ -1,0 +1,12 @@
+SELECT ANO, 
+       LIMITE_INFERIOR, 
+       LIMITE_SUPERIOR, 
+       CODIGO, 
+       CNTCOD, 
+       CNTCOD1, 
+       POR_BASE, 
+       POR_APLICAR, 
+       DESCRIPCION, 
+       VALOR_APLICAR 
+FROM  RETEFUENTEUVT 
+WHERE RETEFUENTEUVT.COMPANIA = s$compania$s

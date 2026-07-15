@@ -1,0 +1,71 @@
+SELECT PP.CODIGO_SIA || D.CUENTA                            CODIGO_rubro,
+        P.NOMBRE                                            NOMBRE_RUBRO,
+        D.TIPO_CPTE_AFECT || '-' ||D.CMPTE_AFECTADO         NUMERO_CDP,
+        TO_CHAR(DE.FECHA,'DD/MM/YYYY')                                            FECHA_CDP,
+        DE.VALOR_DEBITO     VALOR_CDP,
+        TO_CHAR(D.FECHA ,'DD/MM/YYYY')                                           FECHA_REGISTRO_PRESUPUESTAL,
+        D.VALOR_DEBITO-D.VALOR_CREDITO         VALOR_REGISTRO_PRESUPUESTAL,
+        TE.NOMBRE                                           BENEFICIARIO,
+        D.TERCERO                                           CEDULA_NIT,
+        D.DESCRIPCION                                       DETALLE_COMPROMISO  
+FROM DETALLE_COMPROBANTE_PPTAL D INNER JOIN TIPO_COMPROBPP T
+      ON D.COMPANIA=T.COMPANIA
+      AND D.TIPO_CPTE=T.CODIGO
+ INNER JOIN V_PLAN_PRESUPUESTAL P
+     ON D.COMPANIA=P.COMPANIA
+       AND D.ANO=P.ANO
+       AND D.ID=P.ID
+ INNER JOIN DETALLE_COMPROBANTE_PPTAL DE    
+     ON   D.COMPANIA=DE.COMPANIA
+     AND  D.ANO=DE.ANO
+     AND  D.ID=DE.ID
+     AND  D.TIPO_CPTE_AFECT=DE.TIPO_CPTE
+     AND  D.CMPTE_AFECTADO=DE.COMPROBANTE
+     AND  D.CONSECUTIVOPPTO=DE.CONSECUTIVO
+     AND  D.ANO_AFECT=DE.ANO
+ INNER JOIN TERCERO TE
+     ON TE.COMPANIA=D.COMPANIA
+     AND TE.NIT=D.TERCERO
+     AND TE.SUCURSAL=D.SUCURSAL  
+INNER JOIN PLAN_PPTAL_CONFIG PP
+    ON D.COMPANIA=PP.COMPANIA
+     AND  D.ANO=PP.ANO
+     AND  D.CUENTA=PP.CODIGO
+     AND  D.CENTRO_COSTO=PP.CENTRO_COSTO
+     AND  D.AUXILIAR=PP.AUXILIAR
+     AND  D.FUENTE_RECURSO=PP.FUENTE_RECURSO
+  LEFT JOIN (SELECT D.COMPANIA,
+                  D.ANO_AFECT,
+                  D.ID,
+                  D.TIPO_CPTE_AFECT TIPO,
+                  D.CMPTE_AFECTADO  COMPROBANTE,
+                  D.CONSECUTIVOPPTO,
+                  NVL(SUM(CASE WHEN T.CLASE='ADD' THEN
+                  VALOR_DEBITO ELSE
+                   VALOR_CREDITO END ),0)MODIFICACIONES
+              FROM DETALLE_COMPROBANTE_PPTAL D INNER JOIN TIPO_COMPROBPP T
+                          ON D.COMPANIA=T.COMPANIA
+                          AND D.TIPO_CPTE=T.CODIGO   
+              WHERE D.COMPANIA=s$compania$s
+                      AND D.ANO=s$ano$s
+                      AND T.CLASE IN('ADD','DMD')
+                      AND D.MES BETWEEN  s$mesInicial$s AND s$mesFinal$s
+             GROUP BY D.COMPANIA,
+                      D.ANO_AFECT,
+                      D.ID,
+                      D.TIPO_CPTE_AFECT,
+                      D.CMPTE_AFECTADO,
+                      D.CONSECUTIVOPPTO         
+                          ) MODIFICACION_DIS
+      ON    DE.COMPANIA=MODIFICACION_DIS.COMPANIA
+        AND DE.ANO=MODIFICACION_DIS.ANO_AFECT
+        AND DE.ID=MODIFICACION_DIS.ID
+        AND DE.TIPO_CPTE= MODIFICACION_DIS.TIPO
+        AND DE.COMPROBANTE=MODIFICACION_DIS.COMPROBANTE 
+        AND D.CONSECUTIVO=MODIFICACION_DIS.CONSECUTIVOPPTO
+WHERE D.COMPANIA=s$compania$s
+  AND D.ANO=s$ano$s
+  AND T.CLASE IN('RES','ADR','DMR')
+  AND P.TIPOVIGENCIA NOT IN ('RC')
+  AND D.MES BETWEEN s$mesInicial$s AND s$mesFinal$s
+  AND P.REGALIAS IN (0)

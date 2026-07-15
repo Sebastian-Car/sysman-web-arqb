@@ -1,0 +1,894 @@
+/*-
+ * FrmAuxiliaresPorCcostoyTerceroControlador.java
+ *
+ * 1.0
+ * 
+ * 18/05/2022
+ * 
+ * Copyright (c) 2016 Stefanini Sysman.
+ * Paipa, Boyaca.
+ * All rights reserved.
+ */
+package com.sysman.contabilidad;
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import com.sysman.exception.SystemException;
+import com.sysman.jsfutil.JsfUtil;
+import com.sysman.jsfutil.RegistroConverter;
+import com.sysman.jsfutil.ReportesBean.FORMATOS;
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ViewScoped;
+import org.primefaces.event.SelectEvent;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import com.sysman.beanbase.BeanBaseModal;
+import com.sysman.contabilidad.enums.FrmAuxiliaresPorCcostoyTerceroControladorUrlEnum;
+import com.sysman.contabilidad.enums.InformesAuxiliaresContabilidadControladorEnum;
+import com.sysman.contabilidad.enums.LisAuxiliaresControladorEnum;
+import com.sysman.contabilidad.enums.LisAuxiliaresControladorUrlEnum;
+import com.sysman.controladores.SessionUtil;
+import com.sysman.dao.Registro;
+import com.sysman.enums.GeneralCodigoFormaEnum;
+import com.sysman.enums.GeneralParameterEnum;
+import com.sysman.exc.kernel.api.commons.util.exceptions.SysmanException;
+import com.sysman.kernel.api.clientwso2.beans.UrlBean;
+import com.sysman.kernel.api.clientwso2.connectors.UrlServiceUtil;
+import com.sysman.persistencia.ConectorPool;
+import com.sysman.recursos.ejb.EjbSysmanUtilRemote;
+import com.sysman.reportes.Reporteador;
+import com.sysman.services.RegistroDataModelImpl;
+import com.sysman.util.SysmanConstantes;
+import com.sysman.util.SysmanFunciones;
+
+import net.sf.jasperreports.engine.JRException;
+
+import org.primefaces.model.StreamedContent;
+/**
+ * TODO Ingrese una descripcion para la clase.
+ *
+ * @version 1.0, 18/05/2022
+ * @author mrosero
+ */
+@ManagedBean
+@ViewScoped
+public class  FrmAuxiliaresPorCcostoyTerceroControlador extends BeanBaseModal{
+    /**
+     * Constante a nivel de clase que almacena el codigo de la
+     * compania en la cual inicio sesion el usuario, el valor de esta
+     * constante es asignado en el constructor a la variable de sesion
+     * correspondiente
+     */
+    private final String compania ;
+//<DECLARAR_ATRIBUTOS>
+
+private String tipoIni= SysmanConstantes.DEFECTOINICIAL_STRING;
+private String tipoFin= SysmanConstantes.DEFECTOINICIAL_STRING;
+private String cuentaInicial= SysmanConstantes.DEFECTOINICIAL_STRING;
+private String cuentaFinal= SysmanConstantes.DEFECTOINICIAL_STRING;
+private String centroInicial= SysmanConstantes.DEFECTOINICIAL_STRING;
+private String centroFinal= SysmanConstantes.DEFECTOINICIAL_STRING;
+private String terceroInicial= SysmanConstantes.DEFECTOINICIAL_STRING;
+private String terceroFinal= SysmanConstantes.DEFECTOINICIAL_STRING;
+private String mesInicial;
+private String mesFinal;
+private String modulo;
+private String anio;
+
+    /**
+     * Atributo usado para descargar contenidos de archivos desde la
+     * vista
+     */
+private StreamedContent archivoDescarga;
+//</DECLARAR_ATRIBUTOS>
+//<DECLARAR_PARAMETROS>
+//</DECLARAR_PARAMETROS>
+//<DECLARAR_LISTAS>
+
+private List<Registro> listaAnio;
+//</DECLARAR_LISTAS>
+//<DECLARAR_LISTAS_COMBO_GRANDE>
+
+ private RegistroDataModelImpl listaTipoInicial;
+ private RegistroDataModelImpl listaTipoFinal;
+ private RegistroDataModelImpl listaCuentaInicial;
+ private RegistroDataModelImpl listaCuentaFinal;
+ private RegistroDataModelImpl listaCentroInicial;
+ private RegistroDataModelImpl listaCentroFinal;
+ private RegistroDataModelImpl listaTerceroInicial;
+ private RegistroDataModelImpl listaTerceroFinal;
+//</DECLARAR_LISTAS_COMBO_GRANDE>
+ 
+
+	@EJB
+	EjbSysmanUtilRemote ejbSysmanUtil;
+	
+    /**
+     * Crea una nueva instancia de FrmAuxiliaresPorCcostoyTerceroControlador
+     */
+    public FrmAuxiliaresPorCcostoyTerceroControlador() {
+		super();
+		compania = SessionUtil.getCompania();
+		modulo = SessionUtil.getModulo();
+		tipoIni= SysmanConstantes.DEFECTOINICIAL_STRING;
+		tipoFin= SysmanConstantes.DEFECTOINICIAL_STRING;
+		cuentaInicial= SysmanConstantes.DEFECTOINICIAL_STRING;
+		cuentaFinal= SysmanConstantes.DEFECTOINICIAL_STRING;
+		centroInicial= SysmanConstantes.DEFECTOINICIAL_STRING;
+		centroFinal= SysmanConstantes.DEFECTOINICIAL_STRING;
+		terceroInicial= SysmanConstantes.DEFECTOINICIAL_STRING;
+		terceroFinal= SysmanConstantes.DEFECTOINICIAL_STRING;
+		
+		try {
+			numFormulario = GeneralCodigoFormaEnum.FRM_AUXILIARES_POR_CCOSTO_Y_TERCERO_CONTROLADOR.getCodigo();
+			validarPermisos();
+			
+		} catch (Exception ex)
+        {
+            Logger.getLogger(FrmAuxiliaresPorCcostoyTerceroControlador.class.getName())
+                            .log(Level.SEVERE, null, ex);
+            SessionUtil.redireccionarMenuPermisos();
+        }
+    }
+    /**
+     * Este metodo se ejecuta justo despues de que el objeto de la
+     * clase del Bean ha sido creado, en este se realizan las
+     * asignaciones iniciales necesarias para la visualizacion del
+     * formulario, como son tablas, origenes de datos, inicializacion
+     * de listas y demas necesarios
+     */
+    @PostConstruct
+    public void inicializar(){
+    	 anio= String.valueOf(SysmanFunciones.ano(new Date()));
+		 cargarListaAnio();
+		 cargarListaTipoInicial(); 
+		 cargarListaTipoFinal(); 
+		 cargarListaCuentaInicial(); 
+		 cargarListaCuentaFinal(); 
+		 cargarListaCentroInicial(); 
+		 cargarListaCentroFinal(); 
+		 cargarListaTerceroInicial(); 
+		 cargarListaTerceroFinal();
+		 abrirFormulario();
+    }
+    /**
+     * Este metodo es invocado el metodo inicializar, se ejecutan las
+     * acciones a tener en cuenta en el momento de apertura del
+     * formulario
+     */
+  @Override
+	public void abrirFormulario(){
+        //<CODIGO_DESARROLLADO>
+         
+        //</CODIGO_DESARROLLADO>
+    }
+//<METODOS_CARGAR_LISTA>
+    /**
+     * 
+     * Carga la lista listaAnio
+     *
+     */
+public void cargarListaAnio(){
+	Map<String, Object> param = new TreeMap<>();
+	param.put(GeneralParameterEnum.COMPANIA.getName(), compania);
+	try {
+		listaAnio = RegistroConverter
+				.toListRegistro(
+						requestManager.getList(
+								UrlServiceUtil.getInstance()
+										.getUrlServiceByUrlByEnumID(
+												FrmAuxiliaresPorCcostoyTerceroControladorUrlEnum.URL001.getValue())
+										.getUrl(),
+								param));
+	} catch (SystemException e) {
+		logger.error(e.getMessage(), e);
+		JsfUtil.agregarMensajeError(e.getMessage());
+	}
+}
+    /**
+     * 
+     * Carga la lista listaTipoInicial
+     *
+     */
+public void cargarListaTipoInicial(){
+	UrlBean urlBean = UrlServiceUtil.getInstance()
+			.getUrlServiceByUrlByEnumID(
+					FrmAuxiliaresPorCcostoyTerceroControladorUrlEnum.URL002
+					.getValue());
+	
+	Map<String, Object> param = new TreeMap<>();
+	param.put(GeneralParameterEnum.COMPANIA.getName(), compania);
+
+	listaTipoInicial = new RegistroDataModelImpl(urlBean.getUrl(),
+			urlBean.getUrlConteo().getUrl(), param, true, 
+			GeneralParameterEnum.CODIGO.getName());
+
+}
+    /**
+     * 
+     * Carga la lista listaTipoFinal
+     *
+     */
+public void cargarListaTipoFinal(){
+	
+	UrlBean urlBean = UrlServiceUtil.getInstance()
+            .getUrlServiceByUrlByEnumID(
+            		FrmAuxiliaresPorCcostoyTerceroControladorUrlEnum.URL003
+        					.getValue());
+	Map<String, Object> param = new TreeMap<>();
+	param.put("TIPOINICIAL", tipoIni);
+	param.put(GeneralParameterEnum.COMPANIA.getName(), compania);
+	
+
+	listaTipoFinal = new RegistroDataModelImpl(urlBean.getUrl(),
+			urlBean.getUrlConteo().getUrl(), param, 
+			true, GeneralParameterEnum.CODIGO.getName());
+
+}
+    /**
+     * 
+     * Carga la lista listaCuentaInicial
+     *
+     */
+public void cargarListaCuentaInicial(){
+	UrlBean urlBean = UrlServiceUtil.getInstance()
+            .getUrlServiceByUrlByEnumID(
+            		FrmAuxiliaresPorCcostoyTerceroControladorUrlEnum.URL008
+                                            .getValue());
+	Map<String, Object> param = new TreeMap<>();
+	param.put(GeneralParameterEnum.COMPANIA.getName(), compania);
+	param.put(GeneralParameterEnum.ANO.getName(), anio);
+
+	listaCuentaInicial = new RegistroDataModelImpl(urlBean.getUrl(), urlBean.getUrlConteo().getUrl(), param, true,
+			GeneralParameterEnum.CODIGO.getName());
+
+}
+    /**
+     * 
+     * Carga la lista listaCuentaFinal
+     *
+     */
+public void cargarListaCuentaFinal(){
+	 UrlBean urlBean = UrlServiceUtil.getInstance()
+             .getUrlServiceByUrlByEnumID(
+            		 FrmAuxiliaresPorCcostoyTerceroControladorUrlEnum.URL009
+                                             .getValue());
+	 Map<String, Object> param = new TreeMap<>();
+		param.put(GeneralParameterEnum.COMPANIA.getName(), compania);
+		param.put(GeneralParameterEnum.ANO.getName(), anio);
+		param.put(InformesAuxiliaresContabilidadControladorEnum.PARAM2.getValue(), cuentaInicial);
+
+		listaCuentaFinal = new RegistroDataModelImpl(urlBean.getUrl(), urlBean.getUrlConteo().getUrl(), param, true,
+				GeneralParameterEnum.CODIGO.getName());
+}
+    /**
+     * 
+     * Carga la lista listaCentroInicial
+     *
+     */
+public void cargarListaCentroInicial(){
+	 UrlBean urlBean = UrlServiceUtil.getInstance()
+             .getUrlServiceByUrlByEnumID(
+            		 FrmAuxiliaresPorCcostoyTerceroControladorUrlEnum.URL004
+                                             .getValue());
+Map<String, Object> param = new TreeMap<>();
+param.put(GeneralParameterEnum.COMPANIA.getName(), compania);
+
+listaCentroInicial = new RegistroDataModelImpl(urlBean.getUrl(),
+             urlBean.getUrlConteo().getUrl(), param,
+             true, GeneralParameterEnum.CODIGO.getName());
+}
+    /**
+     * 
+     * Carga la lista listaCentroFinal
+     *
+     */
+public void cargarListaCentroFinal(){
+	 UrlBean urlBean = UrlServiceUtil.getInstance()
+             .getUrlServiceByUrlByEnumID(
+            		 FrmAuxiliaresPorCcostoyTerceroControladorUrlEnum.URL005
+                                             .getValue());
+Map<String, Object> param = new TreeMap<>();
+param.put(GeneralParameterEnum.COMPANIA.getName(), compania);
+param.put("CENTROINICIAL", centroInicial);
+
+listaCentroFinal = new RegistroDataModelImpl(urlBean.getUrl(),
+             urlBean.getUrlConteo().getUrl(), param, true,
+             GeneralParameterEnum.CODIGO.getName());
+}
+    /**
+     * 
+     * Carga la lista listaTerceroInicial
+     *
+     */
+public void cargarListaTerceroInicial(){
+	  UrlBean urlBean = UrlServiceUtil.getInstance()
+			  .getUrlServiceByUrlByEnumID(
+	            		 FrmAuxiliaresPorCcostoyTerceroControladorUrlEnum.URL006
+	                                             .getValue());
+Map<String, Object> param = new TreeMap<>();
+param.put(GeneralParameterEnum.COMPANIA.getName(), compania);
+
+listaTerceroInicial = new RegistroDataModelImpl(urlBean.getUrl(),
+              urlBean.getUrlConteo().getUrl(), param,
+              true, "NIT");
+}
+    /**
+     * 
+     * Carga la lista listaTerceroFinal
+     *
+     */
+public void cargarListaTerceroFinal(){
+	
+	  UrlBean urlBean = UrlServiceUtil.getInstance()
+              .getUrlServiceByUrlByEnumID(
+            		  FrmAuxiliaresPorCcostoyTerceroControladorUrlEnum.URL007
+                                              .getValue());
+	  
+	  
+	Map<String, Object> param = new TreeMap<>();
+param.put(GeneralParameterEnum.COMPANIA.getName(), compania);
+param.put("TERCEROINICIAL", terceroInicial);
+
+listaTerceroFinal = new RegistroDataModelImpl(urlBean.getUrl(),
+              urlBean.getUrlConteo().getUrl(), param, true,
+              "NIT");
+}
+//</METODOS_CARGAR_LISTA>
+//<METODOS_BOTONES>
+    /**
+     * 
+     * Metodo ejecutado al oprimir el boton Pdf
+     * en la vista
+     *
+     *
+     */
+public void oprimirPdf() {
+         //<CODIGO_DESARROLLADO>
+         archivoDescarga=null; 
+         generarReporte(FORMATOS.PDF);
+        //</CODIGO_DESARROLLADO>
+    }
+    /**
+     * 
+     * Metodo ejecutado al oprimir el boton Excel
+     * en la vista
+     *
+     *
+     */
+public void oprimirExcel() {
+         //<CODIGO_DESARROLLADO>
+         archivoDescarga=null;    
+         generarReporte(FORMATOS.EXCEL97);
+        //</CODIGO_DESARROLLADO>
+    }
+//</METODOS_BOTONES>
+//<METODOS_CAMBIAR>
+    /**
+     * Metodo ejecutado al cambiar el control Anio en la fila
+     * seleccionada dentro de la grilla
+     * 
+     * 
+     * @param rowNum
+     * indice de la fila seleccionada
+     */
+public void cambiarAnioC(int rowNum) {
+        
+         //<CODIGO_DESARROLLADO>
+        //</CODIGO_DESARROLLADO>
+    }
+
+
+private void generarReporte(FORMATOS formato) {
+    try {
+	
+     Map<String, Object> reemplazar = new HashMap<>();
+     String reporte = "002374AUXCCOSTOYTERCERO";
+  
+
+         reemplazar.put("compania", compania);
+         reemplazar.put("cuentaInicial", cuentaInicial);
+         reemplazar.put("anio", anio);
+         reemplazar.put("cuentaFinal", cuentaFinal);
+         reemplazar.put("mesInicial", mesInicial);
+         reemplazar.put("mesFinal",mesFinal);
+         reemplazar.put("comprobanteInicial", tipoIni);
+         reemplazar.put("comprobanteFinal", tipoFin);
+         reemplazar.put("centroCostoInicial", centroInicial);
+         reemplazar.put("centroCostoFinal", centroFinal);
+         reemplazar.put("terceroInicial", terceroInicial);
+         reemplazar.put("terceroFinal", terceroFinal);
+         
+         String nombreMesInicial = ejbSysmanUtil
+                 .mostrarNombreDeMes(Integer.parseUnsignedInt(mesInicial))
+                 .toUpperCase();
+         String nombreMesFinal = ejbSysmanUtil
+                 .mostrarNombreDeMes(Integer.parseUnsignedInt(mesFinal))
+                 .toUpperCase();
+
+       Map<String, Object> parametros = new HashMap<>();
+         parametros.put("PR_TITULO", "MES DE " + nombreMesInicial + " AL MES DE  " + nombreMesFinal +" DEL "+ anio);
+         parametros.put("PR_TITULO_CUENTAS", " Entre Cuentas " + cuentaInicial
+                     + " Y " + cuentaFinal);
+             parametros.put("PR_TITULO_CENTROS",
+                             "Entre Centro Costo  " + centroInicial
+                                 + " Y " + centroFinal);
+             parametros.put("PR_TITULO_TERCEROS",
+                     "Entre Tercero  " + terceroInicial
+                         + " Y " + terceroFinal);
+            
+      
+        	 Reporteador.resuelveConsulta(reporte,
+                     Integer.parseInt(modulo), reemplazar,
+                     parametros);
+			archivoDescarga = JsfUtil.exportarStreamed(reporte,
+			                 parametros, ConectorPool.ESQUEMA_SYSMAN,
+			                 formato);
+		
+         } catch (JRException | IOException | NumberFormatException | SystemException | SysmanException e) {
+             logger.error(e.getMessage(), e);
+             JsfUtil.agregarMensajeError(e.getMessage());
+         }
+
+     }
+
+//</METODOS_CAMBIAR>
+//<METODOS_COMBOS_GRANDES>
+    /**
+     * 
+     * Metodo ejecutado al seleccionar una fila de la lista
+     * listaTipoInicial
+     *
+     *
+     * @param event
+     * objeto que encapsula la accion proveniente de la vista
+     */
+public void seleccionarFilaTipoInicial(SelectEvent event) {
+Registro registroAux = (Registro) event.getObject();
+        tipoIni= registroAux.getCampos().get("CODIGO").toString();
+}
+    /**
+     * 
+     * Metodo ejecutado al seleccionar una fila de la lista
+     * listaTipoFinal
+     *
+     *
+     * @param event
+     * objeto que encapsula la accion proveniente de la vista
+     */
+public void seleccionarFilaTipoFinal(SelectEvent event) {
+Registro registroAux = (Registro) event.getObject();
+        tipoFin= registroAux.getCampos().get("CODIGO").toString();
+}
+    /**
+     * 
+     * Metodo ejecutado al seleccionar una fila de la lista
+     * listaCuentaInicial
+     *
+     *
+     * @param event
+     * objeto que encapsula la accion proveniente de la vista
+     */
+public void seleccionarFilaCuentaInicial(SelectEvent event) {
+Registro registroAux = (Registro) event.getObject();
+        cuentaInicial= registroAux.getCampos().get("CODIGO").toString();
+}
+    /**
+     * 
+     * Metodo ejecutado al seleccionar una fila de la lista
+     * listaCuentaFinal
+     *
+     *
+     * @param event
+     * objeto que encapsula la accion proveniente de la vista
+     */
+public void seleccionarFilaCuentaFinal(SelectEvent event) {
+Registro registroAux = (Registro) event.getObject();
+        cuentaFinal= registroAux.getCampos().get("CODIGO").toString();
+}
+    /**
+     * 
+     * Metodo ejecutado al seleccionar una fila de la lista
+     * listaCentroInicial
+     *
+     *
+     * @param event
+     * objeto que encapsula la accion proveniente de la vista
+     */
+public void seleccionarFilaCentroInicial(SelectEvent event) {
+Registro registroAux = (Registro) event.getObject();
+        centroInicial= registroAux.getCampos().get("CODIGO").toString();
+}
+    /**
+     * 
+     * Metodo ejecutado al seleccionar una fila de la lista
+     * listaCentroFinal
+     *
+     *
+     * @param event
+     * objeto que encapsula la accion proveniente de la vista
+     */
+public void seleccionarFilaCentroFinal(SelectEvent event) {
+Registro registroAux = (Registro) event.getObject();
+        centroFinal= registroAux.getCampos().get("CODIGO").toString();
+}
+    /**
+     * 
+     * Metodo ejecutado al seleccionar una fila de la lista
+     * listaTerceroInicial
+     *
+     *
+     * @param event
+     * objeto que encapsula la accion proveniente de la vista
+     */
+public void seleccionarFilaTerceroInicial(SelectEvent event) {
+Registro registroAux = (Registro) event.getObject();
+        terceroInicial= registroAux.getCampos().get("NIT").toString();
+}
+    /**
+     * 
+     * Metodo ejecutado al seleccionar una fila de la lista
+     * listaTerceroFinal
+     *
+     *
+     * @param event
+     * objeto que encapsula la accion proveniente de la vista
+     */
+public void seleccionarFilaTerceroFinal(SelectEvent event) {
+Registro registroAux = (Registro) event.getObject();
+        terceroFinal= registroAux.getCampos().get("NIT").toString();
+}
+//</METODOS_COMBOS_GRANDES>
+//<METODOS_ARBOL>
+//</METODOS_ARBOL>
+//<SET_GET_ATRIBUTOS>
+    /**
+     * Retorna la variable tipoIni
+     * 
+     * @return  tipoIni
+     */
+public String getTipoIni() {
+        return tipoIni;
+    }
+    /**
+     * Asigna la variable  tipoIni
+     * 
+     * @param  tipoIni
+     * Variable a asignar en  tipoIni
+     */
+    public void setTipoIni(String tipoIni) {
+        this.tipoIni = tipoIni;
+    }
+    /**
+     * Retorna la variable tipoFin
+     * 
+     * @return  tipoFin
+     */
+public String getTipoFin() {
+        return tipoFin;
+    }
+    /**
+     * Asigna la variable  tipoFin
+     * 
+     * @param  tipoFin
+     * Variable a asignar en  tipoFin
+     */
+    public void setTipoFin(String tipoFin) {
+        this.tipoFin = tipoFin;
+    }
+    /**
+     * Retorna la variable cuentaInicial
+     * 
+     * @return  cuentaInicial
+     */
+public String getCuentaInicial() {
+        return cuentaInicial;
+    }
+    /**
+     * Asigna la variable  cuentaInicial
+     * 
+     * @param  cuentaInicial
+     * Variable a asignar en  cuentaInicial
+     */
+    public void setCuentaInicial(String cuentaInicial) {
+        this.cuentaInicial = cuentaInicial;
+    }
+    /**
+     * Retorna la variable cuentaFinal
+     * 
+     * @return  cuentaFinal
+     */
+public String getCuentaFinal() {
+        return cuentaFinal;
+    }
+    /**
+     * Asigna la variable  cuentaFinal
+     * 
+     * @param  cuentaFinal
+     * Variable a asignar en  cuentaFinal
+     */
+    public void setCuentaFinal(String cuentaFinal) {
+        this.cuentaFinal = cuentaFinal;
+    }
+    /**
+     * Retorna la variable centroInicial
+     * 
+     * @return  centroInicial
+     */
+public String getCentroInicial() {
+        return centroInicial;
+    }
+    /**
+     * Asigna la variable  centroInicial
+     * 
+     * @param  centroInicial
+     * Variable a asignar en  centroInicial
+     */
+    public void setCentroInicial(String centroInicial) {
+        this.centroInicial = centroInicial;
+    }
+    /**
+     * Retorna la variable centroFinal
+     * 
+     * @return  centroFinal
+     */
+public String getCentroFinal() {
+        return centroFinal;
+    }
+    /**
+     * Asigna la variable  centroFinal
+     * 
+     * @param  centroFinal
+     * Variable a asignar en  centroFinal
+     */
+    public void setCentroFinal(String centroFinal) {
+        this.centroFinal = centroFinal;
+    }
+    /**
+     * Retorna la variable terceroInicial
+     * 
+     * @return  terceroInicial
+     */
+public String getTerceroInicial() {
+        return terceroInicial;
+    }
+    /**
+     * Asigna la variable  terceroInicial
+     * 
+     * @param  terceroInicial
+     * Variable a asignar en  terceroInicial
+     */
+    public void setTerceroInicial(String terceroInicial) {
+        this.terceroInicial = terceroInicial;
+    }
+    /**
+     * Retorna la variable terceroFinal
+     * 
+     * @return  terceroFinal
+     */
+public String getTerceroFinal() {
+        return terceroFinal;
+    }
+    /**
+     * Asigna la variable  terceroFinal
+     * 
+     * @param  terceroFinal
+     * Variable a asignar en  terceroFinal
+     */
+    public void setTerceroFinal(String terceroFinal) {
+        this.terceroFinal = terceroFinal;
+    }
+    /**
+     * Retorna la variable mesInicial
+     * 
+     * @return  mesInicial
+     */
+public String getMesInicial() {
+        return mesInicial;
+    }
+    /**
+     * Asigna la variable  mesInicial
+     * 
+     * @param  mesInicial
+     * Variable a asignar en  mesInicial
+     */
+    public void setMesInicial(String mesInicial) {
+        this.mesInicial = mesInicial;
+    }
+    /**
+     * Retorna la variable mesFinal
+     * 
+     * @return  mesFinal
+     */
+public String getMesFinal() {
+        return mesFinal;
+    }
+    /**
+     * Asigna la variable  mesFinal
+     * 
+     * @param  mesFinal
+     * Variable a asignar en  mesFinal
+     */
+    public void setMesFinal(String mesFinal) {
+        this.mesFinal = mesFinal;
+    }
+    /**
+     * Atributo usado para descargar contenidos de archivos desde la
+     * vista
+     */
+public StreamedContent getArchivoDescarga() {
+        return archivoDescarga;
+    }
+//</SET_GET_ATRIBUTOS>
+//<SET_GET_PARAMETROS>
+//</SET_GET_PARAMETROS>
+//<SET_GET_LISTAS>
+    /**
+     * Retorna la lista listaAnio
+     * 
+     * @return listaAnio
+     */
+public List<Registro> getListaAnio() {
+        return listaAnio;
+    }
+    /**
+     * Asigna la lista listaAnio
+     * 
+     * @param listaAnio
+     * Variable a asignar en  listaAnio
+     */
+public void setListaAnio(List<Registro> listaAnio) {
+        this.listaAnio = listaAnio;
+    }
+//</SET_GET_LISTAS>
+//<SET_GET_LISTAS_COMBO_GRANDE>	
+    /**
+     * Retorna la lista listaTipoInicial
+     * 
+     * @return listaTipoInicial
+     */
+    public RegistroDataModelImpl getListaTipoInicial() {
+        return listaTipoInicial;
+    }
+    /**
+     * Asigna la lista listaTipoInicial
+     * 
+     * @param listaTipoInicial
+     * Variable a asignar en  listaTipoInicial
+     */
+    public void setListaTipoInicial(RegistroDataModelImpl listaTipoInicial) {
+        this.listaTipoInicial = listaTipoInicial;
+    }
+    /**
+     * Retorna la lista listaTipoFinal
+     * 
+     * @return listaTipoFinal
+     */
+    public RegistroDataModelImpl getListaTipoFinal() {
+        return listaTipoFinal;
+    }
+    /**
+     * Asigna la lista listaTipoFinal
+     * 
+     * @param listaTipoFinal
+     * Variable a asignar en  listaTipoFinal
+     */
+    public void setListaTipoFinal(RegistroDataModelImpl listaTipoFinal) {
+        this.listaTipoFinal = listaTipoFinal;
+    }
+    /**
+     * Retorna la lista listaCuentaInicial
+     * 
+     * @return listaCuentaInicial
+     */
+    public RegistroDataModelImpl getListaCuentaInicial() {
+        return listaCuentaInicial;
+    }
+    /**
+     * Asigna la lista listaCuentaInicial
+     * 
+     * @param listaCuentaInicial
+     * Variable a asignar en  listaCuentaInicial
+     */
+    public void setListaCuentaInicial(RegistroDataModelImpl listaCuentaInicial) {
+        this.listaCuentaInicial = listaCuentaInicial;
+    }
+    /**
+     * Retorna la lista listaCuentaFinal
+     * 
+     * @return listaCuentaFinal
+     */
+    public RegistroDataModelImpl getListaCuentaFinal() {
+        return listaCuentaFinal;
+    }
+    /**
+     * Asigna la lista listaCuentaFinal
+     * 
+     * @param listaCuentaFinal
+     * Variable a asignar en  listaCuentaFinal
+     */
+    public void setListaCuentaFinal(RegistroDataModelImpl listaCuentaFinal) {
+        this.listaCuentaFinal = listaCuentaFinal;
+    }
+    /**
+     * Retorna la lista listaCentroInicial
+     * 
+     * @return listaCentroInicial
+     */
+    public RegistroDataModelImpl getListaCentroInicial() {
+        return listaCentroInicial;
+    }
+    /**
+     * Asigna la lista listaCentroInicial
+     * 
+     * @param listaCentroInicial
+     * Variable a asignar en  listaCentroInicial
+     */
+    public void setListaCentroInicial(RegistroDataModelImpl listaCentroInicial) {
+        this.listaCentroInicial = listaCentroInicial;
+    }
+    /**
+     * Retorna la lista listaCentroFinal
+     * 
+     * @return listaCentroFinal
+     */
+    public RegistroDataModelImpl getListaCentroFinal() {
+        return listaCentroFinal;
+    }
+    /**
+     * Asigna la lista listaCentroFinal
+     * 
+     * @param listaCentroFinal
+     * Variable a asignar en  listaCentroFinal
+     */
+    public void setListaCentroFinal(RegistroDataModelImpl listaCentroFinal) {
+        this.listaCentroFinal = listaCentroFinal;
+    }
+    /**
+     * Retorna la lista listaTerceroInicial
+     * 
+     * @return listaTerceroInicial
+     */
+    public RegistroDataModelImpl getListaTerceroInicial() {
+        return listaTerceroInicial;
+    }
+    /**
+     * Asigna la lista listaTerceroInicial
+     * 
+     * @param listaTerceroInicial
+     * Variable a asignar en  listaTerceroInicial
+     */
+    public void setListaTerceroInicial(RegistroDataModelImpl listaTerceroInicial) {
+        this.listaTerceroInicial = listaTerceroInicial;
+    }
+    /**
+     * Retorna la lista listaTerceroFinal
+     * 
+     * @return listaTerceroFinal
+     */
+    public RegistroDataModelImpl getListaTerceroFinal() {
+        return listaTerceroFinal;
+    }
+    /**
+     * Asigna la lista listaTerceroFinal
+     * 
+     * @param listaTerceroFinal
+     * Variable a asignar en  listaTerceroFinal
+     */
+    public void setListaTerceroFinal(RegistroDataModelImpl listaTerceroFinal) {
+        this.listaTerceroFinal = listaTerceroFinal;
+    }
+//</SET_GET_LISTAS_COMBO_GRANDE>
+	public String getAnio() {
+		return anio;
+	}
+	public void setAnio(String anio) {
+		this.anio = anio;
+	}
+}

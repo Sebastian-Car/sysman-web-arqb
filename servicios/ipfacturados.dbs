@@ -1,0 +1,1211 @@
+﻿<data name="ipfacturados" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getIpfacturadosAnosFacturadosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(0) ANOSFACT  FROM IP_FACTURADOS WHERE COMPANIA = :COMPANIA AND CODIGO = :CODIGO AND NUMERO_ORDEN = :NUMERO_ORDEN AND PAGADO IN (0) AND NOCOBRADO IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANOSFACT":"$ANOSFACT(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/anosfacturados">
+		<call-query href="getIpfacturadosAnosFacturadosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosTodosFacturadosPagadosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  'X' FACTURADOS  FROM IP_FACTURADOS WHERE COMPANIA = :COMPANIA AND CODIGO = :CODIGO AND NUMERO_ORDEN = :NUMERO_ORDEN AND PAGADO NOT IN (0) HAVING SUM(DESESPC2 + DESESPC4 + DESESPC13 + DESESPC14 + DESESPC15 + DESESPC16 + DESESPC17 + DESESPC18 + DESESPC19 + DESESPC20) &gt; 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FACTURADOS":"$FACTURADOS"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/todosfacturadospagados">
+		<call-query href="getIpfacturadosTodosFacturadosPagadosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosAcuerdosPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  IP_FACTURADOS.COMPANIA, IP_FACTURADOS.CODIGO, IP_FACTURADOS.NUMERO_ORDEN, IP_FACTURADOS.PREANO, (C1 + C3 ) IMPUESTO, (C2 + C4 ) INTERESES, (C13 + C14 + C15 + C16 + C17 + C18 + C19 + C20 ) OTROS, IP_FACTURADOS.TOTAL,(CASE IP_FACTURADOS.FINANCIAR WHEN 0 THEN 'false' ELSE 'true' END) FINANCIAR FROM IP_FACTURADOS WHERE IP_FACTURADOS.COMPANIA = :COMPANIA AND IP_FACTURADOS.CODIGO = :CODIGO AND IP_FACTURADOS.NUMERO_ORDEN = :NUMERO_ORDEN AND IP_FACTURADOS.PAGADO IN(0) AND IP_FACTURADOS.INDPAGO_ACPAG IN (0) AND IP_FACTURADOS.IND_PROCESOJUD IN(0) ORDER BY IP_FACTURADOS.PREANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NUMERO_ORDEN":"$NUMERO_ORDEN","PREANO":"$PREANO(type:integer)","IMPUESTO":"$IMPUESTO(type:integer)","INTERESES":"$INTERESES(type:integer)","OTROS":"$OTROS(type:integer)","TOTAL":"$TOTAL","FINANCIAR":"$FINANCIAR(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/acuerdosporcodigo">
+		<call-query href="getIpfacturadosAcuerdosPorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosCargarTotalesFinanciamientoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TO_CHAR(SUM(TOTAL), '99,999,999,999,999,990.90') TOTALDEUDA, SUM(TOTAL) TOTALDEUDASF, TO_CHAR(SUM(CASE WHEN FINANCIAR &lt;&gt; 0 THEN TOTAL ELSE 0 END), '99,999,999,999,999,990.90') TOTALFINANCIAR, SUM(CASE WHEN FINANCIAR &lt;&gt; 0 THEN TOTAL ELSE 0 END) TOTALFINANCIARSF  FROM IP_FACTURADOS WHERE COMPANIA = :COMPANIA AND CODIGO = :CODIGO AND NUMERO_ORDEN = :NUMERO_ORDEN AND PAGADO IN (0) AND NOCOBRADO IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTALDEUDA":"$TOTALDEUDA","TOTALDEUDASF":"$TOTALDEUDASF(type:integer)","TOTALFINANCIAR":"$TOTALFINANCIAR","TOTALFINANCIARSF":"$TOTALFINANCIARSF(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/cargartotalesfinanciamiento">
+		<call-query href="getIpfacturadosCargarTotalesFinanciamientoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpfacturadosActualizarFinanciamiento" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_FACTURADOS SET CODIGO=:CODIGO, COMPANIA=:COMPANIA, NUMERO_ORDEN=:NUMERO_ORDEN, FINANCIAR=:FINANCIAR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE IP_FACTURADOS.COMPANIA= :KEY_COMPANIA AND IP_FACTURADOS.CODIGO= :KEY_CODIGO AND IP_FACTURADOS.NUMERO_ORDEN= :KEY_NUMERO_ORDEN AND IP_FACTURADOS.PREANO= :KEY_PREANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="FINANCIAR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="KEY_PREANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipfacturados/actualizarfinanciamiento">
+		<call-query href="updateIpfacturadosActualizarFinanciamiento">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="FINANCIAR" query-param="FINANCIAR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_NUMERO_ORDEN" query-param="KEY_NUMERO_ORDEN"/>
+			<with-param name="KEY_PREANO" query-param="KEY_PREANO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpfacturadosNegarFinanciamientosPorCodigo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_FACTURADOS SET FINANCIAR = 0,DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY  WHERE COMPANIA = :COMPANIA    AND CODIGO = :CODIGO   AND NUMERO_ORDEN = :NUMERO_ORDEN</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipfacturados/negarfinanciamientosporcodigo">
+		<call-query href="updateIpfacturadosNegarFinanciamientosPorCodigo">
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosCantidadVigenciasAFinanciarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  MAX(PREANO) PREANOMAX, COUNT(FINANCIAR) VIGENCIAS  FROM IP_FACTURADOS WHERE FINANCIAR &lt;&gt; 0 GROUP BY CODIGO HAVING CODIGO= :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PREANOMAX":"$PREANOMAX(type:integer)","VIGENCIAS":"$VIGENCIAS(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/cantidadvigenciasafinanciar">
+		<call-query href="getIpfacturadosCantidadVigenciasAFinanciarQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosPagListadodetalledeudaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_FACTURADOS.COMPANIA, IP_FACTURADOS.CODIGO, IP_FACTURADOS.NUMERO_ORDEN, IP_FACTURADOS.PREANO, TRPPOR * 1000 TARIFA, IP_FACTURADOS.AVALUO, IP_FACTURADOS.C1, IP_FACTURADOS.C2, IP_FACTURADOS.C3, IP_FACTURADOS.C4, IP_FACTURADOS.C13, (IP_FACTURADOS.TOTAL - (IP_FACTURADOS.C1 + IP_FACTURADOS.C2 + IP_FACTURADOS.C3 + IP_FACTURADOS.C4 + IP_FACTURADOS.C13)) OTROS, IP_FACTURADOS.TOTAL,(CASE IP_FACTURADOS.PAGADO WHEN 0 THEN 'false' ELSE 'true' END) PAGADO FROM IP_FACTURADOS WHERE IP_FACTURADOS.COMPANIA = :COMPANIA AND IP_FACTURADOS.CODIGO = :CODIGO_PREDIO AND IP_FACTURADOS.NUMERO_ORDEN = :NUMERO_ORD AND IP_FACTURADOS.PAGADO IN(0) AND IP_FACTURADOS.NOCOBRADO IN(0) AND IP_FACTURADOS.INDPAGO_ACPAG IN(0) ORDER BY IP_FACTURADOS.PREANO) WHERE (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER(:PREANO || '%')  AND (CASE WHEN TARIFA IS NULL THEN ' ' ELSE UPPER(TARIFA) END)  LIKE UPPER(:TARIFA || '%')  AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END)  LIKE UPPER(:AVALUO || '%')  AND (CASE WHEN C1 IS NULL THEN ' ' ELSE UPPER(C1) END)  LIKE UPPER(:C1 || '%')  AND (CASE WHEN C2 IS NULL THEN ' ' ELSE UPPER(C2) END)  LIKE UPPER(:C2 || '%')  AND (CASE WHEN C3 IS NULL THEN ' ' ELSE UPPER(C3) END)  LIKE UPPER(:C3 || '%')  AND (CASE WHEN C4 IS NULL THEN ' ' ELSE UPPER(C4) END)  LIKE UPPER(:C4 || '%')  AND (CASE WHEN C13 IS NULL THEN ' ' ELSE UPPER(C13) END)  LIKE UPPER(:C13 || '%')  AND (CASE WHEN OTROS IS NULL THEN ' ' ELSE UPPER(OTROS) END)  LIKE UPPER(:OTROS || '%')  AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END)  LIKE UPPER(:TOTAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NUMERO_ORDEN":"$NUMERO_ORDEN","PREANO":"$PREANO(type:integer)","TARIFA":"$TARIFA(type:integer)","AVALUO":"$AVALUO","C1":"$C1","C2":"$C2","C3":"$C3","C4":"$C4","C13":"$C13","OTROS":"$OTROS(type:integer)","TOTAL":"$TOTAL","PAGADO":"$PAGADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_PREDIO" sqlType="STRING"/>
+		<param name="NUMERO_ORD" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="C1" sqlType="STRING"/>
+		<param name="C2" sqlType="STRING"/>
+		<param name="C3" sqlType="STRING"/>
+		<param name="C4" sqlType="STRING"/>
+		<param name="C13" sqlType="STRING"/>
+		<param name="OTROS" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/listadodetalledeuda/pag">
+		<call-query href="getIpfacturadosPagListadodetalledeudaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_PREDIO" query-param="CODIGO_PREDIO"/>
+			<with-param name="NUMERO_ORD" query-param="NUMERO_ORD"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="C1" query-param="C1"/>
+			<with-param name="C2" query-param="C2"/>
+			<with-param name="C3" query-param="C3"/>
+			<with-param name="C4" query-param="C4"/>
+			<with-param name="C13" query-param="C13"/>
+			<with-param name="OTROS" query-param="OTROS"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertIpfacturados" keyColumns="COMPANIA,CODIGO,NUMERO_ORDEN,PREANO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_FACTURADOS (COMPANIA, CODIGO, NUMERO_ORDEN, PREANO, AVALUO, TRPCOD, TRPPOR, TRPRAN, PREIND, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :NUMERO_ORDEN, :PREANO, :AVALUO, :TRPCOD, :TRPPOR, :TRPRAN, :PREIND, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO","KEY_NUMERO_ORDEN":"$NUMERO_ORDEN","KEY_PREANO":"$PREANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param defaultValue="0" name="AVALUO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param defaultValue="0" name="TRPPOR" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param defaultValue="" name="PREIND" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="ipfacturados">
+		<call-query href="insertIpfacturados">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="PREIND" query-param="PREIND"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteIpfacturados" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM IP_FACTURADOS WHERE IP_FACTURADOS.COMPANIA= :KEY_COMPANIA AND IP_FACTURADOS.CODIGO= :KEY_CODIGO AND IP_FACTURADOS.NUMERO_ORDEN= :KEY_NUMERO_ORDEN AND IP_FACTURADOS.PREANO= :KEY_PREANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="KEY_PREANO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="ipfacturados">
+		<call-query href="deleteIpfacturados">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_NUMERO_ORDEN" query-param="KEY_NUMERO_ORDEN"/>
+			<with-param name="KEY_PREANO" query-param="KEY_PREANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_FACTURADOS.COMPANIA, IP_FACTURADOS.CODIGO, IP_FACTURADOS.PREANO, IP_FACTURADOS.NUMERO_ORDEN, IP_FACTURADOS.AVALUO, IP_FACTURADOS.PREIND, CASE WHEN IP_FACTURADOS.PREIND = 'M' THEN 'Manual' ELSE 'Retroactivo' END PREINDT, IP_FACTURADOS.TRPRAN, IP_FACTURADOS.TRPCOD,(CASE IP_FACTURADOS.INDHIP WHEN 0 THEN 'false' ELSE 'true' END) INDHIP,(CASE IP_FACTURADOS.INDCAR WHEN 0 THEN 'false' ELSE 'true' END) INDCAR,(CASE IP_FACTURADOS.INDEXE WHEN 0 THEN 'false' ELSE 'true' END) INDEXE,(CASE IP_FACTURADOS.ANTERIOR_RURAL WHEN 0 THEN 'false' ELSE 'true' END) ANTERIOR_RURAL,(CASE IP_FACTURADOS.NOCOBRADO WHEN 0 THEN 'false' ELSE 'true' END) NOCOBRADO, IP_FACTURADOS.OBSERVACIONES,(TO_CHAR(IP_FACTURADOS.PREFEC,'DD/MM/YYYY HH24:MI:SS')) PREFEC, IP_FACTURADOS.DOCNUM, IP_FACTURADOS.PAG_BAN, IP_FACTURADOS.PREVAL, IP_FACTURADOS.TRPPOR,(CASE IP_FACTURADOS.PAGADO WHEN 0 THEN 'false' ELSE 'true' END) PAGADO, TO_CHAR(IP_FACTURADOS.FECHAPAGO,'DD/MM/YYYY') FECHAPAGO, TO_CHAR(IP_FACTURADOS.FECHAPRESCRIPCION,'DD/MM/YYYY') FECHAPRESCRIPCION, IP_FACTURADOS.TOTALABONADO, IP_FACTURADOS.VALORULTIMOABONO, TO_CHAR(IP_FACTURADOS.FECHAULTIMOABONO,'DD/MM/YYYY') FECHAULTIMOABONO,(CASE IP_FACTURADOS.INDPAGO_ACPAG WHEN 0 THEN 'false' ELSE 'true' END) INDPAGO_ACPAG,(CASE IP_FACTURADOS.INDEXEOTROS WHEN 0 THEN 'false' ELSE 'true' END) INDEXEOTROS,(CASE IP_FACTURADOS.INDPAGO_CUOTAS WHEN 0 THEN 'false' ELSE 'true' END) INDPAGO_CUOTAS,(CASE IP_FACTURADOS.IND_PROCESOJUD WHEN 0 THEN 'false' ELSE 'true' END) IND_PROCESOJUD, IP_FACTURADOS.AREAM2, IP_FACTURADOS.AREA_CONSTRUIDA, IP_FACTURADOS.TOTAL  FROM IP_FACTURADOS WHERE IP_FACTURADOS.COMPANIA = :COMPANIA AND IP_FACTURADOS.CODIGO = :CODIGOPREDIO AND IP_FACTURADOS.NUMERO_ORDEN = :NUMERO_ORDEN ORDER BY IP_FACTURADOS.PREANO DESC, IP_FACTURADOS.CODIGO) WHERE (CASE WHEN COMPANIA IS NULL THEN ' ' ELSE UPPER(COMPANIA) END)  LIKE UPPER(:COMPANIA || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER(:PREANO || '%')  AND (CASE WHEN NUMERO_ORDEN IS NULL THEN ' ' ELSE UPPER(NUMERO_ORDEN) END)  LIKE UPPER(:NUMERO_ORDEN || '%')  AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END)  LIKE UPPER(:AVALUO || '%')  AND (CASE WHEN PREIND IS NULL THEN ' ' ELSE UPPER(PREIND) END)  LIKE UPPER(:PREIND || '%')  AND (CASE WHEN PREINDT IS NULL THEN ' ' ELSE UPPER(PREINDT) END)  LIKE UPPER(:PREINDT || '%')  AND (CASE WHEN TRPRAN IS NULL THEN ' ' ELSE UPPER(TRPRAN) END)  LIKE UPPER(:TRPRAN || '%')  AND (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN INDHIP IS NULL THEN ' ' ELSE UPPER(INDHIP) END)  LIKE UPPER(:INDHIP || '%')  AND (CASE WHEN INDCAR IS NULL THEN ' ' ELSE UPPER(INDCAR) END)  LIKE UPPER(:INDCAR || '%')  AND (CASE WHEN INDEXE IS NULL THEN ' ' ELSE UPPER(INDEXE) END)  LIKE UPPER(:INDEXE || '%')  AND (CASE WHEN ANTERIOR_RURAL IS NULL THEN ' ' ELSE UPPER(ANTERIOR_RURAL) END)  LIKE UPPER(:ANTERIOR_RURAL || '%')  AND (CASE WHEN NOCOBRADO IS NULL THEN ' ' ELSE UPPER(NOCOBRADO) END)  LIKE UPPER(:NOCOBRADO || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER(:OBSERVACIONES || '%')  AND (CASE WHEN PREFEC IS NULL THEN ' ' ELSE UPPER(PREFEC) END)  LIKE UPPER(:PREFEC || '%')  AND (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PAG_BAN IS NULL THEN ' ' ELSE UPPER(PAG_BAN) END)  LIKE UPPER(:PAG_BAN || '%')  AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END)  LIKE UPPER(:PREVAL || '%')  AND (CASE WHEN TRPPOR IS NULL THEN ' ' ELSE UPPER(TRPPOR) END)  LIKE UPPER(:TRPPOR || '%')  AND (CASE WHEN PAGADO IS NULL THEN ' ' ELSE UPPER(PAGADO) END)  LIKE UPPER(:PAGADO || '%')  AND (CASE WHEN FECHAPAGO IS NULL THEN ' ' ELSE UPPER(FECHAPAGO) END)  LIKE UPPER(:FECHAPAGO || '%')  AND (CASE WHEN FECHAPRESCRIPCION IS NULL THEN ' ' ELSE UPPER(FECHAPRESCRIPCION) END)  LIKE UPPER(:FECHAPRESCRIPCION || '%')  AND (CASE WHEN TOTALABONADO IS NULL THEN ' ' ELSE UPPER(TOTALABONADO) END)  LIKE UPPER(:TOTALABONADO || '%')  AND (CASE WHEN VALORULTIMOABONO IS NULL THEN ' ' ELSE UPPER(VALORULTIMOABONO) END)  LIKE UPPER(:VALORULTIMOABONO || '%')  AND (CASE WHEN FECHAULTIMOABONO IS NULL THEN ' ' ELSE UPPER(FECHAULTIMOABONO) END)  LIKE UPPER(:FECHAULTIMOABONO || '%')  AND (CASE WHEN INDPAGO_ACPAG IS NULL THEN ' ' ELSE UPPER(INDPAGO_ACPAG) END)  LIKE UPPER(:INDPAGO_ACPAG || '%')  AND (CASE WHEN INDEXEOTROS IS NULL THEN ' ' ELSE UPPER(INDEXEOTROS) END)  LIKE UPPER(:INDEXEOTROS || '%')  AND (CASE WHEN INDPAGO_CUOTAS IS NULL THEN ' ' ELSE UPPER(INDPAGO_CUOTAS) END)  LIKE UPPER(:INDPAGO_CUOTAS || '%')  AND (CASE WHEN IND_PROCESOJUD IS NULL THEN ' ' ELSE UPPER(IND_PROCESOJUD) END)  LIKE UPPER(:IND_PROCESOJUD || '%')  AND (CASE WHEN AREAM2 IS NULL THEN ' ' ELSE UPPER(AREAM2) END)  LIKE UPPER(:AREAM2 || '%')  AND (CASE WHEN AREA_CONSTRUIDA IS NULL THEN ' ' ELSE UPPER(AREA_CONSTRUIDA) END)  LIKE UPPER(:AREA_CONSTRUIDA || '%')  AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END)  LIKE UPPER( '%' || :TOTAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","PREANO":"$PREANO(type:integer)","NUMERO_ORDEN":"$NUMERO_ORDEN","AVALUO":"$AVALUO","PREIND":"$PREIND","PREINDT":"$PREINDT","TRPRAN":"$TRPRAN","TRPCOD":"$TRPCOD","INDHIP":"$INDHIP(type:boolean)","INDCAR":"$INDCAR(type:boolean)","INDEXE":"$INDEXE(type:boolean)","ANTERIOR_RURAL":"$ANTERIOR_RURAL(type:boolean)","NOCOBRADO":"$NOCOBRADO(type:boolean)","OBSERVACIONES":"$OBSERVACIONES","PREFEC":"$PREFEC","DOCNUM":"$DOCNUM","PAG_BAN":"$PAG_BAN","PREVAL":"$PREVAL","TRPPOR":"$TRPPOR","PAGADO":"$PAGADO(type:boolean)","FECHAPAGO":"$FECHAPAGO","FECHAPRESCRIPCION":"$FECHAPRESCRIPCION","TOTALABONADO":"$TOTALABONADO","VALORULTIMOABONO":"$VALORULTIMOABONO","FECHAULTIMOABONO":"$FECHAULTIMOABONO","INDPAGO_ACPAG":"$INDPAGO_ACPAG(type:boolean)","INDEXEOTROS":"$INDEXEOTROS(type:boolean)","INDPAGO_CUOTAS":"$INDPAGO_CUOTAS(type:boolean)","IND_PROCESOJUD":"$IND_PROCESOJUD(type:boolean)","AREAM2":"$AREAM2","AREA_CONSTRUIDA":"$AREA_CONSTRUIDA","TOTAL":"$TOTAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOPREDIO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="PREIND" sqlType="STRING"/>
+		<param name="PREINDT" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="INDHIP" sqlType="STRING"/>
+		<param name="INDCAR" sqlType="STRING"/>
+		<param name="INDEXE" sqlType="STRING"/>
+		<param name="ANTERIOR_RURAL" sqlType="STRING"/>
+		<param name="NOCOBRADO" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="PREFEC" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PAG_BAN" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+		<param name="PAGADO" sqlType="STRING"/>
+		<param name="FECHAPAGO" sqlType="STRING"/>
+		<param name="FECHAPRESCRIPCION" sqlType="STRING"/>
+		<param name="TOTALABONADO" sqlType="STRING"/>
+		<param name="VALORULTIMOABONO" sqlType="STRING"/>
+		<param name="FECHAULTIMOABONO" sqlType="STRING"/>
+		<param name="INDPAGO_ACPAG" sqlType="STRING"/>
+		<param name="INDEXEOTROS" sqlType="STRING"/>
+		<param name="INDPAGO_CUOTAS" sqlType="STRING"/>
+		<param name="IND_PROCESOJUD" sqlType="STRING"/>
+		<param name="AREAM2" sqlType="STRING"/>
+		<param name="AREA_CONSTRUIDA" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados">
+		<call-query href="getIpfacturadosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOPREDIO" query-param="CODIGOPREDIO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="PREIND" query-param="PREIND"/>
+			<with-param name="PREINDT" query-param="PREINDT"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="INDHIP" query-param="INDHIP"/>
+			<with-param name="INDCAR" query-param="INDCAR"/>
+			<with-param name="INDEXE" query-param="INDEXE"/>
+			<with-param name="ANTERIOR_RURAL" query-param="ANTERIOR_RURAL"/>
+			<with-param name="NOCOBRADO" query-param="NOCOBRADO"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="PREFEC" query-param="PREFEC"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="PAGADO" query-param="PAGADO"/>
+			<with-param name="FECHAPAGO" query-param="FECHAPAGO"/>
+			<with-param name="FECHAPRESCRIPCION" query-param="FECHAPRESCRIPCION"/>
+			<with-param name="TOTALABONADO" query-param="TOTALABONADO"/>
+			<with-param name="VALORULTIMOABONO" query-param="VALORULTIMOABONO"/>
+			<with-param name="FECHAULTIMOABONO" query-param="FECHAULTIMOABONO"/>
+			<with-param name="INDPAGO_ACPAG" query-param="INDPAGO_ACPAG"/>
+			<with-param name="INDEXEOTROS" query-param="INDEXEOTROS"/>
+			<with-param name="INDPAGO_CUOTAS" query-param="INDPAGO_CUOTAS"/>
+			<with-param name="IND_PROCESOJUD" query-param="IND_PROCESOJUD"/>
+			<with-param name="AREAM2" query-param="AREAM2"/>
+			<with-param name="AREA_CONSTRUIDA" query-param="AREA_CONSTRUIDA"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_FACTURADOS.COMPANIA, IP_FACTURADOS.CODIGO, IP_FACTURADOS.PREANO, IP_FACTURADOS.NUMERO_ORDEN, IP_FACTURADOS.AVALUO, IP_FACTURADOS.PREIND, CASE WHEN IP_FACTURADOS.PREIND = 'M' THEN 'Manual' ELSE 'Retroactivo' END PREINDT, IP_FACTURADOS.TRPRAN, IP_FACTURADOS.TRPCOD,(CASE IP_FACTURADOS.INDHIP WHEN 0 THEN 'false' ELSE 'true' END) INDHIP,(CASE IP_FACTURADOS.INDCAR WHEN 0 THEN 'false' ELSE 'true' END) INDCAR,(CASE IP_FACTURADOS.INDEXE WHEN 0 THEN 'false' ELSE 'true' END) INDEXE,(CASE IP_FACTURADOS.ANTERIOR_RURAL WHEN 0 THEN 'false' ELSE 'true' END) ANTERIOR_RURAL,(CASE IP_FACTURADOS.NOCOBRADO WHEN 0 THEN 'false' ELSE 'true' END) NOCOBRADO, IP_FACTURADOS.OBSERVACIONES,(TO_CHAR(IP_FACTURADOS.PREFEC,'DD/MM/YYYY HH24:MI:SS')) PREFEC, IP_FACTURADOS.DOCNUM, IP_FACTURADOS.PAG_BAN, IP_FACTURADOS.PREVAL, IP_FACTURADOS.TRPPOR,(CASE IP_FACTURADOS.PAGADO WHEN 0 THEN 'false' ELSE 'true' END) PAGADO, TO_CHAR(IP_FACTURADOS.FECHAPAGO,'DD/MM/YYYY') FECHAPAGO, TO_CHAR(IP_FACTURADOS.FECHAPRESCRIPCION,'DD/MM/YYYY') FECHAPRESCRIPCION, IP_FACTURADOS.TOTALABONADO, IP_FACTURADOS.VALORULTIMOABONO, TO_CHAR(IP_FACTURADOS.FECHAULTIMOABONO,'DD/MM/YYYY') FECHAULTIMOABONO,(CASE IP_FACTURADOS.INDPAGO_ACPAG WHEN 0 THEN 'false' ELSE 'true' END) INDPAGO_ACPAG,(CASE IP_FACTURADOS.INDEXEOTROS WHEN 0 THEN 'false' ELSE 'true' END) INDEXEOTROS,(CASE IP_FACTURADOS.INDPAGO_CUOTAS WHEN 0 THEN 'false' ELSE 'true' END) INDPAGO_CUOTAS,(CASE IP_FACTURADOS.IND_PROCESOJUD WHEN 0 THEN 'false' ELSE 'true' END) IND_PROCESOJUD, IP_FACTURADOS.AREAM2, IP_FACTURADOS.AREA_CONSTRUIDA, IP_FACTURADOS.TOTAL  FROM IP_FACTURADOS WHERE IP_FACTURADOS.COMPANIA = :COMPANIA AND IP_FACTURADOS.CODIGO = :CODIGOPREDIO AND IP_FACTURADOS.NUMERO_ORDEN = :NUMERO_ORDEN ORDER BY IP_FACTURADOS.PREANO DESC, IP_FACTURADOS.CODIGO) WHERE (CASE WHEN COMPANIA IS NULL THEN ' ' ELSE UPPER(COMPANIA) END)  LIKE UPPER(:COMPANIA || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER( '%' || :PREANO || '%')  AND (CASE WHEN NUMERO_ORDEN IS NULL THEN ' ' ELSE UPPER(NUMERO_ORDEN) END)  LIKE UPPER( '%' || :NUMERO_ORDEN || '%')  AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END)  LIKE UPPER( '%' || :AVALUO || '%')  AND (CASE WHEN PREIND IS NULL THEN ' ' ELSE UPPER(PREIND) END)  LIKE UPPER( '%' || :PREIND || '%')  AND (CASE WHEN PREINDT IS NULL THEN ' ' ELSE UPPER(PREINDT) END)  LIKE UPPER( '%' || :PREINDT || '%')  AND (CASE WHEN TRPRAN IS NULL THEN ' ' ELSE UPPER(TRPRAN) END)  LIKE UPPER( '%' || :TRPRAN || '%')  AND (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER( '%' || :TRPCOD || '%')  AND (CASE WHEN INDHIP IS NULL THEN ' ' ELSE UPPER(INDHIP) END)  LIKE UPPER( '%' || :INDHIP || '%')  AND (CASE WHEN INDCAR IS NULL THEN ' ' ELSE UPPER(INDCAR) END)  LIKE UPPER( '%' || :INDCAR || '%')  AND (CASE WHEN INDEXE IS NULL THEN ' ' ELSE UPPER(INDEXE) END)  LIKE UPPER( '%' || :INDEXE || '%')  AND (CASE WHEN ANTERIOR_RURAL IS NULL THEN ' ' ELSE UPPER(ANTERIOR_RURAL) END)  LIKE UPPER( '%' || :ANTERIOR_RURAL || '%')  AND (CASE WHEN NOCOBRADO IS NULL THEN ' ' ELSE UPPER(NOCOBRADO) END)  LIKE UPPER( '%' || :NOCOBRADO || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER( '%' || :OBSERVACIONES || '%')  AND (CASE WHEN PREFEC IS NULL THEN ' ' ELSE UPPER(PREFEC) END)  LIKE UPPER( '%' || :PREFEC || '%')  AND (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER( '%' || :DOCNUM || '%')  AND (CASE WHEN PAG_BAN IS NULL THEN ' ' ELSE UPPER(PAG_BAN) END)  LIKE UPPER( '%' || :PAG_BAN || '%')  AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END)  LIKE UPPER( '%' || :PREVAL || '%')  AND (CASE WHEN TRPPOR IS NULL THEN ' ' ELSE UPPER(TRPPOR) END)  LIKE UPPER( '%' || :TRPPOR || '%')  AND (CASE WHEN PAGADO IS NULL THEN ' ' ELSE UPPER(PAGADO) END)  LIKE UPPER( '%' || :PAGADO || '%')  AND (CASE WHEN FECHAPAGO IS NULL THEN ' ' ELSE UPPER(FECHAPAGO) END)  LIKE UPPER( '%' || :FECHAPAGO || '%')  AND (CASE WHEN FECHAPRESCRIPCION IS NULL THEN ' ' ELSE UPPER(FECHAPRESCRIPCION) END)  LIKE UPPER( '%' || :FECHAPRESCRIPCION || '%')  AND (CASE WHEN TOTALABONADO IS NULL THEN ' ' ELSE UPPER(TOTALABONADO) END)  LIKE UPPER( '%' || :TOTALABONADO || '%')  AND (CASE WHEN VALORULTIMOABONO IS NULL THEN ' ' ELSE UPPER(VALORULTIMOABONO) END)  LIKE UPPER( '%' || :VALORULTIMOABONO || '%')  AND (CASE WHEN FECHAULTIMOABONO IS NULL THEN ' ' ELSE UPPER(FECHAULTIMOABONO) END)  LIKE UPPER( '%' || :FECHAULTIMOABONO || '%')  AND (CASE WHEN INDPAGO_ACPAG IS NULL THEN ' ' ELSE UPPER(INDPAGO_ACPAG) END)  LIKE UPPER( '%' || :INDPAGO_ACPAG || '%')  AND (CASE WHEN INDEXEOTROS IS NULL THEN ' ' ELSE UPPER(INDEXEOTROS) END)  LIKE UPPER( '%' || :INDEXEOTROS || '%')  AND (CASE WHEN INDPAGO_CUOTAS IS NULL THEN ' ' ELSE UPPER(INDPAGO_CUOTAS) END)  LIKE UPPER( '%' || :INDPAGO_CUOTAS || '%')  AND (CASE WHEN IND_PROCESOJUD IS NULL THEN ' ' ELSE UPPER(IND_PROCESOJUD) END)  LIKE UPPER( '%' || :IND_PROCESOJUD || '%')  AND (CASE WHEN AREAM2 IS NULL THEN ' ' ELSE UPPER(AREAM2) END)  LIKE UPPER( '%' || :AREAM2 || '%')  AND (CASE WHEN AREA_CONSTRUIDA IS NULL THEN ' ' ELSE UPPER(AREA_CONSTRUIDA) END)  LIKE UPPER( '%' || :AREA_CONSTRUIDA || '%')  AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END)  LIKE UPPER( '%' || :TOTAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOPREDIO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="PREIND" sqlType="STRING"/>
+		<param name="PREINDT" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="INDHIP" sqlType="STRING"/>
+		<param name="INDCAR" sqlType="STRING"/>
+		<param name="INDEXE" sqlType="STRING"/>
+		<param name="ANTERIOR_RURAL" sqlType="STRING"/>
+		<param name="NOCOBRADO" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="PREFEC" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PAG_BAN" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+		<param name="PAGADO" sqlType="STRING"/>
+		<param name="FECHAPAGO" sqlType="STRING"/>
+		<param name="FECHAPRESCRIPCION" sqlType="STRING"/>
+		<param name="TOTALABONADO" sqlType="STRING"/>
+		<param name="VALORULTIMOABONO" sqlType="STRING"/>
+		<param name="FECHAULTIMOABONO" sqlType="STRING"/>
+		<param name="INDPAGO_ACPAG" sqlType="STRING"/>
+		<param name="INDEXEOTROS" sqlType="STRING"/>
+		<param name="INDPAGO_CUOTAS" sqlType="STRING"/>
+		<param name="IND_PROCESOJUD" sqlType="STRING"/>
+		<param name="AREAM2" sqlType="STRING"/>
+		<param name="AREA_CONSTRUIDA" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/numero">
+		<call-query href="getIpfacturadosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOPREDIO" query-param="CODIGOPREDIO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="PREIND" query-param="PREIND"/>
+			<with-param name="PREINDT" query-param="PREINDT"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="INDHIP" query-param="INDHIP"/>
+			<with-param name="INDCAR" query-param="INDCAR"/>
+			<with-param name="INDEXE" query-param="INDEXE"/>
+			<with-param name="ANTERIOR_RURAL" query-param="ANTERIOR_RURAL"/>
+			<with-param name="NOCOBRADO" query-param="NOCOBRADO"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="PREFEC" query-param="PREFEC"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="PAGADO" query-param="PAGADO"/>
+			<with-param name="FECHAPAGO" query-param="FECHAPAGO"/>
+			<with-param name="FECHAPRESCRIPCION" query-param="FECHAPRESCRIPCION"/>
+			<with-param name="TOTALABONADO" query-param="TOTALABONADO"/>
+			<with-param name="VALORULTIMOABONO" query-param="VALORULTIMOABONO"/>
+			<with-param name="FECHAULTIMOABONO" query-param="FECHAULTIMOABONO"/>
+			<with-param name="INDPAGO_ACPAG" query-param="INDPAGO_ACPAG"/>
+			<with-param name="INDEXEOTROS" query-param="INDEXEOTROS"/>
+			<with-param name="INDPAGO_CUOTAS" query-param="INDPAGO_CUOTAS"/>
+			<with-param name="IND_PROCESOJUD" query-param="IND_PROCESOJUD"/>
+			<with-param name="AREAM2" query-param="AREAM2"/>
+			<with-param name="AREA_CONSTRUIDA" query-param="AREA_CONSTRUIDA"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpfacturados" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_FACTURADOS SET PREANO=:PREANO, AVALUO=:AVALUO, PREIND=:PREIND, TRPCOD=:TRPCOD, TRPPOR=:TRPPOR, TRPRAN=:TRPRAN, INDCAR=:INDCAR, INDEXE=:INDEXE, INDEXEOTROS=:INDEXEOTROS, ANTERIOR_RURAL=:ANTERIOR_RURAL, NOCOBRADO=:NOCOBRADO, FECHAPRESCRIPCION=TO_DATE(:FECHAPRESCRIPCION,'DD/MM/YYYY HH24:MI:SS'), PAGADO=:PAGADO, INDPAGO_ACPAG=:INDPAGO_ACPAG, INDPAGO_CUOTAS=:INDPAGO_CUOTAS, IND_PROCESOJUD=:IND_PROCESOJUD, FECHAPAGO=TO_DATE(:FECHAPAGO,'DD/MM/YYYY HH24:MI:SS'), PAG_BAN=:PAG_BAN, PREVAL=:PREVAL, DOCNUM=:DOCNUM, TOTAL=:TOTAL, OBSERVACIONES=:OBSERVACIONES, TOTALABONADO=:TOTALABONADO, VALORULTIMOABONO=:VALORULTIMOABONO, FECHAULTIMOABONO=TO_DATE(:FECHAULTIMOABONO,'DD/MM/YYYY HH24:MI:SS'), AREA_CONSTRUIDA=:AREA_CONSTRUIDA, AREAM2=:AREAM2, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE IP_FACTURADOS.COMPANIA= :KEY_COMPANIA AND IP_FACTURADOS.CODIGO= :KEY_CODIGO AND IP_FACTURADOS.NUMERO_ORDEN= :KEY_NUMERO_ORDEN AND IP_FACTURADOS.PREANO= :KEY_PREANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="PREIND" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param name="INDCAR" sqlType="STRING"/>
+		<param name="INDEXE" sqlType="STRING"/>
+		<param name="INDEXEOTROS" sqlType="STRING"/>
+		<param name="ANTERIOR_RURAL" sqlType="STRING"/>
+		<param name="NOCOBRADO" sqlType="STRING"/>
+		<param name="FECHAPRESCRIPCION" sqlType="STRING"/>
+		<param name="PAGADO" sqlType="STRING"/>
+		<param name="INDPAGO_ACPAG" sqlType="STRING"/>
+		<param name="INDPAGO_CUOTAS" sqlType="STRING"/>
+		<param name="IND_PROCESOJUD" sqlType="STRING"/>
+		<param name="FECHAPAGO" sqlType="STRING"/>
+		<param name="PAG_BAN" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="TOTALABONADO" sqlType="STRING"/>
+		<param name="VALORULTIMOABONO" sqlType="STRING"/>
+		<param name="FECHAULTIMOABONO" sqlType="STRING"/>
+		<param name="AREA_CONSTRUIDA" sqlType="STRING"/>
+		<param name="AREAM2" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="KEY_PREANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipfacturados">
+		<call-query href="updateIpfacturados">
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="PREIND" query-param="PREIND"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="INDCAR" query-param="INDCAR"/>
+			<with-param name="INDEXE" query-param="INDEXE"/>
+			<with-param name="INDEXEOTROS" query-param="INDEXEOTROS"/>
+			<with-param name="ANTERIOR_RURAL" query-param="ANTERIOR_RURAL"/>
+			<with-param name="NOCOBRADO" query-param="NOCOBRADO"/>
+			<with-param name="FECHAPRESCRIPCION" query-param="FECHAPRESCRIPCION"/>
+			<with-param name="PAGADO" query-param="PAGADO"/>
+			<with-param name="INDPAGO_ACPAG" query-param="INDPAGO_ACPAG"/>
+			<with-param name="INDPAGO_CUOTAS" query-param="INDPAGO_CUOTAS"/>
+			<with-param name="IND_PROCESOJUD" query-param="IND_PROCESOJUD"/>
+			<with-param name="FECHAPAGO" query-param="FECHAPAGO"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="TOTALABONADO" query-param="TOTALABONADO"/>
+			<with-param name="VALORULTIMOABONO" query-param="VALORULTIMOABONO"/>
+			<with-param name="FECHAULTIMOABONO" query-param="FECHAULTIMOABONO"/>
+			<with-param name="AREA_CONSTRUIDA" query-param="AREA_CONSTRUIDA"/>
+			<with-param name="AREAM2" query-param="AREAM2"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_NUMERO_ORDEN" query-param="KEY_NUMERO_ORDEN"/>
+			<with-param name="KEY_PREANO" query-param="KEY_PREANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosNumListadodetalledeudaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_FACTURADOS.COMPANIA, IP_FACTURADOS.CODIGO, IP_FACTURADOS.NUMERO_ORDEN, IP_FACTURADOS.PREANO, TRPPOR * 1000 TARIFA, IP_FACTURADOS.AVALUO, IP_FACTURADOS.C1, IP_FACTURADOS.C2, IP_FACTURADOS.C3, IP_FACTURADOS.C4, IP_FACTURADOS.C13, (IP_FACTURADOS.TOTAL - (IP_FACTURADOS.C1 + IP_FACTURADOS.C2 + IP_FACTURADOS.C3 + IP_FACTURADOS.C4 + IP_FACTURADOS.C13)) OTROS, IP_FACTURADOS.TOTAL,(CASE IP_FACTURADOS.PAGADO WHEN 0 THEN 'false' ELSE 'true' END) PAGADO FROM IP_FACTURADOS WHERE IP_FACTURADOS.COMPANIA = :COMPANIA AND IP_FACTURADOS.CODIGO = :CODIGO_PREDIO AND IP_FACTURADOS.NUMERO_ORDEN = :NUMERO_ORD AND IP_FACTURADOS.PAGADO IN(0) AND IP_FACTURADOS.NOCOBRADO IN(0) AND IP_FACTURADOS.INDPAGO_ACPAG IN(0) ORDER BY IP_FACTURADOS.PREANO) WHERE (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER(:PREANO || '%')  AND (CASE WHEN TARIFA IS NULL THEN ' ' ELSE UPPER(TARIFA) END)  LIKE UPPER( '%' || :TARIFA || '%')  AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END)  LIKE UPPER( '%' || :AVALUO || '%')  AND (CASE WHEN C1 IS NULL THEN ' ' ELSE UPPER(C1) END)  LIKE UPPER( '%' || :C1 || '%')  AND (CASE WHEN C2 IS NULL THEN ' ' ELSE UPPER(C2) END)  LIKE UPPER( '%' || :C2 || '%')  AND (CASE WHEN C3 IS NULL THEN ' ' ELSE UPPER(C3) END)  LIKE UPPER( '%' || :C3 || '%')  AND (CASE WHEN C4 IS NULL THEN ' ' ELSE UPPER(C4) END)  LIKE UPPER( '%' || :C4 || '%')  AND (CASE WHEN C13 IS NULL THEN ' ' ELSE UPPER(C13) END)  LIKE UPPER( '%' || :C13 || '%')  AND (CASE WHEN OTROS IS NULL THEN ' ' ELSE UPPER(OTROS) END)  LIKE UPPER( '%' || :OTROS || '%')  AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END)  LIKE UPPER( '%' || :TOTAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_PREDIO" sqlType="STRING"/>
+		<param name="NUMERO_ORD" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="C1" sqlType="STRING"/>
+		<param name="C2" sqlType="STRING"/>
+		<param name="C3" sqlType="STRING"/>
+		<param name="C4" sqlType="STRING"/>
+		<param name="C13" sqlType="STRING"/>
+		<param name="OTROS" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/listadodetalledeuda/num">
+		<call-query href="getIpfacturadosNumListadodetalledeudaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_PREDIO" query-param="CODIGO_PREDIO"/>
+			<with-param name="NUMERO_ORD" query-param="NUMERO_ORD"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="C1" query-param="C1"/>
+			<with-param name="C2" query-param="C2"/>
+			<with-param name="C3" query-param="C3"/>
+			<with-param name="C4" query-param="C4"/>
+			<with-param name="C13" query-param="C13"/>
+			<with-param name="OTROS" query-param="OTROS"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosTotalesdetalledeudaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TO_CHAR(SUM(C1), '99,999,999,999,999,990.90') TIMPUESTO, TO_CHAR(SUM(C2), '99,999,999,999,999,990.90') TINTERES, TO_CHAR(SUM(C3), '99,999,999,999,999,990.90') TCAR, TO_CHAR(SUM(C4), '99,999,999,999,999,990.90') TCARINT, TO_CHAR(SUM(C13), '99,999,999,999,999,990.90') TDESC, TO_CHAR(SUM((IP_FACTURADOS.TOTAL - (IP_FACTURADOS.C1 + IP_FACTURADOS.C2 + IP_FACTURADOS.C3 + IP_FACTURADOS.C4 + IP_FACTURADOS.C13))), '99,999,999,999,999,990.90') TOTROS, TO_CHAR(SUM(TOTAL), '99,999,999,999,999,990.90') TDEUDA  FROM IP_FACTURADOS WHERE COMPANIA = :COMPANIA AND CODIGO = :CODIGO AND NUMERO_ORDEN = :NUMERO_ORDEN AND PAGADO IN (0) AND INDPAGO_ACPAG IN (0) AND NOCOBRADO IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TIMPUESTO":"$TIMPUESTO","TINTERES":"$TINTERES","TCAR":"$TCAR","TCARINT":"$TCARINT","TDESC":"$TDESC","TOTROS":"$TOTROS","TDEUDA":"$TDEUDA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/totalesdetalledeuda">
+		<call-query href="getIpfacturadosTotalesdetalledeudaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosCuantasFacturasPagadasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT (PAGADO) PAG  FROM IP_FACTURADOS WHERE COMPANIA = :COMPANIA AND CODIGO = :PREDIO AND PAGADO IN (0) AND PREANO &lt;= :ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAG":"$PAG(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/cuantasfacturaspagadas">
+		<call-query href="getIpfacturadosCuantasFacturasPagadasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosFacturadasPagadasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT (PAGADO) PAG  FROM IP_FACTURADOS WHERE COMPANIA = :COMPANIA AND CODIGO = :PREDIO AND PAGADO IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAG":"$PAG(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/facturadaspagadas">
+		<call-query href="getIpfacturadosFacturadasPagadasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosPagosPorAnoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE PAGADO WHEN 0 THEN 'false' ELSE 'true' END) PAGADO FROM IP_FACTURADOS WHERE COMPANIA = :COMPANIA AND CODIGO = :PREDIO AND PREANO = :ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAGADO":"$PAGADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/pagosporano">
+		<call-query href="getIpfacturadosPagosPorAnoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosPagosPorNumordenYPreanoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE PAGADO WHEN 0 THEN 'false' ELSE 'true' END) PAGADO FROM IP_FACTURADOS WHERE COMPANIA = :COMPANIA AND CODIGO = :CODIGO AND NUMERO_ORDEN = :NUMERO_ORDEN AND PREANO = :PREANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAGADO":"$PAGADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/pagospornumordenypreano">
+		<call-query href="getIpfacturadosPagosPorNumordenYPreanoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosTodosPorCompaniaPredioNumeroOrdenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  IP_FACTURADOS.PREANO  FROM IP_FACTURADOS WHERE IP_FACTURADOS.COMPANIA =:COMPANIA AND IP_FACTURADOS.CODIGO = :CODIGOPREDIO AND IP_FACTURADOS.NUMERO_ORDEN = :NUMERO_ORDEN_PREDIAL AND IP_FACTURADOS.PREANO &gt; :ANOPAGO AND IP_FACTURADOS.PAGADO IN (0) AND IP_FACTURADOS.INDEXE IN (0) AND IP_FACTURADOS.NOCOBRADO IN(0) AND IP_FACTURADOS.INDPAGO_ACPAG IN(0) ORDER BY IP_FACTURADOS.PREANO DESC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PREANO":"$PREANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOPREDIO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN_PREDIAL" sqlType="STRING"/>
+		<param name="ANOPAGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/todosporcompaniapredionumeroorden">
+		<call-query href="getIpfacturadosTodosPorCompaniaPredioNumeroOrdenQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOPREDIO" query-param="CODIGOPREDIO"/>
+			<with-param name="NUMERO_ORDEN_PREDIAL" query-param="NUMERO_ORDEN_PREDIAL"/>
+			<with-param name="ANOPAGO" query-param="ANOPAGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosExisteAnioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TRPANO  FROM IP_FACTURADOS INNER JOIN IP_TARIFAS ON IP_FACTURADOS.COMPANIA = IP_TARIFAS.COMPANIA AND IP_FACTURADOS.TRPCOD = IP_TARIFAS.TRPCOD AND IP_FACTURADOS.PREANO = IP_TARIFAS.TRPANO AND IP_FACTURADOS.TRPRAN = IP_TARIFAS.TRPRAN WHERE IP_FACTURADOS.COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = :TRPANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TRPANO":"$TRPANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TRPANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/existeanio">
+		<call-query href="getIpfacturadosExisteAnioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TRPANO" query-param="TRPANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosTodosPorPreanoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT IP_FACTURADOS.PREANO  FROM IP_FACTURADOS INNER JOIN IP_USUARIOS_PREDIAL ON IP_FACTURADOS.COMPANIA = IP_USUARIOS_PREDIAL.COMPANIA AND IP_FACTURADOS.CODIGO = IP_USUARIOS_PREDIAL.CODIGO WHERE IP_FACTURADOS.COMPANIA = :COMPANIA AND IP_FACTURADOS.NUMERO_ORDEN = :NUMERO_ORDEN AND IP_FACTURADOS.INDEXE IN(0) AND IP_FACTURADOS.NOCOBRADO IN(0) AND IP_FACTURADOS.PAGADO IN(0) ORDER BY IP_FACTURADOS.PREANO DESC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PREANO":"$PREANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/todosporpreano">
+		<call-query href="getIpfacturadosTodosPorPreanoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosUsuariosFactPorPredionumQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  C8, C9, C10, C11, C12, C13, C14, C15, C16, C17, C18, C19, C20,(CASE PAGADO WHEN 0 THEN 'false' ELSE 'true' END) PAGADO, TRPPOR,(CASE NOCOBRADO WHEN 0 THEN 'false' ELSE 'true' END) NOCOBRADO, OBSERVACIONES, NUMRESOLUCION, AVALUOANT, TARIFAANT, AREAHE, AREAM2, USUARIO,(TO_CHAR(FECHAPAGO,'DD/MM/YYYY HH24:MI:SS')) FECHAPAGO,(TO_CHAR(FECHAPRESCRIPCION,'DD/MM/YYYY HH24:MI:SS')) FECHAPRESCRIPCION, TOTALABONADO, VALORULTIMOABONO,(TO_CHAR(FECHAULTIMOABONO,'DD/MM/YYYY HH24:MI:SS')) FECHAULTIMOABONO,(TO_CHAR(ALDIAINTERES,'DD/MM/YYYY HH24:MI:SS')) ALDIAINTERES,(CASE INDPAGO_ACPAG WHEN 0 THEN 'false' ELSE 'true' END) INDPAGO_ACPAG,(CASE FINANCIAR WHEN 0 THEN 'false' ELSE 'true' END) FINANCIAR,(CASE CNT WHEN 0 THEN 'false' ELSE 'true' END) CNT, C1_CNT, TOTALABONADO1, VALORULTIMOABONO1,(TO_CHAR(FECHAULTIMOABONO1,'DD/MM/YYYY HH24:MI:SS')) FECHAULTIMOABONO1,(TO_CHAR(ALDIAINTERES1,'DD/MM/YYYY HH24:MI:SS')) ALDIAINTERES1, TOTALABONADO2, VALORULTIMOABONO2,(TO_CHAR(FECHAULTIMOABONO2,'DD/MM/YYYY HH24:MI:SS')) FECHAULTIMOABONO2,(TO_CHAR(ALDIAINTERES2,'DD/MM/YYYY HH24:MI:SS')) ALDIAINTERES2, DOCNUMABONO, DOCNUMABONO1, DOCNUMABONO2,(CASE INDPAGO_CUOTAS WHEN 0 THEN 'false' ELSE 'true' END) INDPAGO_CUOTAS, TOTALCUOTA,(TO_CHAR(PAGFECCUOTA,'DD/MM/YYYY HH24:MI:SS')) PAGFECCUOTA, PAGNCUOTA, DOCNUMCUOTA, TOTALCUOTA1,(TO_CHAR(PAGFECCUOTA1,'DD/MM/YYYY HH24:MI:SS')) PAGFECCUOTA1, PAGNCUOTA1, DOCNUMCUOTA1, TOTALCUOTA2,(TO_CHAR(PAGFECCUOTA2,'DD/MM/YYYY HH24:MI:SS')) PAGFECCUOTA2, PAGNCUOTA2, DOCNUMCUOTA2, C18_CNT, TOTALABONO1, TOTALABONO2,(CASE PREANO_EXONERADO WHEN 0 THEN 'false' ELSE 'true' END) PREANO_EXONERADO, C1_CPY,(CASE IND_C1CPY WHEN 0 THEN 'false' ELSE 'true' END) IND_C1CPY,(TO_CHAR(ALDIAINTERESCAR,'DD/MM/YYYY HH24:MI:SS')) ALDIAINTERESCAR,(TO_CHAR(ALDIAINTERES1CAR,'DD/MM/YYYY HH24:MI:SS')) ALDIAINTERES1CAR,(TO_CHAR(ALDIAINTERES2CAR,'DD/MM/YYYY HH24:MI:SS')) ALDIAINTERES2CAR, C3_CPY,(CASE IND_C3CPY WHEN 0 THEN 'false' ELSE 'true' END) IND_C3CPY,(CASE SINDESCUENTOS WHEN 0 THEN 'false' ELSE 'true' END) SINDESCUENTOS, AUDITADESC, DESC_INTERES, C1_EXE, C2_EXE, C3_EXE, C4_EXE,(CASE INDEXEOTROS WHEN 0 THEN 'false' ELSE 'true' END) INDEXEOTROS, C13_EXE, C14_EXE, C15_EXE, C16_EXE, C17_EXE, C18_EXE, C19_EXE, C20_EXE, DESESPC13, DESESPC2, DESESPC4, DESESPC14, DESESPC15, DESESPC16, DESESPC17, DESESPC18, DESESPC19, DESESPC20,(CASE IND_PROCESOJUD WHEN 0 THEN 'false' ELSE 'true' END) IND_PROCESOJUD, AREA_CONSTRUIDA, FECHA_CAMBIO_AVALUO, CAMBIO_AVALUO, TRP_POR,(CASE ES_AUTOAVALUO WHEN 0 THEN 'false' ELSE 'true' END) ES_AUTOAVALUO, CONSECUTIVO, PORCENTAJE_RESERVA, RESOLUCION_RESERVA, RESOLUCION_DESRESERVA, TEMPORAL,(CASE IND_EXEINT_DUP WHEN 0 THEN 'false' ELSE 'true' END) IND_EXEINT_DUP,(CASE APROBADOFISC WHEN 0 THEN 'false' ELSE 'true' END) APROBADOFISC,(CASE INCR_AUTOAVALUO WHEN 0 THEN 'false' ELSE 'true' END) INCR_AUTOAVALUO, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, COMPANIA, CODIGO, NUMERO_ORDEN, PREANO, TRPCOD, TRPRAN,(TO_CHAR(PREFEC,'DD/MM/YYYY HH24:MI:SS')) PREFEC, DOCNUM, PAG_BAN, PREVAL, USUARIO_CREADOR_REGISTRO,(TO_CHAR(FECHA_CREACION_REGISTRO,'DD/MM/YYYY HH24:MI:SS')) FECHA_CREACION_REGISTRO, USUARIO_MODIFICO_REGISTRO,(TO_CHAR(FECHA_MODIFICACION_REGISTRO,'DD/MM/YYYY HH24:MI:SS')) FECHA_MODIFICACION_REGISTRO, AVALUO, TRPFOR, PREIND, SALDOCREDITO, ABONOS,(CASE INDHIP WHEN 0 THEN 'false' ELSE 'true' END) INDHIP,(CASE INDCAR WHEN 0 THEN 'false' ELSE 'true' END) INDCAR,(CASE INDEXE WHEN 0 THEN 'false' ELSE 'true' END) INDEXE,(CASE ANTERIOR_RURAL WHEN 0 THEN 'false' ELSE 'true' END) ANTERIOR_RURAL, TOTAL, C1, C2, C3, C4, C5, C6, C7, CASE WHEN :INDOTROS =1 THEN C15+C16+C17+C20 WHEN :INDOTROS =2 THEN C15 +C16+C17+C18 ELSE C15 +C16+C17+C18+C19+C20 END OTROS  FROM IP_FACTURADOS WHERE COMPANIA = :COMPANIA AND CODIGO = :PREDIO AND NUMERO_ORDEN = :NUMERO AND PAGADO IN (0) AND NOCOBRADO IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"C8":"$C8","C9":"$C9","C10":"$C10","C11":"$C11","C12":"$C12","C13":"$C13","C14":"$C14","C15":"$C15","C16":"$C16","C17":"$C17","C18":"$C18","C19":"$C19","C20":"$C20","PAGADO":"$PAGADO(type:boolean)","TRPPOR":"$TRPPOR","NOCOBRADO":"$NOCOBRADO(type:boolean)","OBSERVACIONES":"$OBSERVACIONES","NUMRESOLUCION":"$NUMRESOLUCION","AVALUOANT":"$AVALUOANT","TARIFAANT":"$TARIFAANT","AREAHE":"$AREAHE","AREAM2":"$AREAM2","USUARIO":"$USUARIO","FECHAPAGO":"$FECHAPAGO","FECHAPRESCRIPCION":"$FECHAPRESCRIPCION","TOTALABONADO":"$TOTALABONADO","VALORULTIMOABONO":"$VALORULTIMOABONO","FECHAULTIMOABONO":"$FECHAULTIMOABONO","ALDIAINTERES":"$ALDIAINTERES","INDPAGO_ACPAG":"$INDPAGO_ACPAG(type:boolean)","FINANCIAR":"$FINANCIAR(type:boolean)","CNT":"$CNT(type:boolean)","C1_CNT":"$C1_CNT","TOTALABONADO1":"$TOTALABONADO1","VALORULTIMOABONO1":"$VALORULTIMOABONO1","FECHAULTIMOABONO1":"$FECHAULTIMOABONO1","ALDIAINTERES1":"$ALDIAINTERES1","TOTALABONADO2":"$TOTALABONADO2","VALORULTIMOABONO2":"$VALORULTIMOABONO2","FECHAULTIMOABONO2":"$FECHAULTIMOABONO2","ALDIAINTERES2":"$ALDIAINTERES2","DOCNUMABONO":"$DOCNUMABONO","DOCNUMABONO1":"$DOCNUMABONO1","DOCNUMABONO2":"$DOCNUMABONO2","INDPAGO_CUOTAS":"$INDPAGO_CUOTAS(type:boolean)","TOTALCUOTA":"$TOTALCUOTA","PAGFECCUOTA":"$PAGFECCUOTA","PAGNCUOTA":"$PAGNCUOTA","DOCNUMCUOTA":"$DOCNUMCUOTA","TOTALCUOTA1":"$TOTALCUOTA1","PAGFECCUOTA1":"$PAGFECCUOTA1","PAGNCUOTA1":"$PAGNCUOTA1","DOCNUMCUOTA1":"$DOCNUMCUOTA1","TOTALCUOTA2":"$TOTALCUOTA2","PAGFECCUOTA2":"$PAGFECCUOTA2","PAGNCUOTA2":"$PAGNCUOTA2","DOCNUMCUOTA2":"$DOCNUMCUOTA2","C18_CNT":"$C18_CNT","TOTALABONO1":"$TOTALABONO1","TOTALABONO2":"$TOTALABONO2","PREANO_EXONERADO":"$PREANO_EXONERADO(type:boolean)","C1_CPY":"$C1_CPY","IND_C1CPY":"$IND_C1CPY(type:boolean)","ALDIAINTERESCAR":"$ALDIAINTERESCAR","ALDIAINTERES1CAR":"$ALDIAINTERES1CAR","ALDIAINTERES2CAR":"$ALDIAINTERES2CAR","C3_CPY":"$C3_CPY","IND_C3CPY":"$IND_C3CPY(type:boolean)","SINDESCUENTOS":"$SINDESCUENTOS(type:boolean)","AUDITADESC":"$AUDITADESC","DESC_INTERES":"$DESC_INTERES","C1_EXE":"$C1_EXE","C2_EXE":"$C2_EXE","C3_EXE":"$C3_EXE","C4_EXE":"$C4_EXE","INDEXEOTROS":"$INDEXEOTROS(type:boolean)","C13_EXE":"$C13_EXE","C14_EXE":"$C14_EXE","C15_EXE":"$C15_EXE","C16_EXE":"$C16_EXE","C17_EXE":"$C17_EXE","C18_EXE":"$C18_EXE","C19_EXE":"$C19_EXE","C20_EXE":"$C20_EXE","DESESPC13":"$DESESPC13","DESESPC2":"$DESESPC2","DESESPC4":"$DESESPC4","DESESPC14":"$DESESPC14","DESESPC15":"$DESESPC15","DESESPC16":"$DESESPC16","DESESPC17":"$DESESPC17","DESESPC18":"$DESESPC18","DESESPC19":"$DESESPC19","DESESPC20":"$DESESPC20","IND_PROCESOJUD":"$IND_PROCESOJUD(type:boolean)","AREA_CONSTRUIDA":"$AREA_CONSTRUIDA","FECHA_CAMBIO_AVALUO":"$FECHA_CAMBIO_AVALUO","CAMBIO_AVALUO":"$CAMBIO_AVALUO","TRP_POR":"$TRP_POR","ES_AUTOAVALUO":"$ES_AUTOAVALUO(type:boolean)","CONSECUTIVO":"$CONSECUTIVO","PORCENTAJE_RESERVA":"$PORCENTAJE_RESERVA","RESOLUCION_RESERVA":"$RESOLUCION_RESERVA","RESOLUCION_DESRESERVA":"$RESOLUCION_DESRESERVA","TEMPORAL":"$TEMPORAL","IND_EXEINT_DUP":"$IND_EXEINT_DUP(type:boolean)","APROBADOFISC":"$APROBADOFISC(type:boolean)","INCR_AUTOAVALUO":"$INCR_AUTOAVALUO(type:boolean)","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NUMERO_ORDEN":"$NUMERO_ORDEN","PREANO":"$PREANO(type:integer)","TRPCOD":"$TRPCOD","TRPRAN":"$TRPRAN","PREFEC":"$PREFEC","DOCNUM":"$DOCNUM","PAG_BAN":"$PAG_BAN","PREVAL":"$PREVAL","USUARIO_CREADOR_REGISTRO":"$USUARIO_CREADOR_REGISTRO","FECHA_CREACION_REGISTRO":"$FECHA_CREACION_REGISTRO","USUARIO_MODIFICO_REGISTRO":"$USUARIO_MODIFICO_REGISTRO","FECHA_MODIFICACION_REGISTRO":"$FECHA_MODIFICACION_REGISTRO","AVALUO":"$AVALUO","TRPFOR":"$TRPFOR","PREIND":"$PREIND","SALDOCREDITO":"$SALDOCREDITO","ABONOS":"$ABONOS","INDHIP":"$INDHIP(type:boolean)","INDCAR":"$INDCAR(type:boolean)","INDEXE":"$INDEXE(type:boolean)","ANTERIOR_RURAL":"$ANTERIOR_RURAL(type:boolean)","TOTAL":"$TOTAL","C1":"$C1","C2":"$C2","C3":"$C3","C4":"$C4","C5":"$C5","C6":"$C6","C7":"$C7","OTROS":"$OTROS(type:integer)"}]}}		</result>
+		<param name="INDOTROS" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/usuariosfactporpredionum">
+		<call-query href="getIpfacturadosUsuariosFactPorPredionumQuery">
+			<with-param name="INDOTROS" query-param="INDOTROS"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosPreanoPagPorPredioAnoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  IP_FACTURADOS.PREANO  FROM IP_FACTURADOS WHERE IP_FACTURADOS.COMPANIA = :COMPANIA AND IP_FACTURADOS.CODIGO = :PREDIO AND IP_FACTURADOS.PREANO &gt; :ANO AND IP_FACTURADOS.PAGADO IN(0) AND IP_FACTURADOS.NOCOBRADO IN(0) ORDER BY IP_FACTURADOS.PREANO ASC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PREANO":"$PREANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/preanopagporpredioano">
+		<call-query href="getIpfacturadosPreanoPagPorPredioAnoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosTotalesPrefusaPorCodNumQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TO_CHAR(SUM(C1), '99,999,999,999,999,990.90') TIMPUESTO, TO_CHAR(SUM(C2), '99,999,999,999,999,990.90') TINTERES, TO_CHAR(SUM(C3), '99,999,999,999,999,990.90') TCAR, TO_CHAR(SUM(C4), '99,999,999,999,999,990.90') TCARINT, TO_CHAR(SUM(C13), '99,999,999,999,999,990.90') TDESC, TO_CHAR(SUM(C14), '99,999,999,999,999,990.90') TC14, CASE WHEN :INDOTROS =1 THEN TO_CHAR(SUM(C15+C16+C17+C20), '99,999,999,999,999,990.90') WHEN :INDOTROS =2 THEN TO_CHAR(SUM(C15+C16+C17+C18), '99,999,999,999,999,990.90') ELSE TO_CHAR(SUM(C15+C16+C17+C18+C19+C20), '99,999,999,999,999,990.90') END TOTROS, TO_CHAR(SUM(TOTAL), '99,999,999,999,999,990.90') TDEUDA  FROM IP_FACTURADOS WHERE COMPANIA = :COMPANIA AND CODIGO = :PREDIO AND NUMERO_ORDEN = :NUMERO AND PAGADO IN (0) AND NOCOBRADO IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TIMPUESTO":"$TIMPUESTO","TINTERES":"$TINTERES","TCAR":"$TCAR","TCARINT":"$TCARINT","TDESC":"$TDESC","TC14":"$TC14","TOTROS":"$TOTROS","TDEUDA":"$TDEUDA"}]}}		</result>
+		<param name="INDOTROS" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/totalesprefusaporcodnum">
+		<call-query href="getIpfacturadosTotalesPrefusaPorCodNumQuery">
+			<with-param name="INDOTROS" query-param="INDOTROS"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosCodOrdPorPredQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  IP_FACTURADOS.COMPANIA, IP_FACTURADOS.CODIGO, IP_FACTURADOS.NUMERO_ORDEN  FROM IP_FACTURADOS WHERE IP_FACTURADOS.COMPANIA = :COMPANIA AND IP_FACTURADOS.CODIGO = :PREDIO AND IP_FACTURADOS.NUMERO_ORDEN = :NUMERO AND ROWNUM = 1</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NUMERO_ORDEN":"$NUMERO_ORDEN"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/codordporpred">
+		<call-query href="getIpfacturadosCodOrdPorPredQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosPagSubavaluosDosPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CODIGO, NUMERO_ORDEN, PREANO, TRPCOD, TRPRAN,(TO_CHAR(PREFEC,'DD/MM/YYYY HH24:MI:SS')) PREFEC, AVALUO, TRPPOR, NUMRESOLUCION, AVALUOANT, TARIFAANT, PREIND,(CASE NOCOBRADO WHEN 0 THEN 'false' ELSE 'true' END) NOCOBRADO FROM IP_FACTURADOS WHERE COMPANIA = :COMPANIA AND NUMERO_ORDEN = :NUMERO_ORDEN AND CODIGO = :CODIGO AND PAGADO IN (0) AND NOCOBRADO IN (0)) WHERE (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER(:PREANO || '%')  AND (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END)  LIKE UPPER( '%' || :AVALUO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NUMERO_ORDEN":"$NUMERO_ORDEN","PREANO":"$PREANO(type:integer)","TRPCOD":"$TRPCOD","TRPRAN":"$TRPRAN","PREFEC":"$PREFEC","AVALUO":"$AVALUO","TRPPOR":"$TRPPOR","NUMRESOLUCION":"$NUMRESOLUCION","AVALUOANT":"$AVALUOANT","TARIFAANT":"$TARIFAANT","PREIND":"$PREIND","NOCOBRADO":"$NOCOBRADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/subavaluosdosporcodigo/pag">
+		<call-query href="getIpfacturadosPagSubavaluosDosPorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosNumSubavaluosDosPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CODIGO, NUMERO_ORDEN, PREANO, TRPCOD, TRPRAN,(TO_CHAR(PREFEC,'DD/MM/YYYY HH24:MI:SS')) PREFEC, AVALUO, TRPPOR, NUMRESOLUCION, AVALUOANT, TARIFAANT, PREIND,(CASE NOCOBRADO WHEN 0 THEN 'false' ELSE 'true' END) NOCOBRADO FROM IP_FACTURADOS WHERE COMPANIA = :COMPANIA AND NUMERO_ORDEN = :NUMERO_ORDEN AND CODIGO = :CODIGO AND PAGADO IN (0) AND NOCOBRADO IN (0)) WHERE (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER(:PREANO || '%')  AND (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER( '%' || :TRPCOD || '%')  AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END)  LIKE UPPER( '%' || :AVALUO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/subavaluosdosporcodigo/num">
+		<call-query href="getIpfacturadosNumSubavaluosDosPorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpfacturadosSubavaluosDosPorCodigo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_FACTURADOS SET TRPCOD=:TRPCOD, TRPRAN=:TRPRAN, PREFEC=TO_DATE(:PREFEC,'DD/MM/YYYY HH24:MI:SS'), AVALUO=:AVALUO, TRPPOR=:TRPPOR, NUMRESOLUCION=:NUMRESOLUCION, AVALUOANT=:AVALUOANT, TARIFAANT=:TARIFAANT, PREIND=:PREIND, NOCOBRADO=:NOCOBRADO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE IP_FACTURADOS.COMPANIA= :KEY_COMPANIA AND IP_FACTURADOS.CODIGO= :KEY_CODIGO AND IP_FACTURADOS.NUMERO_ORDEN= :KEY_NUMERO_ORDEN AND IP_FACTURADOS.PREANO= :KEY_PREANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param name="PREFEC" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+		<param name="NUMRESOLUCION" sqlType="STRING"/>
+		<param name="AVALUOANT" sqlType="STRING"/>
+		<param name="TARIFAANT" sqlType="STRING"/>
+		<param name="PREIND" sqlType="STRING"/>
+		<param name="NOCOBRADO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="KEY_PREANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipfacturados/subavaluosdosporcodigo">
+		<call-query href="updateIpfacturadosSubavaluosDosPorCodigo">
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="PREFEC" query-param="PREFEC"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="NUMRESOLUCION" query-param="NUMRESOLUCION"/>
+			<with-param name="AVALUOANT" query-param="AVALUOANT"/>
+			<with-param name="TARIFAANT" query-param="TARIFAANT"/>
+			<with-param name="PREIND" query-param="PREIND"/>
+			<with-param name="NOCOBRADO" query-param="NOCOBRADO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_NUMERO_ORDEN" query-param="KEY_NUMERO_ORDEN"/>
+			<with-param name="KEY_PREANO" query-param="KEY_PREANO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertIpfacturadosSubavaluosDosPorCodigo" keyColumns="COMPANIA,CODIGO,NUMERO_ORDEN,PREANO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_FACTURADOS (COMPANIA, CODIGO, NUMERO_ORDEN, PREANO, TRPCOD, TRPRAN, PREFEC, AVALUO, TRPPOR, NUMRESOLUCION, AVALUOANT, TARIFAANT, PREIND, NOCOBRADO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :NUMERO_ORDEN, :PREANO, :TRPCOD, :TRPRAN, TO_DATE(:PREFEC,'DD/MM/YYYY HH24:MI:SS'), :AVALUO, :TRPPOR, :NUMRESOLUCION, :AVALUOANT, :TARIFAANT, :PREIND, :NOCOBRADO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO","KEY_NUMERO_ORDEN":"$NUMERO_ORDEN","KEY_PREANO":"$PREANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param defaultValue="" name="PREFEC" sqlType="STRING"/>
+		<param defaultValue="0" name="AVALUO" sqlType="STRING"/>
+		<param defaultValue="0" name="TRPPOR" sqlType="STRING"/>
+		<param defaultValue="" name="NUMRESOLUCION" sqlType="STRING"/>
+		<param defaultValue="0" name="AVALUOANT" sqlType="STRING"/>
+		<param defaultValue="" name="TARIFAANT" sqlType="STRING"/>
+		<param defaultValue="" name="PREIND" sqlType="STRING"/>
+		<param defaultValue="0" name="NOCOBRADO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="ipfacturados/subavaluosdosporcodigo">
+		<call-query href="insertIpfacturadosSubavaluosDosPorCodigo">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="PREFEC" query-param="PREFEC"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="NUMRESOLUCION" query-param="NUMRESOLUCION"/>
+			<with-param name="AVALUOANT" query-param="AVALUOANT"/>
+			<with-param name="TARIFAANT" query-param="TARIFAANT"/>
+			<with-param name="PREIND" query-param="PREIND"/>
+			<with-param name="NOCOBRADO" query-param="NOCOBRADO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosPagTodosPorConceptoFacturacionGQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_FACTURADOS.COMPANIA, IP_FACTURADOS.CODIGO, IP_FACTURADOS.NUMERO_ORDEN, IP_FACTURADOS.C1, IP_FACTURADOS.C2, IP_FACTURADOS.C3, IP_FACTURADOS.C4, IP_FACTURADOS.C5, IP_FACTURADOS.C6, IP_FACTURADOS.C7, IP_FACTURADOS.C8, IP_FACTURADOS.C9, IP_FACTURADOS.C10, IP_FACTURADOS.C11, IP_FACTURADOS.C12, IP_FACTURADOS.C13, IP_FACTURADOS.C14, IP_FACTURADOS.C15, IP_FACTURADOS.C16, IP_FACTURADOS.C17, IP_FACTURADOS.C18, IP_FACTURADOS.C19, IP_FACTURADOS.C20, IP_FACTURADOS.PREANO, IP_FACTURADOS.TOTAL, IP_FACTURADOS.C1_CPY, IP_FACTURADOS.C3_CPY, IP_FACTURADOS.AVALUO,(CASE IP_FACTURADOS.PAGADO WHEN 0 THEN 'false' ELSE 'true' END) PAGADO FROM IP_FACTURADOS WHERE IP_FACTURADOS.COMPANIA = :COMPANIA AND IP_FACTURADOS.CODIGO = :CODIGOPREDIO AND IP_FACTURADOS.NUMERO_ORDEN = :NUMERO_ORDEN ORDER BY IP_FACTURADOS.PREANO DESC) WHERE (CASE WHEN COMPANIA IS NULL THEN ' ' ELSE UPPER(COMPANIA) END)  LIKE UPPER(:COMPANIA || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NUMERO_ORDEN IS NULL THEN ' ' ELSE UPPER(NUMERO_ORDEN) END)  LIKE UPPER(:NUMERO_ORDEN || '%')  AND (CASE WHEN C1 IS NULL THEN ' ' ELSE UPPER(C1) END)  LIKE UPPER(:C1 || '%')  AND (CASE WHEN C2 IS NULL THEN ' ' ELSE UPPER(C2) END)  LIKE UPPER(:C2 || '%')  AND (CASE WHEN C3 IS NULL THEN ' ' ELSE UPPER(C3) END)  LIKE UPPER(:C3 || '%')  AND (CASE WHEN C4 IS NULL THEN ' ' ELSE UPPER(C4) END)  LIKE UPPER(:C4 || '%')  AND (CASE WHEN C5 IS NULL THEN ' ' ELSE UPPER(C5) END)  LIKE UPPER(:C5 || '%')  AND (CASE WHEN C6 IS NULL THEN ' ' ELSE UPPER(C6) END)  LIKE UPPER(:C6 || '%')  AND (CASE WHEN C7 IS NULL THEN ' ' ELSE UPPER(C7) END)  LIKE UPPER(:C7 || '%')  AND (CASE WHEN C8 IS NULL THEN ' ' ELSE UPPER(C8) END)  LIKE UPPER(:C8 || '%')  AND (CASE WHEN C9 IS NULL THEN ' ' ELSE UPPER(C9) END)  LIKE UPPER(:C9 || '%')  AND (CASE WHEN C10 IS NULL THEN ' ' ELSE UPPER(C10) END)  LIKE UPPER(:C10 || '%')  AND (CASE WHEN C11 IS NULL THEN ' ' ELSE UPPER(C11) END)  LIKE UPPER(:C11 || '%')  AND (CASE WHEN C12 IS NULL THEN ' ' ELSE UPPER(C12) END)  LIKE UPPER(:C12 || '%')  AND (CASE WHEN C13 IS NULL THEN ' ' ELSE UPPER(C13) END)  LIKE UPPER(:C13 || '%')  AND (CASE WHEN C14 IS NULL THEN ' ' ELSE UPPER(C14) END)  LIKE UPPER(:C14 || '%')  AND (CASE WHEN C15 IS NULL THEN ' ' ELSE UPPER(C15) END)  LIKE UPPER(:C15 || '%')  AND (CASE WHEN C16 IS NULL THEN ' ' ELSE UPPER(C16) END)  LIKE UPPER(:C16 || '%')  AND (CASE WHEN C17 IS NULL THEN ' ' ELSE UPPER(C17) END)  LIKE UPPER(:C17 || '%')  AND (CASE WHEN C18 IS NULL THEN ' ' ELSE UPPER(C18) END)  LIKE UPPER(:C18 || '%')  AND (CASE WHEN C19 IS NULL THEN ' ' ELSE UPPER(C19) END)  LIKE UPPER(:C19 || '%')  AND (CASE WHEN C20 IS NULL THEN ' ' ELSE UPPER(C20) END)  LIKE UPPER(:C20 || '%')  AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER(:PREANO || '%')  AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END)  LIKE UPPER(:TOTAL || '%')  AND (CASE WHEN C1_CPY IS NULL THEN ' ' ELSE UPPER(C1_CPY) END)  LIKE UPPER(:C1_CPY || '%')  AND (CASE WHEN C3_CPY IS NULL THEN ' ' ELSE UPPER(C3_CPY) END)  LIKE UPPER(:C3_CPY || '%')  AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END)  LIKE UPPER(:AVALUO || '%')  AND (CASE WHEN PAGADO IS NULL THEN ' ' ELSE UPPER(PAGADO) END)  LIKE UPPER(:PAGADO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NUMERO_ORDEN":"$NUMERO_ORDEN","C1":"$C1","C2":"$C2","C3":"$C3","C4":"$C4","C5":"$C5","C6":"$C6","C7":"$C7","C8":"$C8","C9":"$C9","C10":"$C10","C11":"$C11","C12":"$C12","C13":"$C13","C14":"$C14","C15":"$C15","C16":"$C16","C17":"$C17","C18":"$C18","C19":"$C19","C20":"$C20","PREANO":"$PREANO(type:integer)","TOTAL":"$TOTAL","C1_CPY":"$C1_CPY","C3_CPY":"$C3_CPY","AVALUO":"$AVALUO","PAGADO":"$PAGADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOPREDIO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="C1" sqlType="STRING"/>
+		<param name="C2" sqlType="STRING"/>
+		<param name="C3" sqlType="STRING"/>
+		<param name="C4" sqlType="STRING"/>
+		<param name="C5" sqlType="STRING"/>
+		<param name="C6" sqlType="STRING"/>
+		<param name="C7" sqlType="STRING"/>
+		<param name="C8" sqlType="STRING"/>
+		<param name="C9" sqlType="STRING"/>
+		<param name="C10" sqlType="STRING"/>
+		<param name="C11" sqlType="STRING"/>
+		<param name="C12" sqlType="STRING"/>
+		<param name="C13" sqlType="STRING"/>
+		<param name="C14" sqlType="STRING"/>
+		<param name="C15" sqlType="STRING"/>
+		<param name="C16" sqlType="STRING"/>
+		<param name="C17" sqlType="STRING"/>
+		<param name="C18" sqlType="STRING"/>
+		<param name="C19" sqlType="STRING"/>
+		<param name="C20" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="C1_CPY" sqlType="STRING"/>
+		<param name="C3_CPY" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="PAGADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/todosporconceptofacturaciong/pag">
+		<call-query href="getIpfacturadosPagTodosPorConceptoFacturacionGQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOPREDIO" query-param="CODIGOPREDIO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="C1" query-param="C1"/>
+			<with-param name="C2" query-param="C2"/>
+			<with-param name="C3" query-param="C3"/>
+			<with-param name="C4" query-param="C4"/>
+			<with-param name="C5" query-param="C5"/>
+			<with-param name="C6" query-param="C6"/>
+			<with-param name="C7" query-param="C7"/>
+			<with-param name="C8" query-param="C8"/>
+			<with-param name="C9" query-param="C9"/>
+			<with-param name="C10" query-param="C10"/>
+			<with-param name="C11" query-param="C11"/>
+			<with-param name="C12" query-param="C12"/>
+			<with-param name="C13" query-param="C13"/>
+			<with-param name="C14" query-param="C14"/>
+			<with-param name="C15" query-param="C15"/>
+			<with-param name="C16" query-param="C16"/>
+			<with-param name="C17" query-param="C17"/>
+			<with-param name="C18" query-param="C18"/>
+			<with-param name="C19" query-param="C19"/>
+			<with-param name="C20" query-param="C20"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="C1_CPY" query-param="C1_CPY"/>
+			<with-param name="C3_CPY" query-param="C3_CPY"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="PAGADO" query-param="PAGADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosNumTodosPorConceptoFacturacionGQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_FACTURADOS.COMPANIA, IP_FACTURADOS.CODIGO, IP_FACTURADOS.NUMERO_ORDEN, IP_FACTURADOS.C1, IP_FACTURADOS.C2, IP_FACTURADOS.C3, IP_FACTURADOS.C4, IP_FACTURADOS.C5, IP_FACTURADOS.C6, IP_FACTURADOS.C7, IP_FACTURADOS.C8, IP_FACTURADOS.C9, IP_FACTURADOS.C10, IP_FACTURADOS.C11, IP_FACTURADOS.C12, IP_FACTURADOS.C13, IP_FACTURADOS.C14, IP_FACTURADOS.C15, IP_FACTURADOS.C16, IP_FACTURADOS.C17, IP_FACTURADOS.C18, IP_FACTURADOS.C19, IP_FACTURADOS.C20, IP_FACTURADOS.PREANO, IP_FACTURADOS.TOTAL, IP_FACTURADOS.C1_CPY, IP_FACTURADOS.C3_CPY, IP_FACTURADOS.AVALUO,(CASE IP_FACTURADOS.PAGADO WHEN 0 THEN 'false' ELSE 'true' END) PAGADO FROM IP_FACTURADOS WHERE IP_FACTURADOS.COMPANIA = :COMPANIA AND IP_FACTURADOS.CODIGO = :CODIGOPREDIO AND IP_FACTURADOS.NUMERO_ORDEN = :NUMERO_ORDEN ORDER BY IP_FACTURADOS.PREANO DESC) WHERE (CASE WHEN COMPANIA IS NULL THEN ' ' ELSE UPPER(COMPANIA) END)  LIKE UPPER(:COMPANIA || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN NUMERO_ORDEN IS NULL THEN ' ' ELSE UPPER(NUMERO_ORDEN) END)  LIKE UPPER( '%' || :NUMERO_ORDEN || '%')  AND (CASE WHEN C1 IS NULL THEN ' ' ELSE UPPER(C1) END)  LIKE UPPER( '%' || :C1 || '%')  AND (CASE WHEN C2 IS NULL THEN ' ' ELSE UPPER(C2) END)  LIKE UPPER( '%' || :C2 || '%')  AND (CASE WHEN C3 IS NULL THEN ' ' ELSE UPPER(C3) END)  LIKE UPPER( '%' || :C3 || '%')  AND (CASE WHEN C4 IS NULL THEN ' ' ELSE UPPER(C4) END)  LIKE UPPER( '%' || :C4 || '%')  AND (CASE WHEN C5 IS NULL THEN ' ' ELSE UPPER(C5) END)  LIKE UPPER( '%' || :C5 || '%')  AND (CASE WHEN C6 IS NULL THEN ' ' ELSE UPPER(C6) END)  LIKE UPPER( '%' || :C6 || '%')  AND (CASE WHEN C7 IS NULL THEN ' ' ELSE UPPER(C7) END)  LIKE UPPER( '%' || :C7 || '%')  AND (CASE WHEN C8 IS NULL THEN ' ' ELSE UPPER(C8) END)  LIKE UPPER( '%' || :C8 || '%')  AND (CASE WHEN C9 IS NULL THEN ' ' ELSE UPPER(C9) END)  LIKE UPPER( '%' || :C9 || '%')  AND (CASE WHEN C10 IS NULL THEN ' ' ELSE UPPER(C10) END)  LIKE UPPER( '%' || :C10 || '%')  AND (CASE WHEN C11 IS NULL THEN ' ' ELSE UPPER(C11) END)  LIKE UPPER( '%' || :C11 || '%')  AND (CASE WHEN C12 IS NULL THEN ' ' ELSE UPPER(C12) END)  LIKE UPPER( '%' || :C12 || '%')  AND (CASE WHEN C13 IS NULL THEN ' ' ELSE UPPER(C13) END)  LIKE UPPER( '%' || :C13 || '%')  AND (CASE WHEN C14 IS NULL THEN ' ' ELSE UPPER(C14) END)  LIKE UPPER( '%' || :C14 || '%')  AND (CASE WHEN C15 IS NULL THEN ' ' ELSE UPPER(C15) END)  LIKE UPPER( '%' || :C15 || '%')  AND (CASE WHEN C16 IS NULL THEN ' ' ELSE UPPER(C16) END)  LIKE UPPER( '%' || :C16 || '%')  AND (CASE WHEN C17 IS NULL THEN ' ' ELSE UPPER(C17) END)  LIKE UPPER( '%' || :C17 || '%')  AND (CASE WHEN C18 IS NULL THEN ' ' ELSE UPPER(C18) END)  LIKE UPPER( '%' || :C18 || '%')  AND (CASE WHEN C19 IS NULL THEN ' ' ELSE UPPER(C19) END)  LIKE UPPER( '%' || :C19 || '%')  AND (CASE WHEN C20 IS NULL THEN ' ' ELSE UPPER(C20) END)  LIKE UPPER( '%' || :C20 || '%')  AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER( '%' || :PREANO || '%')  AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END)  LIKE UPPER( '%' || :TOTAL || '%')  AND (CASE WHEN C1_CPY IS NULL THEN ' ' ELSE UPPER(C1_CPY) END)  LIKE UPPER( '%' || :C1_CPY || '%')  AND (CASE WHEN C3_CPY IS NULL THEN ' ' ELSE UPPER(C3_CPY) END)  LIKE UPPER( '%' || :C3_CPY || '%')  AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END)  LIKE UPPER( '%' || :AVALUO || '%')  AND (CASE WHEN PAGADO IS NULL THEN ' ' ELSE UPPER(PAGADO) END)  LIKE UPPER( '%' || :PAGADO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOPREDIO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="C1" sqlType="STRING"/>
+		<param name="C2" sqlType="STRING"/>
+		<param name="C3" sqlType="STRING"/>
+		<param name="C4" sqlType="STRING"/>
+		<param name="C5" sqlType="STRING"/>
+		<param name="C6" sqlType="STRING"/>
+		<param name="C7" sqlType="STRING"/>
+		<param name="C8" sqlType="STRING"/>
+		<param name="C9" sqlType="STRING"/>
+		<param name="C10" sqlType="STRING"/>
+		<param name="C11" sqlType="STRING"/>
+		<param name="C12" sqlType="STRING"/>
+		<param name="C13" sqlType="STRING"/>
+		<param name="C14" sqlType="STRING"/>
+		<param name="C15" sqlType="STRING"/>
+		<param name="C16" sqlType="STRING"/>
+		<param name="C17" sqlType="STRING"/>
+		<param name="C18" sqlType="STRING"/>
+		<param name="C19" sqlType="STRING"/>
+		<param name="C20" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="C1_CPY" sqlType="STRING"/>
+		<param name="C3_CPY" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="PAGADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/todosporconceptofacturaciong/num">
+		<call-query href="getIpfacturadosNumTodosPorConceptoFacturacionGQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOPREDIO" query-param="CODIGOPREDIO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="C1" query-param="C1"/>
+			<with-param name="C2" query-param="C2"/>
+			<with-param name="C3" query-param="C3"/>
+			<with-param name="C4" query-param="C4"/>
+			<with-param name="C5" query-param="C5"/>
+			<with-param name="C6" query-param="C6"/>
+			<with-param name="C7" query-param="C7"/>
+			<with-param name="C8" query-param="C8"/>
+			<with-param name="C9" query-param="C9"/>
+			<with-param name="C10" query-param="C10"/>
+			<with-param name="C11" query-param="C11"/>
+			<with-param name="C12" query-param="C12"/>
+			<with-param name="C13" query-param="C13"/>
+			<with-param name="C14" query-param="C14"/>
+			<with-param name="C15" query-param="C15"/>
+			<with-param name="C16" query-param="C16"/>
+			<with-param name="C17" query-param="C17"/>
+			<with-param name="C18" query-param="C18"/>
+			<with-param name="C19" query-param="C19"/>
+			<with-param name="C20" query-param="C20"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="C1_CPY" query-param="C1_CPY"/>
+			<with-param name="C3_CPY" query-param="C3_CPY"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="PAGADO" query-param="PAGADO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpfacturadosConceptosFacturacion" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_FACTURADOS SET C8=:C8, C7=:C7, CODIGO=:CODIGO, C9=:C9, C4=:C4, C3=:C3, C6=:C6, PREANO=:PREANO, C5=:C5, NUMERO_ORDEN=:NUMERO_ORDEN, TOTAL=:TOTAL, C20=:C20, C3_CPY=:C3_CPY, C1=:C1, C2=:C2, C16=:C16, C17=:C17, C18=:C18, C19=:C19, PAGADO=:PAGADO, C10=:C10, C11=:C11, C12=:C12, C13=:C13, C14=:C14, C15=:C15, COMPANIA=:COMPANIA, AVALUO=:AVALUO, C1_CPY=:C1_CPY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE IP_FACTURADOS.COMPANIA= :KEY_COMPANIA AND IP_FACTURADOS.CODIGO= :KEY_CODIGO AND IP_FACTURADOS.NUMERO_ORDEN= :KEY_NUMERO_ORDEN AND IP_FACTURADOS.PREANO= :KEY_PREANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="C8" sqlType="STRING"/>
+		<param name="C7" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="C9" sqlType="STRING"/>
+		<param name="C4" sqlType="STRING"/>
+		<param name="C3" sqlType="STRING"/>
+		<param name="C6" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="C5" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="C20" sqlType="STRING"/>
+		<param name="C3_CPY" sqlType="STRING"/>
+		<param name="C1" sqlType="STRING"/>
+		<param name="C2" sqlType="STRING"/>
+		<param name="C16" sqlType="STRING"/>
+		<param name="C17" sqlType="STRING"/>
+		<param name="C18" sqlType="STRING"/>
+		<param name="C19" sqlType="STRING"/>
+		<param name="PAGADO" sqlType="STRING"/>
+		<param name="C10" sqlType="STRING"/>
+		<param name="C11" sqlType="STRING"/>
+		<param name="C12" sqlType="STRING"/>
+		<param name="C13" sqlType="STRING"/>
+		<param name="C14" sqlType="STRING"/>
+		<param name="C15" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="C1_CPY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="KEY_PREANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipfacturados/conceptosfacturacion">
+		<call-query href="updateIpfacturadosConceptosFacturacion">
+			<with-param name="C8" query-param="C8"/>
+			<with-param name="C7" query-param="C7"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="C9" query-param="C9"/>
+			<with-param name="C4" query-param="C4"/>
+			<with-param name="C3" query-param="C3"/>
+			<with-param name="C6" query-param="C6"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="C5" query-param="C5"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="C20" query-param="C20"/>
+			<with-param name="C3_CPY" query-param="C3_CPY"/>
+			<with-param name="C1" query-param="C1"/>
+			<with-param name="C2" query-param="C2"/>
+			<with-param name="C16" query-param="C16"/>
+			<with-param name="C17" query-param="C17"/>
+			<with-param name="C18" query-param="C18"/>
+			<with-param name="C19" query-param="C19"/>
+			<with-param name="PAGADO" query-param="PAGADO"/>
+			<with-param name="C10" query-param="C10"/>
+			<with-param name="C11" query-param="C11"/>
+			<with-param name="C12" query-param="C12"/>
+			<with-param name="C13" query-param="C13"/>
+			<with-param name="C14" query-param="C14"/>
+			<with-param name="C15" query-param="C15"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="C1_CPY" query-param="C1_CPY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_NUMERO_ORDEN" query-param="KEY_NUMERO_ORDEN"/>
+			<with-param name="KEY_PREANO" query-param="KEY_PREANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosVerificarPagoPorCodigoYPreanoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  IP_FACTURADOS.TRPCOD, IP_FACTURADOS.PREANO,(CASE IP_FACTURADOS.PAGADO WHEN 0 THEN 'false' ELSE 'true' END) PAGADO FROM IP_FACTURADOS WHERE IP_FACTURADOS.COMPANIA = :COMPANIA AND IP_FACTURADOS.NUMERO_ORDEN = :NUMERO_ORDEN AND IP_FACTURADOS.CODIGO = :CODIGO AND IP_FACTURADOS.PREANO = :PREANO AND IP_FACTURADOS.PAGADO IN (0) AND IP_FACTURADOS.NOCOBRADO IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TRPCOD":"$TRPCOD","PREANO":"$PREANO(type:integer)","PAGADO":"$PAGADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/verificarpagoporcodigoypreano">
+		<call-query href="getIpfacturadosVerificarPagoPorCodigoYPreanoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosSubavaluosPorResolucionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, PREANO, AVALUO, TRPCOD, NUMRESOLUCION, AVALUOANT, TARIFAANT  FROM IP_FACTURADOS WHERE COMPANIA= :COMPANIA AND NUMRESOLUCION= :RESOLUCION</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PREANO":"$PREANO(type:integer)","AVALUO":"$AVALUO","TRPCOD":"$TRPCOD","NUMRESOLUCION":"$NUMRESOLUCION","AVALUOANT":"$AVALUOANT","TARIFAANT":"$TARIFAANT"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="RESOLUCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/subavaluosporresolucion">
+		<call-query href="getIpfacturadosSubavaluosPorResolucionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RESOLUCION" query-param="RESOLUCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosMaximoAnoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  MAX(PREANO) KEEP (DENSE_RANK LAST ORDER BY ROWNUM) PREANO  FROM IP_FACTURADOS WHERE COMPANIA = :COMPANIA AND CODIGO = :PREDIO AND PAGADO NOT IN(0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PREANO":"$PREANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/maximoano">
+		<call-query href="getIpfacturadosMaximoAnoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosAnosFacturadosPagadosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) ANOS_FACTURADOS FROM IP_FACTURADOS WHERE COMPANIA = :COMPANIA AND CODIGO = :CODIGO AND NUMERO_ORDEN = :NUMERO_ORDEN AND PAGADO NOT IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANOS_FACTURADOS":"$ANOS_FACTURADOS(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/anosfacturadospagados">
+		<call-query href="getIpfacturadosAnosFacturadosPagadosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosPagDetalleDeclaracionAutoavaluoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT (CASE IP_FACTURADOS.PAGADO WHEN 0 THEN 'false' ELSE 'true' END) PAGADO, IP_FACTURADOS.PREANO, IP_FACTURADOS.AVALUO, IP_FACTURADOS.TRPCOD, IP_TARIFAS.TRPDES FROM IP_FACTURADOS INNER JOIN IP_TARIFAS ON IP_FACTURADOS.TRPRAN = IP_TARIFAS.TRPRAN AND IP_FACTURADOS.TRPCOD = IP_TARIFAS.TRPCOD AND IP_FACTURADOS.PREANO = IP_TARIFAS.TRPANO WHERE IP_FACTURADOS.COMPANIA = :COMPANIA AND IP_FACTURADOS.NUMERO_ORDEN = :NUMEROORDEN AND IP_FACTURADOS.CODIGO = :CODIGO AND IP_FACTURADOS.NOCOBRADO = 0 AND IP_FACTURADOS.INDPAGO_ACPAG = 0 AND IP_FACTURADOS.PAGADO = 0 ORDER BY IP_FACTURADOS.PREANO) INI WHERE (CASE WHEN PAGADO IS NULL THEN ' ' ELSE UPPER(PAGADO) END) LIKE UPPER(CONCAT(:PAGADO, '%')) AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END) LIKE UPPER(CONCAT(:PREANO, '%')) AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END) LIKE UPPER(CONCAT(:AVALUO, '%')) AND (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END) LIKE UPPER(CONCAT(:TRPCOD, '%')) AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END) LIKE UPPER(CONCAT(CONCAT('%',:TRPDES), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAGADO":"$PAGADO(type:boolean)","PREANO":"$PREANO(type:integer)","AVALUO":"$AVALUO","TRPCOD":"$TRPCOD","TRPDES":"$TRPDES"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMEROORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PAGADO" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/detalledeclaracionautoavaluo/pag">
+		<call-query href="getIpfacturadosPagDetalleDeclaracionAutoavaluoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMEROORDEN" query-param="NUMEROORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PAGADO" query-param="PAGADO"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfacturadosNumDetalleDeclaracionAutoavaluoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT (CASE IP_FACTURADOS.PAGADO WHEN 0 THEN 'false' ELSE 'true' END) PAGADO, IP_FACTURADOS.PREANO, IP_FACTURADOS.AVALUO, IP_FACTURADOS.TRPCOD, IP_TARIFAS.TRPDES FROM IP_FACTURADOS INNER JOIN IP_TARIFAS ON IP_FACTURADOS.TRPRAN = IP_TARIFAS.TRPRAN AND IP_FACTURADOS.TRPCOD = IP_TARIFAS.TRPCOD AND IP_FACTURADOS.PREANO = IP_TARIFAS.TRPANO WHERE IP_FACTURADOS.COMPANIA = :COMPANIA AND IP_FACTURADOS.NUMERO_ORDEN = :NUMEROORDEN AND IP_FACTURADOS.CODIGO = :CODIGO AND IP_FACTURADOS.NOCOBRADO = 0 AND IP_FACTURADOS.INDPAGO_ACPAG = 0 AND IP_FACTURADOS.PAGADO = 0 ORDER BY IP_FACTURADOS.PREANO) INI WHERE (CASE WHEN PAGADO IS NULL THEN ' ' ELSE UPPER(PAGADO) END) LIKE UPPER(CONCAT(:PAGADO, '%')) AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END) LIKE UPPER(CONCAT(:PREANO, '%')) AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END) LIKE UPPER(CONCAT(:AVALUO, '%')) AND (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END) LIKE UPPER(CONCAT(:TRPCOD, '%')) AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END) LIKE UPPER(CONCAT(CONCAT('%',:TRPDES), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMEROORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PAGADO" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfacturados/detalledeclaracionautoavaluo/num">
+		<call-query href="getIpfacturadosNumDetalleDeclaracionAutoavaluoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMEROORDEN" query-param="NUMEROORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PAGADO" query-param="PAGADO"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpfacturadosAvaluoTarifaEIndPagado" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_FACTURADOS SET PAGADO = :PAGADO , AVALUO = :AVALUO , TRPCOD = :TRPCOD , USUARIO_MODIFICO_REGISTRO = :MODIFIED_BY , MODIFIED_BY = :MODIFIED_BY , DATE_MODIFIED = :DATE_MODIFIED WHERE COMPANIA = :COMPANIA AND NUMERO_ORDEN = :NUMEROORDEN AND CODIGO = :CODIGO AND PREANO = :PREANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="PAGADO" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMEROORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipfacturados/avaluotarifaeindpagado">
+		<call-query href="updateIpfacturadosAvaluoTarifaEIndPagado">
+			<with-param name="PAGADO" query-param="PAGADO"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMEROORDEN" query-param="NUMEROORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,152 @@
+﻿<data name="tiposdeempleado" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTiposdeempleadoPagTodosIdNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TIPOS_DE_EMPLEADO.ID_DE_TIPO, TIPOS_DE_EMPLEADO.NOMBRE_TIPO  FROM TIPOS_DE_EMPLEADO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_DE_TIPO IS NULL THEN ' ' ELSE UPPER(ID_DE_TIPO) END)  LIKE UPPER(:ID_DE_TIPO || '%')  AND (CASE WHEN NOMBRE_TIPO IS NULL THEN ' ' ELSE UPPER(NOMBRE_TIPO) END)  LIKE UPPER( '%' || :NOMBRE_TIPO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_TIPO":"$ID_DE_TIPO","NOMBRE_TIPO":"$NOMBRE_TIPO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_TIPO" sqlType="STRING"/>
+		<param name="NOMBRE_TIPO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tiposdeempleado/todosidnombre/pag">
+		<call-query href="getTiposdeempleadoPagTodosIdNombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_TIPO" query-param="ID_DE_TIPO"/>
+			<with-param name="NOMBRE_TIPO" query-param="NOMBRE_TIPO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposdeempleadoNumTodosIdNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TIPOS_DE_EMPLEADO.ID_DE_TIPO, TIPOS_DE_EMPLEADO.NOMBRE_TIPO  FROM TIPOS_DE_EMPLEADO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_DE_TIPO IS NULL THEN ' ' ELSE UPPER(ID_DE_TIPO) END)  LIKE UPPER(:ID_DE_TIPO || '%')  AND (CASE WHEN NOMBRE_TIPO IS NULL THEN ' ' ELSE UPPER(NOMBRE_TIPO) END)  LIKE UPPER( '%' || :NOMBRE_TIPO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_TIPO" sqlType="STRING"/>
+		<param name="NOMBRE_TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tiposdeempleado/todosidnombre/num">
+		<call-query href="getTiposdeempleadoNumTodosIdNombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_TIPO" query-param="ID_DE_TIPO"/>
+			<with-param name="NOMBRE_TIPO" query-param="NOMBRE_TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposdeempleadoIdYNombrePorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT TIPOS_DE_EMPLEADO.ID_DE_TIPO, TIPOS_DE_EMPLEADO.NOMBRE_TIPO  FROM TIPOS_DE_EMPLEADO WHERE TIPOS_DE_EMPLEADO.COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_TIPO":"$ID_DE_TIPO","NOMBRE_TIPO":"$NOMBRE_TIPO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tiposdeempleado/idynombreporcompania">
+		<call-query href="getTiposdeempleadoIdYNombrePorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertTiposdeempleado" keyColumns="COMPANIA,ID_DE_TIPO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TIPOS_DE_EMPLEADO (COMPANIA, ID_DE_TIPO, NOMBRE_TIPO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ID_DE_TIPO, :NOMBRE_TIPO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_DE_TIPO":"$ID_DE_TIPO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_TIPO" sqlType="STRING"/>
+		<param name="NOMBRE_TIPO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="tiposdeempleado">
+		<call-query href="insertTiposdeempleado">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_TIPO" query-param="ID_DE_TIPO"/>
+			<with-param name="NOMBRE_TIPO" query-param="NOMBRE_TIPO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTiposdeempleado" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TIPOS_DE_EMPLEADO WHERE TIPOS_DE_EMPLEADO.COMPANIA= :KEY_COMPANIA AND TIPOS_DE_EMPLEADO.ID_DE_TIPO= :KEY_ID_DE_TIPO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_DE_TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="tiposdeempleado">
+		<call-query href="deleteTiposdeempleado">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_DE_TIPO" query-param="KEY_ID_DE_TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposdeempleadoPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TIPOS_DE_EMPLEADO.COMPANIA, TIPOS_DE_EMPLEADO.ID_DE_TIPO, TIPOS_DE_EMPLEADO.NOMBRE_TIPO  FROM TIPOS_DE_EMPLEADO WHERE TIPOS_DE_EMPLEADO.COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_DE_TIPO IS NULL THEN ' ' ELSE UPPER(ID_DE_TIPO) END)  LIKE UPPER(:ID_DE_TIPO || '%')  AND (CASE WHEN NOMBRE_TIPO IS NULL THEN ' ' ELSE UPPER(NOMBRE_TIPO) END)  LIKE UPPER( '%' || :NOMBRE_TIPO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_DE_TIPO":"$ID_DE_TIPO","NOMBRE_TIPO":"$NOMBRE_TIPO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_TIPO" sqlType="STRING"/>
+		<param name="NOMBRE_TIPO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tiposdeempleado">
+		<call-query href="getTiposdeempleadoPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_TIPO" query-param="ID_DE_TIPO"/>
+			<with-param name="NOMBRE_TIPO" query-param="NOMBRE_TIPO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposdeempleadoNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TIPOS_DE_EMPLEADO.COMPANIA, TIPOS_DE_EMPLEADO.ID_DE_TIPO, TIPOS_DE_EMPLEADO.NOMBRE_TIPO  FROM TIPOS_DE_EMPLEADO WHERE TIPOS_DE_EMPLEADO.COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_DE_TIPO IS NULL THEN ' ' ELSE UPPER(ID_DE_TIPO) END)  LIKE UPPER(:ID_DE_TIPO || '%')  AND (CASE WHEN NOMBRE_TIPO IS NULL THEN ' ' ELSE UPPER(NOMBRE_TIPO) END)  LIKE UPPER( '%' || :NOMBRE_TIPO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_TIPO" sqlType="STRING"/>
+		<param name="NOMBRE_TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tiposdeempleado/numero">
+		<call-query href="getTiposdeempleadoNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_TIPO" query-param="ID_DE_TIPO"/>
+			<with-param name="NOMBRE_TIPO" query-param="NOMBRE_TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTiposdeempleado" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TIPOS_DE_EMPLEADO SET ID_DE_TIPO=:ID_DE_TIPO, NOMBRE_TIPO=:NOMBRE_TIPO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TIPOS_DE_EMPLEADO.COMPANIA= :KEY_COMPANIA AND TIPOS_DE_EMPLEADO.ID_DE_TIPO= :KEY_ID_DE_TIPO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ID_DE_TIPO" sqlType="STRING"/>
+		<param name="NOMBRE_TIPO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_DE_TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tiposdeempleado">
+		<call-query href="updateTiposdeempleado">
+			<with-param name="ID_DE_TIPO" query-param="ID_DE_TIPO"/>
+			<with-param name="NOMBRE_TIPO" query-param="NOMBRE_TIPO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_DE_TIPO" query-param="KEY_ID_DE_TIPO"/>
+
+		</call-query>
+	</resource>
+
+</data>

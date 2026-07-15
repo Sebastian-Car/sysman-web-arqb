@@ -1,0 +1,122 @@
+CREATE OR REPLACE TRIGGER "BI_SP_ABONOS" 
+  /*
+      NAME              : BI_SP_ABONOS
+      AUTHORS           : SYSMAN  SAS
+      AUTHOR MIGRACION  : MIGUEL ANGEL ZANGUÑA HURTADO
+      DATE MIGRADOR     : 02/06/2017
+      TIME              : 15:27 PM
+      SOURCE MODULE     :
+      MODIFIER          :
+      DATE MODIFIED     :
+      TIME              : 09:47 AM
+      DESCRIPTION       : Crea y actualiza los abonos y sus respectivos detalles
+
+  */
+FOR INSERT ON SP_ABONOS
+REFERENCING OLD AS OLD NEW AS NEW
+COMPOUND TRIGGER
+
+MI_POS              NUMBER DEFAULT 0;
+MI_RTA              NUMBER DEFAULT 0;
+MI_TABLA           PCK_SUBTIPOS.TI_STRSQL;
+MI_CONDICION       PCK_SUBTIPOS.TI_CONDICION;
+MI_MSGERROR        PCK_SUBTIPOS.TI_CLAVEVALOR;
+
+MI_COMPANIA       SP_ABONOS.COMPANIA%TYPE;
+MI_CICLO          SP_ABONOS.CICLO%TYPE;
+MI_CODIGORUTA     SP_ABONOS.CODIGORUTA%TYPE;
+MI_ANO            SP_ABONOS.ANO%TYPE;
+MI_PERIODO        SP_ABONOS.PERIODO%TYPE;
+MI_CONSECUTIVO    SP_ABONOS.CONSECUTIVO%TYPE;
+MI_VALOR          SP_ABONOS.VALOR%TYPE;
+MI_CREATED_BY     SP_ABONOS.CREATED_BY%TYPE;
+MI_CAMBIOCICLO    SP_USUARIO.CAMBIOCICLORUTA%TYPE;
+MI_PAGOCONVENIOS  SP_ABONOS.PAGOCONVENIOS%TYPE;
+MI_PTERCERIZADO   SP_ABONOS.PAGOTERCERIZADO%TYPE;
+MI_FECHA          DATE;
+MI_BANCO          SP_ABONOS.BANCO%TYPE;
+
+BEFORE EACH ROW IS  --Ejecución antes de cada fila
+BEGIN
+    SELECT CAMBIOCICLORUTA
+    INTO   MI_CAMBIOCICLO
+    FROM   SP_USUARIO
+    WHERE  COMPANIA   = :NEW.COMPANIA
+      AND  CICLO      = :NEW.CICLO
+      AND  CODIGORUTA = :NEW.CODIGORUTA;
+
+    MI_POS := MI_POS +1;
+    --VALIDA POR CADA FILA QUE SE PUEDA INSERTAR
+    MI_RTA :=0;
+    IF MI_CAMBIOCICLO = 0 THEN
+      MI_RTA := PCK_SERVICIOS_PUBLICOS_ABONOS.FC_VALIDARABONO
+                  ( UN_COMPANIA        => :NEW.COMPANIA
+                   ,UN_CODIGORUTA      => :NEW.CODIGORUTA
+                   ,UN_CICLO           => :NEW.CICLO
+                   ,UN_ANO             => :NEW.ANO
+                   ,UN_PERIODO         => :NEW.PERIODO
+                   ,UN_ABONOAUTORIZADO => :NEW.INDAUTORIZADO
+                   ,UN_BANCOABONO      => :NEW.BANCO
+                   ,UN_FECHAABONO      => :NEW.FECHA
+                   ,UN_CONSECUTIVO     => :NEW.CONSECUTIVO
+                   ,UN_PAGOCONVENIO    => :NEW.PAGOCONVENIOS
+                   ,UN_PAGOTERCERIZADO => :NEW.PAGOTERCERIZADO
+                   ,UN_ACCION          => 'INSERTAR'
+                   ,UN_VALORABONO      => :NEW.VALOR
+                  );
+    END IF;
+END BEFORE EACH ROW;
+
+AFTER EACH ROW IS --Ejecución despues de cada fila,
+BEGIN
+  IF MI_RTA <>0 THEN  --Si se permite Insertar.
+      --Registra los detalle de los abonos.
+
+        MI_COMPANIA := :NEW.COMPANIA;
+        MI_CICLO := :NEW.CICLO;
+        MI_CODIGORUTA := :NEW.CODIGORUTA;
+        MI_ANO := :NEW.ANO;
+        MI_PERIODO := :NEW.PERIODO;
+        MI_CONSECUTIVO := :NEW.CONSECUTIVO;
+        MI_VALOR := :NEW.VALOR;
+        MI_CREATED_BY := :NEW.CREATED_BY;
+        MI_PAGOCONVENIOS := :NEW.PAGOCONVENIOS;
+        MI_PTERCERIZADO := :NEW.PAGOTERCERIZADO;
+        MI_FECHA := :NEW.FECHA;
+        MI_BANCO := :NEW.BANCO;
+  END IF;
+
+END AFTER EACH ROW;
+
+AFTER STATEMENT IS --Ejecución despues de una consulta DML
+BEGIN
+  IF MI_RTA <>0 THEN
+    PCK_SERVICIOS_PUBLICOS_ABONOS.PR_REGISTRARABONO
+              ( UN_COMPANIA         => MI_COMPANIA
+               ,UN_CICLO            => MI_CICLO
+               ,UN_CODIGORUTA       => MI_CODIGORUTA
+               ,UN_ANO              => MI_ANO
+               ,UN_PERIODO          => MI_PERIODO
+               ,UN_CONSECUTIVOABONO => MI_CONSECUTIVO
+               ,UN_VALORABONO       => MI_VALOR
+               ,UN_PAGOCONVENIOS    => MI_PAGOCONVENIOS
+               ,UN_PAGOTERCERIZADO  => MI_PTERCERIZADO
+               ,UN_FECHAABONO       => MI_FECHA
+               ,UN_BANCOABONO       => MI_BANCO
+               ,UN_USUARIO          => MI_CREATED_BY );
+
+    PCK_SERVICIOS_PUBLICOS_COM2.PR_CALCULAPRODUCTABO
+        ( UN_COMPANIA      => MI_COMPANIA
+         ,UN_CICLO         => MI_CICLO
+         ,UN_ANO           => MI_ANO
+         ,UN_PERIODO       => MI_PERIODO
+         ,UN_FECHAINI      => MI_FECHA
+         ,UN_FECHAFIN      => MI_FECHA
+         ,UN_USUARIOINI    => MI_CODIGORUTA
+         ,UN_USUARIOFIN    => MI_CODIGORUTA
+        );
+               
+  END IF;
+END AFTER STATEMENT;
+
+END;

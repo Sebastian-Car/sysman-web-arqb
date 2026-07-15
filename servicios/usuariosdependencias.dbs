@@ -1,0 +1,144 @@
+﻿<data name="usuariosdependencias" transports="http https local">
+	<config enableOData="false" id="sysmanirisst">
+		<property name="carbon_datasource_name">SYSMANIRISST</property>
+	</config>
+	<query id="getUsuariosdependenciasTodosPorCompaniaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  DEPENDENCIA.CODIGO, DEPENDENCIA.NOMBRE  FROM DEPENDENCIA WHERE DEPENDENCIA.COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuariosdependencias/todosporcompania">
+		<call-query href="getUsuariosdependenciasTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosdependenciasDependenciaDeUsuarioQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  D.CODIGO, UD.RESPONSABLE, UD.SUCURSAL, D.NOMBRE,(CASE MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO, D.SIGLA,D.CENTRODECOSTO,(CASE COMODATO WHEN 0 THEN 'false' ELSE 'true' END) COMODATO,(CASE ACTIVO WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO,(CASE VERBANCO WHEN 0 THEN 'false' ELSE 'true' END) VERBANCO FROM USUARIO_DEPENDENCIA UD INNER JOIN DEPENDENCIA D ON (UD.COMPANIA=D.COMPANIA AND UD.DEPENDENCIA=D.CODIGO ) WHERE UD.USUARIO=:CODIGO AND UD.COMPANIA=:COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","RESPONSABLE":"$RESPONSABLE","SUCURSAL":"$SUCURSAL","NOMBRE":"$NOMBRE","MOVIMIENTO":"$MOVIMIENTO(type:boolean)","SIGLA":"$SIGLA","CENTRODECOSTO":"$CENTRODECOSTO","COMODATO":"$COMODATO(type:boolean)","ACTIVO":"$ACTIVO(type:boolean)","VERBANCO":"$VERBANCO(type:boolean)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuariosdependencias/dependenciadeusuario">
+		<call-query href="getUsuariosdependenciasDependenciaDeUsuarioQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosdependenciasResponsableAsociadoDeUsuarioQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  UD.RESPONSABLE, UD.SUCURSAL, T.NOMBRE , D.CARGO,(CASE D.JEFEUNIDAD WHEN 0 THEN 'false' ELSE 'true' END) JEFEUNIDAD,(CASE D.ACTIVO_RECEP WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO_RECEP FROM USUARIO_DEPENDENCIA UD INNER JOIN DEPENDENCIA_RESPONSABLE D ON UD.COMPANIA=D.COMPANIA AND UD.DEPENDENCIA=D.DEPENDENCIA AND UD.RESPONSABLE=D.RESPONSABLE AND UD.SUCURSAL =D.SUCURSAL INNER JOIN TERCERO T ON UD.COMPANIA=T.COMPANIA AND UD.RESPONSABLE=T.NIT AND UD.SUCURSAL =T.SUCURSAL WHERE UD.USUARIO=:CODIGO AND UD.COMPANIA=:COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","SUCURSAL":"$SUCURSAL","NOMBRE":"$NOMBRE","CARGO":"$CARGO","JEFEUNIDAD":"$JEFEUNIDAD(type:boolean)","ACTIVO_RECEP":"$ACTIVO_RECEP(type:boolean)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuariosdependencias/responsableasociadodeusuario">
+		<call-query href="getUsuariosdependenciasResponsableAsociadoDeUsuarioQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosdependenciasDependenciaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  DEPENDENCIA  FROM USUARIO_DEPENDENCIA WHERE COMPANIA = :COMPANIA AND USUARIO = :USUARIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DEPENDENCIA":"$DEPENDENCIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuariosdependencias/dependencia">
+		<call-query href="getUsuariosdependenciasDependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertUsuariosdependencias" keyColumns="COMPANIA,USUARIO" returnGeneratedKeys="true" useConfig="sysmanirisst">
+		<sql>INSERT INTO USUARIO_DEPENDENCIA (COMPANIA, USUARIO, DEPENDENCIA, RESPONSABLE, SUCURSAL, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :USUARIO, :DEPENDENCIA, :RESPONSABLE, :SUCURSAL, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_USUARIO":"$USUARIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="usuariosdependencias">
+		<call-query href="insertUsuariosdependencias">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteUsuariosdependencias" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>DELETE FROM USUARIO_DEPENDENCIA WHERE USUARIO_DEPENDENCIA.COMPANIA= :KEY_COMPANIA AND USUARIO_DEPENDENCIA.USUARIO= :KEY_USUARIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_USUARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="usuariosdependencias">
+		<call-query href="deleteUsuariosdependencias">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_USUARIO" query-param="KEY_USUARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosdependenciasPaginaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  UD.COMPANIA, UD.USUARIO , C.NOMBRE NOMBRE_COMPANIA, UD.DEPENDENCIA, D.NOMBRE NOMBRE_DEPENDENCIA, UD.RESPONSABLE, T.NOMBRE NOMBRE_TERCERO, UD.SUCURSAL  FROM USUARIO_DEPENDENCIA UD INNER JOIN COMPANIA C ON C.CODIGO=UD.COMPANIA INNER JOIN DEPENDENCIA D ON (D.COMPANIA=UD.COMPANIA AND D.CODIGO=UD.DEPENDENCIA) INNER JOIN TERCERO T ON (T.COMPANIA=UD.COMPANIA AND T.NIT=UD.RESPONSABLE AND T.SUCURSAL=UD.SUCURSAL) WHERE USUARIO= :USUARIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","USUARIO":"$USUARIO","NOMBRE_COMPANIA":"$NOMBRE_COMPANIA","DEPENDENCIA":"$DEPENDENCIA","NOMBRE_DEPENDENCIA":"$NOMBRE_DEPENDENCIA","RESPONSABLE":"$RESPONSABLE","NOMBRE_TERCERO":"$NOMBRE_TERCERO","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="USUARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuariosdependencias">
+		<call-query href="getUsuariosdependenciasPaginaQuery">
+			<with-param name="USUARIO" query-param="USUARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateUsuariosdependencias" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>UPDATE USUARIO_DEPENDENCIA SET COMPANIA=:COMPANIA, USUARIO=:USUARIO, DEPENDENCIA=:DEPENDENCIA, RESPONSABLE=:RESPONSABLE, SUCURSAL=:SUCURSAL, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE USUARIO_DEPENDENCIA.COMPANIA= :KEY_COMPANIA AND USUARIO_DEPENDENCIA.USUARIO= :KEY_USUARIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_USUARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="usuariosdependencias">
+		<call-query href="updateUsuariosdependencias">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_USUARIO" query-param="KEY_USUARIO"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,188 @@
+﻿<data name="destinosrecursos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getDestinosrecursosTodosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DESTINORECURSOS.CODIGO, DESTINORECURSOS.DESCRIPCION  FROM DESTINORECURSOS WHERE DESTINORECURSOS.COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="destinosrecursos/todos">
+		<call-query href="getDestinosrecursosTodosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDestinosrecursosPagTodosPorCompaniaAnoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DESTINORECURSOS.CODIGO, DESTINORECURSOS.DESCRIPCION  FROM DESTINORECURSOS WHERE DESTINORECURSOS.COMPANIA = :COMPANIA AND DESTINORECURSOS.ANO = :ANO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="destinosrecursos/todosporcompaniaano/pag">
+		<call-query href="getDestinosrecursosPagTodosPorCompaniaAnoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDestinosrecursosNumTodosPorCompaniaAnoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DESTINORECURSOS.CODIGO, DESTINORECURSOS.DESCRIPCION  FROM DESTINORECURSOS WHERE DESTINORECURSOS.COMPANIA = :COMPANIA AND DESTINORECURSOS.ANO = :ANO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="destinosrecursos/todosporcompaniaano/num">
+		<call-query href="getDestinosrecursosNumTodosPorCompaniaAnoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getDestinosrecursosTodosPorAnoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DESTINORECURSOS.CODIGO, DESTINORECURSOS.DESCRIPCION  FROM DESTINORECURSOS WHERE DESTINORECURSOS.COMPANIA = :COMPANIA AND ANO = :ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="destinosrecursos/todosporano">
+		<call-query href="getDestinosrecursosTodosPorAnoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertDestinosrecursos" keyColumns="COMPANIA,CODIGO,ANO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO DESTINORECURSOS (COMPANIA, CODIGO, ANO, DESCRIPCION, CODIGO_R6, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :ANO, :DESCRIPCION, :CODIGO_R6, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO","KEY_ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGO_R6" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="destinosrecursos">
+		<call-query href="insertDestinosrecursos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CODIGO_R6" query-param="CODIGO_R6"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteDestinosrecursos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM DESTINORECURSOS WHERE DESTINORECURSOS.COMPANIA= :KEY_COMPANIA AND DESTINORECURSOS.CODIGO= :KEY_CODIGO AND DESTINORECURSOS.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="destinosrecursos">
+		<call-query href="deleteDestinosrecursos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDestinosrecursosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DESTINORECURSOS.COMPANIA, DESTINORECURSOS.CODIGO, DESTINORECURSOS.ANO, DESTINORECURSOS.DESCRIPCION, DESTINORECURSOS.CODIGO_R6  FROM DESTINORECURSOS WHERE DESTINORECURSOS.COMPANIA = :COMPANIA AND DESTINORECURSOS.ANO = :ANO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN CODIGO_R6 IS NULL THEN ' ' ELSE UPPER(CODIGO_R6) END)  LIKE UPPER( '%' || :CODIGO_R6 || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","ANO":"$ANO(type:integer)","DESCRIPCION":"$DESCRIPCION","CODIGO_R6":"$CODIGO_R6"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="CODIGO_R6" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="destinosrecursos">
+		<call-query href="getDestinosrecursosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CODIGO_R6" query-param="CODIGO_R6"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDestinosrecursosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DESTINORECURSOS.COMPANIA, DESTINORECURSOS.CODIGO, DESTINORECURSOS.ANO, DESTINORECURSOS.DESCRIPCION, DESTINORECURSOS.CODIGO_R6  FROM DESTINORECURSOS WHERE DESTINORECURSOS.COMPANIA = :COMPANIA AND DESTINORECURSOS.ANO = :ANO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN CODIGO_R6 IS NULL THEN ' ' ELSE UPPER(CODIGO_R6) END)  LIKE UPPER( '%' || :CODIGO_R6 || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="CODIGO_R6" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="destinosrecursos/numero">
+		<call-query href="getDestinosrecursosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CODIGO_R6" query-param="CODIGO_R6"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDestinosrecursos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE DESTINORECURSOS SET CODIGO=:CODIGO, DESCRIPCION=:DESCRIPCION, CODIGO_R6=:CODIGO_R6, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE DESTINORECURSOS.COMPANIA= :KEY_COMPANIA AND DESTINORECURSOS.CODIGO= :KEY_CODIGO AND DESTINORECURSOS.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="CODIGO_R6" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="destinosrecursos">
+		<call-query href="updateDestinosrecursos">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CODIGO_R6" query-param="CODIGO_R6"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,174 @@
+﻿<data name="bpequivalencias" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getBpequivalenciasRubroPorSubproyectoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  RUBRO  FROM BP_EQUIVALENCIAS WHERE COMPANIA = :COMPANIA AND SUBPROYECTO = :ID_PLAN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RUBRO":"$RUBRO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_PLAN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bpequivalencias/rubroporsubproyecto">
+		<call-query href="getBpequivalenciasRubroPorSubproyectoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_PLAN" query-param="ID_PLAN"/>
+
+		</call-query>
+	</resource>
+	<query id="insertBpequivalencias" keyColumns="COMPANIA,VIGENCIA_INICIAL,VIGENCIA_META,RUBRO,SUBPROYECTO,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO BP_EQUIVALENCIAS (COMPANIA, CODIGO, VIGENCIA_INICIAL, VIGENCIA_META, RUBRO, PORCENTAJE_PART, PORCENTAJE_PART_OBL, SUBPROYECTO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :VIGENCIA_INICIAL, :VIGENCIA_META, :RUBRO, :PORCENTAJE_PART, :PORCENTAJE_PART_OBL, :SUBPROYECTO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_VIGENCIA_INICIAL":"$VIGENCIA_INICIAL(type:integer)","KEY_VIGENCIA_META":"$VIGENCIA_META(type:integer)","KEY_RUBRO":"$RUBRO","KEY_SUBPROYECTO":"$SUBPROYECTO","KEY_CODIGO":"$CODIGO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="VIGENCIA_INICIAL" sqlType="STRING"/>
+		<param name="VIGENCIA_META" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param defaultValue="0" name="PORCENTAJE_PART" sqlType="STRING"/>
+		<param defaultValue="0" name="PORCENTAJE_PART_OBL" sqlType="STRING"/>
+		<param name="SUBPROYECTO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="bpequivalencias">
+		<call-query href="insertBpequivalencias">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="VIGENCIA_INICIAL" query-param="VIGENCIA_INICIAL"/>
+			<with-param name="VIGENCIA_META" query-param="VIGENCIA_META"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="PORCENTAJE_PART" query-param="PORCENTAJE_PART"/>
+			<with-param name="PORCENTAJE_PART_OBL" query-param="PORCENTAJE_PART_OBL"/>
+			<with-param name="SUBPROYECTO" query-param="SUBPROYECTO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteBpequivalencias" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM BP_EQUIVALENCIAS WHERE BP_EQUIVALENCIAS.COMPANIA= :KEY_COMPANIA AND BP_EQUIVALENCIAS.VIGENCIA_INICIAL= :KEY_VIGENCIA_INICIAL AND BP_EQUIVALENCIAS.VIGENCIA_META= :KEY_VIGENCIA_META AND BP_EQUIVALENCIAS.RUBRO= :KEY_RUBRO AND BP_EQUIVALENCIAS.SUBPROYECTO= :KEY_SUBPROYECTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_VIGENCIA_INICIAL" sqlType="INTEGER"/>
+		<param name="KEY_VIGENCIA_META" sqlType="INTEGER"/>
+		<param name="KEY_RUBRO" sqlType="STRING"/>
+		<param name="KEY_SUBPROYECTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="bpequivalencias">
+		<call-query href="deleteBpequivalencias">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_VIGENCIA_INICIAL" query-param="KEY_VIGENCIA_INICIAL"/>
+			<with-param name="KEY_VIGENCIA_META" query-param="KEY_VIGENCIA_META"/>
+			<with-param name="KEY_RUBRO" query-param="KEY_RUBRO"/>
+			<with-param name="KEY_SUBPROYECTO" query-param="KEY_SUBPROYECTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBpequivalenciasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  EQUIVALENCIAS.COMPANIA, EQUIVALENCIAS.VIGENCIA_INICIAL, EQUIVALENCIAS.VIGENCIA_META, EQUIVALENCIAS.RUBRO, PRE.NOMBRE AS NOMBRERUBRO, EQUIVALENCIAS.CODIGO, EQUIVALENCIAS.SUBPROYECTO, ADQ.DESCRIPCION NOMSUBPROYECTO, EQUIVALENCIAS.PORCENTAJE_PART, EQUIVALENCIAS.PORCENTAJE_PART_OBL  FROM BP_EQUIVALENCIAS EQUIVALENCIAS INNER JOIN BP_PLAN_ADQUISICIONES ADQ ON EQUIVALENCIAS.COMPANIA = ADQ.COMPANIA AND EQUIVALENCIAS.VIGENCIA_INICIAL = ADQ.VIGENCIA_INICIAL AND EQUIVALENCIAS.SUBPROYECTO = ADQ.ID_PLAN AND EQUIVALENCIAS.CODIGO = ADQ.CODIGO LEFT JOIN PLAN_PRESUPUESTAL PRE ON EQUIVALENCIAS.COMPANIA = PRE.COMPANIA AND EQUIVALENCIAS.VIGENCIA_INICIAL = PRE.ANO AND EQUIVALENCIAS.RUBRO = PRE.CODIGO WHERE EQUIVALENCIAS.COMPANIA = :COMPANIA AND EQUIVALENCIAS.VIGENCIA_INICIAL = :VIGENCIA_INICIAL) WHERE (CASE WHEN VIGENCIA_META IS NULL THEN ' ' ELSE UPPER(VIGENCIA_META) END)  LIKE UPPER(:VIGENCIA_META || '%')  AND (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END)  LIKE UPPER(:RUBRO || '%')  AND (CASE WHEN NOMBRERUBRO IS NULL THEN ' ' ELSE UPPER(NOMBRERUBRO) END)  LIKE UPPER( '%' || :NOMBRERUBRO || '%')  AND (CASE WHEN SUBPROYECTO IS NULL THEN ' ' ELSE UPPER(SUBPROYECTO) END)  LIKE UPPER( '%' || :SUBPROYECTO || '%')  AND (CASE WHEN NOMSUBPROYECTO IS NULL THEN ' ' ELSE UPPER(NOMSUBPROYECTO) END)  LIKE UPPER( '%' || :NOMSUBPROYECTO || '%')  AND (CASE WHEN PORCENTAJE_PART IS NULL THEN ' ' ELSE UPPER(PORCENTAJE_PART) END)  LIKE UPPER(:PORCENTAJE_PART || '%')  AND (CASE WHEN PORCENTAJE_PART_OBL IS NULL THEN ' ' ELSE UPPER(PORCENTAJE_PART_OBL) END)  LIKE UPPER(:PORCENTAJE_PART_OBL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","VIGENCIA_INICIAL":"$VIGENCIA_INICIAL(type:integer)","VIGENCIA_META":"$VIGENCIA_META(type:integer)","RUBRO":"$RUBRO","NOMBRERUBRO":"$NOMBRERUBRO","CODIGO":"$CODIGO(type:long)","SUBPROYECTO":"$SUBPROYECTO","NOMSUBPROYECTO":"$NOMSUBPROYECTO","PORCENTAJE_PART":"$PORCENTAJE_PART","PORCENTAJE_PART_OBL":"$PORCENTAJE_PART_OBL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIGENCIA_INICIAL" sqlType="STRING"/>
+		<param name="VIGENCIA_META" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="NOMBRERUBRO" sqlType="STRING"/>
+		<param name="SUBPROYECTO" sqlType="STRING"/>
+		<param name="NOMSUBPROYECTO" sqlType="STRING"/>
+		<param name="PORCENTAJE_PART" sqlType="STRING"/>
+		<param name="PORCENTAJE_PART_OBL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bpequivalencias">
+		<call-query href="getBpequivalenciasPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA_INICIAL" query-param="VIGENCIA_INICIAL"/>
+			<with-param name="VIGENCIA_META" query-param="VIGENCIA_META"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="NOMBRERUBRO" query-param="NOMBRERUBRO"/>
+			<with-param name="SUBPROYECTO" query-param="SUBPROYECTO"/>
+			<with-param name="NOMSUBPROYECTO" query-param="NOMSUBPROYECTO"/>
+			<with-param name="PORCENTAJE_PART" query-param="PORCENTAJE_PART"/>
+			<with-param name="PORCENTAJE_PART_OBL" query-param="PORCENTAJE_PART_OBL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBpequivalenciasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  EQUIVALENCIAS.COMPANIA, EQUIVALENCIAS.VIGENCIA_INICIAL, EQUIVALENCIAS.VIGENCIA_META, EQUIVALENCIAS.RUBRO, PRE.NOMBRE AS NOMBRERUBRO, EQUIVALENCIAS.CODIGO, EQUIVALENCIAS.SUBPROYECTO, ADQ.DESCRIPCION NOMSUBPROYECTO, EQUIVALENCIAS.PORCENTAJE_PART, EQUIVALENCIAS.PORCENTAJE_PART_OBL  FROM BP_EQUIVALENCIAS EQUIVALENCIAS INNER JOIN BP_PLAN_ADQUISICIONES ADQ ON EQUIVALENCIAS.COMPANIA = ADQ.COMPANIA AND EQUIVALENCIAS.VIGENCIA_INICIAL = ADQ.VIGENCIA_INICIAL AND EQUIVALENCIAS.SUBPROYECTO = ADQ.ID_PLAN AND EQUIVALENCIAS.CODIGO = ADQ.CODIGO LEFT JOIN PLAN_PRESUPUESTAL PRE ON EQUIVALENCIAS.COMPANIA = PRE.COMPANIA AND EQUIVALENCIAS.VIGENCIA_INICIAL = PRE.ANO AND EQUIVALENCIAS.RUBRO = PRE.CODIGO WHERE EQUIVALENCIAS.COMPANIA = :COMPANIA AND EQUIVALENCIAS.VIGENCIA_INICIAL = :VIGENCIA_INICIAL) WHERE (CASE WHEN VIGENCIA_META IS NULL THEN ' ' ELSE UPPER(VIGENCIA_META) END)  LIKE UPPER(:VIGENCIA_META || '%')  AND (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END)  LIKE UPPER(:RUBRO || '%')  AND (CASE WHEN NOMBRERUBRO IS NULL THEN ' ' ELSE UPPER(NOMBRERUBRO) END)  LIKE UPPER( '%' || :NOMBRERUBRO || '%')  AND (CASE WHEN SUBPROYECTO IS NULL THEN ' ' ELSE UPPER(SUBPROYECTO) END)  LIKE UPPER( '%' || :SUBPROYECTO || '%')  AND (CASE WHEN NOMSUBPROYECTO IS NULL THEN ' ' ELSE UPPER(NOMSUBPROYECTO) END)  LIKE UPPER( '%' || :NOMSUBPROYECTO || '%')  AND (CASE WHEN PORCENTAJE_PART IS NULL THEN ' ' ELSE UPPER(PORCENTAJE_PART) END)  LIKE UPPER(:PORCENTAJE_PART || '%')  AND (CASE WHEN PORCENTAJE_PART_OBL IS NULL THEN ' ' ELSE UPPER(PORCENTAJE_PART_OBL) END)  LIKE UPPER(:PORCENTAJE_PART_OBL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIGENCIA_INICIAL" sqlType="STRING"/>
+		<param name="VIGENCIA_META" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="NOMBRERUBRO" sqlType="STRING"/>
+		<param name="SUBPROYECTO" sqlType="STRING"/>
+		<param name="NOMSUBPROYECTO" sqlType="STRING"/>
+		<param name="PORCENTAJE_PART" sqlType="STRING"/>
+		<param name="PORCENTAJE_PART_OBL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bpequivalencias/numero">
+		<call-query href="getBpequivalenciasNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA_INICIAL" query-param="VIGENCIA_INICIAL"/>
+			<with-param name="VIGENCIA_META" query-param="VIGENCIA_META"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="NOMBRERUBRO" query-param="NOMBRERUBRO"/>
+			<with-param name="SUBPROYECTO" query-param="SUBPROYECTO"/>
+			<with-param name="NOMSUBPROYECTO" query-param="NOMSUBPROYECTO"/>
+			<with-param name="PORCENTAJE_PART" query-param="PORCENTAJE_PART"/>
+			<with-param name="PORCENTAJE_PART_OBL" query-param="PORCENTAJE_PART_OBL"/>
+
+		</call-query>
+	</resource>
+	<query id="updateBpequivalencias" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE BP_EQUIVALENCIAS SET CODIGO=:CODIGO, VIGENCIA_META=:VIGENCIA_META, RUBRO=:RUBRO, PORCENTAJE_PART=:PORCENTAJE_PART, PORCENTAJE_PART_OBL=:PORCENTAJE_PART_OBL, SUBPROYECTO=:SUBPROYECTO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE BP_EQUIVALENCIAS.COMPANIA= :KEY_COMPANIA AND BP_EQUIVALENCIAS.VIGENCIA_INICIAL= :KEY_VIGENCIA_INICIAL AND BP_EQUIVALENCIAS.VIGENCIA_META= :KEY_VIGENCIA_META AND BP_EQUIVALENCIAS.RUBRO= :KEY_RUBRO AND BP_EQUIVALENCIAS.SUBPROYECTO= :KEY_SUBPROYECTO AND BP_EQUIVALENCIAS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="VIGENCIA_META" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="PORCENTAJE_PART" sqlType="STRING"/>
+		<param name="PORCENTAJE_PART_OBL" sqlType="STRING"/>
+		<param name="SUBPROYECTO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_VIGENCIA_INICIAL" sqlType="STRING"/>
+		<param name="KEY_VIGENCIA_META" sqlType="STRING"/>
+		<param name="KEY_RUBRO" sqlType="STRING"/>
+		<param name="KEY_SUBPROYECTO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="bpequivalencias">
+		<call-query href="updateBpequivalencias">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="VIGENCIA_META" query-param="VIGENCIA_META"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="PORCENTAJE_PART" query-param="PORCENTAJE_PART"/>
+			<with-param name="PORCENTAJE_PART_OBL" query-param="PORCENTAJE_PART_OBL"/>
+			<with-param name="SUBPROYECTO" query-param="SUBPROYECTO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_VIGENCIA_INICIAL" query-param="KEY_VIGENCIA_INICIAL"/>
+			<with-param name="KEY_VIGENCIA_META" query-param="KEY_VIGENCIA_META"/>
+			<with-param name="KEY_RUBRO" query-param="KEY_RUBRO"/>
+			<with-param name="KEY_SUBPROYECTO" query-param="KEY_SUBPROYECTO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

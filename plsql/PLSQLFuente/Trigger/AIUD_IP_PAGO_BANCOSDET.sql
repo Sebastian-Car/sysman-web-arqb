@@ -1,0 +1,92 @@
+CREATE OR REPLACE TRIGGER "AIUD_IP_PAGO_BANCOSDET"  
+/*
+      NAME              : AIUD_IP_PAGO_BANCOSDET
+      AUTHORS           : SYSMAN  SAS
+      AUTHOR MIGRACION  : 
+      DATE MIGRADOR     : 
+      TIME              : 
+      SOURCE MODULE     : 
+      MODIFIER          : JAVIER ANDRES RODRIGUEZ RIOS
+      DATE MODIFIED     : 27/01/2017
+      TIME              : 03:30 PM
+      DESCRIPTION       : CONTROLA EL PROCESO DE REALIZAR UN PAGO. SE AJUSTA AL ESTANDAR
+                          
+*/
+FOR INSERT OR DELETE OR UPDATE ON IP_PAGO_BANCOSDET 
+COMPOUND TRIGGER
+  MI_CUENTA         NUMBER;
+  MI_SUMA           NUMBER;
+  MI_CAMPOS         VARCHAR2(32000);
+  MI_CONDICION      VARCHAR2(32000);
+  TYPE REGISTRO IS RECORD 
+  (
+  COMPANIA                  IP_PAGO_BANCOSDET.COMPANIA%TYPE,
+	PREFEC                    IP_PAGO_BANCOSDET.PREFEC%TYPE,
+	PAQUETE                   IP_PAGO_BANCOSDET.PAQUETE%TYPE,
+	PAG_BAN                   IP_PAGO_BANCOSDET.PAG_BAN%TYPE
+	);  
+  TYPE REGISTROS IS TABLE OF REGISTRO INDEX BY BINARY_INTEGER ;
+  TABLA REGISTROS;
+  POS NUMBER DEFAULT 0;
+AFTER EACH ROW IS
+  BEGIN
+    POS := POS+1;
+    TABLA(POS).COMPANIA                 := :NEW.COMPANIA;
+    TABLA(POS).PREFEC                   := :NEW.PREFEC;
+    TABLA(POS).PAQUETE                  := :NEW.PAQUETE;
+    TABLA(POS).PAG_BAN                  := :NEW.PAG_BAN;
+END AFTER EACH ROW;
+
+AFTER STATEMENT IS
+  BEGIN
+    FOR I IN 1..POS LOOP
+      BEGIN 
+        SELECT  COUNT(*) CUENTA
+               ,NVL(SUM(PREVAL),0) SUMAVALOR
+          INTO MI_CUENTA
+               ,MI_SUMA
+          FROM IP_PAGO_BANCOSDET
+         WHERE COMPANIA = TABLA(I).COMPANIA
+           AND PREFEC   = TABLA(I).PREFEC
+           AND PAQUETE  = TABLA(I).PAQUETE
+           AND PAG_BAN  = TABLA(I).PAG_BAN;
+      EXCEPTION WHEN NO_DATA_FOUND THEN 
+        MI_CUENTA := 0;
+        MI_SUMA   := 0;
+      END;
+     MI_CAMPOS:='NROCUPONESACU = '||MI_CUENTA||', ACUMULADO='||MI_SUMA;
+     MI_CONDICION := 'COMPANIA = '''||TABLA(I).COMPANIA||''' AND PREFEC=TO_DATE('''
+                                  ||TO_CHAR(TABLA(I).PREFEC,'DD/MM/YYYY')||''',''DD/MM/YYYY'') AND PAQUETE='''
+                                  ||TABLA(I).PAQUETE||''' AND PAG_BAN='''
+                                  ||TABLA(I).PAG_BAN||'''';
+     DECLARE
+       MI_REEMPLAZOS PCK_SUBTIPOS.TI_CLAVEVALOR;
+     BEGIN 
+       BEGIN 
+         PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME ( UN_TABLA     => 'IP_PAGO_BANCOSCAB'
+                                                ,UN_ACCION    => 'M'
+                                                ,UN_CAMPOS    => MI_CAMPOS
+                                                ,UN_CONDICION => MI_CONDICION
+                                                );     
+       EXCEPTION WHEN PCK_EXCEPCIONES.EXC_ACTUALIZAR THEN
+         MI_REEMPLAZOS(0).CLAVE := 'FECHA';
+         MI_REEMPLAZOS(0).VALOR := TO_CHAR(TABLA(I).PREFEC,'DD/MM/YYYY');
+         MI_REEMPLAZOS(1).CLAVE := 'PAQUETE';
+         MI_REEMPLAZOS(1).VALOR := TABLA(I).PAQUETE;
+         MI_REEMPLAZOS(1).CLAVE := 'BANCO';
+         MI_REEMPLAZOS(1).VALOR := TABLA(I).PAG_BAN;
+         RAISE PCK_EXCEPCIONES.EXC_PREDIAL;
+       END;
+     EXCEPTION WHEN PCK_EXCEPCIONES.EXC_PREDIAL THEN
+       PCK_ERR_MSG.RAISE_WITH_MSG(
+                    UN_EXC_COD    => SQLCODE
+                   ,UN_TABLAERROR => 'IP_PAGO_BANCOSCAB'
+                   ,UN_ERROR_COD  => PCK_ERRORES.ERRR_PREDIAL_ACT_PAGO
+                   ,UN_REEMPLAZOS => MI_REEMPLAZOS
+                   );
+     END;
+    END LOOP;
+  --EXCEPTION WHEN OTHERS THEN
+  --RAISE_APPLICATION_ERROR(-20000,'NO SE PERMITE ACTUALIZAR EL REGISTRO POR EL ERROR '||SQLERRM);
+END AFTER STATEMENT;
+END;

@@ -1,0 +1,55 @@
+CREATE OR REPLACE TRIGGER "AU_PLAN_PRESUPUESTAL_IND"  
+/*  
+      NAME              : AU_PLAN_PRESUPUESTAL_IND
+      AUTHORS           : SYSMAN  SAS
+      AUTHOR MIGRACION  : 
+      DATE MIGRADOR     : 
+      TIME              : 
+      SOURCE MODULE     : 
+      MODIFIER          : JAVIER ANDRES RODRIGUEZ RIOS
+      DATE MODIFIED     : 31/01/2017
+      TIME              : 08:15 AM
+      DESCRIPTION       : SE AJUSTA AL ESTANDAR
+                          
+*/
+FOR UPDATE OF  MOVIMIENTO
+              ,MAN_AUX_FUE
+              ,MAN_AUX_REF
+              ,MAN_AUX_GEN
+              ,MAN_CEN_CTO
+              ,MAN_AUX_TER 
+ON PLAN_PRESUPUESTAL  
+REFERENCING OLD AS OLD NEW AS NEW
+COMPOUND TRIGGER 
+   TYPE REGISTRO IS RECORD 
+  (
+  COMPANIA            PCK_SUBTIPOS.TI_COMPANIA,
+  ANO                 PCK_SUBTIPOS.TI_ANIO,
+  CODIGO              PCK_SUBTIPOS.TI_CODIGOPPTAL
+	);  
+  TYPE REGISTROS IS TABLE OF REGISTRO INDEX BY BINARY_INTEGER ;
+  TABLACT REGISTROS;
+  MI_POSACT NUMBER DEFAULT 0;
+  
+AFTER EACH ROW IS
+BEGIN
+
+ IF UPDATING THEN      
+       MI_POSACT := MI_POSACT+1;
+       TABLACT(MI_POSACT).COMPANIA            := :NEW.COMPANIA;
+       TABLACT(MI_POSACT).ANO                 := :NEW.ANO;
+       TABLACT(MI_POSACT).CODIGO              := :NEW.CODIGO; 
+  END IF;
+        
+END AFTER EACH ROW;
+
+AFTER STATEMENT IS
+  BEGIN
+   FOR i IN 1..MI_POSACT LOOP
+     PCK_PRESUPUESTO.PR_LIMPIA_SALDO_AUX_PPTAL(UN_COMPANIA      => TABLACT(i).COMPANIA,
+                                               UN_ANIO          => TABLACT(i).ANO,
+                                               UN_CODIGOINICIAL	=> TABLACT(i).CODIGO,
+                                               UN_CODIGOFINAL 	=> TABLACT(i).CODIGO);
+   END LOOP;
+  END AFTER STATEMENT;
+END;

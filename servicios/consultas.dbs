@@ -1,0 +1,74 @@
+﻿<data name="consultas" transports="http https local">
+	<config enableOData="false" id="sysmanirisst">
+		<property name="carbon_datasource_name">SYSMANIRISST</property>
+	</config>
+	<query id="getConsultasInformeQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  INFORME, CONSULTA, APLICACION  FROM CONSULTAS WHERE UPPER(INFORME) LIKE :INFORME</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"INFORME":"$INFORME","CONSULTA":"$CONSULTA","APLICACION":"$APLICACION(type:integer)"}]}}		</result>
+		<param name="INFORME" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="consultas/informe">
+		<call-query href="getConsultasInformeQuery">
+			<with-param name="INFORME" query-param="INFORME"/>
+
+		</call-query>
+	</resource>
+	<query id="getConsultasSubinformesQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  CONSULTAS.INFORME, CONSULTAS.CONSULTA, CONSULTAS_SUB.PARAMETRO  FROM CONSULTAS INNER JOIN CONSULTAS_SUB ON CONSULTAS.INFORME = CONSULTAS_SUB.INFORME_HIJO WHERE UPPER(CONSULTAS_SUB.INFORME_PADRE)= :INFORME</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"INFORME":"$INFORME","CONSULTA":"$CONSULTA","PARAMETRO":"$PARAMETRO"}]}}		</result>
+		<param name="INFORME" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="consultas/subinformes">
+		<call-query href="getConsultasSubinformesQuery">
+			<with-param name="INFORME" query-param="INFORME"/>
+
+		</call-query>
+	</resource>
+	<query id="getConsultasPoraplicacionQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  TO_CHAR(APLICACION) APLICACION  FROM CONSULTAS WHERE INFORME LIKE :INFORME</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"APLICACION":"$APLICACION"}]}}		</result>
+		<param name="INFORME" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="consultas/poraplicacion">
+		<call-query href="getConsultasPoraplicacionQuery">
+			<with-param name="INFORME" query-param="INFORME"/>
+
+		</call-query>
+	</resource>
+    <query id="getConsultasPagGetconsultaxmoduloQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT INFORME FROM CONSULTAS WHERE APLICACION = :APLICACION) INI WHERE (CASE WHEN INFORME IS NULL THEN ' ' ELSE UPPER(INFORME) END) LIKE UPPER(CONCAT(:INFORME, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"INFORME":"$INFORME"}]}}		</result>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="INFORME" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="consultas/getconsultaxmodulo/pag">
+		<call-query href="getConsultasPagGetconsultaxmoduloQuery">
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="INFORME" query-param="INFORME"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getConsultasNumGetconsultaxmoduloQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT INFORME FROM CONSULTAS WHERE APLICACION = :APLICACION) INI WHERE (CASE WHEN INFORME IS NULL THEN ' ' ELSE UPPER(INFORME) END) LIKE UPPER(CONCAT(:INFORME, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="INFORME" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="consultas/getconsultaxmodulo/num">
+		<call-query href="getConsultasNumGetconsultaxmoduloQuery">
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="INFORME" query-param="INFORME"/>
+
+		</call-query>
+	</resource>
+
+</data>

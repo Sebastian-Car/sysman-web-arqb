@@ -1,0 +1,539 @@
+﻿<data name="barrios" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getBarriosCodigoynombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  BARRIOS.CODIGO, BARRIOS.NOMBRE  FROM BARRIOS</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="barrios/codigoynombre">
+		<call-query href="getBarriosCodigoynombreQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getBarriosTodosSinNullQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  BARRIOS.CODIGO, BARRIOS.NOMBRE  FROM BARRIOS WHERE PAIS = :PAIS AND DEPARTAMENTO = :DEPARTAMENTO AND CIUDAD = :CIUDAD AND NOMBRE IS NOT NULL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="barrios/todossinnull">
+		<call-query href="getBarriosTodosSinNullQuery">
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosPagIncentivosEconomicosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  PAIS, DEPARTAMENTO, CIUDAD, CODIGO, NOMBRE,(CASE APLICAINCENTIVO WHEN 0 THEN 'false' ELSE 'true' END) APLICAINCENTIVO FROM BARRIOS ORDER BY NOMBRE) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN APLICAINCENTIVO IS NULL THEN ' ' ELSE UPPER(APLICAINCENTIVO) END)  LIKE UPPER(:APLICAINCENTIVO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAIS":"$PAIS","DEPARTAMENTO":"$DEPARTAMENTO","CIUDAD":"$CIUDAD","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","APLICAINCENTIVO":"$APLICAINCENTIVO(type:boolean)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="APLICAINCENTIVO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="barrios/incentivoseconomicos/pag">
+		<call-query href="getBarriosPagIncentivosEconomicosQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="APLICAINCENTIVO" query-param="APLICAINCENTIVO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosNumIncentivosEconomicosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  PAIS, DEPARTAMENTO, CIUDAD, CODIGO, NOMBRE,(CASE APLICAINCENTIVO WHEN 0 THEN 'false' ELSE 'true' END) APLICAINCENTIVO FROM BARRIOS ORDER BY NOMBRE) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN APLICAINCENTIVO IS NULL THEN ' ' ELSE UPPER(APLICAINCENTIVO) END)  LIKE UPPER( '%' || :APLICAINCENTIVO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="APLICAINCENTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="barrios/incentivoseconomicos/num">
+		<call-query href="getBarriosNumIncentivosEconomicosQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="APLICAINCENTIVO" query-param="APLICAINCENTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateBarriosIncentivosEconomicos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE BARRIOS SET APLICAINCENTIVO=:APLICAINCENTIVO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE BARRIOS.PAIS= :KEY_PAIS AND BARRIOS.DEPARTAMENTO= :KEY_DEPARTAMENTO AND BARRIOS.CIUDAD= :KEY_CIUDAD AND BARRIOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="APLICAINCENTIVO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_PAIS" sqlType="STRING"/>
+		<param name="KEY_DEPARTAMENTO" sqlType="STRING"/>
+		<param name="KEY_CIUDAD" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="barrios/incentivoseconomicos">
+		<call-query href="updateBarriosIncentivosEconomicos">
+			<with-param name="APLICAINCENTIVO" query-param="APLICAINCENTIVO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_PAIS" query-param="KEY_PAIS"/>
+			<with-param name="KEY_DEPARTAMENTO" query-param="KEY_DEPARTAMENTO"/>
+			<with-param name="KEY_CIUDAD" query-param="KEY_CIUDAD"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosPagTodosPorBarrioInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT BARRIOS.CODIGO, BARRIOS.NOMBRE  FROM BARRIOS INNER JOIN COMPANIA ON BARRIOS.PAIS =COMPANIA.PAIS AND BARRIOS.DEPARTAMENTO=COMPANIA.DEPARTAMENTO AND BARRIOS.CIUDAD =COMPANIA.CIUDAD WHERE COMPANIA.CODIGO = :COMPANIA ORDER BY BARRIOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="barrios/todosporbarrioinicial/pag">
+		<call-query href="getBarriosPagTodosPorBarrioInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosNumTodosPorBarrioInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT BARRIOS.CODIGO, BARRIOS.NOMBRE  FROM BARRIOS INNER JOIN COMPANIA ON BARRIOS.PAIS =COMPANIA.PAIS AND BARRIOS.DEPARTAMENTO=COMPANIA.DEPARTAMENTO AND BARRIOS.CIUDAD =COMPANIA.CIUDAD WHERE COMPANIA.CODIGO = :COMPANIA ORDER BY BARRIOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="barrios/todosporbarrioinicial/num">
+		<call-query href="getBarriosNumTodosPorBarrioInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosPagTodosPorBarrioFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT BARRIOS.CODIGO, BARRIOS.NOMBRE  FROM BARRIOS INNER JOIN COMPANIA ON BARRIOS.PAIS =COMPANIA.PAIS AND BARRIOS.DEPARTAMENTO=COMPANIA.DEPARTAMENTO AND BARRIOS.CIUDAD =COMPANIA.CIUDAD WHERE COMPANIA.CODIGO = :COMPANIA AND BARRIOS.CODIGO &gt;= :CODIGO_BARRIO ORDER BY BARRIOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_BARRIO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="barrios/todosporbarriofinal/pag">
+		<call-query href="getBarriosPagTodosPorBarrioFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_BARRIO" query-param="CODIGO_BARRIO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosNumTodosPorBarrioFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT BARRIOS.CODIGO, BARRIOS.NOMBRE  FROM BARRIOS INNER JOIN COMPANIA ON BARRIOS.PAIS =COMPANIA.PAIS AND BARRIOS.DEPARTAMENTO=COMPANIA.DEPARTAMENTO AND BARRIOS.CIUDAD =COMPANIA.CIUDAD WHERE COMPANIA.CODIGO = :COMPANIA AND BARRIOS.CODIGO &gt;= :CODIGO_BARRIO ORDER BY BARRIOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_BARRIO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="barrios/todosporbarriofinal/num">
+		<call-query href="getBarriosNumTodosPorBarrioFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_BARRIO" query-param="CODIGO_BARRIO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertBarrios" keyColumns="PAIS,DEPARTAMENTO,CIUDAD,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO BARRIOS (CODIGO, PAIS, DEPARTAMENTO, CIUDAD, NOMBRE, TIPODIVISION, CODIGOASOCIACION, CODIGODANE, SECTOR, DATE_CREATED, CREATED_BY) VALUES (:CODIGO, :PAIS, :DEPARTAMENTO, :CIUDAD, :NOMBRE, :TIPODIVISION, :CODIGOASOCIACION, :CODIGODANE, :SECTOR, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_PAIS":"$PAIS","KEY_DEPARTAMENTO":"$DEPARTAMENTO","KEY_CIUDAD":"$CIUDAD","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="TIPODIVISION" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOASOCIACION" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGODANE" sqlType="STRING"/>
+		<param defaultValue="" name="SECTOR" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="barrios">
+		<call-query href="insertBarrios">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPODIVISION" query-param="TIPODIVISION"/>
+			<with-param name="CODIGOASOCIACION" query-param="CODIGOASOCIACION"/>
+			<with-param name="CODIGODANE" query-param="CODIGODANE"/>
+			<with-param name="SECTOR" query-param="SECTOR"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteBarrios" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM BARRIOS WHERE BARRIOS.PAIS= :KEY_PAIS AND BARRIOS.DEPARTAMENTO= :KEY_DEPARTAMENTO AND BARRIOS.CIUDAD= :KEY_CIUDAD AND BARRIOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_PAIS" sqlType="STRING"/>
+		<param name="KEY_DEPARTAMENTO" sqlType="STRING"/>
+		<param name="KEY_CIUDAD" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="barrios">
+		<call-query href="deleteBarrios">
+			<with-param name="KEY_PAIS" query-param="KEY_PAIS"/>
+			<with-param name="KEY_DEPARTAMENTO" query-param="KEY_DEPARTAMENTO"/>
+			<with-param name="KEY_CIUDAD" query-param="KEY_CIUDAD"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  B.CODIGO, B.PAIS, B.DEPARTAMENTO, B.CIUDAD, B.NOMBRE, B.TIPODIVISION, T.NOMBRE NOMBREDIVISION, B.CODIGOASOCIACION, AM.NOMBRE NOMBREASOCIACION, B.CODIGODANE, CASE WHEN B.SECTOR = 'UR' THEN 'URBANO' ELSE CASE WHEN B.SECTOR = 'RU' THEN 'RURAL' END END SECTORLB, B.SECTOR  FROM BARRIOS B LEFT JOIN TIPOSDIVISION T ON B.TIPODIVISION = T.CODIGO LEFT JOIN ASOCIACIONESMUNICIPALES AM ON B.CODIGOASOCIACION = AM.CODIGO WHERE PAIS = :PAIS AND DEPARTAMENTO = :DEPARTAMENTO AND CIUDAD = :CIUDAD ORDER BY TO_NUMBER(CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NOMBREDIVISION IS NULL THEN ' ' ELSE UPPER(NOMBREDIVISION) END)  LIKE UPPER( '%' || :NOMBREDIVISION || '%')  AND (CASE WHEN NOMBREASOCIACION IS NULL THEN ' ' ELSE UPPER(NOMBREASOCIACION) END)  LIKE UPPER( '%' || :NOMBREASOCIACION || '%')  AND (CASE WHEN CODIGODANE IS NULL THEN ' ' ELSE UPPER(CODIGODANE) END)  LIKE UPPER( '%' || :CODIGODANE || '%')  AND (CASE WHEN SECTORLB IS NULL THEN ' ' ELSE UPPER(SECTORLB) END)  LIKE UPPER( '%' || :SECTORLB || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","PAIS":"$PAIS","DEPARTAMENTO":"$DEPARTAMENTO","CIUDAD":"$CIUDAD","NOMBRE":"$NOMBRE","TIPODIVISION":"$TIPODIVISION","NOMBREDIVISION":"$NOMBREDIVISION","CODIGOASOCIACION":"$CODIGOASOCIACION","NOMBREASOCIACION":"$NOMBREASOCIACION","CODIGODANE":"$CODIGODANE","SECTORLB":"$SECTORLB","SECTOR":"$SECTOR"}]}}		</result>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBREDIVISION" sqlType="STRING"/>
+		<param name="NOMBREASOCIACION" sqlType="STRING"/>
+		<param name="CODIGODANE" sqlType="STRING"/>
+		<param name="SECTORLB" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="barrios">
+		<call-query href="getBarriosPaginaQuery">
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBREDIVISION" query-param="NOMBREDIVISION"/>
+			<with-param name="NOMBREASOCIACION" query-param="NOMBREASOCIACION"/>
+			<with-param name="CODIGODANE" query-param="CODIGODANE"/>
+			<with-param name="SECTORLB" query-param="SECTORLB"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  B.CODIGO, B.PAIS, B.DEPARTAMENTO, B.CIUDAD, B.NOMBRE, B.TIPODIVISION, T.NOMBRE NOMBREDIVISION, B.CODIGOASOCIACION, AM.NOMBRE NOMBREASOCIACION, B.CODIGODANE, CASE WHEN B.SECTOR = 'UR' THEN 'URBANO' ELSE CASE WHEN B.SECTOR = 'RU' THEN 'RURAL' END END SECTORLB, B.SECTOR  FROM BARRIOS B LEFT JOIN TIPOSDIVISION T ON B.TIPODIVISION = T.CODIGO LEFT JOIN ASOCIACIONESMUNICIPALES AM ON B.CODIGOASOCIACION = AM.CODIGO WHERE PAIS = :PAIS AND DEPARTAMENTO = :DEPARTAMENTO AND CIUDAD = :CIUDAD ORDER BY TO_NUMBER(CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NOMBREDIVISION IS NULL THEN ' ' ELSE UPPER(NOMBREDIVISION) END)  LIKE UPPER( '%' || :NOMBREDIVISION || '%')  AND (CASE WHEN NOMBREASOCIACION IS NULL THEN ' ' ELSE UPPER(NOMBREASOCIACION) END)  LIKE UPPER( '%' || :NOMBREASOCIACION || '%')  AND (CASE WHEN CODIGODANE IS NULL THEN ' ' ELSE UPPER(CODIGODANE) END)  LIKE UPPER( '%' || :CODIGODANE || '%')  AND (CASE WHEN SECTORLB IS NULL THEN ' ' ELSE UPPER(SECTORLB) END)  LIKE UPPER( '%' || :SECTORLB || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBREDIVISION" sqlType="STRING"/>
+		<param name="NOMBREASOCIACION" sqlType="STRING"/>
+		<param name="CODIGODANE" sqlType="STRING"/>
+		<param name="SECTORLB" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="barrios/numero">
+		<call-query href="getBarriosNumeroQuery">
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBREDIVISION" query-param="NOMBREDIVISION"/>
+			<with-param name="NOMBREASOCIACION" query-param="NOMBREASOCIACION"/>
+			<with-param name="CODIGODANE" query-param="CODIGODANE"/>
+			<with-param name="SECTORLB" query-param="SECTORLB"/>
+
+		</call-query>
+	</resource>
+	<query id="updateBarrios" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE BARRIOS SET CODIGO=:CODIGO, PAIS=:PAIS, DEPARTAMENTO=:DEPARTAMENTO, CIUDAD=:CIUDAD, NOMBRE=:NOMBRE, TIPODIVISION=:TIPODIVISION, CODIGOASOCIACION=:CODIGOASOCIACION, CODIGODANE=:CODIGODANE, SECTOR=:SECTOR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE BARRIOS.PAIS= :KEY_PAIS AND BARRIOS.DEPARTAMENTO= :KEY_DEPARTAMENTO AND BARRIOS.CIUDAD= :KEY_CIUDAD AND BARRIOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TIPODIVISION" sqlType="STRING"/>
+		<param name="CODIGOASOCIACION" sqlType="STRING"/>
+		<param name="CODIGODANE" sqlType="STRING"/>
+		<param name="SECTOR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_PAIS" sqlType="STRING"/>
+		<param name="KEY_DEPARTAMENTO" sqlType="STRING"/>
+		<param name="KEY_CIUDAD" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="barrios">
+		<call-query href="updateBarrios">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPODIVISION" query-param="TIPODIVISION"/>
+			<with-param name="CODIGOASOCIACION" query-param="CODIGOASOCIACION"/>
+			<with-param name="CODIGODANE" query-param="CODIGODANE"/>
+			<with-param name="SECTOR" query-param="SECTOR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_PAIS" query-param="KEY_PAIS"/>
+			<with-param name="KEY_DEPARTAMENTO" query-param="KEY_DEPARTAMENTO"/>
+			<with-param name="KEY_CIUDAD" query-param="KEY_CIUDAD"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosPagTodosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT BARRIOS.CODIGO, BARRIOS.NOMBRE  FROM BARRIOS ORDER BY BARRIOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="barrios/todos/pag">
+		<call-query href="getBarriosPagTodosQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosNumTodosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT BARRIOS.CODIGO, BARRIOS.NOMBRE  FROM BARRIOS ORDER BY BARRIOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="barrios/todos/num">
+		<call-query href="getBarriosNumTodosQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosPagTodosFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT BARRIOS.CODIGO, BARRIOS.NOMBRE  FROM BARRIOS WHERE BARRIOS.CODIGO &gt;= :CODIGOINICIAL ORDER BY BARRIOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="barrios/todosfinal/pag">
+		<call-query href="getBarriosPagTodosFinalQuery">
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosNumTodosFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT BARRIOS.CODIGO, BARRIOS.NOMBRE  FROM BARRIOS WHERE BARRIOS.CODIGO &gt;= :CODIGOINICIAL ORDER BY BARRIOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="barrios/todosfinal/num">
+		<call-query href="getBarriosNumTodosFinalQuery">
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosTodosPorPaisDepartamentoCiudadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO, NOMBRE  FROM BARRIOS WHERE PAIS = :PAIS AND DEPARTAMENTO = :DEPARTAMENTO AND CIUDAD = :CIUDAD</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="barrios/todosporpaisdepartamentociudad">
+		<call-query href="getBarriosTodosPorPaisDepartamentoCiudadQuery">
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosPagPorpaisdptociudadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  BARRIOS.CODIGO, BARRIOS.NOMBRE  FROM BARRIOS WHERE BARRIOS.PAIS = :PAIS AND BARRIOS.DEPARTAMENTO = :DEPARTAMENTO AND BARRIOS.CIUDAD = :CIUDAD ORDER BY BARRIOS.NOMBRE) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="barrios/porpaisdptociudad/pag">
+		<call-query href="getBarriosPagPorpaisdptociudadQuery">
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosNumPorpaisdptociudadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  BARRIOS.CODIGO, BARRIOS.NOMBRE  FROM BARRIOS WHERE BARRIOS.PAIS = :PAIS AND BARRIOS.DEPARTAMENTO = :DEPARTAMENTO AND BARRIOS.CIUDAD = :CIUDAD ORDER BY BARRIOS.NOMBRE) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="barrios/porpaisdptociudad/num">
+		<call-query href="getBarriosNumPorpaisdptociudadQuery">
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosTodosLosBarriosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT 'X' CODIGO, 'TODAS' NOMBRE  FROM BARRIOS UNION SELECT BARRIOS.CODIGO, BARRIOS.NOMBRE FROM BARRIOS WHERE BARRIOS.PAIS = :PAIS AND BARRIOS.DEPARTAMENTO = :DEPARTAMENTO AND BARRIOS.CIUDAD = :CIUDAD ORDER BY NOMBRE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="barrios/todoslosbarrios">
+		<call-query href="getBarriosTodosLosBarriosQuery">
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosTodosOrdenadosPorNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  BARRIOS.CODIGO, BARRIOS.NOMBRE  FROM BARRIOS WHERE BARRIOS.PAIS = :PAIS AND BARRIOS.DEPARTAMENTO = :DEPARTAMENTO AND BARRIOS.CIUDAD = :CIUDAD ORDER BY BARRIOS.NOMBRE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="barrios/todosordenadospornombre">
+		<call-query href="getBarriosTodosOrdenadosPorNombreQuery">
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosPagNombrePorPaisDepartamentoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT BARRIOS.CODIGO, BARRIOS.NOMBRE, BARRIOS.SECTOR, BARRIOS.CODIGOASOCIACION  FROM BARRIOS WHERE BARRIOS.PAIS = :PAIS AND BARRIOS.DEPARTAMENTO = :DEPARTAMENTO AND BARRIOS.CIUDAD = :CIUDAD ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SECTOR IS NULL THEN ' ' ELSE UPPER(SECTOR) END)  LIKE UPPER( '%' || :SECTOR || '%')  AND (CASE WHEN CODIGOASOCIACION IS NULL THEN ' ' ELSE UPPER(CODIGOASOCIACION) END)  LIKE UPPER( '%' || :CODIGOASOCIACION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","SECTOR":"$SECTOR","CODIGOASOCIACION":"$CODIGOASOCIACION"}]}}		</result>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SECTOR" sqlType="STRING"/>
+		<param name="CODIGOASOCIACION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="barrios/nombreporpaisdepartamento/pag">
+		<call-query href="getBarriosPagNombrePorPaisDepartamentoQuery">
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SECTOR" query-param="SECTOR"/>
+			<with-param name="CODIGOASOCIACION" query-param="CODIGOASOCIACION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBarriosNumNombrePorPaisDepartamentoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT BARRIOS.CODIGO, BARRIOS.NOMBRE, BARRIOS.SECTOR, BARRIOS.CODIGOASOCIACION  FROM BARRIOS WHERE BARRIOS.PAIS = :PAIS AND BARRIOS.DEPARTAMENTO = :DEPARTAMENTO AND BARRIOS.CIUDAD = :CIUDAD ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SECTOR IS NULL THEN ' ' ELSE UPPER(SECTOR) END)  LIKE UPPER( '%' || :SECTOR || '%')  AND (CASE WHEN CODIGOASOCIACION IS NULL THEN ' ' ELSE UPPER(CODIGOASOCIACION) END)  LIKE UPPER( '%' || :CODIGOASOCIACION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SECTOR" sqlType="STRING"/>
+		<param name="CODIGOASOCIACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="barrios/nombreporpaisdepartamento/num">
+		<call-query href="getBarriosNumNombrePorPaisDepartamentoQuery">
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SECTOR" query-param="SECTOR"/>
+			<with-param name="CODIGOASOCIACION" query-param="CODIGOASOCIACION"/>
+
+		</call-query>
+	</resource>
+
+</data>

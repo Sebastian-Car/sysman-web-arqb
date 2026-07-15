@@ -1,0 +1,138 @@
+﻿<data name="bpnivelcumplimiento" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getBpnivelcumplimientoTodasPorVigenciasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT VIGENCIA  FROM BP_NIVEL_CUMPLIMIENTO WHERE BP_NIVEL_CUMPLIMIENTO.COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VIGENCIA":"$VIGENCIA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bpnivelcumplimiento/todasporvigencias">
+		<call-query href="getBpnivelcumplimientoTodasPorVigenciasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertBpnivelcumplimiento" keyColumns="COMPANIA,VIGENCIA,LIM_SUPERIOR,LIM_INFERIOR" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO BP_NIVEL_CUMPLIMIENTO (COMPANIA, VIGENCIA, LIM_SUPERIOR, LIM_INFERIOR, NIVEL_CUMPLI, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :VIGENCIA, :LIM_SUPERIOR, :LIM_INFERIOR, :NIVEL_CUMPLI, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_VIGENCIA":"$VIGENCIA(type:integer)","KEY_LIM_SUPERIOR":"$LIM_SUPERIOR(type:integer)","KEY_LIM_INFERIOR":"$LIM_INFERIOR(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="0" name="VIGENCIA" sqlType="STRING"/>
+		<param defaultValue="0" name="LIM_SUPERIOR" sqlType="STRING"/>
+		<param defaultValue="0" name="LIM_INFERIOR" sqlType="STRING"/>
+		<param name="NIVEL_CUMPLI" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="bpnivelcumplimiento">
+		<call-query href="insertBpnivelcumplimiento">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="LIM_SUPERIOR" query-param="LIM_SUPERIOR"/>
+			<with-param name="LIM_INFERIOR" query-param="LIM_INFERIOR"/>
+			<with-param name="NIVEL_CUMPLI" query-param="NIVEL_CUMPLI"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteBpnivelcumplimiento" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM BP_NIVEL_CUMPLIMIENTO WHERE BP_NIVEL_CUMPLIMIENTO.COMPANIA= :KEY_COMPANIA AND BP_NIVEL_CUMPLIMIENTO.VIGENCIA= :KEY_VIGENCIA AND BP_NIVEL_CUMPLIMIENTO.LIM_SUPERIOR= :KEY_LIM_SUPERIOR AND BP_NIVEL_CUMPLIMIENTO.LIM_INFERIOR= :KEY_LIM_INFERIOR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_VIGENCIA" sqlType="INTEGER"/>
+		<param name="KEY_LIM_SUPERIOR" sqlType="INTEGER"/>
+		<param name="KEY_LIM_INFERIOR" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="bpnivelcumplimiento">
+		<call-query href="deleteBpnivelcumplimiento">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_VIGENCIA" query-param="KEY_VIGENCIA"/>
+			<with-param name="KEY_LIM_SUPERIOR" query-param="KEY_LIM_SUPERIOR"/>
+			<with-param name="KEY_LIM_INFERIOR" query-param="KEY_LIM_INFERIOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getBpnivelcumplimientoPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, VIGENCIA, LIM_SUPERIOR, LIM_INFERIOR, NIVEL_CUMPLI  FROM BP_NIVEL_CUMPLIMIENTO WHERE COMPANIA = :COMPANIA AND VIGENCIA = :ANO) WHERE (CASE WHEN LIM_SUPERIOR IS NULL THEN ' ' ELSE UPPER(LIM_SUPERIOR) END)  LIKE UPPER(:LIM_SUPERIOR || '%')  AND (CASE WHEN LIM_INFERIOR IS NULL THEN ' ' ELSE UPPER(LIM_INFERIOR) END)  LIKE UPPER(:LIM_INFERIOR || '%')  AND (CASE WHEN NIVEL_CUMPLI IS NULL THEN ' ' ELSE UPPER(NIVEL_CUMPLI) END)  LIKE UPPER( '%' || :NIVEL_CUMPLI || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","VIGENCIA":"$VIGENCIA(type:integer)","LIM_SUPERIOR":"$LIM_SUPERIOR(type:integer)","LIM_INFERIOR":"$LIM_INFERIOR(type:integer)","NIVEL_CUMPLI":"$NIVEL_CUMPLI"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="LIM_SUPERIOR" sqlType="STRING"/>
+		<param name="LIM_INFERIOR" sqlType="STRING"/>
+		<param name="NIVEL_CUMPLI" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bpnivelcumplimiento">
+		<call-query href="getBpnivelcumplimientoPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="LIM_SUPERIOR" query-param="LIM_SUPERIOR"/>
+			<with-param name="LIM_INFERIOR" query-param="LIM_INFERIOR"/>
+			<with-param name="NIVEL_CUMPLI" query-param="NIVEL_CUMPLI"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBpnivelcumplimientoNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, VIGENCIA, LIM_SUPERIOR, LIM_INFERIOR, NIVEL_CUMPLI  FROM BP_NIVEL_CUMPLIMIENTO WHERE COMPANIA = :COMPANIA AND VIGENCIA = :ANO) WHERE (CASE WHEN LIM_SUPERIOR IS NULL THEN ' ' ELSE UPPER(LIM_SUPERIOR) END)  LIKE UPPER(:LIM_SUPERIOR || '%')  AND (CASE WHEN LIM_INFERIOR IS NULL THEN ' ' ELSE UPPER(LIM_INFERIOR) END)  LIKE UPPER(:LIM_INFERIOR || '%')  AND (CASE WHEN NIVEL_CUMPLI IS NULL THEN ' ' ELSE UPPER(NIVEL_CUMPLI) END)  LIKE UPPER( '%' || :NIVEL_CUMPLI || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="LIM_SUPERIOR" sqlType="STRING"/>
+		<param name="LIM_INFERIOR" sqlType="STRING"/>
+		<param name="NIVEL_CUMPLI" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bpnivelcumplimiento/numero">
+		<call-query href="getBpnivelcumplimientoNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="LIM_SUPERIOR" query-param="LIM_SUPERIOR"/>
+			<with-param name="LIM_INFERIOR" query-param="LIM_INFERIOR"/>
+			<with-param name="NIVEL_CUMPLI" query-param="NIVEL_CUMPLI"/>
+
+		</call-query>
+	</resource>
+	<query id="updateBpnivelcumplimiento" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE BP_NIVEL_CUMPLIMIENTO SET LIM_SUPERIOR=:LIM_SUPERIOR, LIM_INFERIOR=:LIM_INFERIOR, NIVEL_CUMPLI=:NIVEL_CUMPLI, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE BP_NIVEL_CUMPLIMIENTO.COMPANIA= :KEY_COMPANIA AND BP_NIVEL_CUMPLIMIENTO.VIGENCIA= :KEY_VIGENCIA AND BP_NIVEL_CUMPLIMIENTO.LIM_SUPERIOR= :KEY_LIM_SUPERIOR AND BP_NIVEL_CUMPLIMIENTO.LIM_INFERIOR= :KEY_LIM_INFERIOR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="LIM_SUPERIOR" sqlType="STRING"/>
+		<param name="LIM_INFERIOR" sqlType="STRING"/>
+		<param name="NIVEL_CUMPLI" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_VIGENCIA" sqlType="STRING"/>
+		<param name="KEY_LIM_SUPERIOR" sqlType="STRING"/>
+		<param name="KEY_LIM_INFERIOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="bpnivelcumplimiento">
+		<call-query href="updateBpnivelcumplimiento">
+			<with-param name="LIM_SUPERIOR" query-param="LIM_SUPERIOR"/>
+			<with-param name="LIM_INFERIOR" query-param="LIM_INFERIOR"/>
+			<with-param name="NIVEL_CUMPLI" query-param="NIVEL_CUMPLI"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_VIGENCIA" query-param="KEY_VIGENCIA"/>
+			<with-param name="KEY_LIM_SUPERIOR" query-param="KEY_LIM_SUPERIOR"/>
+			<with-param name="KEY_LIM_INFERIOR" query-param="KEY_LIM_INFERIOR"/>
+
+		</call-query>
+	</resource>
+
+</data>

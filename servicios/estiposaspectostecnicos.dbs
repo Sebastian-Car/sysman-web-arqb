@@ -1,0 +1,142 @@
+﻿<data name="estiposaspectostecnicos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getEstiposaspectostecnicosPagTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ES_TASP_TECN.COD_T_ASPTEC, ES_TASP_TECN.NOMBRE  FROM ES_TASP_TECN WHERE ES_TASP_TECN.COMPANIA = :COMPANIA) WHERE (CASE WHEN COD_T_ASPTEC IS NULL THEN ' ' ELSE UPPER(COD_T_ASPTEC) END)  LIKE UPPER(:COD_T_ASPTEC || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COD_T_ASPTEC":"$COD_T_ASPTEC(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_T_ASPTEC" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="estiposaspectostecnicos/todosporcompania/pag">
+		<call-query href="getEstiposaspectostecnicosPagTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_T_ASPTEC" query-param="COD_T_ASPTEC"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEstiposaspectostecnicosNumTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ES_TASP_TECN.COD_T_ASPTEC, ES_TASP_TECN.NOMBRE  FROM ES_TASP_TECN WHERE ES_TASP_TECN.COMPANIA = :COMPANIA) WHERE (CASE WHEN COD_T_ASPTEC IS NULL THEN ' ' ELSE UPPER(COD_T_ASPTEC) END)  LIKE UPPER(:COD_T_ASPTEC || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_T_ASPTEC" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="estiposaspectostecnicos/todosporcompania/num">
+		<call-query href="getEstiposaspectostecnicosNumTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_T_ASPTEC" query-param="COD_T_ASPTEC"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertEstiposaspectostecnicos" keyColumns="COMPANIA,COD_T_ASPTEC" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ES_TASP_TECN (COMPANIA, COD_T_ASPTEC, NOMBRE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :COD_T_ASPTEC, :NOMBRE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_COD_T_ASPTEC":"$COD_T_ASPTEC(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_T_ASPTEC" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="estiposaspectostecnicos">
+		<call-query href="insertEstiposaspectostecnicos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_T_ASPTEC" query-param="COD_T_ASPTEC"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEstiposaspectostecnicos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ES_TASP_TECN WHERE ES_TASP_TECN.COMPANIA= :KEY_COMPANIA AND ES_TASP_TECN.COD_T_ASPTEC= :KEY_COD_T_ASPTEC</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_T_ASPTEC" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="estiposaspectostecnicos">
+		<call-query href="deleteEstiposaspectostecnicos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_T_ASPTEC" query-param="KEY_COD_T_ASPTEC"/>
+
+		</call-query>
+	</resource>
+	<query id="getEstiposaspectostecnicosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ES_TASP_TECN.COMPANIA, ES_TASP_TECN.COD_T_ASPTEC, ES_TASP_TECN.NOMBRE  FROM ES_TASP_TECN WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN COD_T_ASPTEC IS NULL THEN ' ' ELSE UPPER(COD_T_ASPTEC) END)  LIKE UPPER(:COD_T_ASPTEC || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","COD_T_ASPTEC":"$COD_T_ASPTEC(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_T_ASPTEC" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="estiposaspectostecnicos">
+		<call-query href="getEstiposaspectostecnicosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_T_ASPTEC" query-param="COD_T_ASPTEC"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEstiposaspectostecnicosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ES_TASP_TECN.COMPANIA, ES_TASP_TECN.COD_T_ASPTEC, ES_TASP_TECN.NOMBRE  FROM ES_TASP_TECN WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN COD_T_ASPTEC IS NULL THEN ' ' ELSE UPPER(COD_T_ASPTEC) END)  LIKE UPPER(:COD_T_ASPTEC || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_T_ASPTEC" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="estiposaspectostecnicos/numero">
+		<call-query href="getEstiposaspectostecnicosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_T_ASPTEC" query-param="COD_T_ASPTEC"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEstiposaspectostecnicos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ES_TASP_TECN SET COMPANIA=:COMPANIA, COD_T_ASPTEC=:COD_T_ASPTEC, NOMBRE=:NOMBRE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ES_TASP_TECN.COMPANIA= :KEY_COMPANIA AND ES_TASP_TECN.COD_T_ASPTEC= :KEY_COD_T_ASPTEC</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_T_ASPTEC" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_T_ASPTEC" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="estiposaspectostecnicos">
+		<call-query href="updateEstiposaspectostecnicos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_T_ASPTEC" query-param="COD_T_ASPTEC"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_T_ASPTEC" query-param="KEY_COD_T_ASPTEC"/>
+
+		</call-query>
+	</resource>
+
+</data>

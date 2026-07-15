@@ -1,0 +1,215 @@
+﻿<data name="caconceptosing" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getCaconceptosingValidacionregistrosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT (1) VALIDACION FROM CA_CONCEPTOS_ING WHERE COMPANIA =:COMPANIA AND ANO =:ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VALIDACION":"$VALIDACION(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="caconceptosing/validacionregistros">
+		<call-query href="getCaconceptosingValidacionregistrosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertCaconceptosingPrepararanosig" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CA_CONCEPTOS_ING (COMPANIA, ANO, CODIGO, NOMBRE, CUENTA_DEBITO, CUENTA_CREDITO, CUENTA_RECAUDO) SELECT COMPANIA, :ANODESTINO ANO, CODIGO, NOMBRE, CUENTA_DEBITO, CUENTA_CREDITO, CUENTA_RECAUDO FROM CA_CONCEPTOS_ING WHERE COMPANIA = :COMPANIA AND ANO = :ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ANODESTINO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="caconceptosing/prepararanosig">
+		<call-query href="insertCaconceptosingPrepararanosig">
+			<with-param name="ANODESTINO" query-param="ANODESTINO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCaconceptosingPagGetcodigoingQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, NOMBRE FROM CA_CONCEPTOS_ING WHERE COMPANIA = :COMPANIA AND ANO = :ANO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="caconceptosing/getcodigoing/pag">
+		<call-query href="getCaconceptosingPagGetcodigoingQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCaconceptosingNumGetcodigoingQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, NOMBRE FROM CA_CONCEPTOS_ING WHERE COMPANIA = :COMPANIA AND ANO = :ANO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="caconceptosing/getcodigoing/num">
+		<call-query href="getCaconceptosingNumGetcodigoingQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertCaconceptosing" keyColumns="COMPANIA,ANO,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CA_CONCEPTOS_ING (COMPANIA, ANO, CODIGO, NOMBRE, CUENTA_DEBITO, CUENTA_CREDITO, CUENTA_RECAUDO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :CODIGO, :NOMBRE, :CUENTA_DEBITO, :CUENTA_CREDITO, :CUENTA_RECAUDO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CUENTA_DEBITO" sqlType="STRING"/>
+		<param name="CUENTA_CREDITO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTA_RECAUDO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="caconceptosing">
+		<call-query href="insertCaconceptosing">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CUENTA_DEBITO" query-param="CUENTA_DEBITO"/>
+			<with-param name="CUENTA_CREDITO" query-param="CUENTA_CREDITO"/>
+			<with-param name="CUENTA_RECAUDO" query-param="CUENTA_RECAUDO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCaconceptosing" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CA_CONCEPTOS_ING WHERE CA_CONCEPTOS_ING.COMPANIA= :KEY_COMPANIA AND CA_CONCEPTOS_ING.ANO= :KEY_ANO AND CA_CONCEPTOS_ING.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="caconceptosing">
+		<call-query href="deleteCaconceptosing">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCaconceptosingPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, ANO, CODIGO, NOMBRE, CUENTA_DEBITO, CUENTA_CREDITO, CUENTA_RECAUDO FROM CA_CONCEPTOS_ING WHERE COMPANIA = :COMPANIA AND ANO = :ANO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN CUENTA_DEBITO IS NULL THEN ' ' ELSE UPPER(CUENTA_DEBITO) END) LIKE UPPER(CONCAT(:CUENTA_DEBITO, '%')) AND (CASE WHEN CUENTA_CREDITO IS NULL THEN ' ' ELSE UPPER(CUENTA_CREDITO) END) LIKE UPPER(CONCAT(:CUENTA_CREDITO, '%'))  AND (CASE WHEN CUENTA_RECAUDO IS NULL THEN ' ' ELSE UPPER(CUENTA_RECAUDO) END) LIKE UPPER(CONCAT(:CUENTA_RECAUDO, '%'))) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","CUENTA_DEBITO":"$CUENTA_DEBITO","CUENTA_CREDITO":"$CUENTA_CREDITO","CUENTA_RECAUDO":"$CUENTA_RECAUDO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CUENTA_DEBITO" sqlType="STRING"/>
+		<param name="CUENTA_CREDITO" sqlType="STRING"/>
+		<param name="CUENTA_RECAUDO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="caconceptosing">
+		<call-query href="getCaconceptosingPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CUENTA_DEBITO" query-param="CUENTA_DEBITO"/>
+			<with-param name="CUENTA_CREDITO" query-param="CUENTA_CREDITO"/>
+			<with-param name="CUENTA_RECAUDO" query-param="CUENTA_RECAUDO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCaconceptosingNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, ANO, CODIGO, NOMBRE, CUENTA_DEBITO, CUENTA_CREDITO, CUENTA_RECAUDO FROM CA_CONCEPTOS_ING WHERE COMPANIA = :COMPANIA AND ANO = :ANO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN CUENTA_DEBITO IS NULL THEN ' ' ELSE UPPER(CUENTA_DEBITO) END) LIKE UPPER(CONCAT(:CUENTA_DEBITO, '%')) AND (CASE WHEN CUENTA_CREDITO IS NULL THEN ' ' ELSE UPPER(CUENTA_CREDITO) END) LIKE UPPER(CONCAT(:CUENTA_CREDITO, '%')) AND (CASE WHEN CUENTA_RECAUDO IS NULL THEN ' ' ELSE UPPER(CUENTA_RECAUDO) END) LIKE UPPER(CONCAT(:CUENTA_RECAUDO, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CUENTA_DEBITO" sqlType="STRING"/>
+		<param name="CUENTA_CREDITO" sqlType="STRING"/>
+		<param name="CUENTA_RECAUDO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="caconceptosing/numero">
+		<call-query href="getCaconceptosingNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CUENTA_DEBITO" query-param="CUENTA_DEBITO"/>
+			<with-param name="CUENTA_CREDITO" query-param="CUENTA_CREDITO"/>
+			<with-param name="CUENTA_RECAUDO" query-param="CUENTA_RECAUDO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCaconceptosing" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CA_CONCEPTOS_ING SET COMPANIA=:COMPANIA, ANO=:ANO, CODIGO=:CODIGO, NOMBRE=:NOMBRE, CUENTA_DEBITO=:CUENTA_DEBITO, CUENTA_CREDITO=:CUENTA_CREDITO, CUENTA_RECAUDO=:CUENTA_RECAUDO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CA_CONCEPTOS_ING.COMPANIA= :KEY_COMPANIA AND CA_CONCEPTOS_ING.ANO= :KEY_ANO AND CA_CONCEPTOS_ING.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CUENTA_DEBITO" sqlType="STRING"/>
+		<param name="CUENTA_CREDITO" sqlType="STRING"/>
+		<param name="CUENTA_RECAUDO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="caconceptosing">
+		<call-query href="updateCaconceptosing">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CUENTA_DEBITO" query-param="CUENTA_DEBITO"/>
+			<with-param name="CUENTA_CREDITO" query-param="CUENTA_CREDITO"/>
+			<with-param name="CUENTA_RECAUDO" query-param="CUENTA_RECAUDO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

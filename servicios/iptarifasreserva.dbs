@@ -1,0 +1,108 @@
+﻿<data name="iptarifasreserva" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertIptarifasreserva" keyColumns="COMPANIA,ANO,TARIFA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_TARIFASRESERVA (COMPANIA, ANO, TARIFA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :TARIFA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_TARIFA":"$TARIFA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param defaultValue="0" name="TARIFA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="iptarifasreserva">
+		<call-query href="insertIptarifasreserva">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteIptarifasreserva" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM IP_TARIFASRESERVA WHERE IP_TARIFASRESERVA.COMPANIA= :KEY_COMPANIA AND IP_TARIFASRESERVA.ANO= :KEY_ANO AND IP_TARIFASRESERVA.TARIFA= :KEY_TARIFA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_TARIFA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="iptarifasreserva">
+		<call-query href="deleteIptarifasreserva">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TARIFA" query-param="KEY_TARIFA"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasreservaPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_TARIFASRESERVA.COMPANIA, IP_TARIFASRESERVA.ANO, IP_TARIFASRESERVA.TARIFA  FROM IP_TARIFASRESERVA WHERE COMPANIA = :COMPANIA ORDER BY IP_TARIFASRESERVA.ANO) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN TARIFA IS NULL THEN ' ' ELSE UPPER(TARIFA) END)  LIKE UPPER( '%' || :TARIFA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TARIFA":"$TARIFA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iptarifasreserva">
+		<call-query href="getIptarifasreservaPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasreservaNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_TARIFASRESERVA.COMPANIA, IP_TARIFASRESERVA.ANO, IP_TARIFASRESERVA.TARIFA  FROM IP_TARIFASRESERVA WHERE COMPANIA = :COMPANIA ORDER BY IP_TARIFASRESERVA.ANO) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN TARIFA IS NULL THEN ' ' ELSE UPPER(TARIFA) END)  LIKE UPPER( '%' || :TARIFA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iptarifasreserva/numero">
+		<call-query href="getIptarifasreservaNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIptarifasreserva" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_TARIFASRESERVA SET ANO=:ANO, TARIFA=:TARIFA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE IP_TARIFASRESERVA.COMPANIA= :KEY_COMPANIA AND IP_TARIFASRESERVA.ANO= :KEY_ANO AND IP_TARIFASRESERVA.TARIFA= :KEY_TARIFA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_TARIFA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="iptarifasreserva">
+		<call-query href="updateIptarifasreserva">
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TARIFA" query-param="KEY_TARIFA"/>
+
+		</call-query>
+	</resource>
+
+</data>

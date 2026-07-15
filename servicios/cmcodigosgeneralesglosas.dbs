@@ -1,0 +1,142 @@
+﻿<data name="cmcodigosgeneralesglosas" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getCmcodigosgeneralesglosasPagCodigoYNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO,NOMBRE FROM CM_CODIGOS_GENERALES_GLOSAS ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cmcodigosgeneralesglosas/codigoynombre/pag">
+		<call-query href="getCmcodigosgeneralesglosasPagCodigoYNombreQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmcodigosgeneralesglosasNumCodigoYNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO,NOMBRE FROM CM_CODIGOS_GENERALES_GLOSAS ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmcodigosgeneralesglosas/codigoynombre/num">
+		<call-query href="getCmcodigosgeneralesglosasNumCodigoYNombreQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertCmcodigosgeneralesglosas" keyColumns="CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CM_CODIGOS_GENERALES_GLOSAS (CODIGO, NOMBRE, DESCRIPCION, DEVOLUCION_FACTURA, CREATED_BY, DATE_CREATED) VALUES (:CODIGO, :NOMBRE, :DESCRIPCION, :DEVOLUCION_FACTURA, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="0" name="DEVOLUCION_FACTURA" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="cmcodigosgeneralesglosas">
+		<call-query href="insertCmcodigosgeneralesglosas">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DEVOLUCION_FACTURA" query-param="DEVOLUCION_FACTURA"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCmcodigosgeneralesglosas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CM_CODIGOS_GENERALES_GLOSAS WHERE CM_CODIGOS_GENERALES_GLOSAS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="cmcodigosgeneralesglosas">
+		<call-query href="deleteCmcodigosgeneralesglosas">
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmcodigosgeneralesglosasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, NOMBRE, TO_CHAR(DESCRIPCION) DESCRIPCION,(CASE DEVOLUCION_FACTURA WHEN 0 THEN 'false' ELSE 'true' END) DEVOLUCION_FACTURA FROM CM_CODIGOS_GENERALES_GLOSAS ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN DEVOLUCION_FACTURA IS NULL THEN ' ' ELSE UPPER(DEVOLUCION_FACTURA) END) LIKE UPPER(CONCAT(:DEVOLUCION_FACTURA, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","DESCRIPCION":"$DESCRIPCION","DEVOLUCION_FACTURA":"$DEVOLUCION_FACTURA(type:boolean)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="DEVOLUCION_FACTURA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cmcodigosgeneralesglosas">
+		<call-query href="getCmcodigosgeneralesglosasPaginaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DEVOLUCION_FACTURA" query-param="DEVOLUCION_FACTURA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmcodigosgeneralesglosasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, NOMBRE, TO_CHAR(DESCRIPCION) DESCRIPCION,(CASE DEVOLUCION_FACTURA WHEN 0 THEN 'false' ELSE 'true' END) DEVOLUCION_FACTURA FROM CM_CODIGOS_GENERALES_GLOSAS ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN DEVOLUCION_FACTURA IS NULL THEN ' ' ELSE UPPER(DEVOLUCION_FACTURA) END) LIKE UPPER(CONCAT(:DEVOLUCION_FACTURA, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="DEVOLUCION_FACTURA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmcodigosgeneralesglosas/numero">
+		<call-query href="getCmcodigosgeneralesglosasNumeroQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DEVOLUCION_FACTURA" query-param="DEVOLUCION_FACTURA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCmcodigosgeneralesglosas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CM_CODIGOS_GENERALES_GLOSAS SET CODIGO=:CODIGO, NOMBRE=:NOMBRE, DESCRIPCION=:DESCRIPCION, DEVOLUCION_FACTURA=:DEVOLUCION_FACTURA, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE CM_CODIGOS_GENERALES_GLOSAS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="DEVOLUCION_FACTURA" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cmcodigosgeneralesglosas">
+		<call-query href="updateCmcodigosgeneralesglosas">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DEVOLUCION_FACTURA" query-param="DEVOLUCION_FACTURA"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

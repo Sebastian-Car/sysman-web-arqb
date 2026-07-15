@@ -1,0 +1,48 @@
+﻿<data name="cgrcodigos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getCgrcodigosPagTodosPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO,NOMBRE FROM CGR_CODIGOS) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cgrcodigos/todosporcodigo/pag">
+		<call-query href="getCgrcodigosPagTodosPorCodigoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCgrcodigosNumTodosPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO,NOMBRE FROM CGR_CODIGOS) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cgrcodigos/todosporcodigo/num">
+		<call-query href="getCgrcodigosNumTodosPorCodigoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getCgrcodigosTodosporcodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CODIGO,NOMBRE FROM CGR_CODIGOS</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="cgrcodigos/todosporcodigo">
+		<call-query href="getCgrcodigosTodosporcodigoQuery">
+ 
+		</call-query>
+	</resource>
+
+</data>

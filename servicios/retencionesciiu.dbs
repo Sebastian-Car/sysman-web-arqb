@@ -1,0 +1,240 @@
+﻿<data name="retencionesciiu" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="updateRetencionesciiuActualizaAno" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE RETENCIONES_CIIU SET ANO =:ANOFIN, DATE_MODIFIED = TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY =:MODIFIED_BY WHERE RETENCIONES_CIIU.COMPANIA =:COMPANIA AND RETENCIONES_CIIU.ANO =:ANO AND CONCAT( RETENCIONES_CIIU.TIPO , RETENCIONES_CIIU.CODIGO) IN ( SELECT CONCAT(DES.TIPO , DES.CODIGO) FROM RETENCIONES DES WHERE DES.COMPANIA =:COMPANIA AND DES.ANO =:ANOFIN )</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ANOFIN" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="retencionesciiu/actualizaano">
+		<call-query href="updateRetencionesciiuActualizaAno">
+			<with-param name="ANOFIN" query-param="ANOFIN"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getRetencionesciiuValidarTipoYCodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(*) EXISTE FROM RETENCIONES_CIIU ORI WHERE ORI.COMPANIA =:COMPANIA AND ORI.ANO =:ANO AND CONCAT( ORI.TIPO , ORI.CODIGO )IN ( SELECT CONCAT(DES.TIPO , DES.CODIGO) FROM RETENCIONES DES WHERE DES.COMPANIA =:COMPANIA AND DES.ANO =:ANOFIN )</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"EXISTE":"$EXISTE(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="ANOFIN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="retencionesciiu/validartipoycod">
+		<call-query href="getRetencionesciiuValidarTipoYCodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="ANOFIN" query-param="ANOFIN"/>
+
+		</call-query>
+	</resource>
+	<query id="getRetencionesciiuPagTodosPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CIIU,NOMBRE,CODIGOACTIVIDAD  FROM RETENCIONES_CIIU WHERE COMPANIA =:COMPANIA) WHERE (CASE WHEN CIIU IS NULL THEN ' ' ELSE UPPER(CIIU) END)  LIKE UPPER( '%' || :CIIU || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CODIGOACTIVIDAD IS NULL THEN ' ' ELSE UPPER(CODIGOACTIVIDAD) END)  LIKE UPPER( '%' || :CODIGOACTIVIDAD || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CIIU":"$CIIU","NOMBRE":"$NOMBRE","CODIGOACTIVIDAD":"$CODIGOACTIVIDAD"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CIIU" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CODIGOACTIVIDAD" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="retencionesciiu/todosporcodigo/pag">
+		<call-query href="getRetencionesciiuPagTodosPorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CIIU" query-param="CIIU"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CODIGOACTIVIDAD" query-param="CODIGOACTIVIDAD"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getRetencionesciiuNumTodosPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CIIU,NOMBRE,CODIGOACTIVIDAD  FROM RETENCIONES_CIIU WHERE COMPANIA =:COMPANIA) WHERE (CASE WHEN CIIU IS NULL THEN ' ' ELSE UPPER(CIIU) END)  LIKE UPPER( '%' || :CIIU || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CODIGOACTIVIDAD IS NULL THEN ' ' ELSE UPPER(CODIGOACTIVIDAD) END)  LIKE UPPER( '%' || :CODIGOACTIVIDAD || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CIIU" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CODIGOACTIVIDAD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="retencionesciiu/todosporcodigo/num">
+		<call-query href="getRetencionesciiuNumTodosPorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CIIU" query-param="CIIU"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CODIGOACTIVIDAD" query-param="CODIGOACTIVIDAD"/>
+
+		</call-query>
+	</resource>
+	<query id="getRetencionesciiuInsertretenciiuQuery" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO RETENCIONES_CIIU(COMPANIA,CIIU,ANO,TIPO,CODIGO,NOMBRE,CODIGOACTIVIDAD,DATE_CREATED,CREATED_BY) SELECT :COMPANIA COMPANIA,CIIU,:ANOFIN ANO,TIPO,CODIGO,NOMBRE,CODIGOACTIVIDAD,:DATE_CREATED DATE_CREATED,:CREATED_BY CREATED_BY FROM RETENCIONES_CIIU WHERE COMPANIA = :COMPANIA AND ANO = :ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANOFIN" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="retencionesciiu/insertretenciiu">
+		<call-query href="getRetencionesciiuInsertretenciiuQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANOFIN" query-param="ANOFIN"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertRetencionesciiu" keyColumns="COMPANIA,CIIU" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO RETENCIONES_CIIU (COMPANIA, CIIU, ANO, TIPO, CODIGO, NOMBRE, CODIGOACTIVIDAD, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CIIU, :ANO, :TIPO, :CODIGO, :NOMBRE, :CODIGOACTIVIDAD, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CIIU":"$CIIU"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CIIU" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOACTIVIDAD" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="retencionesciiu">
+		<call-query href="insertRetencionesciiu">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CIIU" query-param="CIIU"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CODIGOACTIVIDAD" query-param="CODIGOACTIVIDAD"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteRetencionesciiu" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM RETENCIONES_CIIU WHERE RETENCIONES_CIIU.COMPANIA= :KEY_COMPANIA AND RETENCIONES_CIIU.CIIU= :KEY_CIIU AND RETENCIONES_CIIU.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CIIU" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="retencionesciiu">
+		<call-query href="deleteRetencionesciiu">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CIIU" query-param="KEY_CIIU"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getRetencionesciiuPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT RETENCIONES_CIIU.COMPANIA, RETENCIONES_CIIU.CIIU, RETENCIONES_CIIU.ANO, RETENCIONES_CIIU.TIPO, RETENCIONES_CIIU.CODIGO, RETENCIONES_CIIU.NOMBRE, CONCAT(RETENCIONES_CIIU.TIPO,CONCAT('-',TIPORETENCION.NOMBRE) ) NOMBRETIPO, CONCAT(RETENCIONES_CIIU.CODIGO,CONCAT('-',RETENCIONES.NOMBRE) ) NOMBRERETENCION, RETENCIONES_CIIU.CODIGOACTIVIDAD FROM RETENCIONES_CIIU INNER JOIN RETENCIONES ON RETENCIONES_CIIU.COMPANIA = RETENCIONES.COMPANIA AND RETENCIONES_CIIU.TIPO = RETENCIONES.TIPO AND RETENCIONES_CIIU.ANO = RETENCIONES.ANO AND RETENCIONES_CIIU.CODIGO = RETENCIONES.CODIGO INNER JOIN TIPORETENCION ON RETENCIONES.TIPO = TIPORETENCION.CODIGO WHERE RETENCIONES_CIIU.COMPANIA =:COMPANIA AND RETENCIONES_CIIU.ANO =:ANO ORDER BY RETENCIONES_CIIU.CIIU) INI WHERE (CASE WHEN CIIU IS NULL THEN ' ' ELSE UPPER(CIIU) END) LIKE UPPER(CONCAT(CONCAT('%',:CIIU), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN NOMBRETIPO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRETIPO), '%')) AND (CASE WHEN NOMBRERETENCION IS NULL THEN ' ' ELSE UPPER(NOMBRERETENCION) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRERETENCION), '%')) AND (CASE WHEN CODIGOACTIVIDAD IS NULL THEN ' ' ELSE UPPER(CODIGOACTIVIDAD) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGOACTIVIDAD), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CIIU":"$CIIU","ANO":"$ANO(type:integer)","TIPO":"$TIPO","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","NOMBRETIPO":"$NOMBRETIPO","NOMBRERETENCION":"$NOMBRERETENCION","CODIGOACTIVIDAD":"$CODIGOACTIVIDAD"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CIIU" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBRETIPO" sqlType="STRING"/>
+		<param name="NOMBRERETENCION" sqlType="STRING"/>
+		<param name="CODIGOACTIVIDAD" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="retencionesciiu">
+		<call-query href="getRetencionesciiuPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CIIU" query-param="CIIU"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBRETIPO" query-param="NOMBRETIPO"/>
+			<with-param name="NOMBRERETENCION" query-param="NOMBRERETENCION"/>
+			<with-param name="CODIGOACTIVIDAD" query-param="CODIGOACTIVIDAD"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getRetencionesciiuNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT RETENCIONES_CIIU.COMPANIA, RETENCIONES_CIIU.CIIU, RETENCIONES_CIIU.ANO, RETENCIONES_CIIU.TIPO, RETENCIONES_CIIU.CODIGO, RETENCIONES_CIIU.NOMBRE, CONCAT(RETENCIONES_CIIU.TIPO,CONCAT('-',TIPORETENCION.NOMBRE) ) NOMBRETIPO, CONCAT(RETENCIONES_CIIU.CODIGO,CONCAT('-',RETENCIONES.NOMBRE) ) NOMBRERETENCION, RETENCIONES_CIIU.CODIGOACTIVIDAD FROM RETENCIONES_CIIU INNER JOIN RETENCIONES ON RETENCIONES_CIIU.COMPANIA = RETENCIONES.COMPANIA AND RETENCIONES_CIIU.TIPO = RETENCIONES.TIPO AND RETENCIONES_CIIU.ANO = RETENCIONES.ANO AND RETENCIONES_CIIU.CODIGO = RETENCIONES.CODIGO INNER JOIN TIPORETENCION ON RETENCIONES.TIPO = TIPORETENCION.CODIGO WHERE RETENCIONES_CIIU.COMPANIA =:COMPANIA AND RETENCIONES_CIIU.ANO =:ANO ORDER BY RETENCIONES_CIIU.CIIU) INI WHERE (CASE WHEN CIIU IS NULL THEN ' ' ELSE UPPER(CIIU) END) LIKE UPPER(CONCAT(CONCAT('%',:CIIU), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN NOMBRETIPO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRETIPO), '%')) AND (CASE WHEN NOMBRERETENCION IS NULL THEN ' ' ELSE UPPER(NOMBRERETENCION) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRERETENCION), '%')) AND (CASE WHEN CODIGOACTIVIDAD IS NULL THEN ' ' ELSE UPPER(CODIGOACTIVIDAD) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGOACTIVIDAD), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CIIU" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBRETIPO" sqlType="STRING"/>
+		<param name="NOMBRERETENCION" sqlType="STRING"/>
+		<param name="CODIGOACTIVIDAD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="retencionesciiu/numero">
+		<call-query href="getRetencionesciiuNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CIIU" query-param="CIIU"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBRETIPO" query-param="NOMBRETIPO"/>
+			<with-param name="NOMBRERETENCION" query-param="NOMBRERETENCION"/>
+			<with-param name="CODIGOACTIVIDAD" query-param="CODIGOACTIVIDAD"/>
+
+		</call-query>
+	</resource>
+	<query id="updateRetencionesciiu" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE RETENCIONES_CIIU SET CIIU=:CIIU, TIPO=:TIPO, CODIGO=:CODIGO, NOMBRE=:NOMBRE, CODIGOACTIVIDAD=:CODIGOACTIVIDAD, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE RETENCIONES_CIIU.COMPANIA= :KEY_COMPANIA AND RETENCIONES_CIIU.CIIU= :KEY_CIIU AND RETENCIONES_CIIU.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CIIU" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CODIGOACTIVIDAD" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CIIU" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="retencionesciiu">
+		<call-query href="updateRetencionesciiu">
+			<with-param name="CIIU" query-param="CIIU"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CODIGOACTIVIDAD" query-param="CODIGOACTIVIDAD"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CIIU" query-param="KEY_CIIU"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+
+</data>

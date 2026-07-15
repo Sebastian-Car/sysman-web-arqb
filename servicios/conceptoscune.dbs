@@ -1,0 +1,81 @@
+﻿<data name="conceptoscune" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getConceptoscunePagTodoscodigonombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, NOMBRE FROM CONCEPTOS_CUNE) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="conceptoscune/todoscodigonombre/pag">
+		<call-query href="getConceptoscunePagTodoscodigonombreQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getConceptoscuneNumTodoscodigonombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, NOMBRE FROM CONCEPTOS_CUNE) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="conceptoscune/todoscodigonombre/num">
+		<call-query href="getConceptoscuneNumTodoscodigonombreQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertConceptoscune" keyColumns="CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CONCEPTOS_CUNE (CODIGO, CONCEPTO_EQUIVALENTE, IND_DESCUENTO, IND_DEVENGO, NOMBRE, OBSERVACIONES, TIPOINFORMATIVO, DATE_CREATED, CREATED_BY) VALUES (:CODIGO, :CONCEPTO_EQUIVALENTE, :IND_DESCUENTO, :IND_DEVENGO, :NOMBRE, :OBSERVACIONES, :TIPOINFORMATIVO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="CONCEPTO_EQUIVALENTE" sqlType="STRING"/>
+		<param defaultValue="" name="IND_DESCUENTO" sqlType="STRING"/>
+		<param defaultValue="" name="IND_DEVENGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACIONES" sqlType="STRING"/>
+		<param defaultValue="" name="TIPOINFORMATIVO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="conceptoscune">
+		<call-query href="insertConceptoscune">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONCEPTO_EQUIVALENTE" query-param="CONCEPTO_EQUIVALENTE"/>
+			<with-param name="IND_DESCUENTO" query-param="IND_DESCUENTO"/>
+			<with-param name="IND_DEVENGO" query-param="IND_DEVENGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="TIPOINFORMATIVO" query-param="TIPOINFORMATIVO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteConceptoscune" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CONCEPTOS_CUNE WHERE CONCEPTOS_CUNE.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="conceptoscune">
+		<call-query href="deleteConceptoscune">
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

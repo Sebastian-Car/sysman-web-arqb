@@ -1,0 +1,799 @@
+﻿<data name="ordenesdesuministro" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="updateOrdenesdesuministroSeleccionadas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ORDENDESUMINISTRO SET SELECCIONADA=:SELECCIONADA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ORDENDESUMINISTRO.COMPANIA= :KEY_COMPANIA AND ORDENDESUMINISTRO.NUMERO= :KEY_NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="SELECCIONADA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ordenesdesuministro/seleccionadas">
+		<call-query href="updateOrdenesdesuministroSeleccionadas">
+			<with-param name="SELECCIONADA" query-param="SELECCIONADA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroPagVaciasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ORDENDESUMINISTRO.COMPANIA,(CASE ORDENDESUMINISTRO.VACIA WHEN 0 THEN 'false' ELSE 'true' END) VACIA, ORDENDESUMINISTRO.NUMERO,(TO_CHAR(ORDENDESUMINISTRO.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, ORDENDESUMINISTRO.DESCRIPCION,(CASE ORDENDESUMINISTRO.SELECCIONADA WHEN 0 THEN 'false' ELSE 'true' END) SELECCIONADA FROM ORDENDESUMINISTRO INNER JOIN D_ORDENDESUMINISTRO ON (ORDENDESUMINISTRO.NUMERO = D_ORDENDESUMINISTRO.ORDENDESUMINISTRO) AND (ORDENDESUMINISTRO.COMPANIA = D_ORDENDESUMINISTRO.COMPANIA) WHERE ORDENDESUMINISTRO.COMPANIA = :COMPANIA AND ORDENDESUMINISTRO.VACIA IN 0 AND (CASE WHEN :MENU = '400204' THEN ORDENDESUMINISTRO.SELECCIONADA ELSE 0 END) IN 0 GROUP BY ORDENDESUMINISTRO.COMPANIA, ORDENDESUMINISTRO.VACIA, ORDENDESUMINISTRO.NUMERO, ORDENDESUMINISTRO.FECHA, ORDENDESUMINISTRO.DESCRIPCION, ORDENDESUMINISTRO.SELECCIONADA HAVING SUM(D_ORDENDESUMINISTRO.CANTIDADPORENTREGAR) &gt; 0 ORDER BY ORDENDESUMINISTRO.COMPANIA) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER( '%' || :NUMERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN SELECCIONADA IS NULL THEN ' ' ELSE UPPER(SELECCIONADA) END)  LIKE UPPER(:SELECCIONADA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","VACIA":"$VACIA(type:boolean)","NUMERO":"$NUMERO","FECHA":"$FECHA","DESCRIPCION":"$DESCRIPCION","SELECCIONADA":"$SELECCIONADA(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="MENU" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="SELECCIONADA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/vacias/pag">
+		<call-query href="getOrdenesdesuministroPagVaciasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="MENU" query-param="MENU"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="SELECCIONADA" query-param="SELECCIONADA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroNumVaciasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ORDENDESUMINISTRO.COMPANIA,(CASE ORDENDESUMINISTRO.VACIA WHEN 0 THEN 'false' ELSE 'true' END) VACIA, ORDENDESUMINISTRO.NUMERO,(TO_CHAR(ORDENDESUMINISTRO.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, ORDENDESUMINISTRO.DESCRIPCION,(CASE ORDENDESUMINISTRO.SELECCIONADA WHEN 0 THEN 'false' ELSE 'true' END) SELECCIONADA FROM ORDENDESUMINISTRO INNER JOIN D_ORDENDESUMINISTRO ON (ORDENDESUMINISTRO.NUMERO = D_ORDENDESUMINISTRO.ORDENDESUMINISTRO) AND (ORDENDESUMINISTRO.COMPANIA = D_ORDENDESUMINISTRO.COMPANIA) WHERE ORDENDESUMINISTRO.COMPANIA = :COMPANIA AND ORDENDESUMINISTRO.VACIA IN 0 AND (CASE WHEN :MENU = '400204' THEN ORDENDESUMINISTRO.SELECCIONADA ELSE 0 END) IN 0 GROUP BY ORDENDESUMINISTRO.COMPANIA, ORDENDESUMINISTRO.VACIA, ORDENDESUMINISTRO.NUMERO, ORDENDESUMINISTRO.FECHA, ORDENDESUMINISTRO.DESCRIPCION, ORDENDESUMINISTRO.SELECCIONADA HAVING SUM(D_ORDENDESUMINISTRO.CANTIDADPORENTREGAR) &gt; 0 ORDER BY ORDENDESUMINISTRO.COMPANIA) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER( '%' || :NUMERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN SELECCIONADA IS NULL THEN ' ' ELSE UPPER(SELECCIONADA) END)  LIKE UPPER( '%' || :SELECCIONADA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="MENU" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="SELECCIONADA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/vacias/num">
+		<call-query href="getOrdenesdesuministroNumVaciasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="MENU" query-param="MENU"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="SELECCIONADA" query-param="SELECCIONADA"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroCantidadTotalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SUM(D_ORDENDESUMINISTRO.CANTIDADTT) CANTIDADTOTAL, D_ORDENDESUMINISTRO.ORDENDESUMINISTRO  FROM D_ORDENDESUMINISTRO WHERE D_ORDENDESUMINISTRO.COMPANIA = :COMPANIA GROUP BY D_ORDENDESUMINISTRO.ORDENDESUMINISTRO, D_ORDENDESUMINISTRO.COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CANTIDADTOTAL":"$CANTIDADTOTAL(type:integer)","ORDENDESUMINISTRO":"$ORDENDESUMINISTRO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/cantidadtotal">
+		<call-query href="getOrdenesdesuministroCantidadTotalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroSinSeleccionarConCantidadPorEntregarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  D_ORDENDESUMINISTRO.COMPANIA, NVL(D_ORDENDESUMINISTRO.ORDENDESUMINISTRO,0) AS ORDENDESUMINISTRO, NVL(D_ORDENDESUMINISTRO.CODIGO,0) AS CODIGO, NVL(D_ORDENDESUMINISTRO.ELEMENTO,'') AS ELEMENTO, D_ORDENDESUMINISTRO.ESPECIFICACION, NVL(CANTIDADPORENTREGAR,0) AS CANTORDENADA , D_ORDENDESUMINISTRO.DEPENDENCIA, ORDENDESUMINISTRO.DESCRIPCION , NVL(D_ORDENDESUMINISTRO.CODIGOCUBS,'') AS CUBS, ORDENDESUMINISTRO.PERIODICIDAD, NVL(ORDENDESUMINISTRO.NUMERO_ENTREGAS,0) AS NUMERO_ENTREGAS, ORDENDESUMINISTRO.UNIDAD_TIEMPO, NVL(ORDENDESUMINISTRO.PLAZO,0) AS PLAZO  FROM ORDENDESUMINISTRO INNER JOIN D_ORDENDESUMINISTRO ON (ORDENDESUMINISTRO.NUMERO = D_ORDENDESUMINISTRO.ORDENDESUMINISTRO) AND (ORDENDESUMINISTRO.COMPANIA = D_ORDENDESUMINISTRO.COMPANIA) WHERE ORDENDESUMINISTRO.SELECCIONADA &lt;&gt; 0 AND CANTIDADPORENTREGAR &gt; 0 AND D_ORDENDESUMINISTRO.COMPANIA = :COMPANIA ORDER BY D_ORDENDESUMINISTRO.COMPANIA, D_ORDENDESUMINISTRO.ORDENDESUMINISTRO, D_ORDENDESUMINISTRO.CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ORDENDESUMINISTRO":"$ORDENDESUMINISTRO(type:integer)","CODIGO":"$CODIGO(type:integer)","ELEMENTO":"$ELEMENTO","ESPECIFICACION":"$ESPECIFICACION","CANTORDENADA":"$CANTORDENADA(type:integer)","DEPENDENCIA":"$DEPENDENCIA","DESCRIPCION":"$DESCRIPCION","CUBS":"$CUBS","PERIODICIDAD":"$PERIODICIDAD","NUMERO_ENTREGAS":"$NUMERO_ENTREGAS(type:integer)","UNIDAD_TIEMPO":"$UNIDAD_TIEMPO","PLAZO":"$PLAZO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/sinseleccionarconcantidadporentregar">
+		<call-query href="getOrdenesdesuministroSinSeleccionarConCantidadPorEntregarQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateOrdenesdesuministroVaciasYSeleccionadas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ORDENDESUMINISTRO SET SELECCIONADA = :VALOR,     DATE_MODIFIED = TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'),     MODIFIED_BY = :MODIFIED_BY WHERE COMPANIA = :COMPANIA   AND VACIA &lt;&gt; 0   AND SELECCIONADA &lt;&gt; 0</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ordenesdesuministro/vaciasyseleccionadas">
+		<call-query href="updateOrdenesdesuministroVaciasYSeleccionadas">
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateOrdenesdesuministroIndicadorVacia" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ORDENDESUMINISTRO SET VACIA = :VALOR,     DATE_MODIFIED = TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'),     MODIFIED_BY = :MODIFIED_BY WHERE COMPANIA = :COMPANIA   AND NUMERO = :ORDEN</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ordenesdesuministro/indicadorvacia">
+		<call-query href="updateOrdenesdesuministroIndicadorVacia">
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ORDEN" query-param="ORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="updateOrdenesdesuministroIndicadorSeleccionada" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ORDENDESUMINISTRO SET SELECCIONADA = :VALOR,     DATE_MODIFIED = TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'),     MODIFIED_BY = :MODIFIED_BY WHERE COMPANIA = :COMPANIA   AND SELECCIONADA NOT IN 0</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ordenesdesuministro/indicadorseleccionada">
+		<call-query href="updateOrdenesdesuministroIndicadorSeleccionada">
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateOrdenesdesuministroVaciaYCantidadPorNumero" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ORDENDESUMINISTRO SET VACIA = :VACIA, CANTIDADPORENTREGAR = :CANTIDAD,    DATE_MODIFIED = TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'),     MODIFIED_BY = :MODIFIED_BY WHERE COMPANIA = :COMPANIA   AND NUMERO = :NUMERO AND CODIGO = :CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VACIA" sqlType="STRING"/>
+		<param name="CANTIDAD" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ordenesdesuministro/vaciaycantidadpornumero">
+		<call-query href="updateOrdenesdesuministroVaciaYCantidadPorNumero">
+			<with-param name="VACIA" query-param="VACIA"/>
+			<with-param name="CANTIDAD" query-param="CANTIDAD"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertOrdenesdesuministro" keyColumns="COMPANIA,NUMERO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ORDENDESUMINISTRO (COMPANIA, NUMERO, FECHA, DEPENDENCIA, TERCERO, SUCURSAL, VALORESTIMADO, DESCRIPCION, OBSERVACIONES, PLAZO, UNIDAD_TIEMPO, PERIODICIDAD, NUMERO_ENTREGAS, CLASE_BODEGA, AUXILIAR, ESTADO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :NUMERO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :DEPENDENCIA, :TERCERO, :SUCURSAL, :VALORESTIMADO, :DESCRIPCION, :OBSERVACIONES, :PLAZO, :UNIDAD_TIEMPO, :PERIODICIDAD, :NUMERO_ENTREGAS, :CLASE_BODEGA, :AUXILIAR, :ESTADO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_NUMERO":"$NUMERO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param defaultValue="999999999999" name="DEPENDENCIA" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="TERCERO" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORESTIMADO" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACIONES" sqlType="STRING"/>
+		<param defaultValue="0" name="PLAZO" sqlType="STRING"/>
+		<param defaultValue="" name="UNIDAD_TIEMPO" sqlType="STRING"/>
+		<param defaultValue="" name="PERIODICIDAD" sqlType="STRING"/>
+		<param defaultValue="0" name="NUMERO_ENTREGAS" sqlType="STRING"/>
+		<param defaultValue="" name="CLASE_BODEGA" sqlType="STRING"/>
+		<param defaultValue="99999999999999999999" name="AUXILIAR" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="ordenesdesuministro">
+		<call-query href="insertOrdenesdesuministro">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="VALORESTIMADO" query-param="VALORESTIMADO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="PLAZO" query-param="PLAZO"/>
+			<with-param name="UNIDAD_TIEMPO" query-param="UNIDAD_TIEMPO"/>
+			<with-param name="PERIODICIDAD" query-param="PERIODICIDAD"/>
+			<with-param name="NUMERO_ENTREGAS" query-param="NUMERO_ENTREGAS"/>
+			<with-param name="CLASE_BODEGA" query-param="CLASE_BODEGA"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteOrdenesdesuministro" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ORDENDESUMINISTRO WHERE ORDENDESUMINISTRO.COMPANIA= :KEY_COMPANIA AND ORDENDESUMINISTRO.NUMERO= :KEY_NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="ordenesdesuministro">
+		<call-query href="deleteOrdenesdesuministro">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DISTINCT ORDENDESUMINISTRO.COMPANIA, ORDENDESUMINISTRO.NUMERO, TO_CHAR( FECHA, 'DD/MM/YYYY' ) FECHA, DEPENDENCIA.NOMBRE, VALORESTIMADO, DESCRIPCION,(CASE D_ORDENDESUMINISTRO.IND_REG WHEN 0 THEN 'false' ELSE 'true' END) IND_REG, ORDENDESUMINISTRO.ESTADO FROM ORDENDESUMINISTRO INNER JOIN DEPENDENCIA ON ORDENDESUMINISTRO.COMPANIA = DEPENDENCIA.COMPANIA AND ORDENDESUMINISTRO.DEPENDENCIA = DEPENDENCIA.CODIGO LEFT JOIN D_ORDENDESUMINISTRO ON ORDENDESUMINISTRO.COMPANIA = D_ORDENDESUMINISTRO.COMPANIA AND ORDENDESUMINISTRO.NUMERO = D_ORDENDESUMINISTRO.ORDENDESUMINISTRO WHERE ORDENDESUMINISTRO.COMPANIA = :COMPANIA ORDER BY ORDENDESUMINISTRO.COMPANIA, NUMERO) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN VALORESTIMADO IS NULL THEN ' ' ELSE UPPER(VALORESTIMADO) END) LIKE UPPER(CONCAT(:VALORESTIMADO, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NUMERO":"$NUMERO","FECHA":"$FECHA","NOMBRE":"$NOMBRE","VALORESTIMADO":"$VALORESTIMADO","DESCRIPCION":"$DESCRIPCION","IND_REG":"$IND_REG(type:boolean)","ESTADO":"$ESTADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALORESTIMADO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro">
+		<call-query href="getOrdenesdesuministroPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALORESTIMADO" query-param="VALORESTIMADO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DISTINCT ORDENDESUMINISTRO.COMPANIA, ORDENDESUMINISTRO.NUMERO, TO_CHAR( FECHA, 'DD/MM/YYYY' ) FECHA, DEPENDENCIA.NOMBRE, VALORESTIMADO, DESCRIPCION,(CASE D_ORDENDESUMINISTRO.IND_REG WHEN 0 THEN 'false' ELSE 'true' END) IND_REG, ORDENDESUMINISTRO.ESTADO FROM ORDENDESUMINISTRO INNER JOIN DEPENDENCIA ON ORDENDESUMINISTRO.COMPANIA = DEPENDENCIA.COMPANIA AND ORDENDESUMINISTRO.DEPENDENCIA = DEPENDENCIA.CODIGO LEFT JOIN D_ORDENDESUMINISTRO ON ORDENDESUMINISTRO.COMPANIA = D_ORDENDESUMINISTRO.COMPANIA AND ORDENDESUMINISTRO.NUMERO = D_ORDENDESUMINISTRO.ORDENDESUMINISTRO WHERE ORDENDESUMINISTRO.COMPANIA = :COMPANIA ORDER BY ORDENDESUMINISTRO.COMPANIA, NUMERO) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN VALORESTIMADO IS NULL THEN ' ' ELSE UPPER(VALORESTIMADO) END) LIKE UPPER(CONCAT(:VALORESTIMADO, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALORESTIMADO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/numero">
+		<call-query href="getOrdenesdesuministroNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALORESTIMADO" query-param="VALORESTIMADO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, NUMERO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, DEPENDENCIA, TERCERO, SUCURSAL, VALORESTIMADO, DESCRIPCION, OBSERVACIONES, PLAZO, UNIDAD_TIEMPO, PERIODICIDAD, NUMERO_ENTREGAS, CLASE_BODEGA, AUXILIAR, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, ESTADO FROM ORDENDESUMINISTRO WHERE ORDENDESUMINISTRO.COMPANIA= :KEY_COMPANIA AND ORDENDESUMINISTRO.NUMERO= :KEY_NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NUMERO":"$NUMERO(type:long)","FECHA":"$FECHA","DEPENDENCIA":"$DEPENDENCIA","TERCERO":"$TERCERO","SUCURSAL":"$SUCURSAL","VALORESTIMADO":"$VALORESTIMADO(type:double)","DESCRIPCION":"$DESCRIPCION","OBSERVACIONES":"$OBSERVACIONES","PLAZO":"$PLAZO(type:long)","UNIDAD_TIEMPO":"$UNIDAD_TIEMPO","PERIODICIDAD":"$PERIODICIDAD","NUMERO_ENTREGAS":"$NUMERO_ENTREGAS(type:long)","CLASE_BODEGA":"$CLASE_BODEGA","AUXILIAR":"$AUXILIAR","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","ESTADO":"$ESTADO"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/data">
+		<call-query href="getOrdenesdesuministroRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateOrdenesdesuministro" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ORDENDESUMINISTRO SET COMPANIA=:COMPANIA, NUMERO=:NUMERO, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), DEPENDENCIA=:DEPENDENCIA, TERCERO=:TERCERO, SUCURSAL=:SUCURSAL, VALORESTIMADO=:VALORESTIMADO, DESCRIPCION=:DESCRIPCION, OBSERVACIONES=:OBSERVACIONES, PLAZO=:PLAZO, UNIDAD_TIEMPO=:UNIDAD_TIEMPO, PERIODICIDAD=:PERIODICIDAD, NUMERO_ENTREGAS=:NUMERO_ENTREGAS, CLASE_BODEGA=:CLASE_BODEGA, AUXILIAR=:AUXILIAR, ESTADO=:ESTADO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ORDENDESUMINISTRO.COMPANIA= :KEY_COMPANIA AND ORDENDESUMINISTRO.NUMERO= :KEY_NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="VALORESTIMADO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="PLAZO" sqlType="STRING"/>
+		<param name="UNIDAD_TIEMPO" sqlType="STRING"/>
+		<param name="PERIODICIDAD" sqlType="STRING"/>
+		<param name="NUMERO_ENTREGAS" sqlType="STRING"/>
+		<param name="CLASE_BODEGA" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ordenesdesuministro">
+		<call-query href="updateOrdenesdesuministro">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="VALORESTIMADO" query-param="VALORESTIMADO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="PLAZO" query-param="PLAZO"/>
+			<with-param name="UNIDAD_TIEMPO" query-param="UNIDAD_TIEMPO"/>
+			<with-param name="PERIODICIDAD" query-param="PERIODICIDAD"/>
+			<with-param name="NUMERO_ENTREGAS" query-param="NUMERO_ENTREGAS"/>
+			<with-param name="CLASE_BODEGA" query-param="CLASE_BODEGA"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateOrdenesdesuministroVaciaPorNumero" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ORDENDESUMINISTRO SET VACIA = :VACIA, CANTIDADPORENTREGAR = :CANTIDAD,    DATE_MODIFIED = TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'),     MODIFIED_BY = :MODIFIED_BY WHERE COMPANIA = :COMPANIA   AND NUMERO = :NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VACIA" sqlType="STRING"/>
+		<param name="CANTIDAD" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ordenesdesuministro/vaciapornumero">
+		<call-query href="updateOrdenesdesuministroVaciaPorNumero">
+			<with-param name="VACIA" query-param="VACIA"/>
+			<with-param name="CANTIDAD" query-param="CANTIDAD"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroPagPorDocAsociadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  :DOCASOCIADO CLASEDOC, T.NUMERO, TO_CHAR(T.FECHA, 'DD/MM/YYYY') FECHA, T.DESCRIPCION  FROM ORDENDESUMINISTRO T WHERE T.COMPANIA = :COMPANIA ORDER BY T.NUMERO DESC) WHERE (CASE WHEN CLASEDOC IS NULL THEN ' ' ELSE UPPER(CLASEDOC) END)  LIKE UPPER(:CLASEDOC || '%')  AND (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CLASEDOC":"$CLASEDOC","NUMERO":"$NUMERO","FECHA":"$FECHA","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="DOCASOCIADO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEDOC" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/pordocasociado/pag">
+		<call-query href="getOrdenesdesuministroPagPorDocAsociadoQuery">
+			<with-param name="DOCASOCIADO" query-param="DOCASOCIADO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEDOC" query-param="CLASEDOC"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroNumPorDocAsociadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  :DOCASOCIADO CLASEDOC, T.NUMERO, TO_CHAR(T.FECHA, 'DD/MM/YYYY') FECHA, T.DESCRIPCION  FROM ORDENDESUMINISTRO T WHERE T.COMPANIA = :COMPANIA ORDER BY T.NUMERO DESC) WHERE (CASE WHEN CLASEDOC IS NULL THEN ' ' ELSE UPPER(CLASEDOC) END)  LIKE UPPER(:CLASEDOC || '%')  AND (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER( '%' || :NUMERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="DOCASOCIADO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEDOC" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/pordocasociado/num">
+		<call-query href="getOrdenesdesuministroNumPorDocAsociadoQuery">
+			<with-param name="DOCASOCIADO" query-param="DOCASOCIADO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEDOC" query-param="CLASEDOC"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ORDENDESUMINISTRO.NUMERO  FROM ORDENDESUMINISTRO WHERE ORDENDESUMINISTRO.COMPANIA = :COMPANIA ORDER BY ORDENDESUMINISTRO.NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/todosporcompania">
+		<call-query href="getOrdenesdesuministroTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroTodosPorCompaniaFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ORDENDESUMINISTRO.NUMERO  FROM ORDENDESUMINISTRO WHERE ORDENDESUMINISTRO.COMPANIA = :COMPANIA AND ORDENDESUMINISTRO.NUMERO &gt;= :NUMEROINICIAL ORDER BY ORDENDESUMINISTRO.NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMEROINICIAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/todosporcompaniafinal">
+		<call-query href="getOrdenesdesuministroTodosPorCompaniaFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMEROINICIAL" query-param="NUMEROINICIAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroPagNumeroFechaDescripcionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO, TO_CHAR(FECHA, 'DD/MM/YYYY') FECHA, DESCRIPCION  FROM ORDENDESUMINISTRO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO DESC) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER(:FECHA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","FECHA":"$FECHA","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/numerofechadescripcion/pag">
+		<call-query href="getOrdenesdesuministroPagNumeroFechaDescripcionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroNumNumeroFechaDescripcionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO, TO_CHAR(FECHA, 'DD/MM/YYYY') FECHA, DESCRIPCION  FROM ORDENDESUMINISTRO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO DESC) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/numerofechadescripcion/num">
+		<call-query href="getOrdenesdesuministroNumNumeroFechaDescripcionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroPagPorCompaniaYFechaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ORDENDESUMINISTRO.NUMERO, ORDENDESUMINISTRO.DESCRIPCION  FROM ORDENDESUMINISTRO WHERE ORDENDESUMINISTRO.FECHA Between :FECHAINICIAL AND :FECHAFINAL AND ORDENDESUMINISTRO.COMPANIA = :COMPANIA ORDER BY ORDENDESUMINISTRO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/porcompaniayfecha/pag">
+		<call-query href="getOrdenesdesuministroPagPorCompaniaYFechaQuery">
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroNumPorCompaniaYFechaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ORDENDESUMINISTRO.NUMERO, ORDENDESUMINISTRO.DESCRIPCION  FROM ORDENDESUMINISTRO WHERE ORDENDESUMINISTRO.FECHA Between :FECHAINICIAL AND :FECHAFINAL AND ORDENDESUMINISTRO.COMPANIA = :COMPANIA ORDER BY ORDENDESUMINISTRO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/porcompaniayfecha/num">
+		<call-query href="getOrdenesdesuministroNumPorCompaniaYFechaQuery">
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroPagPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ORDENDESUMINISTRO.NUMERO, ORDENDESUMINISTRO.DESCRIPCION,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM ORDENDESUMINISTRO WHERE ORDENDESUMINISTRO.COMPANIA =:COMPANIA ORDER BY ORDENDESUMINISTRO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","DESCRIPCION":"$DESCRIPCION","FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/porcompania/pag">
+		<call-query href="getOrdenesdesuministroPagPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroNumPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ORDENDESUMINISTRO.NUMERO, ORDENDESUMINISTRO.DESCRIPCION,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM ORDENDESUMINISTRO WHERE ORDENDESUMINISTRO.COMPANIA =:COMPANIA ORDER BY ORDENDESUMINISTRO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/porcompania/num">
+		<call-query href="getOrdenesdesuministroNumPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroPagTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ORDENDESUMINISTRO.NUMERO, ORDENDESUMINISTRO.DESCRIPCION, ORDENDESUMINISTRO.VALORESTIMADO, ORDENDESUMINISTRO.NSOLICITUDDISPON, ORDENDESUMINISTRO.CONCEPTO, TRIM(TERCERO.NOMBRE) NOMBRERESPONSABLE, DEPENDENCIA.NOMBRE DEPENDENCIANOMBRE  FROM ORDENDESUMINISTRO LEFT JOIN DEPENDENCIA ON ORDENDESUMINISTRO.COMPANIA = DEPENDENCIA.COMPANIA AND ORDENDESUMINISTRO.DEPENDENCIA = DEPENDENCIA.CODIGO LEFT JOIN RESPONSABLE ON ORDENDESUMINISTRO.COMPANIA = RESPONSABLE.COMPANIA AND ORDENDESUMINISTRO.TERCERO = RESPONSABLE.CEDULA AND ORDENDESUMINISTRO.SUCURSAL = RESPONSABLE.SUCURSAL LEFT JOIN TERCERO ON TERCERO.COMPANIA =RESPONSABLE.COMPANIA AND TERCERO.NIT =RESPONSABLE.CEDULA AND TERCERO.SUCURSAL =RESPONSABLE.SUCURSAL WHERE ORDENDESUMINISTRO.COMPANIA =:COMPANIA ORDER BY ORDENDESUMINISTRO.COMPANIA, ORDENDESUMINISTRO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","DESCRIPCION":"$DESCRIPCION","VALORESTIMADO":"$VALORESTIMADO","NSOLICITUDDISPON":"$NSOLICITUDDISPON","CONCEPTO":"$CONCEPTO","NOMBRERESPONSABLE":"$NOMBRERESPONSABLE","DEPENDENCIANOMBRE":"$DEPENDENCIANOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/todosporcompania/pag">
+		<call-query href="getOrdenesdesuministroPagTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroNumTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ORDENDESUMINISTRO.NUMERO, ORDENDESUMINISTRO.DESCRIPCION, ORDENDESUMINISTRO.VALORESTIMADO, ORDENDESUMINISTRO.NSOLICITUDDISPON, ORDENDESUMINISTRO.CONCEPTO, TRIM(TERCERO.NOMBRE) NOMBRERESPONSABLE, DEPENDENCIA.NOMBRE DEPENDENCIANOMBRE  FROM ORDENDESUMINISTRO LEFT JOIN DEPENDENCIA ON ORDENDESUMINISTRO.COMPANIA = DEPENDENCIA.COMPANIA AND ORDENDESUMINISTRO.DEPENDENCIA = DEPENDENCIA.CODIGO LEFT JOIN RESPONSABLE ON ORDENDESUMINISTRO.COMPANIA = RESPONSABLE.COMPANIA AND ORDENDESUMINISTRO.TERCERO = RESPONSABLE.CEDULA AND ORDENDESUMINISTRO.SUCURSAL = RESPONSABLE.SUCURSAL LEFT JOIN TERCERO ON TERCERO.COMPANIA =RESPONSABLE.COMPANIA AND TERCERO.NIT =RESPONSABLE.CEDULA AND TERCERO.SUCURSAL =RESPONSABLE.SUCURSAL WHERE ORDENDESUMINISTRO.COMPANIA =:COMPANIA ORDER BY ORDENDESUMINISTRO.COMPANIA, ORDENDESUMINISTRO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/todosporcompania/num">
+		<call-query href="getOrdenesdesuministroNumTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroPagTpmovimientoclasenumerofechadescQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TM.CODIGO CLASEDOC, OS.NUMERO, TO_CHAR(OS.FECHA, 'DD/MM/YYYY') FECHA, OS.DESCRIPCION  FROM ORDENDESUMINISTRO OS INNER JOIN DEPENDENCIA DEP ON DEP.COMPANIA = OS.COMPANIA AND DEP.CODIGO = OS.DEPENDENCIA INNER JOIN CLASE_BODEGA CB ON CB.CODIGO = DEP.CLASE_BODEGA INNER JOIN TIPOMOVIMIENTO TM ON TM.CLASE_BODEGA_ORIGEN = CB.CODIGO WHERE OS.COMPANIA = :COMPANIA ORDER BY OS.NUMERO DESC) WHERE (CASE WHEN CLASEDOC IS NULL THEN ' ' ELSE UPPER(CLASEDOC) END)  LIKE UPPER(:CLASEDOC || '%')  AND (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CLASEDOC":"$CLASEDOC","NUMERO":"$NUMERO","FECHA":"$FECHA","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEDOC" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/tpmovimientoclasenumerofechadesc/pag">
+		<call-query href="getOrdenesdesuministroPagTpmovimientoclasenumerofechadescQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEDOC" query-param="CLASEDOC"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroNumTpmovimientoclasenumerofechadescQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TM.CODIGO CLASEDOC, OS.NUMERO, TO_CHAR(OS.FECHA, 'DD/MM/YYYY') FECHA, OS.DESCRIPCION  FROM ORDENDESUMINISTRO OS INNER JOIN DEPENDENCIA DEP ON DEP.COMPANIA = OS.COMPANIA AND DEP.CODIGO = OS.DEPENDENCIA INNER JOIN CLASE_BODEGA CB ON CB.CODIGO = DEP.CLASE_BODEGA INNER JOIN TIPOMOVIMIENTO TM ON TM.CLASE_BODEGA_ORIGEN = CB.CODIGO WHERE OS.COMPANIA = :COMPANIA ORDER BY OS.NUMERO DESC) WHERE (CASE WHEN CLASEDOC IS NULL THEN ' ' ELSE UPPER(CLASEDOC) END)  LIKE UPPER(:CLASEDOC || '%')  AND (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEDOC" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/tpmovimientoclasenumerofechadesc/num">
+		<call-query href="getOrdenesdesuministroNumTpmovimientoclasenumerofechadescQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEDOC" query-param="CLASEDOC"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroPagListarpordependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT ORDENDESUMINISTRO.COMPANIA, ORDENDESUMINISTRO.NUMERO, TO_CHAR( FECHA, 'DD/MM/YYYY' ) FECHA, DEPENDENCIA.NOMBRE, VALORESTIMADO, DESCRIPCION,(CASE D_ORDENDESUMINISTRO.IND_REG WHEN 0 THEN 'false' ELSE 'true' END) IND_REG FROM ORDENDESUMINISTRO INNER JOIN DEPENDENCIA ON ORDENDESUMINISTRO.COMPANIA = DEPENDENCIA.COMPANIA AND ORDENDESUMINISTRO.DEPENDENCIA = DEPENDENCIA.CODIGO LEFT JOIN D_ORDENDESUMINISTRO ON ORDENDESUMINISTRO.COMPANIA = D_ORDENDESUMINISTRO.COMPANIA AND ORDENDESUMINISTRO.NUMERO = D_ORDENDESUMINISTRO.ORDENDESUMINISTRO WHERE ORDENDESUMINISTRO.COMPANIA = :COMPANIA AND DEPENDENCIA.CODIGO = :DEPENDENCIA ORDER BY ORDENDESUMINISTRO.COMPANIA, NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALORESTIMADO IS NULL THEN ' ' ELSE UPPER(VALORESTIMADO) END)  LIKE UPPER(:VALORESTIMADO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NUMERO":"$NUMERO","FECHA":"$FECHA","NOMBRE":"$NOMBRE","VALORESTIMADO":"$VALORESTIMADO","DESCRIPCION":"$DESCRIPCION","IND_REG":"$IND_REG(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALORESTIMADO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/listarpordependencia/pag">
+		<call-query href="getOrdenesdesuministroPagListarpordependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALORESTIMADO" query-param="VALORESTIMADO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroNumListarpordependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT ORDENDESUMINISTRO.COMPANIA, ORDENDESUMINISTRO.NUMERO, TO_CHAR( FECHA, 'DD/MM/YYYY' ) FECHA, DEPENDENCIA.NOMBRE, VALORESTIMADO, DESCRIPCION,(CASE D_ORDENDESUMINISTRO.IND_REG WHEN 0 THEN 'false' ELSE 'true' END) IND_REG FROM ORDENDESUMINISTRO INNER JOIN DEPENDENCIA ON ORDENDESUMINISTRO.COMPANIA = DEPENDENCIA.COMPANIA AND ORDENDESUMINISTRO.DEPENDENCIA = DEPENDENCIA.CODIGO LEFT JOIN D_ORDENDESUMINISTRO ON ORDENDESUMINISTRO.COMPANIA = D_ORDENDESUMINISTRO.COMPANIA AND ORDENDESUMINISTRO.NUMERO = D_ORDENDESUMINISTRO.ORDENDESUMINISTRO WHERE ORDENDESUMINISTRO.COMPANIA = :COMPANIA AND DEPENDENCIA.CODIGO = :DEPENDENCIA ORDER BY ORDENDESUMINISTRO.COMPANIA, NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALORESTIMADO IS NULL THEN ' ' ELSE UPPER(VALORESTIMADO) END)  LIKE UPPER(:VALORESTIMADO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALORESTIMADO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/listarpordependencia/num">
+		<call-query href="getOrdenesdesuministroNumListarpordependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALORESTIMADO" query-param="VALORESTIMADO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroPagListaaprobarordensuministroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DISTINCT ORDENDESUMINISTRO.COMPANIA, ORDENDESUMINISTRO.NUMERO, TO_CHAR(FECHA, 'DD/MM/YYYY') FECHA, DEPENDENCIA.NOMBRE, VALORESTIMADO, DESCRIPCION,(CASE D_ORDENDESUMINISTRO.IND_REG WHEN 0 THEN 'false' ELSE 'true' END) IND_REG, ORDENDESUMINISTRO.ESTADO FROM ORDENDESUMINISTRO INNER JOIN DEPENDENCIA ON ORDENDESUMINISTRO.COMPANIA = DEPENDENCIA.COMPANIA AND ORDENDESUMINISTRO.DEPENDENCIA = DEPENDENCIA.CODIGO LEFT JOIN D_ORDENDESUMINISTRO ON ORDENDESUMINISTRO.COMPANIA = D_ORDENDESUMINISTRO.COMPANIA AND ORDENDESUMINISTRO.NUMERO = D_ORDENDESUMINISTRO.ORDENDESUMINISTRO WHERE ORDENDESUMINISTRO.COMPANIA = :COMPANIA AND ORDENDESUMINISTRO.ESTADO IN ('SOLICITADO','APROBADO','RECHAZADO') ORDER BY ORDENDESUMINISTRO.COMPANIA, NUMERO) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN VALORESTIMADO IS NULL THEN ' ' ELSE UPPER(VALORESTIMADO) END) LIKE UPPER(CONCAT(:VALORESTIMADO, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NUMERO":"$NUMERO","FECHA":"$FECHA","NOMBRE":"$NOMBRE","VALORESTIMADO":"$VALORESTIMADO","DESCRIPCION":"$DESCRIPCION","IND_REG":"$IND_REG(type:boolean)","ESTADO":"$ESTADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALORESTIMADO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/listaaprobarordensuministro/pag">
+		<call-query href="getOrdenesdesuministroPagListaaprobarordensuministroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALORESTIMADO" query-param="VALORESTIMADO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenesdesuministroNumListaaprobarordensuministroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DISTINCT ORDENDESUMINISTRO.COMPANIA, ORDENDESUMINISTRO.NUMERO, TO_CHAR(FECHA, 'DD/MM/YYYY') FECHA, DEPENDENCIA.NOMBRE, VALORESTIMADO, DESCRIPCION,(CASE D_ORDENDESUMINISTRO.IND_REG WHEN 0 THEN 'false' ELSE 'true' END) IND_REG, ORDENDESUMINISTRO.ESTADO FROM ORDENDESUMINISTRO INNER JOIN DEPENDENCIA ON ORDENDESUMINISTRO.COMPANIA = DEPENDENCIA.COMPANIA AND ORDENDESUMINISTRO.DEPENDENCIA = DEPENDENCIA.CODIGO LEFT JOIN D_ORDENDESUMINISTRO ON ORDENDESUMINISTRO.COMPANIA = D_ORDENDESUMINISTRO.COMPANIA AND ORDENDESUMINISTRO.NUMERO = D_ORDENDESUMINISTRO.ORDENDESUMINISTRO WHERE ORDENDESUMINISTRO.COMPANIA = :COMPANIA AND ORDENDESUMINISTRO.ESTADO IN ('SOLICITADO','APROBADO','RECHAZADO') ORDER BY ORDENDESUMINISTRO.COMPANIA, NUMERO) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN VALORESTIMADO IS NULL THEN ' ' ELSE UPPER(VALORESTIMADO) END) LIKE UPPER(CONCAT(:VALORESTIMADO, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALORESTIMADO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenesdesuministro/listaaprobarordensuministro/num">
+		<call-query href="getOrdenesdesuministroNumListaaprobarordensuministroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALORESTIMADO" query-param="VALORESTIMADO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateOrdenesdesuministroUpdateestadoaprobacion" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ORDENDESUMINISTRO SET ESTADO = :ESTADO, USUARIO_APROBADOR = :USUARIO, FECHA_APROBACION = SYSDATE WHERE COMPANIA = :COMPANIA AND NUMERO = :NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ordenesdesuministro/updateestadoaprobacion">
+		<call-query href="updateOrdenesdesuministroUpdateestadoaprobacion">
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+
+</data>

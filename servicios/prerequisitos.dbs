@@ -1,0 +1,192 @@
+﻿<data name="prerequisitos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getPrerequisitosPagTodosCompaniaTipoContratoConsecutivoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO PRERREQUISITO, NOMBRE NOMBREPRE, TIPO, CASE TIPO WHEN '1' THEN 'Texto' WHEN '3' THEN 'Numérico' WHEN '4' THEN 'Fecha' END TIPOPRE  FROM PREREQUISITOS WHERE COMPANIA = :COMPANIA AND CODIGO NOT IN (SELECT PRERREQUISITO FROM PRE_REQUISITOS_ETAPA WHERE COMPANIA = :COMPANIA AND TIPOCONTRATO = :TIPOCONTRATO AND TRANSACCION = :CONSECUTIVO AND CONSECUTIVODETALLE = :CONSECUTIVODETALLE) ORDER BY NOMBRE, CODIGO) WHERE (CASE WHEN PRERREQUISITO IS NULL THEN ' ' ELSE UPPER(PRERREQUISITO) END)  LIKE UPPER( '%' || :PRERREQUISITO || '%')  AND (CASE WHEN NOMBREPRE IS NULL THEN ' ' ELSE UPPER(NOMBREPRE) END)  LIKE UPPER( '%' || :NOMBREPRE || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER(:TIPO || '%')  AND (CASE WHEN TIPOPRE IS NULL THEN ' ' ELSE UPPER(TIPOPRE) END)  LIKE UPPER( '%' || :TIPOPRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PRERREQUISITO":"$PRERREQUISITO(type:integer)","NOMBREPRE":"$NOMBREPRE","TIPO":"$TIPO","TIPOPRE":"$TIPOPRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CONSECUTIVODETALLE" sqlType="STRING"/>
+		<param name="PRERREQUISITO" sqlType="STRING"/>
+		<param name="NOMBREPRE" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="TIPOPRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="prerequisitos/todoscompaniatipocontratoconsecutivo/pag">
+		<call-query href="getPrerequisitosPagTodosCompaniaTipoContratoConsecutivoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CONSECUTIVODETALLE" query-param="CONSECUTIVODETALLE"/>
+			<with-param name="PRERREQUISITO" query-param="PRERREQUISITO"/>
+			<with-param name="NOMBREPRE" query-param="NOMBREPRE"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="TIPOPRE" query-param="TIPOPRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrerequisitosNumTodosCompaniaTipoContratoConsecutivoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO PRERREQUISITO, NOMBRE NOMBREPRE, TIPO, CASE TIPO WHEN '1' THEN 'Texto' WHEN '3' THEN 'Numérico' WHEN '4' THEN 'Fecha' END TIPOPRE  FROM PREREQUISITOS WHERE COMPANIA = :COMPANIA AND CODIGO NOT IN (SELECT PRERREQUISITO FROM PRE_REQUISITOS_ETAPA WHERE COMPANIA = :COMPANIA AND TIPOCONTRATO = :TIPOCONTRATO AND TRANSACCION = :CONSECUTIVO AND CONSECUTIVODETALLE = :CONSECUTIVODETALLE) ORDER BY NOMBRE, CODIGO) WHERE (CASE WHEN PRERREQUISITO IS NULL THEN ' ' ELSE UPPER(PRERREQUISITO) END)  LIKE UPPER( '%' || :PRERREQUISITO || '%')  AND (CASE WHEN NOMBREPRE IS NULL THEN ' ' ELSE UPPER(NOMBREPRE) END)  LIKE UPPER( '%' || :NOMBREPRE || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER(:TIPO || '%')  AND (CASE WHEN TIPOPRE IS NULL THEN ' ' ELSE UPPER(TIPOPRE) END)  LIKE UPPER( '%' || :TIPOPRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CONSECUTIVODETALLE" sqlType="STRING"/>
+		<param name="PRERREQUISITO" sqlType="STRING"/>
+		<param name="NOMBREPRE" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="TIPOPRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="prerequisitos/todoscompaniatipocontratoconsecutivo/num">
+		<call-query href="getPrerequisitosNumTodosCompaniaTipoContratoConsecutivoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CONSECUTIVODETALLE" query-param="CONSECUTIVODETALLE"/>
+			<with-param name="PRERREQUISITO" query-param="PRERREQUISITO"/>
+			<with-param name="NOMBREPRE" query-param="NOMBREPRE"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="TIPOPRE" query-param="TIPOPRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertPrerequisitos" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PREREQUISITOS (COMPANIA, CODIGO, NOMBRE, TIPO, VALOR1, VALOR2, CLASE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :NOMBRE, :TIPO, :VALOR1, :VALOR2, :CLASE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR1" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR2" sqlType="STRING"/>
+		<param defaultValue="0" name="CLASE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="prerequisitos">
+		<call-query href="insertPrerequisitos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="VALOR1" query-param="VALOR1"/>
+			<with-param name="VALOR2" query-param="VALOR2"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deletePrerequisitos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM PREREQUISITOS WHERE PREREQUISITOS.COMPANIA= :KEY_COMPANIA AND PREREQUISITOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="prerequisitos">
+		<call-query href="deletePrerequisitos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrerequisitosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  PREREQUISITOS.COMPANIA, PREREQUISITOS.CODIGO, PREREQUISITOS.NOMBRE, CLASE.NOMBRE CLASENOMBRE, PREREQUISITOS.TIPO, DECODE (PREREQUISITOS.TIPO, '1','Texto', '3','Numérico', '4','Fecha') NOMBRETIPO, PREREQUISITOS.VALOR1, PREREQUISITOS.VALOR2, PREREQUISITOS.CLASE  FROM PREREQUISITOS INNER JOIN CLASE_PRERREQUISITO CLASE ON PREREQUISITOS.COMPANIA = CLASE.COMPANIA AND PREREQUISITOS.CLASE = CLASE.CODIGO WHERE PREREQUISITOS.COMPANIA = :COMPANIA ORDER BY PREREQUISITOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CLASENOMBRE IS NULL THEN ' ' ELSE UPPER(CLASENOMBRE) END)  LIKE UPPER( '%' || :CLASENOMBRE || '%')  AND (CASE WHEN NOMBRETIPO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPO) END)  LIKE UPPER( '%' || :NOMBRETIPO || '%')  AND (CASE WHEN VALOR1 IS NULL THEN ' ' ELSE UPPER(VALOR1) END)  LIKE UPPER(:VALOR1 || '%')  AND (CASE WHEN VALOR2 IS NULL THEN ' ' ELSE UPPER(VALOR2) END)  LIKE UPPER(:VALOR2 || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","CLASENOMBRE":"$CLASENOMBRE","TIPO":"$TIPO","NOMBRETIPO":"$NOMBRETIPO","VALOR1":"$VALOR1","VALOR2":"$VALOR2","CLASE":"$CLASE(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CLASENOMBRE" sqlType="STRING"/>
+		<param name="NOMBRETIPO" sqlType="STRING"/>
+		<param name="VALOR1" sqlType="STRING"/>
+		<param name="VALOR2" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="prerequisitos">
+		<call-query href="getPrerequisitosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CLASENOMBRE" query-param="CLASENOMBRE"/>
+			<with-param name="NOMBRETIPO" query-param="NOMBRETIPO"/>
+			<with-param name="VALOR1" query-param="VALOR1"/>
+			<with-param name="VALOR2" query-param="VALOR2"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrerequisitosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  PREREQUISITOS.COMPANIA, PREREQUISITOS.CODIGO, PREREQUISITOS.NOMBRE, CLASE.NOMBRE CLASENOMBRE, PREREQUISITOS.TIPO, DECODE (PREREQUISITOS.TIPO, '1','Texto', '3','Numérico', '4','Fecha') NOMBRETIPO, PREREQUISITOS.VALOR1, PREREQUISITOS.VALOR2, PREREQUISITOS.CLASE  FROM PREREQUISITOS INNER JOIN CLASE_PRERREQUISITO CLASE ON PREREQUISITOS.COMPANIA = CLASE.COMPANIA AND PREREQUISITOS.CLASE = CLASE.CODIGO WHERE PREREQUISITOS.COMPANIA = :COMPANIA ORDER BY PREREQUISITOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CLASENOMBRE IS NULL THEN ' ' ELSE UPPER(CLASENOMBRE) END)  LIKE UPPER( '%' || :CLASENOMBRE || '%')  AND (CASE WHEN NOMBRETIPO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPO) END)  LIKE UPPER( '%' || :NOMBRETIPO || '%')  AND (CASE WHEN VALOR1 IS NULL THEN ' ' ELSE UPPER(VALOR1) END)  LIKE UPPER(:VALOR1 || '%')  AND (CASE WHEN VALOR2 IS NULL THEN ' ' ELSE UPPER(VALOR2) END)  LIKE UPPER(:VALOR2 || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CLASENOMBRE" sqlType="STRING"/>
+		<param name="NOMBRETIPO" sqlType="STRING"/>
+		<param name="VALOR1" sqlType="STRING"/>
+		<param name="VALOR2" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="prerequisitos/numero">
+		<call-query href="getPrerequisitosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CLASENOMBRE" query-param="CLASENOMBRE"/>
+			<with-param name="NOMBRETIPO" query-param="NOMBRETIPO"/>
+			<with-param name="VALOR1" query-param="VALOR1"/>
+			<with-param name="VALOR2" query-param="VALOR2"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePrerequisitos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PREREQUISITOS SET CODIGO=:CODIGO, NOMBRE=:NOMBRE, TIPO=:TIPO, VALOR1=:VALOR1, VALOR2=:VALOR2, CLASE=:CLASE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PREREQUISITOS.COMPANIA= :KEY_COMPANIA AND PREREQUISITOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="VALOR1" sqlType="STRING"/>
+		<param name="VALOR2" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="prerequisitos">
+		<call-query href="updatePrerequisitos">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="VALOR1" query-param="VALOR1"/>
+			<with-param name="VALOR2" query-param="VALOR2"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

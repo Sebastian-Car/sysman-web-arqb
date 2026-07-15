@@ -1,0 +1,114 @@
+﻿<data name="es_recursosnaturales" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertEs_recursosnaturales" keyColumns="COMPANIA,COD_RECURSO,COD_ESTUDIO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ES_RECURSOSNATURALES (COMPANIA, COD_RECURSO, COD_ESTUDIO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :COD_RECURSO, :COD_ESTUDIO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_COD_RECURSO":"$COD_RECURSO(type:integer)","KEY_COD_ESTUDIO":"$COD_ESTUDIO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_RECURSO" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="es_recursosnaturales">
+		<call-query href="insertEs_recursosnaturales">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_RECURSO" query-param="COD_RECURSO"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEs_recursosnaturales" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ES_RECURSOSNATURALES WHERE ES_RECURSOSNATURALES.COMPANIA= :KEY_COMPANIA AND ES_RECURSOSNATURALES.COD_RECURSO= :KEY_COD_RECURSO AND ES_RECURSOSNATURALES.COD_ESTUDIO= :KEY_COD_ESTUDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_RECURSO" sqlType="INTEGER"/>
+		<param name="KEY_COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="es_recursosnaturales">
+		<call-query href="deleteEs_recursosnaturales">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_RECURSO" query-param="KEY_COD_RECURSO"/>
+			<with-param name="KEY_COD_ESTUDIO" query-param="KEY_COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEs_recursosnaturalesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT ES_RECURSOSNATURALES.COMPANIA, ES_RECURSOSNATURALES.COD_ESTUDIO, ES_RECURSOSNATURALES.COD_RECURSO, RECURSOS_NATURALES.CODIGO, RECURSOS_NATURALES.NOMBRE FROM ES_RECURSOSNATURALES INNER JOIN RECURSOS_NATURALES ON ES_RECURSOSNATURALES.COMPANIA = RECURSOS_NATURALES.COMPANIA AND ES_RECURSOSNATURALES.COD_RECURSO = RECURSOS_NATURALES.CODIGO WHERE ES_RECURSOSNATURALES.COMPANIA = :COMPANIA AND ES_RECURSOSNATURALES.COD_ESTUDIO = :COD_ESTUDIO) INI WHERE (CASE WHEN COD_ESTUDIO IS NULL THEN ' ' ELSE UPPER(COD_ESTUDIO) END) LIKE UPPER(CONCAT(:COD_ESTUDIO, '%')) AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","COD_ESTUDIO":"$COD_ESTUDIO(type:long)","COD_RECURSO":"$COD_RECURSO(type:integer)","CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="es_recursosnaturales">
+		<call-query href="getEs_recursosnaturalesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEs_recursosnaturalesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT ES_RECURSOSNATURALES.COMPANIA, ES_RECURSOSNATURALES.COD_ESTUDIO, ES_RECURSOSNATURALES.COD_RECURSO, RECURSOS_NATURALES.CODIGO, RECURSOS_NATURALES.NOMBRE FROM ES_RECURSOSNATURALES INNER JOIN RECURSOS_NATURALES ON ES_RECURSOSNATURALES.COMPANIA = RECURSOS_NATURALES.COMPANIA AND ES_RECURSOSNATURALES.COD_RECURSO = RECURSOS_NATURALES.CODIGO WHERE ES_RECURSOSNATURALES.COMPANIA = :COMPANIA AND ES_RECURSOSNATURALES.COD_ESTUDIO = :COD_ESTUDIO) INI WHERE (CASE WHEN COD_ESTUDIO IS NULL THEN ' ' ELSE UPPER(COD_ESTUDIO) END) LIKE UPPER(CONCAT(:COD_ESTUDIO, '%')) AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="es_recursosnaturales/numero">
+		<call-query href="getEs_recursosnaturalesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEs_recursosnaturales" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ES_RECURSOSNATURALES SET COMPANIA=:COMPANIA, COD_RECURSO=:COD_RECURSO, COD_ESTUDIO=:COD_ESTUDIO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ES_RECURSOSNATURALES.COMPANIA= :KEY_COMPANIA AND ES_RECURSOSNATURALES.COD_RECURSO= :KEY_COD_RECURSO AND ES_RECURSOSNATURALES.COD_ESTUDIO= :KEY_COD_ESTUDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_RECURSO" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_RECURSO" sqlType="STRING"/>
+		<param name="KEY_COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="es_recursosnaturales">
+		<call-query href="updateEs_recursosnaturales">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_RECURSO" query-param="COD_RECURSO"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_RECURSO" query-param="KEY_COD_RECURSO"/>
+			<with-param name="KEY_COD_ESTUDIO" query-param="KEY_COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,192 @@
+﻿<data name="formatos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getFormatosTodosPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CODIGO, NOMBRE FROM FORMATOS ORDER BY CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="formatos/todosporcodigo">
+		<call-query href="getFormatosTodosPorCodigoQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getFormatosPagPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, NOMBRE FROM FORMATOS ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="formatos/porcodigo/pag">
+		<call-query href="getFormatosPagPorCodigoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getFormatosNumPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, NOMBRE FROM FORMATOS ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="formatos/porcodigo/num">
+		<call-query href="getFormatosNumPorCodigoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getFormatosPagTodosPorFormatoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, NOMBRE ,(CASE IND_DETALLE WHEN 0 THEN 'false' ELSE 'true' END) IND_DETALLE FROM FORMATOS WHERE PREFIJO = :PREFIJO ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN IND_DETALLE IS NULL THEN ' ' ELSE UPPER(IND_DETALLE) END) LIKE UPPER(CONCAT(CONCAT('%',:IND_DETALLE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","IND_DETALLE":"$IND_DETALLE(type:boolean)"}]}}		</result>
+		<param name="PREFIJO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="IND_DETALLE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="formatos/todosporformato/pag">
+		<call-query href="getFormatosPagTodosPorFormatoQuery">
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="IND_DETALLE" query-param="IND_DETALLE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getFormatosNumTodosPorFormatoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, NOMBRE ,(CASE IND_DETALLE WHEN 0 THEN 'false' ELSE 'true' END) IND_DETALLE FROM FORMATOS WHERE PREFIJO = :PREFIJO ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN IND_DETALLE IS NULL THEN ' ' ELSE UPPER(IND_DETALLE) END) LIKE UPPER(CONCAT(CONCAT('%',:IND_DETALLE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="PREFIJO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="IND_DETALLE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="formatos/todosporformato/num">
+		<call-query href="getFormatosNumTodosPorFormatoQuery">
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="IND_DETALLE" query-param="IND_DETALLE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertFormatos" keyColumns="CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO FORMATOS (CODIGO, NOMBRE, PREFIJO, IND_DETALLE, DATE_CREATED, CREATED_BY) VALUES (:CODIGO, :NOMBRE, :PREFIJO, :IND_DETALLE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="N" name="PREFIJO" sqlType="STRING"/>
+		<param defaultValue="0" name="IND_DETALLE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="formatos">
+		<call-query href="insertFormatos">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="IND_DETALLE" query-param="IND_DETALLE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteFormatos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM FORMATOS WHERE FORMATOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="formatos">
+		<call-query href="deleteFormatos">
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getFormatosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO,NOMBRE,CASE PREFIJO WHEN 'N' THEN 'Nacional' WHEN 'D' THEN 'Distrital' ELSE ' ' END NOMBREPREFIJO, PREFIJO,(CASE IND_DETALLE WHEN 0 THEN 'false' ELSE 'true' END) IND_DETALLE FROM FORMATOS) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN NOMBREPREFIJO IS NULL THEN ' ' ELSE UPPER(NOMBREPREFIJO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBREPREFIJO), '%')) AND (CASE WHEN IND_DETALLE IS NULL THEN ' ' ELSE UPPER(IND_DETALLE) END) LIKE UPPER(CONCAT(CONCAT('%',:IND_DETALLE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","NOMBREPREFIJO":"$NOMBREPREFIJO","PREFIJO":"$PREFIJO","IND_DETALLE":"$IND_DETALLE(type:boolean)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBREPREFIJO" sqlType="STRING"/>
+		<param name="IND_DETALLE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="formatos">
+		<call-query href="getFormatosPaginaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBREPREFIJO" query-param="NOMBREPREFIJO"/>
+			<with-param name="IND_DETALLE" query-param="IND_DETALLE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getFormatosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO,NOMBRE,CASE PREFIJO WHEN 'N' THEN 'Nacional' WHEN 'D' THEN 'Distrital' ELSE ' ' END NOMBREPREFIJO, PREFIJO,(CASE IND_DETALLE WHEN 0 THEN 'false' ELSE 'true' END) IND_DETALLE FROM FORMATOS) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN NOMBREPREFIJO IS NULL THEN ' ' ELSE UPPER(NOMBREPREFIJO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBREPREFIJO), '%')) AND (CASE WHEN IND_DETALLE IS NULL THEN ' ' ELSE UPPER(IND_DETALLE) END) LIKE UPPER(CONCAT(CONCAT('%',:IND_DETALLE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBREPREFIJO" sqlType="STRING"/>
+		<param name="IND_DETALLE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="formatos/numero">
+		<call-query href="getFormatosNumeroQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBREPREFIJO" query-param="NOMBREPREFIJO"/>
+			<with-param name="IND_DETALLE" query-param="IND_DETALLE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateFormatos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE FORMATOS SET CODIGO=:CODIGO, NOMBRE=:NOMBRE, PREFIJO=:PREFIJO, IND_DETALLE=:IND_DETALLE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE FORMATOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PREFIJO" sqlType="STRING"/>
+		<param name="IND_DETALLE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="formatos">
+		<call-query href="updateFormatos">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="IND_DETALLE" query-param="IND_DETALLE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

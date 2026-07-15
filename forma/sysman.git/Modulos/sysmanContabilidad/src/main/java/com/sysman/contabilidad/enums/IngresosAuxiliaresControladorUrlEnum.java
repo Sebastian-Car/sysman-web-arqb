@@ -1,0 +1,42 @@
+package com.sysman.contabilidad.enums;
+
+public enum IngresosAuxiliaresControladorUrlEnum {
+	
+	URL45004("INGRESOSAUXILIARESCONTROLADORURL45004", "45004"),
+	
+	URL45002("INGRESOSAUXILIARESCONTROLADORURL45002", "45002"),
+	
+	URL20013("INGRESOSAUXILIARESCONTROLADORURL20013", "20013"),
+	
+	URL20015("INGRESOSAUXILIARESCONTROLADORURL20015", "20015"),
+	
+	URL23006("INGRESOSAUXILIARESCONTROLADORURL23006", "23006"),
+	
+	URL23008("INGRESOSAUXILIARESCONTROLADORURL23008", "23008"),
+	
+	URL13001("INGRESOSAUXILIARESCONTROLADORURL13001", "13001"),
+	
+	URL13035("INGRESOSAUXILIARESCONTROLADORURL13035", "13035"),
+	
+	URL34001("INGRESOSAUXILIARESCONTROLADORURL34001", "34001"),
+	
+	URL34003("INGRESOSAUXILIARESCONTROLADORURL34003", "34003");
+	
+	 private final String key;
+	 private final String value;
+
+	 private IngresosAuxiliaresControladorUrlEnum(String key,
+			 String value) {
+	         this.key = key;
+	         this.value = value;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+}

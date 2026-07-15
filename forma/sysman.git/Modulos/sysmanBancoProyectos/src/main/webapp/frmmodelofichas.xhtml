@@ -1,0 +1,565 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+                if("#{frmmodelofichasControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TT_FR163}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{frmmodelofichasControlador.cargarLista}" />
+		<section class="radius">
+			<h:form id="FR163">
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="lista" widgetVar="lista"
+					visible="#{frmmodelofichasControlador.accion==null}">
+					<p:confirmDialog global="true" showEffect="fade" id="confFR163"
+						widgetVar="confFR163"
+						rendered="#{frmmodelofichasControlador.permisos[1]}">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:dataTable id="TBFR163" widgetVar="TBFR163" var="reg"
+						value="#{frmmodelofichasControlador.listaInicial}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" paginator="true" lazy="true">
+						<f:facet name="{Exporters}"
+							rendered="#{frmmodelofichasControlador.permisos[4] }">
+							<h:commandLink
+								rendered="#{frmmodelofichasControlador.permisos[4] }"
+								title="#{idm.TI_VER_EXCEL}">
+								<p:graphicImage name="/images/general/excel.png" width="24" />
+								<p:dataExporter type="xls" target="TBFR163" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+							<h:commandLink
+								rendered="#{frmmodelofichasControlador.permisos[4] }"
+								title="#{idm.TI_VER_PDF}">
+								<p:graphicImage name="/images/general/pdf.png" width="24" />
+								<p:dataExporter type="pdf" target="TBFR163" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+						</f:facet>
+						<f:facet name="header">
+							<div style="position: relative; height: 50px">
+								<h:panelGroup class="acme"
+									rendered="#{frmmodelofichasControlador.permisos[0] }">
+									<p:commandLink
+										action="#{frmmodelofichasControlador.cargarRegistroNuevo}"
+										update=":FR163_nuevo:nuevoPanel"
+										rendered="#{frmmodelofichasControlador.permisos[0]}"
+										onclick="try { PF('blockLista').show(); } catch (e) { }"
+										oncomplete="try{   PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+										title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+										id="btNuevo">
+										<center>
+											<p:graphicImage name="/images/menus/32/add.png" />
+											<div>#{idm.TI_NUEVO}</div>
+										</center>
+									</p:commandLink>
+								</h:panelGroup>
+								<div class="acme">
+									<h:outputLink value="#{request.contextPath}/menu.sysman"
+										title="#{idm.TI_VOLVER}" style="padding-top: 10px;">
+										<center>
+											<p:graphicImage name="/images/menus/32/close.png" />
+											<div>#{idm.TI_CERRAR}</div>
+										</center>
+									</h:outputLink>
+								</div>
+							</div>
+                            #{idm.TT_FR163}
+                        </f:facet>
+						<p:column headerText="#{idm.TG_CODIGO7}"
+							filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="65" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['CODIGO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_SECTOR3}"
+							filterBy="#{reg.campos['DESCRIPCION']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="793" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['DESCRIPCION']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column width="150" headerText="Acciones"
+							style="text-align: center" exportable="false">
+							<p:commandButton icon="ui-icon-search"
+								title="#{idm.TI_VER_REGISTRO}"
+								action="#{frmmodelofichasControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+								update=":FR163_nuevo"
+								onclick="try{ PF('blockLista').show();     }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{frmmodelofichasControlador.permisos[3]}"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-document-b"
+								title="#{idm.TI_EDITAR_REGISTRO}"
+								action="#{frmmodelofichasControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+								update=":FR163_nuevo"
+								onclick="try{ PF('blockLista').show();     }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{frmmodelofichasControlador.permisos[2] }"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-trash"
+								title="#{idm.TI_ELIMINAR_REGISTRO}"
+								onclick="PF('blockListaGuardar').show()"
+								action="#{frmmodelofichasControlador.eliminarReg(reg)}"
+								update=":FR163:TBFR163,:FR163:alert"
+								rendered="#{frmmodelofichasControlador.permisos[1] }"
+								oncomplete=" PF('blockListaGuardar').hide();">
+								<p:confirm header="#{sessionBean.tituloMensajes}"
+									message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR163">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+			<h:form id="FR163_nuevo" style="margin-top: -20px;">
+				<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA"
+					my="left bottom" at="left bottom" for="BTBUSQUEDA"
+					hideEffect="fade"
+					rendered="#{frmmodelofichasControlador.accion!='i'}"
+					style="width: 500px">
+					<p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA" var="reg"
+						value="#{frmmodelofichasControlador.listaInicialF}"
+						editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" selectionMode="single"
+						rowKey="#{reg.llave}" paginator="true" lazy="true">
+						<p:ajax event="rowSelect"
+							listener="#{frmmodelofichasControlador.seleccionarFilaBusqueda}"
+							onstart="PF('blockNuevo').show()"
+							oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();    "
+							update="@form" />
+						<p:column headerText="#{idm.TG_CODIGO7}"
+							filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="65" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['CODIGO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_SECTOR3}"
+							filterBy="#{reg.campos['DESCRIPCION']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="793" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['DESCRIPCION']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+					</p:dataTable>
+				</p:overlayPanel>
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="nuevoPanel"
+					visible="#{frmmodelofichasControlador.accion!=null}"
+					widgetVar="nuevoPanel">
+					<div
+						style="position: relative; height: 50px; padding-bottom: 80px;">
+						<div class="acme"
+							style="display:#{frmmodelofichasControlador.accion=='v'?'none':'block'}">
+							<p:commandLink
+								action="#{frmmodelofichasControlador.agregarRegistroNuevo(false)}"
+								rendered="#{frmmodelofichasControlador.accion!='v'}"
+								update=":FR163_nuevo,#{!frmmodelofichasControlador.permisos[2]?':FR163':'' }"
+								onclick="if (!validarVacios(['CP6333','CP6433'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+								title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+								oncomplete="asignarEventoContGrande(); validarCargaGrandes(); ">
+								<center>
+									<p:graphicImage name="/images/menus/32/save.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{frmmodelofichasControlador.accion=='v' or !frmmodelofichasControlador.permisos[0]?'none':'block'}">
+							<p:commandLink
+								action="#{frmmodelofichasControlador.guardarNuevo}"
+								rendered="#{frmmodelofichasControlador.accion!='v' and frmmodelofichasControlador.permisos[0]}"
+								update=":FR163_nuevo"
+								onclick="if (!validarVacios(['CP6333','CP6433'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{frmmodelofichasControlador.accion!='i'  and frmmodelofichasControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+								oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+								title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}"
+								style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/savenew.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{frmmodelofichasControlador.accion=='i' or !frmmodelofichasControlador.permisos[0]?'none':'block'}">
+							<p:commandLink id="BTBUSQUEDA"
+								rendered="#{frmmodelofichasControlador.accion!='i' and frmmodelofichasControlador.permisos[0]}"
+								title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/search.png" />
+									<div style="height: 30px">#{idm.TI_BUSCAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme">
+							<p:commandLink update=":FR163:TBFR163"
+								onclick="try {
+		           PF('TBFR163').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+								title="#{idm.TI_ATRAS}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/back.png" />
+									<div style="height: 30px">#{idm.TI_VOLVER}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<p:panel
+							rendered="#{frmmodelofichasControlador.accion!='i'  and frmmodelofichasControlador.rid==null }"
+							styleClass="acme"
+							style="min-width: 350px; width:30%; padding: 10px;">
+							<center style="margin: 2px;">
+								<p:commandButton icon="ui-icon-seek-first"
+									action="#{frmmodelofichasControlador.irPrimero()}"
+									title="#{idm.TI_PRIMER_REGISTRO}" update=":FR163_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-prev"
+									action="#{frmmodelofichasControlador.irAnterior()}"
+									title="#{idm.TI_REGISTRO_ANTERIOR}" update=":FR163_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:outputLabel
+									value="#{idm.TI_REGISTRO} #{frmmodelofichasControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{frmmodelofichasControlador.listaInicial.rowCount} " />
+								<p:commandButton icon="ui-icon-seek-next"
+									title="#{idm.TI_REGISTRO_SIGUIENTE}"
+									action="#{frmmodelofichasControlador.irSiguiente()}"
+									update=":FR163_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-end"
+									title="#{idm.TI_ULTIMO_REGISTRO}"
+									action="#{frmmodelofichasControlador.irUltimo()}"
+									update=":FR163_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+							</center>
+						</p:panel>
+						<p:panel styleClass="acme" style="width:21%;">
+							<h:panelGrid columns="3"
+								style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+								<h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}" />
+								<p:inputText id="CPCREADO" readonly="true" widgetVar="CPCREADO"
+									value="#{frmmodelofichasControlador.registro.campos['CREATED_BY']}"
+									placeholder="#{idm.TI_CREADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPCREADOF" widgetVar="CPCREADOF"
+									value="#{frmmodelofichasControlador.registro.campos['DATE_CREATED']}"
+									disabled="true" />
+								<h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+								<p:inputText id="CPMODIFICADO" readonly="true"
+									widgetVar="CPMODIFICADO"
+									value="#{frmmodelofichasControlador.registro.campos['MODIFIED_BY']}"
+									placeholder="#{idm.TI_MODIFICADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPMODIFICADOF" widgetVar="CPMODIFICADOF"
+									value="#{frmmodelofichasControlador.registro.campos['DATE_MODIFIED']}"
+									disabled="true" />
+							</h:panelGrid>
+						</p:panel>
+					</div>
+					<p:dialog dynamic="true" closable="false" closeOnEscape="false"
+						header="#{idm.TT_DG205}" id="DG205" widgetVar="DG205"
+						resizable="false" modal="true" width="250"
+						visible="#{frmmodelofichasControlador.visible}">
+						<h:outputLabel value="" style="width: 100%;" escape="false" />
+						<h:panelGrid columns="2" cellpadding="2" width="100%">
+							<h:outputLabel value="#{idm.TG_SECCION3}:" id="LCP45353"
+								style="display:true;" class="cont-inst-element" />
+							<p:inputText id="CP45353"
+								readonly="#{frmmodelofichasControlador.accion=='v'?true:false}"
+								widgetVar="CP45353" styleClass="inputTab"
+								value="#{frmmodelofichasControlador.nombreSeccion}"
+								label="LCP45353" style="display:true; width: 95%; float: left;"
+								class="cont-inst-element">
+							</p:inputText>
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TG_ACEPTAR}"
+										style="padding:10px; width: 48%;" update="@form,alert"
+										oncomplete=" if(true){ PF('DG205').hide(); PF('blockNuevo').hide();}  "
+										onclick="  if(true){ PF('blockNuevo').show(); }else{    PF('DG205').hide(); }  "
+										actionListener="#{frmmodelofichasControlador.aceptarNuevo}" />
+									<p:commandButton value="#{idm.TG_CANCELAR}"
+										style="padding:10px; width: 48%;" update="@form,alert"
+										oncomplete=" if(true){ PF('DG205').hide(); PF('blockNuevo').hide();} "
+										onclick=" if(true){ PF('blockNuevo').show(); }else{    PF('DG205').hide(); }  "
+										actionListener="#{frmmodelofichasControlador.cancelarNuevo}" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<div id="PL347" class="
+"
+						style="position: relative; height: 48px;">
+						<h:outputLabel id="LB4773" value="#{idm.TT_LB4773}"
+							style="position: absolute; width:347px; height: 25px; left: 302px;   top: 10px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<div id="PL348" class="
+"
+						style="position: relative; height: 578px;">
+						<p:inputText id="CP6433" widgetVar="CP6433" styleClass="inputTab"
+							value="#{frmmodelofichasControlador.registro.campos['CODIGO']}"
+							readonly="#{frmmodelofichasControlador.accion=='m' or  frmmodelofichasControlador.accion=='v'?true:false}"
+							tabindex="1"
+							style="position: absolute; width:140px; height: 20px; text-decoration:none; left: 104px;   top: 51px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+							<p:ajax event="change"
+								listener="#{frmmodelofichasControlador.cambiarCODIGO}"
+								update=":FR163_nuevo:CP6333" />
+						</p:inputText>
+						<p:commandButton id="BT343" widgetVar="BT343"
+							title="#{idm.TG_PRESENTAR_EN_PDF}"
+							disabled="#{frmmodelofichasControlador.accion=='v'?true:false}"
+							icon="ui-iconPdf" ajax="false" tabindex="3" value=""
+							actionListener="#{frmmodelofichasControlador.oprimirPRESENTAR}"
+							style="position: absolute; width:50px; height: 50px; left: 799px;   top: 48px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#000000; border:#AAAAAA  solid  1px;">
+							<p:fileDownload
+								value="#{frmmodelofichasControlador.archivoDescarga}" />
+						</p:commandButton>
+						<p:commandButton id="BT363" widgetVar="BT363"
+							title="#{idm.TG_PRESENTAR_EN_EXCEL}"
+							disabled="#{frmmodelofichasControlador.accion=='v'?true:false}"
+							icon="ui-iconExcel" ajax="false" tabindex="4" value=""
+							actionListener="#{frmmodelofichasControlador.oprimirBTExcel}"
+							style="position: absolute; width:50px; height: 50px; left: 863px;   top: 48px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#000000; border:#AAAAAA  solid  1px;">
+							<p:fileDownload
+								value="#{frmmodelofichasControlador.archivoDescarga}" />
+						</p:commandButton>
+						<h:outputLabel id="LB4774" value="#{idm.TG_SECTOR}"
+							style="position: absolute; width:74px; height: 20px; left: 19px;   top: 14px; text-align: left; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#D8D8D8; color:#0000FF; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB6115" value="#{idm.TG_CODIGO8}"
+							style="position: absolute; width:74px; height: 20px; left: 19px;   top: 51px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB6116" value="#{idm.TG_NOMBRE4}"
+							style="position: absolute; width:74px; height: 20px; left: 19px;   top: 77px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<p:inputText id="CP6333" widgetVar="CP6333" styleClass="inputTab"
+							value="#{frmmodelofichasControlador.registro.campos['DESCRIPCION']}"
+							readonly="#{frmmodelofichasControlador.accion=='m' or  frmmodelofichasControlador.accion=='v'?true:false}"
+							tabindex="2" maxlength="100"
+							style="position: absolute; width:471px; height: 20px; text-decoration:none; left: 104px;   top: 77px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<h:panelGroup id="SF22"
+							style="position: absolute; width:980px; height: 424px; left: 10px;   top: 154px; ">
+							<div id="PL349" class="
+"
+								style="position: relative; height: 99px;">
+								<p:commandButton id="BT2587" widgetVar="BT2587"
+									disabled="#{frmmodelofichasControlador.visibleSeccion}"
+									update="DG205" ajax="false" tabindex="0"
+									value="#{idm.TT_BT2587}"
+									actionListener="#{frmmodelofichasControlador.oprimirAdicionarSeccion}"
+									style="position: absolute; width:100px; height: 40px; left: 650px;   top: 33px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:true;  color:#0000FF; border:#AAAAAA  solid  1px;">
+									<p:fileDownload
+										value="#{frmmodelofichasControlador.archivoDescarga}" />
+								</p:commandButton>
+								<p:selectOneMenu filter="true" editable="false" effect="fade"
+									id="CB611" widgetVar="CB611"
+									value="#{frmmodelofichasControlador.seccion}"
+									disabled="#{frmmodelofichasControlador.visibleSeccion}"
+									tabindex="1"
+									style="position: absolute; width:366px; height: 20px; left: 97px;   top: 33px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+									<p:ajax listener="#{frmmodelofichasControlador.cambiarSECCION}"
+										update="@form" />
+									<f:selectItem />
+									<f:selectItems
+										value="#{frmmodelofichasControlador.listaSECCION}" var="regc"
+										itemLabel="#{regc.campos['SECCION']}"
+										itemValue="#{regc.campos['SECCION']}" />
+								</p:selectOneMenu>
+								<h:outputLabel id="LB4776" value="#{idm.TG_ITEM3}"
+									style="position: absolute; width:74px; height: 20px; left: 10px;   top: 72px; text-align: left; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#D8D8D8; color:#0000FF; border:#000000  none  1px ;" />
+								<h:outputLabel id="LB4775" value="#{idm.TT_LB4775}"
+									style="position: absolute; width:74px; height: 20px; left: 10px;   top: 33px; text-align: left; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#D8D8D8; color:#0000FF; border:#000000  none  1px ;" />
+							</div>
+							<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}"
+								id="dlg22" widgetVar="dlg22" resizable="false" modal="true"
+								rendered="#{frmmodelofichasControlador.permisos[0]}"
+								onHide="restaurarCampos(['CP6336'])">
+								<h:panelGrid columns="2" cellpadding="2">
+									<h:outputLabel value="#{idm.TG_ITEM3}:" id="LCP6336"
+										class="cont-inst-element" />
+									<p:inputText id="CP6336" widgetVar="CP6336"
+										styleClass="inputTab"
+										value="#{frmmodelofichasControlador.registroSub.campos['ITEM']}"
+										label="LCP6336" style=" width: 95%; float: left;"
+										class="cont-inst-element" maxlength="4000">
+									</p:inputText>
+									<f:facet name="footer">
+										<center>
+											<p:commandButton value="#{idm.TI_GUARDAR}"
+												style="padding:10px;"
+												update=":FR163_nuevo:alert,tablePL350,dlg22,CB611, @form"
+												actionListener="#{frmmodelofichasControlador.agregarRegistroSubFrmsubbpmodelofichatecnica}"
+												oncomplete="PF('dlg22').hide();PF('blockNuevoGuardar').hide();"
+												onclick="    if (!validarVaciosModal(['CP6336'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockNuevoGuardar').show();" />
+											<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+												href="#" onclick="PF('dlg22').hide();" />
+										</center>
+									</f:facet>
+								</h:panelGrid>
+							</p:dialog>
+							<div id="PL350" class="
+"
+								style="position: relative; height: 250px;">
+								<p:remoteCommand name="refreshTabPL350" update="tablePL350" />
+								<p:dataTable id="tablePL350" var="reg"
+									value="#{frmmodelofichasControlador.listaFrmsubbpmodelofichatecnica}"
+									emptyMessage="#{idm.TI_EMPTY_MESSAGE}" scrollable="true"
+									scrollHeight="250" scrollWidth="980" rowIndexVar="rowNun"
+									editable="true" widgetVar="tablePL350" tabindex="5">
+									<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+									<p:ajax event="rowEdit" update=":FR163_nuevo:alert,tablePL350,"
+										onstart="PF('blockNuevoGuardar').show()"
+										oncomplete="refreshTabPL350(); PF('blockNuevoGuardar').hide();  mostarEditor();"
+										listener="#{frmmodelofichasControlador.editarRegSubFrmsubbpmodelofichatecnica}" />
+									<p:ajax event="rowEditCancel" update="tablePL350
+"
+										listener="#{frmmodelofichasControlador.cancelarEdicionFrmsubbpmodelofichatecnica}"
+										oncomplete=" mostarEditor();" />
+									<f:facet name="header">
+										<div style="position: relative; height: 50px">
+											<h:panelGroup class="acme" style="width: 50px;"
+												rendered="#{frmmodelofichasControlador.accion=='m' 
+}">
+												<h:outputLink value="javascript:void(0)"
+													onclick="if (!validarVaciosViewModal(['CB611'])) {
+  PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail': 'Por favor seleccione una sección.',
+                             'severity': 'error'});
+  return false;
+} PF('dlg22').show();"
+													title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+													tabindex="5">
+													<center>
+														<p:graphicImage name="/images/menus/32/adds.png" />
+														<div style="font-size: 12px">#{idm.TI_NUEVO}</div>
+													</center>
+												</h:outputLink>
+											</h:panelGroup>
+										</div>    
+			#{idm.TT_SF22}
+                                            </f:facet>
+									<p:column headerText="#{idm.TG_ITEM3}" width="500px" style="
+"
+										styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['ITEM']}" />
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="CP6336" styleClass="inputTab"
+													value="#{reg.campos['ITEM']}" style="width:100%"
+													maxlength="4000">
+												</p:inputText>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column width="30"
+										rendered="#{frmmodelofichasControlador.accion=='m'}">
+										<p:rowEditor />
+									</p:column>
+									<p:column width="30"
+										rendered="#{frmmodelofichasControlador.accion=='m'}">
+										<p:commandButton icon="ui-icon-trash"
+											title="#{idm.TI_ELIMINAR_REGISTRO}"
+											action="#{frmmodelofichasControlador.eliminarRegSubFrmsubbpmodelofichatecnica(reg)}"
+											oncomplete="PF('blockNuevoGuardar').hide(); refreshTabPL350();"
+											onclick="PF('blockNuevoGuardar').show();"
+											update=":FR163_nuevo:alert,tablePL350,"
+											style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;"
+											tabindex="5">
+											<p:confirm header="#{sessionBean.tituloMensajes}"
+												message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+										</p:commandButton>
+									</p:column>
+								</p:dataTable>
+							</div>
+						</h:panelGroup>
+						<h:outputLabel id="LB4777"
+							value="#{idm.TG_DETALLE_DE_LA_FICHA_TECNICA}"
+							style="position: absolute; width:276px; height: 20px; left: 366px;   top: 121px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

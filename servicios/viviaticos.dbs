@@ -1,0 +1,1394 @@
+﻿<data name="viviaticos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getViviaticosPagSolicitudesSegunTerceroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT VI_VIATICOS.CODSOLICITUD, VI_DETALLE_VIATICOS.TERCERO,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS INNER JOIN VI_DETALLE_VIATICOS ON VI_VIATICOS.COMPANIA = VI_DETALLE_VIATICOS.COMPANIA AND VI_VIATICOS.ANO = VI_DETALLE_VIATICOS.ANO AND VI_VIATICOS.TIPO_VIATICO = VI_DETALLE_VIATICOS.TIPO_VIATICO AND VI_VIATICOS.CODSOLICITUD = VI_DETALLE_VIATICOS.NUMERO WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND VI_VIATICOS.ANO = :ANO AND VI_DETALLE_VIATICOS.TERCERO = :CODIGOTERCERO AND VI_VIATICOS.VALORTOTALVIATICO - VI_VIATICOS.VALORABONADO &gt; 0 AND VI_VIATICOS.APROBADO NOT IN(0)) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER(:TERCERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODSOLICITUD":"$CODSOLICITUD(type:long)","TERCERO":"$TERCERO","FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGOTERCERO" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/solicitudesseguntercero/pag">
+		<call-query href="getViviaticosPagSolicitudesSegunTerceroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGOTERCERO" query-param="CODIGOTERCERO"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosNumSolicitudesSegunTerceroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT VI_VIATICOS.CODSOLICITUD, VI_DETALLE_VIATICOS.TERCERO,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS INNER JOIN VI_DETALLE_VIATICOS ON VI_VIATICOS.COMPANIA = VI_DETALLE_VIATICOS.COMPANIA AND VI_VIATICOS.ANO = VI_DETALLE_VIATICOS.ANO AND VI_VIATICOS.TIPO_VIATICO = VI_DETALLE_VIATICOS.TIPO_VIATICO AND VI_VIATICOS.CODSOLICITUD = VI_DETALLE_VIATICOS.NUMERO WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND VI_VIATICOS.ANO = :ANO AND VI_DETALLE_VIATICOS.TERCERO = :CODIGOTERCERO AND VI_VIATICOS.VALORTOTALVIATICO - VI_VIATICOS.VALORABONADO &gt; 0 AND VI_VIATICOS.APROBADO NOT IN(0)) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER(:TERCERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGOTERCERO" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/solicitudesseguntercero/num">
+		<call-query href="getViviaticosNumSolicitudesSegunTerceroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGOTERCERO" query-param="CODIGOTERCERO"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosPagSinAprobarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD, VI_VIATICOS.NUMSOLICITUD,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, CONCAT(TERCERO.APELLIDO1,CONCAT(' ',CONCAT(TERCERO.APELLIDO2,CONCAT(' ',CONCAT(TERCERO.NOMBRE1,CONCAT(' ',TERCERO.NOMBRE2) ) ) ) ) ) NOMBRETERCERO,(CASE VI_VIATICOS.APROBADO WHEN 0 THEN 'false' ELSE 'true' END) APROBADO FROM VI_VIATICOS LEFT JOIN DEPENDENCIA_RESPONSABLE ON VI_VIATICOS.COMPANIA = DEPENDENCIA_RESPONSABLE.COMPANIA AND VI_VIATICOS.TERCERO = DEPENDENCIA_RESPONSABLE.RESPONSABLE AND VI_VIATICOS.SUCURSAL = DEPENDENCIA_RESPONSABLE.SUCURSAL LEFT JOIN RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA AND DEPENDENCIA_RESPONSABLE.SUCURSAL = RESPONSABLE.SUCURSAL LEFT JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA =:COMPANIA AND VI_VIATICOS.APROBADO IN 0) INI WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(:ANO, '%')) AND (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END) LIKE UPPER(CONCAT(:CODSOLICITUD, '%')) AND (CASE WHEN NUMSOLICITUD IS NULL THEN ' ' ELSE UPPER(NUMSOLICITUD) END) LIKE UPPER(CONCAT(:NUMSOLICITUD, '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRETERCERO), '%')) AND (CASE WHEN APROBADO IS NULL THEN ' ' ELSE UPPER(APROBADO) END) LIKE UPPER(CONCAT(:APROBADO, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_VIATICO":"$TIPO_VIATICO","CODSOLICITUD":"$CODSOLICITUD(type:long)","NUMSOLICITUD":"$NUMSOLICITUD(type:long)","FECHA":"$FECHA","NOMBRETERCERO":"$NOMBRETERCERO","APROBADO":"$APROBADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="NUMSOLICITUD" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="APROBADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/sinaprobar/pag">
+		<call-query href="getViviaticosPagSinAprobarQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="NUMSOLICITUD" query-param="NUMSOLICITUD"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="APROBADO" query-param="APROBADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosNumSinAprobarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD, VI_VIATICOS.NUMSOLICITUD,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, CONCAT(TERCERO.APELLIDO1,CONCAT(' ',CONCAT(TERCERO.APELLIDO2,CONCAT(' ',CONCAT(TERCERO.NOMBRE1,CONCAT(' ',TERCERO.NOMBRE2) ) ) ) ) ) NOMBRETERCERO,(CASE VI_VIATICOS.APROBADO WHEN 0 THEN 'false' ELSE 'true' END) APROBADO FROM VI_VIATICOS LEFT JOIN DEPENDENCIA_RESPONSABLE ON VI_VIATICOS.COMPANIA = DEPENDENCIA_RESPONSABLE.COMPANIA AND VI_VIATICOS.TERCERO = DEPENDENCIA_RESPONSABLE.RESPONSABLE AND VI_VIATICOS.SUCURSAL = DEPENDENCIA_RESPONSABLE.SUCURSAL LEFT JOIN RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA AND DEPENDENCIA_RESPONSABLE.SUCURSAL = RESPONSABLE.SUCURSAL LEFT JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA =:COMPANIA AND VI_VIATICOS.APROBADO IN 0) INI WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(:ANO, '%')) AND (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END) LIKE UPPER(CONCAT(:CODSOLICITUD, '%')) AND (CASE WHEN NUMSOLICITUD IS NULL THEN ' ' ELSE UPPER(NUMSOLICITUD) END) LIKE UPPER(CONCAT(:NUMSOLICITUD, '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRETERCERO), '%')) AND (CASE WHEN APROBADO IS NULL THEN ' ' ELSE UPPER(APROBADO) END) LIKE UPPER(CONCAT(:APROBADO, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="NUMSOLICITUD" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="APROBADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/sinaprobar/num">
+		<call-query href="getViviaticosNumSinAprobarQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="NUMSOLICITUD" query-param="NUMSOLICITUD"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="APROBADO" query-param="APROBADO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateViviaticosAprobacion" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE VI_VIATICOS SET APROBADO    = :APROBADO,   DATE_MODIFIED = TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'),   MODIFIED_BY   = :MODIFIED_BY WHERE COMPANIA  = :KEY_COMPANIA AND ANO         = :KEY_ANO AND TIPO_VIATICO= :KEY_TIPO_VIATICO AND CODSOLICITUD= :KEY_CODSOLICITUD</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="APROBADO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_TIPO_VIATICO" sqlType="STRING"/>
+		<param name="KEY_CODSOLICITUD" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="viviaticos/aprobacion">
+		<call-query href="updateViviaticosAprobacion">
+			<with-param name="APROBADO" query-param="APROBADO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPO_VIATICO" query-param="KEY_TIPO_VIATICO"/>
+			<with-param name="KEY_CODSOLICITUD" query-param="KEY_CODSOLICITUD"/>
+
+		</call-query>
+	</resource>
+	<query id="updateViviaticosTotalViaticos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE VI_VIATICOS SET VALORTOTALVIATICO = :TOTAL,   DATE_MODIFIED       = TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'),   MODIFIED_BY         = :MODIFIED_BY WHERE COMPANIA        = :KEY_COMPANIA AND ANO               = :KEY_ANO AND TIPO_VIATICO      = :KEY_TIPO_VIATICO AND CODSOLICITUD      = :KEY_CODSOLICITUD</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_TIPO_VIATICO" sqlType="STRING"/>
+		<param name="KEY_CODSOLICITUD" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="viviaticos/totalviaticos">
+		<call-query href="updateViviaticosTotalViaticos">
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPO_VIATICO" query-param="KEY_TIPO_VIATICO"/>
+			<with-param name="KEY_CODSOLICITUD" query-param="KEY_CODSOLICITUD"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosCodigosolicitudPorAnioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODSOLICITUD  FROM VI_VIATICOS WHERE COMPANIA = :COMPANIA AND ANO = :ANO ORDER BY CODSOLICITUD DESC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODSOLICITUD":"$CODSOLICITUD(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/codigosolicitudporanio">
+		<call-query href="getViviaticosCodigosolicitudPorAnioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosPagAprobacionDeComisionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.TERCERO , TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO ,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND VI_VIATICOS.DEPENDENCIA = :DEPENDENCIA AND VI_VIATICOS.ESTADO IN ('P')) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER(:TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_VIATICO":"$TIPO_VIATICO","CODSOLICITUD":"$CODSOLICITUD(type:long)","TERCERO":"$TERCERO","NOMBRETERCERO":"$NOMBRETERCERO","OBJETO":"$OBJETO","FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/aprobaciondecomision/pag">
+		<call-query href="getViviaticosPagAprobacionDeComisionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosNumAprobacionDeComisionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.TERCERO , TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO ,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND VI_VIATICOS.DEPENDENCIA = :DEPENDENCIA AND VI_VIATICOS.ESTADO IN ('P')) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER(:TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/aprobaciondecomision/num">
+		<call-query href="getViviaticosNumAprobacionDeComisionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertViviaticos" keyColumns="COMPANIA,ANO,TIPO_VIATICO,CODSOLICITUD" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO VI_VIATICOS (COMPANIA, ANO, TIPO_VIATICO, CODSOLICITUD, NUMSOLICITUD, NUMERO_RESOLUCION, FECHA, FECHAINICIO, FECHAFIN, PERNOCTA, VEHICULO, PLACA_VEHICULO, OBJETO, OBSERVACION, JUSTIFICACION, OBSERVACIONCOMITE, DEPENDENCIA, TVISITA, PAIS_DESTINO, DEPARTAMENTO_DESTINO, CIUDAD_DESTINO, APROBADO, SABADO, DOMINGO, FESTIVO, TRSNESPECIAL, NODIAS, TSOLICITUD, TERCERO, SUCURSAL, TIPO_CPTE_PPTAL, COMPROBANTE_PPTAL, TIPO_CPTE_CNT, COMPROBANTE_CNT, VALORTOTALVIATICO, VALORABONADO, SALDOTOTAL, ESCALAFON, ID_CATEGORIA, CREATED_BY, DATE_CREATED, PAIS_ORIGEN, DEPARTAMENTO_ORIGEN, CIUDAD_ORIGEN, COD_PERSONA, TCOMISION, VALOR_RESERVA_INICIAL, VALOR_TIQUETE_EMITIDO, NUMERO_LOCALIZADOR, ITINERARIO, NUMERO_RADICADO, FECHA_RADICADO, VALOR_FACTURA_TIQUETE, FECHA_FACTURA_TIQUETE, VALOR_DESCUENTO_AGENCIA, ESTADO, TIPOCOMISION, JEFE_DEPENDENCIA, FECHA_NACIMIENTO, BANCO, CTA_BANCARIA, TELEFONOS, CORREO_ELECTRONICO, OBSERVACION_SOLICITUD, SUCURSAL_JEFE, FECHA_AUT_SIIF_NACION, FECHA_COM_DESEMBOLSO_SIIF, FECHA_DESEMBOLSO_TRANSPORTE, NUMERO_COM_DESEMBOLSO_SIIF, NUMERO_COM_DESEM_TRANSPORTE, FECHA_APROBACION, SALARIO_COMISIONADO, CLASE_TRANSPORTE, DESCRIPCION_TRANS, VALOR_TRANSPORTE, DESTINO_CORRERIA, PAIS_REGRESO, DEPARTAMENTO_REGRESO, CIUDAD_REGRESO, HORA_SALIDA, HORA_REGRESO, NRO_RADICADO_DOC, FECHA_RADICADO_DOC, GENERA_VIATICOS, SOLICITA_TIQUETE, VALOR_DIARIO_COMISION, ESTADO_LEGALIZACION, OBSERVACION_LEGALIZACION, FECHA_APROBA_LEGA, VALOR_VIATICO_LEGALIZADO, VALOR_TRANSPORTE_LEGALIZADO, VALOR_REEMBOLSADO, FECHA_REEMBOLSO, VALOR_TRANSPORTE_REEMBOLSO, FECHA_TRANS_REEMBOLSO, FECHA_GRABACION_SIIF, CIUDAD_EXPE, DEPARTAMENTO_EXPE, PAIS_EXPE, FECHA_AUT_FACTURA, NUMERO_RADICADO_AUTO, FECHA_LEGALIZACION, RESUMEN_ACTIVIDADES, LEGALIZADO_PLAZO, NUMERO_OFICIO_MINTIC, FECHA_RADICADO_MINTIC, ESTADO_MINTIC, FECHA_APROBA_MINTIC, AVAL_COORDINADOR, NUMERO_RESOLUCION_MINTIC, FECHA_RESOLUCION_MINTIC, ZONA_EXTERIOR, DIAS_TRANSITO, VALOR_TASA_CAMBIO, FECHA_TASA_CAMBIO, VALOR_TOTAL_PESOS, NRO_RADICADO_DOC_MINTIC, OBSERVACION_APROB) VALUES (:COMPANIA, :ANO, :TIPO_VIATICO, :CODSOLICITUD, :NUMSOLICITUD, :NUMERO_RESOLUCION, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHAINICIO,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHAFIN,'DD/MM/YYYY HH24:MI:SS'), :PERNOCTA, :VEHICULO, :PLACA_VEHICULO, :OBJETO, :OBSERVACION, :JUSTIFICACION, :OBSERVACIONCOMITE, :DEPENDENCIA, :TVISITA, :PAIS_DESTINO, :DEPARTAMENTO_DESTINO, :CIUDAD_DESTINO, :APROBADO, :SABADO, :DOMINGO, :FESTIVO, :TRSNESPECIAL, :NODIAS, :TSOLICITUD, :TERCERO, :SUCURSAL, :TIPO_CPTE_PPTAL, :COMPROBANTE_PPTAL, :TIPO_CPTE_CNT, :COMPROBANTE_CNT, :VALORTOTALVIATICO, :VALORABONADO, :SALDOTOTAL, :ESCALAFON, :ID_CATEGORIA, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :PAIS_ORIGEN, :DEPARTAMENTO_ORIGEN, :CIUDAD_ORIGEN, :COD_PERSONA, :TCOMISION, :VALOR_RESERVA_INICIAL, :VALOR_TIQUETE_EMITIDO, :NUMERO_LOCALIZADOR, :ITINERARIO, :NUMERO_RADICADO, TO_DATE(:FECHA_RADICADO,'DD/MM/YYYY HH24:MI:SS'), :VALOR_FACTURA_TIQUETE, TO_DATE(:FECHA_FACTURA_TIQUETE,'DD/MM/YYYY HH24:MI:SS'), :VALOR_DESCUENTO_AGENCIA, :ESTADO, :TIPOCOMISION, :JEFE_DEPENDENCIA, TO_DATE(:FECHA_NACIMIENTO,'DD/MM/YYYY HH24:MI:SS'), :BANCO, :CTA_BANCARIA, :TELEFONOS, :CORREO_ELECTRONICO, :OBSERVACION_SOLICITUD, :SUCURSAL_JEFE, TO_DATE(:FECHA_AUT_SIIF_NACION,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHA_COM_DESEMBOLSO_SIIF,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHA_DESEMBOLSO_TRANSPORTE,'DD/MM/YYYY HH24:MI:SS'), :NUMERO_COM_DESEMBOLSO_SIIF, :NUMERO_COM_DESEM_TRANSPORTE, TO_DATE(:FECHA_APROBACION,'DD/MM/YYYY HH24:MI:SS'), :SALARIO_COMISIONADO, :CLASE_TRANSPORTE, :DESCRIPCION_TRANS, :VALOR_TRANSPORTE, :DESTINO_CORRERIA, :PAIS_REGRESO, :DEPARTAMENTO_REGRESO, :CIUDAD_REGRESO, TO_DATE(:HORA_SALIDA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:HORA_REGRESO,'DD/MM/YYYY HH24:MI:SS'), :NRO_RADICADO_DOC, TO_DATE(:FECHA_RADICADO_DOC,'DD/MM/YYYY HH24:MI:SS'), :GENERA_VIATICOS, :SOLICITA_TIQUETE, :VALOR_DIARIO_COMISION, :ESTADO_LEGALIZACION, :OBSERVACION_LEGALIZACION, TO_DATE(:FECHA_APROBA_LEGA,'DD/MM/YYYY HH24:MI:SS'), :VALOR_VIATICO_LEGALIZADO, :VALOR_TRANSPORTE_LEGALIZADO, :VALOR_REEMBOLSADO, TO_DATE(:FECHA_REEMBOLSO,'DD/MM/YYYY HH24:MI:SS'), :VALOR_TRANSPORTE_REEMBOLSO, TO_DATE(:FECHA_TRANS_REEMBOLSO,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHA_GRABACION_SIIF,'DD/MM/YYYY HH24:MI:SS'), :CIUDAD_EXPE, :DEPARTAMENTO_EXPE, :PAIS_EXPE, TO_DATE(:FECHA_AUT_FACTURA,'DD/MM/YYYY HH24:MI:SS'), :NUMERO_RADICADO_AUTO, TO_DATE(:FECHA_LEGALIZACION,'DD/MM/YYYY HH24:MI:SS'), :RESUMEN_ACTIVIDADES, :LEGALIZADO_PLAZO, :NUMERO_OFICIO_MINTIC, TO_DATE(:FECHA_RADICADO_MINTIC,'DD/MM/YYYY HH24:MI:SS'), :ESTADO_MINTIC, TO_DATE(:FECHA_APROBA_MINTIC,'DD/MM/YYYY HH24:MI:SS'), :AVAL_COORDINADOR, :NUMERO_RESOLUCION_MINTIC, TO_DATE(:FECHA_RESOLUCION_MINTIC,'DD/MM/YYYY HH24:MI:SS'), :ZONA_EXTERIOR, :DIAS_TRANSITO, :VALOR_TASA_CAMBIO, TO_DATE(:FECHA_TASA_CAMBIO,'DD/MM/YYYY HH24:MI:SS'), :VALOR_TOTAL_PESOS, :NRO_RADICADO_DOC_MINTIC, :OBSERVACION_APROB)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_TIPO_VIATICO":"$TIPO_VIATICO","KEY_CODSOLICITUD":"$CODSOLICITUD(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPO_VIATICO" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="NUMSOLICITUD" sqlType="STRING"/>
+		<param defaultValue="" name="NUMERO_RESOLUCION" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAINICIO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAFIN" sqlType="STRING"/>
+		<param defaultValue="0" name="PERNOCTA" sqlType="STRING"/>
+		<param defaultValue="0" name="VEHICULO" sqlType="STRING"/>
+		<param defaultValue="" name="PLACA_VEHICULO" sqlType="STRING"/>
+		<param defaultValue="" name="OBJETO" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACION" sqlType="STRING"/>
+		<param defaultValue="" name="JUSTIFICACION" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACIONCOMITE" sqlType="STRING"/>
+		<param defaultValue="" name="DEPENDENCIA" sqlType="STRING"/>
+		<param defaultValue="" name="TVISITA" sqlType="STRING"/>
+		<param defaultValue="" name="PAIS_DESTINO" sqlType="STRING"/>
+		<param defaultValue="" name="DEPARTAMENTO_DESTINO" sqlType="STRING"/>
+		<param defaultValue="" name="CIUDAD_DESTINO" sqlType="STRING"/>
+		<param defaultValue="0" name="APROBADO" sqlType="STRING"/>
+		<param defaultValue="0" name="SABADO" sqlType="STRING"/>
+		<param defaultValue="0" name="DOMINGO" sqlType="STRING"/>
+		<param defaultValue="0" name="FESTIVO" sqlType="STRING"/>
+		<param defaultValue="0" name="TRSNESPECIAL" sqlType="STRING"/>
+		<param defaultValue="0" name="NODIAS" sqlType="STRING"/>
+		<param defaultValue="" name="TSOLICITUD" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="TERCERO" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_CPTE_PPTAL" sqlType="STRING"/>
+		<param defaultValue="" name="COMPROBANTE_PPTAL" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_CPTE_CNT" sqlType="STRING"/>
+		<param defaultValue="" name="COMPROBANTE_CNT" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORTOTALVIATICO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORABONADO" sqlType="STRING"/>
+		<param defaultValue="0" name="SALDOTOTAL" sqlType="STRING"/>
+		<param defaultValue="" name="ESCALAFON" sqlType="STRING"/>
+		<param defaultValue="" name="ID_CATEGORIA" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param defaultValue="" name="PAIS_ORIGEN" sqlType="STRING"/>
+		<param defaultValue="" name="DEPARTAMENTO_ORIGEN" sqlType="STRING"/>
+		<param defaultValue="" name="CIUDAD_ORIGEN" sqlType="STRING"/>
+		<param defaultValue="" name="COD_PERSONA" sqlType="STRING"/>
+		<param defaultValue="" name="TCOMISION" sqlType="STRING"/>
+		<param defaultValue="" name="VALOR_RESERVA_INICIAL" sqlType="STRING"/>
+		<param defaultValue="" name="VALOR_TIQUETE_EMITIDO" sqlType="STRING"/>
+		<param defaultValue="" name="NUMERO_LOCALIZADOR" sqlType="STRING"/>
+		<param defaultValue="" name="ITINERARIO" sqlType="STRING"/>
+		<param defaultValue="" name="NUMERO_RADICADO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_RADICADO" sqlType="STRING"/>
+		<param defaultValue="" name="VALOR_FACTURA_TIQUETE" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_FACTURA_TIQUETE" sqlType="STRING"/>
+		<param defaultValue="" name="VALOR_DESCUENTO_AGENCIA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="TIPOCOMISION" sqlType="STRING"/>
+		<param defaultValue="" name="JEFE_DEPENDENCIA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_NACIMIENTO" sqlType="STRING"/>
+		<param defaultValue="" name="BANCO" sqlType="STRING"/>
+		<param defaultValue="" name="CTA_BANCARIA" sqlType="STRING"/>
+		<param defaultValue="" name="TELEFONOS" sqlType="STRING"/>
+		<param defaultValue="" name="CORREO_ELECTRONICO" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACION_SOLICITUD" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL_JEFE" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_AUT_SIIF_NACION" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_COM_DESEMBOLSO_SIIF" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_DESEMBOLSO_TRANSPORTE" sqlType="STRING"/>
+		<param defaultValue="" name="NUMERO_COM_DESEMBOLSO_SIIF" sqlType="STRING"/>
+		<param defaultValue="" name="NUMERO_COM_DESEM_TRANSPORTE" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_APROBACION" sqlType="STRING"/>
+		<param defaultValue="0" name="SALARIO_COMISIONADO" sqlType="STRING"/>
+		<param defaultValue="" name="CLASE_TRANSPORTE" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION_TRANS" sqlType="STRING"/>
+		<param defaultValue="" name="VALOR_TRANSPORTE" sqlType="STRING"/>
+		<param defaultValue="EMPTY_CLOB()" name="DESTINO_CORRERIA" sqlType="STRING"/>
+		<param defaultValue="" name="PAIS_REGRESO" sqlType="STRING"/>
+		<param defaultValue="" name="DEPARTAMENTO_REGRESO" sqlType="STRING"/>
+		<param defaultValue="" name="CIUDAD_REGRESO" sqlType="STRING"/>
+		<param defaultValue="" name="HORA_SALIDA" sqlType="STRING"/>
+		<param defaultValue="" name="HORA_REGRESO" sqlType="STRING"/>
+		<param defaultValue="" name="NRO_RADICADO_DOC" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_RADICADO_DOC" sqlType="STRING"/>
+		<param defaultValue="0" name="GENERA_VIATICOS" sqlType="STRING"/>
+		<param defaultValue="0" name="SOLICITA_TIQUETE" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_DIARIO_COMISION" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADO_LEGALIZACION" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACION_LEGALIZACION" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_APROBA_LEGA" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_VIATICO_LEGALIZADO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_TRANSPORTE_LEGALIZADO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_REEMBOLSADO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_REEMBOLSO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_TRANSPORTE_REEMBOLSO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_TRANS_REEMBOLSO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_GRABACION_SIIF" sqlType="STRING"/>
+		<param defaultValue="" name="CIUDAD_EXPE" sqlType="STRING"/>
+		<param defaultValue="" name="DEPARTAMENTO_EXPE" sqlType="STRING"/>
+		<param defaultValue="" name="PAIS_EXPE" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_AUT_FACTURA" sqlType="STRING"/>
+		<param defaultValue="" name="NUMERO_RADICADO_AUTO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_LEGALIZACION" sqlType="STRING"/>
+		<param defaultValue="" name="RESUMEN_ACTIVIDADES" sqlType="STRING"/>
+		<param defaultValue="0" name="LEGALIZADO_PLAZO" sqlType="STRING"/>
+		<param defaultValue="" name="NUMERO_OFICIO_MINTIC" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_RADICADO_MINTIC" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADO_MINTIC" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_APROBA_MINTIC" sqlType="STRING"/>
+		<param defaultValue="" name="AVAL_COORDINADOR" sqlType="STRING"/>
+		<param defaultValue="" name="NUMERO_RESOLUCION_MINTIC" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_RESOLUCION_MINTIC" sqlType="STRING"/>
+		<param defaultValue="" name="ZONA_EXTERIOR" sqlType="STRING"/>
+		<param defaultValue="0" name="DIAS_TRANSITO" sqlType="STRING"/>
+		<param defaultValue="" name="VALOR_TASA_CAMBIO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_TASA_CAMBIO" sqlType="STRING"/>
+		<param defaultValue="" name="VALOR_TOTAL_PESOS" sqlType="STRING"/>
+		<param defaultValue="" name="NRO_RADICADO_DOC_MINTIC" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACION_APROB" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="viviaticos">
+		<call-query href="insertViviaticos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPO_VIATICO" query-param="TIPO_VIATICO"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="NUMSOLICITUD" query-param="NUMSOLICITUD"/>
+			<with-param name="NUMERO_RESOLUCION" query-param="NUMERO_RESOLUCION"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FECHAINICIO" query-param="FECHAINICIO"/>
+			<with-param name="FECHAFIN" query-param="FECHAFIN"/>
+			<with-param name="PERNOCTA" query-param="PERNOCTA"/>
+			<with-param name="VEHICULO" query-param="VEHICULO"/>
+			<with-param name="PLACA_VEHICULO" query-param="PLACA_VEHICULO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="JUSTIFICACION" query-param="JUSTIFICACION"/>
+			<with-param name="OBSERVACIONCOMITE" query-param="OBSERVACIONCOMITE"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="TVISITA" query-param="TVISITA"/>
+			<with-param name="PAIS_DESTINO" query-param="PAIS_DESTINO"/>
+			<with-param name="DEPARTAMENTO_DESTINO" query-param="DEPARTAMENTO_DESTINO"/>
+			<with-param name="CIUDAD_DESTINO" query-param="CIUDAD_DESTINO"/>
+			<with-param name="APROBADO" query-param="APROBADO"/>
+			<with-param name="SABADO" query-param="SABADO"/>
+			<with-param name="DOMINGO" query-param="DOMINGO"/>
+			<with-param name="FESTIVO" query-param="FESTIVO"/>
+			<with-param name="TRSNESPECIAL" query-param="TRSNESPECIAL"/>
+			<with-param name="NODIAS" query-param="NODIAS"/>
+			<with-param name="TSOLICITUD" query-param="TSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="TIPO_CPTE_PPTAL" query-param="TIPO_CPTE_PPTAL"/>
+			<with-param name="COMPROBANTE_PPTAL" query-param="COMPROBANTE_PPTAL"/>
+			<with-param name="TIPO_CPTE_CNT" query-param="TIPO_CPTE_CNT"/>
+			<with-param name="COMPROBANTE_CNT" query-param="COMPROBANTE_CNT"/>
+			<with-param name="VALORTOTALVIATICO" query-param="VALORTOTALVIATICO"/>
+			<with-param name="VALORABONADO" query-param="VALORABONADO"/>
+			<with-param name="SALDOTOTAL" query-param="SALDOTOTAL"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="ID_CATEGORIA" query-param="ID_CATEGORIA"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="PAIS_ORIGEN" query-param="PAIS_ORIGEN"/>
+			<with-param name="DEPARTAMENTO_ORIGEN" query-param="DEPARTAMENTO_ORIGEN"/>
+			<with-param name="CIUDAD_ORIGEN" query-param="CIUDAD_ORIGEN"/>
+			<with-param name="COD_PERSONA" query-param="COD_PERSONA"/>
+			<with-param name="TCOMISION" query-param="TCOMISION"/>
+			<with-param name="VALOR_RESERVA_INICIAL" query-param="VALOR_RESERVA_INICIAL"/>
+			<with-param name="VALOR_TIQUETE_EMITIDO" query-param="VALOR_TIQUETE_EMITIDO"/>
+			<with-param name="NUMERO_LOCALIZADOR" query-param="NUMERO_LOCALIZADOR"/>
+			<with-param name="ITINERARIO" query-param="ITINERARIO"/>
+			<with-param name="NUMERO_RADICADO" query-param="NUMERO_RADICADO"/>
+			<with-param name="FECHA_RADICADO" query-param="FECHA_RADICADO"/>
+			<with-param name="VALOR_FACTURA_TIQUETE" query-param="VALOR_FACTURA_TIQUETE"/>
+			<with-param name="FECHA_FACTURA_TIQUETE" query-param="FECHA_FACTURA_TIQUETE"/>
+			<with-param name="VALOR_DESCUENTO_AGENCIA" query-param="VALOR_DESCUENTO_AGENCIA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TIPOCOMISION" query-param="TIPOCOMISION"/>
+			<with-param name="JEFE_DEPENDENCIA" query-param="JEFE_DEPENDENCIA"/>
+			<with-param name="FECHA_NACIMIENTO" query-param="FECHA_NACIMIENTO"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="CTA_BANCARIA" query-param="CTA_BANCARIA"/>
+			<with-param name="TELEFONOS" query-param="TELEFONOS"/>
+			<with-param name="CORREO_ELECTRONICO" query-param="CORREO_ELECTRONICO"/>
+			<with-param name="OBSERVACION_SOLICITUD" query-param="OBSERVACION_SOLICITUD"/>
+			<with-param name="SUCURSAL_JEFE" query-param="SUCURSAL_JEFE"/>
+			<with-param name="FECHA_AUT_SIIF_NACION" query-param="FECHA_AUT_SIIF_NACION"/>
+			<with-param name="FECHA_COM_DESEMBOLSO_SIIF" query-param="FECHA_COM_DESEMBOLSO_SIIF"/>
+			<with-param name="FECHA_DESEMBOLSO_TRANSPORTE" query-param="FECHA_DESEMBOLSO_TRANSPORTE"/>
+			<with-param name="NUMERO_COM_DESEMBOLSO_SIIF" query-param="NUMERO_COM_DESEMBOLSO_SIIF"/>
+			<with-param name="NUMERO_COM_DESEM_TRANSPORTE" query-param="NUMERO_COM_DESEM_TRANSPORTE"/>
+			<with-param name="FECHA_APROBACION" query-param="FECHA_APROBACION"/>
+			<with-param name="SALARIO_COMISIONADO" query-param="SALARIO_COMISIONADO"/>
+			<with-param name="CLASE_TRANSPORTE" query-param="CLASE_TRANSPORTE"/>
+			<with-param name="DESCRIPCION_TRANS" query-param="DESCRIPCION_TRANS"/>
+			<with-param name="VALOR_TRANSPORTE" query-param="VALOR_TRANSPORTE"/>
+			<with-param name="DESTINO_CORRERIA" query-param="DESTINO_CORRERIA"/>
+			<with-param name="PAIS_REGRESO" query-param="PAIS_REGRESO"/>
+			<with-param name="DEPARTAMENTO_REGRESO" query-param="DEPARTAMENTO_REGRESO"/>
+			<with-param name="CIUDAD_REGRESO" query-param="CIUDAD_REGRESO"/>
+			<with-param name="HORA_SALIDA" query-param="HORA_SALIDA"/>
+			<with-param name="HORA_REGRESO" query-param="HORA_REGRESO"/>
+			<with-param name="NRO_RADICADO_DOC" query-param="NRO_RADICADO_DOC"/>
+			<with-param name="FECHA_RADICADO_DOC" query-param="FECHA_RADICADO_DOC"/>
+			<with-param name="GENERA_VIATICOS" query-param="GENERA_VIATICOS"/>
+			<with-param name="SOLICITA_TIQUETE" query-param="SOLICITA_TIQUETE"/>
+			<with-param name="VALOR_DIARIO_COMISION" query-param="VALOR_DIARIO_COMISION"/>
+			<with-param name="ESTADO_LEGALIZACION" query-param="ESTADO_LEGALIZACION"/>
+			<with-param name="OBSERVACION_LEGALIZACION" query-param="OBSERVACION_LEGALIZACION"/>
+			<with-param name="FECHA_APROBA_LEGA" query-param="FECHA_APROBA_LEGA"/>
+			<with-param name="VALOR_VIATICO_LEGALIZADO" query-param="VALOR_VIATICO_LEGALIZADO"/>
+			<with-param name="VALOR_TRANSPORTE_LEGALIZADO" query-param="VALOR_TRANSPORTE_LEGALIZADO"/>
+			<with-param name="VALOR_REEMBOLSADO" query-param="VALOR_REEMBOLSADO"/>
+			<with-param name="FECHA_REEMBOLSO" query-param="FECHA_REEMBOLSO"/>
+			<with-param name="VALOR_TRANSPORTE_REEMBOLSO" query-param="VALOR_TRANSPORTE_REEMBOLSO"/>
+			<with-param name="FECHA_TRANS_REEMBOLSO" query-param="FECHA_TRANS_REEMBOLSO"/>
+			<with-param name="FECHA_GRABACION_SIIF" query-param="FECHA_GRABACION_SIIF"/>
+			<with-param name="CIUDAD_EXPE" query-param="CIUDAD_EXPE"/>
+			<with-param name="DEPARTAMENTO_EXPE" query-param="DEPARTAMENTO_EXPE"/>
+			<with-param name="PAIS_EXPE" query-param="PAIS_EXPE"/>
+			<with-param name="FECHA_AUT_FACTURA" query-param="FECHA_AUT_FACTURA"/>
+			<with-param name="NUMERO_RADICADO_AUTO" query-param="NUMERO_RADICADO_AUTO"/>
+			<with-param name="FECHA_LEGALIZACION" query-param="FECHA_LEGALIZACION"/>
+			<with-param name="RESUMEN_ACTIVIDADES" query-param="RESUMEN_ACTIVIDADES"/>
+			<with-param name="LEGALIZADO_PLAZO" query-param="LEGALIZADO_PLAZO"/>
+			<with-param name="NUMERO_OFICIO_MINTIC" query-param="NUMERO_OFICIO_MINTIC"/>
+			<with-param name="FECHA_RADICADO_MINTIC" query-param="FECHA_RADICADO_MINTIC"/>
+			<with-param name="ESTADO_MINTIC" query-param="ESTADO_MINTIC"/>
+			<with-param name="FECHA_APROBA_MINTIC" query-param="FECHA_APROBA_MINTIC"/>
+			<with-param name="AVAL_COORDINADOR" query-param="AVAL_COORDINADOR"/>
+			<with-param name="NUMERO_RESOLUCION_MINTIC" query-param="NUMERO_RESOLUCION_MINTIC"/>
+			<with-param name="FECHA_RESOLUCION_MINTIC" query-param="FECHA_RESOLUCION_MINTIC"/>
+			<with-param name="ZONA_EXTERIOR" query-param="ZONA_EXTERIOR"/>
+			<with-param name="DIAS_TRANSITO" query-param="DIAS_TRANSITO"/>
+			<with-param name="VALOR_TASA_CAMBIO" query-param="VALOR_TASA_CAMBIO"/>
+			<with-param name="FECHA_TASA_CAMBIO" query-param="FECHA_TASA_CAMBIO"/>
+			<with-param name="VALOR_TOTAL_PESOS" query-param="VALOR_TOTAL_PESOS"/>
+			<with-param name="NRO_RADICADO_DOC_MINTIC" query-param="NRO_RADICADO_DOC_MINTIC"/>
+			<with-param name="OBSERVACION_APROB" query-param="OBSERVACION_APROB"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteViviaticos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM VI_VIATICOS WHERE VI_VIATICOS.COMPANIA= :KEY_COMPANIA AND VI_VIATICOS.ANO= :KEY_ANO AND VI_VIATICOS.TIPO_VIATICO= :KEY_TIPO_VIATICO AND VI_VIATICOS.CODSOLICITUD= :KEY_CODSOLICITUD</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_TIPO_VIATICO" sqlType="STRING"/>
+		<param name="KEY_CODSOLICITUD" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="viviaticos">
+		<call-query href="deleteViviaticos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPO_VIATICO" query-param="KEY_TIPO_VIATICO"/>
+			<with-param name="KEY_CODSOLICITUD" query-param="KEY_CODSOLICITUD"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, ANO , TIPO_VIATICO , CODSOLICITUD , NUMSOLICITUD , OBSERVACION ,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS WHERE COMPANIA = :COMPANIA AND ESTADO NOT IN ('A','C','N') ORDER BY CODSOLICITUD, NUMSOLICITUD) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN NUMSOLICITUD IS NULL THEN ' ' ELSE UPPER(NUMSOLICITUD) END)  LIKE UPPER(:NUMSOLICITUD || '%')  AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END)  LIKE UPPER( '%' || :OBSERVACION || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_VIATICO":"$TIPO_VIATICO","CODSOLICITUD":"$CODSOLICITUD(type:long)","NUMSOLICITUD":"$NUMSOLICITUD(type:long)","OBSERVACION":"$OBSERVACION","FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="NUMSOLICITUD" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="viviaticos">
+		<call-query href="getViviaticosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="NUMSOLICITUD" query-param="NUMSOLICITUD"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, ANO , TIPO_VIATICO , CODSOLICITUD , NUMSOLICITUD , OBSERVACION ,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS WHERE COMPANIA = :COMPANIA AND ESTADO NOT IN ('A','C','N') ORDER BY CODSOLICITUD, NUMSOLICITUD) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN NUMSOLICITUD IS NULL THEN ' ' ELSE UPPER(NUMSOLICITUD) END)  LIKE UPPER(:NUMSOLICITUD || '%')  AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END)  LIKE UPPER( '%' || :OBSERVACION || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="NUMSOLICITUD" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/numero">
+		<call-query href="getViviaticosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="NUMSOLICITUD" query-param="NUMSOLICITUD"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  VI_VIATICOS.COMPANIA , VI_VIATICOS.ANO , VI_VIATICOS.TIPO_VIATICO , VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.NUMSOLICITUD , VI_VIATICOS.NUMERO_RESOLUCION ,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,(TO_CHAR(VI_VIATICOS.FECHAINICIO,'DD/MM/YYYY HH24:MI:SS')) FECHAINICIO,(TO_CHAR(VI_VIATICOS.FECHAFIN,'DD/MM/YYYY HH24:MI:SS')) FECHAFIN,(CASE VI_VIATICOS.PERNOCTA WHEN 0 THEN 'false' ELSE 'true' END) PERNOCTA,(CASE VI_VIATICOS.VEHICULO WHEN 0 THEN 'false' ELSE 'true' END) VEHICULO, VI_VIATICOS.PLACA_VEHICULO , VI_VIATICOS.OBJETO , VI_VIATICOS.OBSERVACION , VI_VIATICOS.JUSTIFICACION , VI_VIATICOS.OBSERVACIONCOMITE , VI_VIATICOS.DEPENDENCIA , DP.NOMBRE NOMBREDEPENDENCIA, VI_VIATICOS.TVISITA , VI_VIATICOS.PAIS_DESTINO , VI_VIATICOS.DEPARTAMENTO_DESTINO , VI_VIATICOS.CIUDAD_DESTINO ,(CASE VI_VIATICOS.APROBADO WHEN 0 THEN 'false' ELSE 'true' END) APROBADO,(CASE VI_VIATICOS.SABADO WHEN 0 THEN 'false' ELSE 'true' END) SABADO,(CASE VI_VIATICOS.DOMINGO WHEN 0 THEN 'false' ELSE 'true' END) DOMINGO,(CASE VI_VIATICOS.FESTIVO WHEN 0 THEN 'false' ELSE 'true' END) FESTIVO,(CASE VI_VIATICOS.TRSNESPECIAL WHEN 0 THEN 'false' ELSE 'true' END) TRSNESPECIAL, VI_VIATICOS.NODIAS , VI_VIATICOS.TSOLICITUD , VI_VIATICOS.TERCERO , T.NOMBRE NOMBRETERCERO, VI_VIATICOS.SUCURSAL , VI_VIATICOS.TIPO_CPTE_PPTAL , VI_VIATICOS.COMPROBANTE_PPTAL , VI_VIATICOS.TIPO_CPTE_CNT , VI_VIATICOS.COMPROBANTE_CNT , VI_VIATICOS.VALORTOTALVIATICO , VI_VIATICOS.VALORABONADO , VI_VIATICOS.SALDOTOTAL , VI_VIATICOS.ESCALAFON, VI_VIATICOS.ID_CATEGORIA, VI_VIATICOS.CREATED_BY ,(TO_CHAR(VI_VIATICOS.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, VI_VIATICOS.MODIFIED_BY ,(TO_CHAR(VI_VIATICOS.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, VI_VIATICOS.PAIS_ORIGEN , VI_VIATICOS.DEPARTAMENTO_ORIGEN , VI_VIATICOS.CIUDAD_ORIGEN , VI_VIATICOS.COD_PERSONA, VI_VIATICOS.TCOMISION, VI_VIATICOS.VALOR_RESERVA_INICIAL , VI_VIATICOS.VALOR_TIQUETE_EMITIDO , VI_VIATICOS.NUMERO_LOCALIZADOR , VI_VIATICOS.ITINERARIO , VI_VIATICOS.NUMERO_RADICADO ,(TO_CHAR(VI_VIATICOS.FECHA_RADICADO,'DD/MM/YYYY HH24:MI:SS')) FECHA_RADICADO, VI_VIATICOS.VALOR_FACTURA_TIQUETE ,(TO_CHAR(VI_VIATICOS.FECHA_FACTURA_TIQUETE,'DD/MM/YYYY HH24:MI:SS')) FECHA_FACTURA_TIQUETE, VI_VIATICOS.VALOR_DESCUENTO_AGENCIA , VI_VIATICOS.ESTADO , VI_VIATICOS.TIPOCOMISION , VI_VIATICOS.JEFE_DEPENDENCIA , VI_VIATICOS.SUCURSAL_JEFE,(TO_CHAR(VI_VIATICOS.FECHA_APROBACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_APROBACION, TT.NOMBRE NOMBRERESPONSABLE,(TO_CHAR(VI_VIATICOS.FECHA_NACIMIENTO,'DD/MM/YYYY HH24:MI:SS')) FECHA_NACIMIENTO, VI_VIATICOS.BANCO, B.NOMBREBANCO, VI_VIATICOS.CTA_BANCARIA, VI_VIATICOS.TELEFONOS, VI_VIATICOS.CORREO_ELECTRONICO, VI_VIATICOS.OBSERVACION_SOLICITUD,(TO_CHAR(VI_VIATICOS.FECHA_AUT_SIIF_NACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_AUT_SIIF_NACION,(TO_CHAR(VI_VIATICOS.FECHA_COM_DESEMBOLSO_SIIF,'DD/MM/YYYY HH24:MI:SS')) FECHA_COM_DESEMBOLSO_SIIF,(TO_CHAR(VI_VIATICOS.FECHA_DESEMBOLSO_TRANSPORTE,'DD/MM/YYYY HH24:MI:SS')) FECHA_DESEMBOLSO_TRANSPORTE, VI_VIATICOS.NUMERO_COM_DESEMBOLSO_SIIF , VI_VIATICOS.NUMERO_COM_DESEM_TRANSPORTE, VI_VIATICOS.SALARIO_COMISIONADO, VI_VIATICOS.CLASE_TRANSPORTE, CT.DESCRIPCION NOMBRECLASETRANSPORTE, VI_VIATICOS.DESCRIPCION_TRANS, VI_VIATICOS.VALOR_TRANSPORTE , VI_VIATICOS.DESTINO_CORRERIA, VI_VIATICOS.PAIS_REGRESO, VI_VIATICOS.DEPARTAMENTO_REGRESO, VI_VIATICOS.CIUDAD_REGRESO,(TO_CHAR(VI_VIATICOS.HORA_SALIDA,'DD/MM/YYYY HH24:MI:SS')) HORA_SALIDA,(TO_CHAR(VI_VIATICOS.HORA_REGRESO,'DD/MM/YYYY HH24:MI:SS')) HORA_REGRESO, VI_VIATICOS.NRO_RADICADO_DOC,(TO_CHAR(VI_VIATICOS.FECHA_RADICADO_DOC,'DD/MM/YYYY HH24:MI:SS')) FECHA_RADICADO_DOC,(CASE VI_VIATICOS.GENERA_VIATICOS WHEN 0 THEN 'false' ELSE 'true' END) GENERA_VIATICOS,(CASE VI_VIATICOS.SOLICITA_TIQUETE WHEN 0 THEN 'false' ELSE 'true' END) SOLICITA_TIQUETE, VI_VIATICOS.VALOR_DIARIO_COMISION, VI_VIATICOS.ESTADO_LEGALIZACION, VI_VIATICOS.OBSERVACION_LEGALIZACION ,(TO_CHAR(VI_VIATICOS.FECHA_APROBA_LEGA,'DD/MM/YYYY HH24:MI:SS')) FECHA_APROBA_LEGA, VI_VIATICOS.VALOR_VIATICO_LEGALIZADO, VI_VIATICOS.VALOR_TRANSPORTE_LEGALIZADO, VI_VIATICOS.VALOR_REEMBOLSADO,(TO_CHAR(VI_VIATICOS.FECHA_REEMBOLSO,'DD/MM/YYYY HH24:MI:SS')) FECHA_REEMBOLSO, VI_VIATICOS.VALOR_TRANSPORTE_REEMBOLSO,(TO_CHAR(VI_VIATICOS.FECHA_TRANS_REEMBOLSO,'DD/MM/YYYY HH24:MI:SS')) FECHA_TRANS_REEMBOLSO,(TO_CHAR(VI_VIATICOS.FECHA_GRABACION_SIIF,'DD/MM/YYYY HH24:MI:SS')) FECHA_GRABACION_SIIF, VI_VIATICOS.CIUDAD_EXPE, VI_VIATICOS.DEPARTAMENTO_EXPE, VI_VIATICOS.PAIS_EXPE, C.NOMBRE NOMBRE_EXPE,(TO_CHAR(VI_VIATICOS.FECHA_AUT_FACTURA,'DD/MM/YYYY HH24:MI:SS')) FECHA_AUT_FACTURA, VI_VIATICOS.NUMERO_RADICADO_AUTO,(TO_CHAR(VI_VIATICOS.FECHA_LEGALIZACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_LEGALIZACION, VI_VIATICOS.RESUMEN_ACTIVIDADES ,(CASE VI_VIATICOS.LEGALIZADO_PLAZO WHEN 0 THEN 'false' ELSE 'true' END) LEGALIZADO_PLAZO, VI_VIATICOS.NUMERO_OFICIO_MINTIC,(TO_CHAR(VI_VIATICOS.FECHA_RADICADO_MINTIC,'DD/MM/YYYY HH24:MI:SS')) FECHA_RADICADO_MINTIC, VI_VIATICOS.ESTADO_MINTIC ,(TO_CHAR(VI_VIATICOS.FECHA_APROBA_MINTIC,'DD/MM/YYYY HH24:MI:SS')) FECHA_APROBA_MINTIC, VI_VIATICOS.AVAL_COORDINADOR, VI_VIATICOS.NUMERO_RESOLUCION_MINTIC,(TO_CHAR(VI_VIATICOS.FECHA_RESOLUCION_MINTIC,'DD/MM/YYYY HH24:MI:SS')) FECHA_RESOLUCION_MINTIC, VI_VIATICOS.ZONA_EXTERIOR, VI_VIATICOS.DIAS_TRANSITO, VI_VIATICOS.VALOR_TASA_CAMBIO,(TO_CHAR(VI_VIATICOS.FECHA_TASA_CAMBIO,'DD/MM/YYYY HH24:MI:SS')) FECHA_TASA_CAMBIO, VI_VIATICOS.VALOR_TOTAL_PESOS, VI_VIATICOS.NRO_RADICADO_DOC_MINTIC, VI_VIATICOS.OBSERVACION_APROB  FROM VI_VIATICOS INNER JOIN TERCERO T ON VI_VIATICOS.COMPANIA = T.COMPANIA AND VI_VIATICOS.TERCERO = T.NIT AND VI_VIATICOS.SUCURSAL = T.SUCURSAL INNER JOIN DEPENDENCIA DP ON VI_VIATICOS.COMPANIA = DP.COMPANIA AND VI_VIATICOS.DEPENDENCIA = DP.CODIGO INNER JOIN DEPENDENCIA_RESPONSABLE DPR ON VI_VIATICOS.COMPANIA = DPR.COMPANIA AND VI_VIATICOS.DEPENDENCIA= DPR.DEPENDENCIA AND VI_VIATICOS.JEFE_DEPENDENCIA = DPR.RESPONSABLE INNER JOIN RESPONSABLE R ON R.COMPANIA = DPR.COMPANIA AND R.CEDULA= DPR.RESPONSABLE AND R.SUCURSAL = DPR.SUCURSAL INNER JOIN TERCERO TT ON R.COMPANIA = TT.COMPANIA AND R.CEDULA= TT.NIT AND R.SUCURSAL = TT.SUCURSAL LEFT JOIN BANCO B ON B.COMPANIA = VI_VIATICOS.COMPANIA AND B.BANCO= VI_VIATICOS.BANCO LEFT JOIN VI_CLASE_TRANSPORTE CT ON CT.COMPANIA = VI_VIATICOS.COMPANIA AND CT.CODIGO = VI_VIATICOS.CLASE_TRANSPORTE LEFT JOIN CIUDAD C ON VI_VIATICOS.CIUDAD_EXPE = C.CODIGO AND VI_VIATICOS.DEPARTAMENTO_EXPE = C.DEPARTAMENTO AND VI_VIATICOS.PAIS_EXPE = C.PAIS WHERE VI_VIATICOS.COMPANIA= :KEY_COMPANIA AND VI_VIATICOS.ANO= :KEY_ANO AND VI_VIATICOS.TIPO_VIATICO= :KEY_TIPO_VIATICO AND VI_VIATICOS.CODSOLICITUD= :KEY_CODSOLICITUD</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_VIATICO":"$TIPO_VIATICO","CODSOLICITUD":"$CODSOLICITUD(type:long)","NUMSOLICITUD":"$NUMSOLICITUD(type:long)","NUMERO_RESOLUCION":"$NUMERO_RESOLUCION","FECHA":"$FECHA","FECHAINICIO":"$FECHAINICIO","FECHAFIN":"$FECHAFIN","PERNOCTA":"$PERNOCTA(type:boolean)","VEHICULO":"$VEHICULO(type:boolean)","PLACA_VEHICULO":"$PLACA_VEHICULO","OBJETO":"$OBJETO","OBSERVACION":"$OBSERVACION","JUSTIFICACION":"$JUSTIFICACION","OBSERVACIONCOMITE":"$OBSERVACIONCOMITE","DEPENDENCIA":"$DEPENDENCIA","NOMBREDEPENDENCIA":"$NOMBREDEPENDENCIA","TVISITA":"$TVISITA","PAIS_DESTINO":"$PAIS_DESTINO","DEPARTAMENTO_DESTINO":"$DEPARTAMENTO_DESTINO","CIUDAD_DESTINO":"$CIUDAD_DESTINO","APROBADO":"$APROBADO(type:boolean)","SABADO":"$SABADO(type:boolean)","DOMINGO":"$DOMINGO(type:boolean)","FESTIVO":"$FESTIVO(type:boolean)","TRSNESPECIAL":"$TRSNESPECIAL(type:boolean)","NODIAS":"$NODIAS","TSOLICITUD":"$TSOLICITUD","TERCERO":"$TERCERO","NOMBRETERCERO":"$NOMBRETERCERO","SUCURSAL":"$SUCURSAL","TIPO_CPTE_PPTAL":"$TIPO_CPTE_PPTAL","COMPROBANTE_PPTAL":"$COMPROBANTE_PPTAL(type:long)","TIPO_CPTE_CNT":"$TIPO_CPTE_CNT","COMPROBANTE_CNT":"$COMPROBANTE_CNT(type:long)","VALORTOTALVIATICO":"$VALORTOTALVIATICO","VALORABONADO":"$VALORABONADO","SALDOTOTAL":"$SALDOTOTAL","ESCALAFON":"$ESCALAFON","ID_CATEGORIA":"$ID_CATEGORIA","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","PAIS_ORIGEN":"$PAIS_ORIGEN","DEPARTAMENTO_ORIGEN":"$DEPARTAMENTO_ORIGEN","CIUDAD_ORIGEN":"$CIUDAD_ORIGEN","COD_PERSONA":"$COD_PERSONA","TCOMISION":"$TCOMISION","VALOR_RESERVA_INICIAL":"$VALOR_RESERVA_INICIAL","VALOR_TIQUETE_EMITIDO":"$VALOR_TIQUETE_EMITIDO","NUMERO_LOCALIZADOR":"$NUMERO_LOCALIZADOR","ITINERARIO":"$ITINERARIO","NUMERO_RADICADO":"$NUMERO_RADICADO","FECHA_RADICADO":"$FECHA_RADICADO","VALOR_FACTURA_TIQUETE":"$VALOR_FACTURA_TIQUETE","FECHA_FACTURA_TIQUETE":"$FECHA_FACTURA_TIQUETE","VALOR_DESCUENTO_AGENCIA":"$VALOR_DESCUENTO_AGENCIA","ESTADO":"$ESTADO","TIPOCOMISION":"$TIPOCOMISION","JEFE_DEPENDENCIA":"$JEFE_DEPENDENCIA","SUCURSAL_JEFE":"$SUCURSAL_JEFE","FECHA_APROBACION":"$FECHA_APROBACION","NOMBRERESPONSABLE":"$NOMBRERESPONSABLE","FECHA_NACIMIENTO":"$FECHA_NACIMIENTO","BANCO":"$BANCO","NOMBREBANCO":"$NOMBREBANCO","CTA_BANCARIA":"$CTA_BANCARIA","TELEFONOS":"$TELEFONOS","CORREO_ELECTRONICO":"$CORREO_ELECTRONICO","OBSERVACION_SOLICITUD":"$OBSERVACION_SOLICITUD","FECHA_AUT_SIIF_NACION":"$FECHA_AUT_SIIF_NACION","FECHA_COM_DESEMBOLSO_SIIF":"$FECHA_COM_DESEMBOLSO_SIIF","FECHA_DESEMBOLSO_TRANSPORTE":"$FECHA_DESEMBOLSO_TRANSPORTE","NUMERO_COM_DESEMBOLSO_SIIF":"$NUMERO_COM_DESEMBOLSO_SIIF","NUMERO_COM_DESEM_TRANSPORTE":"$NUMERO_COM_DESEM_TRANSPORTE","SALARIO_COMISIONADO":"$SALARIO_COMISIONADO","CLASE_TRANSPORTE":"$CLASE_TRANSPORTE","NOMBRECLASETRANSPORTE":"$NOMBRECLASETRANSPORTE","DESCRIPCION_TRANS":"$DESCRIPCION_TRANS","VALOR_TRANSPORTE":"$VALOR_TRANSPORTE","DESTINO_CORRERIA":"$DESTINO_CORRERIA","PAIS_REGRESO":"$PAIS_REGRESO","DEPARTAMENTO_REGRESO":"$DEPARTAMENTO_REGRESO","CIUDAD_REGRESO":"$CIUDAD_REGRESO","HORA_SALIDA":"$HORA_SALIDA","HORA_REGRESO":"$HORA_REGRESO","NRO_RADICADO_DOC":"$NRO_RADICADO_DOC","FECHA_RADICADO_DOC":"$FECHA_RADICADO_DOC","GENERA_VIATICOS":"$GENERA_VIATICOS(type:boolean)","SOLICITA_TIQUETE":"$SOLICITA_TIQUETE(type:boolean)","VALOR_DIARIO_COMISION":"$VALOR_DIARIO_COMISION","ESTADO_LEGALIZACION":"$ESTADO_LEGALIZACION","OBSERVACION_LEGALIZACION":"$OBSERVACION_LEGALIZACION","FECHA_APROBA_LEGA":"$FECHA_APROBA_LEGA","VALOR_VIATICO_LEGALIZADO":"$VALOR_VIATICO_LEGALIZADO","VALOR_TRANSPORTE_LEGALIZADO":"$VALOR_TRANSPORTE_LEGALIZADO","VALOR_REEMBOLSADO":"$VALOR_REEMBOLSADO","FECHA_REEMBOLSO":"$FECHA_REEMBOLSO","VALOR_TRANSPORTE_REEMBOLSO":"$VALOR_TRANSPORTE_REEMBOLSO","FECHA_TRANS_REEMBOLSO":"$FECHA_TRANS_REEMBOLSO","FECHA_GRABACION_SIIF":"$FECHA_GRABACION_SIIF","CIUDAD_EXPE":"$CIUDAD_EXPE","DEPARTAMENTO_EXPE":"$DEPARTAMENTO_EXPE","PAIS_EXPE":"$PAIS_EXPE","NOMBRE_EXPE":"$NOMBRE_EXPE","FECHA_AUT_FACTURA":"$FECHA_AUT_FACTURA","NUMERO_RADICADO_AUTO":"$NUMERO_RADICADO_AUTO","FECHA_LEGALIZACION":"$FECHA_LEGALIZACION","RESUMEN_ACTIVIDADES":"$RESUMEN_ACTIVIDADES","LEGALIZADO_PLAZO":"$LEGALIZADO_PLAZO(type:boolean)","NUMERO_OFICIO_MINTIC":"$NUMERO_OFICIO_MINTIC","FECHA_RADICADO_MINTIC":"$FECHA_RADICADO_MINTIC","ESTADO_MINTIC":"$ESTADO_MINTIC","FECHA_APROBA_MINTIC":"$FECHA_APROBA_MINTIC","AVAL_COORDINADOR":"$AVAL_COORDINADOR","NUMERO_RESOLUCION_MINTIC":"$NUMERO_RESOLUCION_MINTIC","FECHA_RESOLUCION_MINTIC":"$FECHA_RESOLUCION_MINTIC","ZONA_EXTERIOR":"$ZONA_EXTERIOR","DIAS_TRANSITO":"$DIAS_TRANSITO(type:integer)","VALOR_TASA_CAMBIO":"$VALOR_TASA_CAMBIO","FECHA_TASA_CAMBIO":"$FECHA_TASA_CAMBIO","VALOR_TOTAL_PESOS":"$VALOR_TOTAL_PESOS","NRO_RADICADO_DOC_MINTIC":"$NRO_RADICADO_DOC_MINTIC","OBSERVACION_APROB":"$OBSERVACION_APROB"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_TIPO_VIATICO" sqlType="STRING"/>
+		<param name="KEY_CODSOLICITUD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/data">
+		<call-query href="getViviaticosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPO_VIATICO" query-param="KEY_TIPO_VIATICO"/>
+			<with-param name="KEY_CODSOLICITUD" query-param="KEY_CODSOLICITUD"/>
+
+		</call-query>
+	</resource>
+	<query id="updateViviaticos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE VI_VIATICOS SET ANO=:ANO, TIPO_VIATICO=:TIPO_VIATICO, CODSOLICITUD=:CODSOLICITUD, NUMSOLICITUD=:NUMSOLICITUD, NUMERO_RESOLUCION=:NUMERO_RESOLUCION, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), FECHAINICIO=TO_DATE(:FECHAINICIO,'DD/MM/YYYY HH24:MI:SS'), FECHAFIN=TO_DATE(:FECHAFIN,'DD/MM/YYYY HH24:MI:SS'), PERNOCTA=:PERNOCTA, VEHICULO=:VEHICULO, PLACA_VEHICULO=:PLACA_VEHICULO, OBJETO=:OBJETO, OBSERVACION=:OBSERVACION, JUSTIFICACION=:JUSTIFICACION, OBSERVACIONCOMITE=:OBSERVACIONCOMITE, DEPENDENCIA=:DEPENDENCIA, TVISITA=:TVISITA, PAIS_DESTINO=:PAIS_DESTINO, DEPARTAMENTO_DESTINO=:DEPARTAMENTO_DESTINO, CIUDAD_DESTINO=:CIUDAD_DESTINO, APROBADO=:APROBADO, SABADO=:SABADO, DOMINGO=:DOMINGO, FESTIVO=:FESTIVO, TRSNESPECIAL=:TRSNESPECIAL, NODIAS=:NODIAS, TSOLICITUD=:TSOLICITUD, TERCERO=:TERCERO, SUCURSAL=:SUCURSAL, TIPO_CPTE_PPTAL=:TIPO_CPTE_PPTAL, COMPROBANTE_PPTAL=:COMPROBANTE_PPTAL, TIPO_CPTE_CNT=:TIPO_CPTE_CNT, COMPROBANTE_CNT=:COMPROBANTE_CNT, VALORTOTALVIATICO=:VALORTOTALVIATICO, VALORABONADO=:VALORABONADO, SALDOTOTAL=:SALDOTOTAL, ESCALAFON=:ESCALAFON, ID_CATEGORIA=:ID_CATEGORIA, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), PAIS_ORIGEN=:PAIS_ORIGEN, DEPARTAMENTO_ORIGEN=:DEPARTAMENTO_ORIGEN, CIUDAD_ORIGEN=:CIUDAD_ORIGEN, COD_PERSONA=:COD_PERSONA, TCOMISION=:TCOMISION, VALOR_RESERVA_INICIAL=:VALOR_RESERVA_INICIAL, VALOR_TIQUETE_EMITIDO=:VALOR_TIQUETE_EMITIDO, NUMERO_LOCALIZADOR=:NUMERO_LOCALIZADOR, ITINERARIO=:ITINERARIO, NUMERO_RADICADO=:NUMERO_RADICADO, FECHA_RADICADO=TO_DATE(:FECHA_RADICADO,'DD/MM/YYYY HH24:MI:SS'), VALOR_FACTURA_TIQUETE=:VALOR_FACTURA_TIQUETE, FECHA_FACTURA_TIQUETE=TO_DATE(:FECHA_FACTURA_TIQUETE,'DD/MM/YYYY HH24:MI:SS'), VALOR_DESCUENTO_AGENCIA=:VALOR_DESCUENTO_AGENCIA, ESTADO=:ESTADO, TIPOCOMISION=:TIPOCOMISION, JEFE_DEPENDENCIA=:JEFE_DEPENDENCIA, FECHA_NACIMIENTO=TO_DATE(:FECHA_NACIMIENTO,'DD/MM/YYYY HH24:MI:SS'), BANCO=:BANCO, CTA_BANCARIA=:CTA_BANCARIA, TELEFONOS=:TELEFONOS, CORREO_ELECTRONICO=:CORREO_ELECTRONICO, OBSERVACION_SOLICITUD=:OBSERVACION_SOLICITUD, SUCURSAL_JEFE=:SUCURSAL_JEFE, FECHA_AUT_SIIF_NACION=TO_DATE(:FECHA_AUT_SIIF_NACION,'DD/MM/YYYY HH24:MI:SS'), FECHA_COM_DESEMBOLSO_SIIF=TO_DATE(:FECHA_COM_DESEMBOLSO_SIIF,'DD/MM/YYYY HH24:MI:SS'), FECHA_DESEMBOLSO_TRANSPORTE=TO_DATE(:FECHA_DESEMBOLSO_TRANSPORTE,'DD/MM/YYYY HH24:MI:SS'), NUMERO_COM_DESEMBOLSO_SIIF=:NUMERO_COM_DESEMBOLSO_SIIF, NUMERO_COM_DESEM_TRANSPORTE=:NUMERO_COM_DESEM_TRANSPORTE, FECHA_APROBACION=TO_DATE(:FECHA_APROBACION,'DD/MM/YYYY HH24:MI:SS'), SALARIO_COMISIONADO=:SALARIO_COMISIONADO, CLASE_TRANSPORTE=:CLASE_TRANSPORTE, DESCRIPCION_TRANS=:DESCRIPCION_TRANS, VALOR_TRANSPORTE=:VALOR_TRANSPORTE, DESTINO_CORRERIA=:DESTINO_CORRERIA, PAIS_REGRESO=:PAIS_REGRESO, DEPARTAMENTO_REGRESO=:DEPARTAMENTO_REGRESO, CIUDAD_REGRESO=:CIUDAD_REGRESO, HORA_SALIDA=TO_DATE(:HORA_SALIDA,'DD/MM/YYYY HH24:MI:SS'), HORA_REGRESO=TO_DATE(:HORA_REGRESO,'DD/MM/YYYY HH24:MI:SS'), NRO_RADICADO_DOC=:NRO_RADICADO_DOC, FECHA_RADICADO_DOC=TO_DATE(:FECHA_RADICADO_DOC,'DD/MM/YYYY HH24:MI:SS'), GENERA_VIATICOS=:GENERA_VIATICOS, SOLICITA_TIQUETE=:SOLICITA_TIQUETE, VALOR_DIARIO_COMISION=:VALOR_DIARIO_COMISION, ESTADO_LEGALIZACION=:ESTADO_LEGALIZACION, OBSERVACION_LEGALIZACION=:OBSERVACION_LEGALIZACION, FECHA_APROBA_LEGA=TO_DATE(:FECHA_APROBA_LEGA,'DD/MM/YYYY HH24:MI:SS'), VALOR_VIATICO_LEGALIZADO=:VALOR_VIATICO_LEGALIZADO, VALOR_TRANSPORTE_LEGALIZADO=:VALOR_TRANSPORTE_LEGALIZADO, VALOR_REEMBOLSADO=:VALOR_REEMBOLSADO, FECHA_REEMBOLSO=TO_DATE(:FECHA_REEMBOLSO,'DD/MM/YYYY HH24:MI:SS'), VALOR_TRANSPORTE_REEMBOLSO=:VALOR_TRANSPORTE_REEMBOLSO, FECHA_TRANS_REEMBOLSO=TO_DATE(:FECHA_TRANS_REEMBOLSO,'DD/MM/YYYY HH24:MI:SS'), FECHA_GRABACION_SIIF=TO_DATE(:FECHA_GRABACION_SIIF,'DD/MM/YYYY HH24:MI:SS'), CIUDAD_EXPE=:CIUDAD_EXPE, DEPARTAMENTO_EXPE=:DEPARTAMENTO_EXPE, PAIS_EXPE=:PAIS_EXPE, FECHA_AUT_FACTURA=TO_DATE(:FECHA_AUT_FACTURA,'DD/MM/YYYY HH24:MI:SS'), NUMERO_RADICADO_AUTO=:NUMERO_RADICADO_AUTO, FECHA_LEGALIZACION=TO_DATE(:FECHA_LEGALIZACION,'DD/MM/YYYY HH24:MI:SS'), RESUMEN_ACTIVIDADES=:RESUMEN_ACTIVIDADES, LEGALIZADO_PLAZO=:LEGALIZADO_PLAZO, NUMERO_OFICIO_MINTIC=:NUMERO_OFICIO_MINTIC, FECHA_RADICADO_MINTIC=TO_DATE(:FECHA_RADICADO_MINTIC,'DD/MM/YYYY HH24:MI:SS'), ESTADO_MINTIC=:ESTADO_MINTIC, FECHA_APROBA_MINTIC=TO_DATE(:FECHA_APROBA_MINTIC,'DD/MM/YYYY HH24:MI:SS'), AVAL_COORDINADOR=:AVAL_COORDINADOR, NUMERO_RESOLUCION_MINTIC=:NUMERO_RESOLUCION_MINTIC, FECHA_RESOLUCION_MINTIC=TO_DATE(:FECHA_RESOLUCION_MINTIC,'DD/MM/YYYY HH24:MI:SS'), ZONA_EXTERIOR=:ZONA_EXTERIOR, DIAS_TRANSITO=:DIAS_TRANSITO, VALOR_TASA_CAMBIO=:VALOR_TASA_CAMBIO, FECHA_TASA_CAMBIO=TO_DATE(:FECHA_TASA_CAMBIO,'DD/MM/YYYY HH24:MI:SS'), VALOR_TOTAL_PESOS=:VALOR_TOTAL_PESOS, NRO_RADICADO_DOC_MINTIC=:NRO_RADICADO_DOC_MINTIC, OBSERVACION_APROB=:OBSERVACION_APROB WHERE VI_VIATICOS.COMPANIA= :KEY_COMPANIA AND VI_VIATICOS.ANO= :KEY_ANO AND VI_VIATICOS.TIPO_VIATICO= :KEY_TIPO_VIATICO AND VI_VIATICOS.CODSOLICITUD= :KEY_CODSOLICITUD</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPO_VIATICO" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="NUMSOLICITUD" sqlType="STRING"/>
+		<param name="NUMERO_RESOLUCION" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="FECHAINICIO" sqlType="STRING"/>
+		<param name="FECHAFIN" sqlType="STRING"/>
+		<param name="PERNOCTA" sqlType="STRING"/>
+		<param name="VEHICULO" sqlType="STRING"/>
+		<param name="PLACA_VEHICULO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="JUSTIFICACION" sqlType="STRING"/>
+		<param name="OBSERVACIONCOMITE" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="TVISITA" sqlType="STRING"/>
+		<param name="PAIS_DESTINO" sqlType="STRING"/>
+		<param name="DEPARTAMENTO_DESTINO" sqlType="STRING"/>
+		<param name="CIUDAD_DESTINO" sqlType="STRING"/>
+		<param name="APROBADO" sqlType="STRING"/>
+		<param name="SABADO" sqlType="STRING"/>
+		<param name="DOMINGO" sqlType="STRING"/>
+		<param name="FESTIVO" sqlType="STRING"/>
+		<param name="TRSNESPECIAL" sqlType="STRING"/>
+		<param name="NODIAS" sqlType="STRING"/>
+		<param name="TSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="TIPO_CPTE_PPTAL" sqlType="STRING"/>
+		<param name="COMPROBANTE_PPTAL" sqlType="STRING"/>
+		<param name="TIPO_CPTE_CNT" sqlType="STRING"/>
+		<param name="COMPROBANTE_CNT" sqlType="STRING"/>
+		<param name="VALORTOTALVIATICO" sqlType="STRING"/>
+		<param name="VALORABONADO" sqlType="STRING"/>
+		<param name="SALDOTOTAL" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="ID_CATEGORIA" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="PAIS_ORIGEN" sqlType="STRING"/>
+		<param name="DEPARTAMENTO_ORIGEN" sqlType="STRING"/>
+		<param name="CIUDAD_ORIGEN" sqlType="STRING"/>
+		<param name="COD_PERSONA" sqlType="STRING"/>
+		<param name="TCOMISION" sqlType="STRING"/>
+		<param name="VALOR_RESERVA_INICIAL" sqlType="STRING"/>
+		<param name="VALOR_TIQUETE_EMITIDO" sqlType="STRING"/>
+		<param name="NUMERO_LOCALIZADOR" sqlType="STRING"/>
+		<param name="ITINERARIO" sqlType="STRING"/>
+		<param name="NUMERO_RADICADO" sqlType="STRING"/>
+		<param name="FECHA_RADICADO" sqlType="STRING"/>
+		<param name="VALOR_FACTURA_TIQUETE" sqlType="STRING"/>
+		<param name="FECHA_FACTURA_TIQUETE" sqlType="STRING"/>
+		<param name="VALOR_DESCUENTO_AGENCIA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="TIPOCOMISION" sqlType="STRING"/>
+		<param name="JEFE_DEPENDENCIA" sqlType="STRING"/>
+		<param name="FECHA_NACIMIENTO" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="CTA_BANCARIA" sqlType="STRING"/>
+		<param name="TELEFONOS" sqlType="STRING"/>
+		<param name="CORREO_ELECTRONICO" sqlType="STRING"/>
+		<param name="OBSERVACION_SOLICITUD" sqlType="STRING"/>
+		<param name="SUCURSAL_JEFE" sqlType="STRING"/>
+		<param name="FECHA_AUT_SIIF_NACION" sqlType="STRING"/>
+		<param name="FECHA_COM_DESEMBOLSO_SIIF" sqlType="STRING"/>
+		<param name="FECHA_DESEMBOLSO_TRANSPORTE" sqlType="STRING"/>
+		<param name="NUMERO_COM_DESEMBOLSO_SIIF" sqlType="STRING"/>
+		<param name="NUMERO_COM_DESEM_TRANSPORTE" sqlType="STRING"/>
+		<param name="FECHA_APROBACION" sqlType="STRING"/>
+		<param name="SALARIO_COMISIONADO" sqlType="STRING"/>
+		<param name="CLASE_TRANSPORTE" sqlType="STRING"/>
+		<param name="DESCRIPCION_TRANS" sqlType="STRING"/>
+		<param name="VALOR_TRANSPORTE" sqlType="STRING"/>
+		<param name="DESTINO_CORRERIA" sqlType="STRING"/>
+		<param name="PAIS_REGRESO" sqlType="STRING"/>
+		<param name="DEPARTAMENTO_REGRESO" sqlType="STRING"/>
+		<param name="CIUDAD_REGRESO" sqlType="STRING"/>
+		<param name="HORA_SALIDA" sqlType="STRING"/>
+		<param name="HORA_REGRESO" sqlType="STRING"/>
+		<param name="NRO_RADICADO_DOC" sqlType="STRING"/>
+		<param name="FECHA_RADICADO_DOC" sqlType="STRING"/>
+		<param name="GENERA_VIATICOS" sqlType="STRING"/>
+		<param name="SOLICITA_TIQUETE" sqlType="STRING"/>
+		<param name="VALOR_DIARIO_COMISION" sqlType="STRING"/>
+		<param name="ESTADO_LEGALIZACION" sqlType="STRING"/>
+		<param name="OBSERVACION_LEGALIZACION" sqlType="STRING"/>
+		<param name="FECHA_APROBA_LEGA" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_LEGALIZADO" sqlType="STRING"/>
+		<param name="VALOR_TRANSPORTE_LEGALIZADO" sqlType="STRING"/>
+		<param name="VALOR_REEMBOLSADO" sqlType="STRING"/>
+		<param name="FECHA_REEMBOLSO" sqlType="STRING"/>
+		<param name="VALOR_TRANSPORTE_REEMBOLSO" sqlType="STRING"/>
+		<param name="FECHA_TRANS_REEMBOLSO" sqlType="STRING"/>
+		<param name="FECHA_GRABACION_SIIF" sqlType="STRING"/>
+		<param name="CIUDAD_EXPE" sqlType="STRING"/>
+		<param name="DEPARTAMENTO_EXPE" sqlType="STRING"/>
+		<param name="PAIS_EXPE" sqlType="STRING"/>
+		<param name="FECHA_AUT_FACTURA" sqlType="STRING"/>
+		<param name="NUMERO_RADICADO_AUTO" sqlType="STRING"/>
+		<param name="FECHA_LEGALIZACION" sqlType="STRING"/>
+		<param name="RESUMEN_ACTIVIDADES" sqlType="STRING"/>
+		<param name="LEGALIZADO_PLAZO" sqlType="STRING"/>
+		<param name="NUMERO_OFICIO_MINTIC" sqlType="STRING"/>
+		<param name="FECHA_RADICADO_MINTIC" sqlType="STRING"/>
+		<param name="ESTADO_MINTIC" sqlType="STRING"/>
+		<param name="FECHA_APROBA_MINTIC" sqlType="STRING"/>
+		<param name="AVAL_COORDINADOR" sqlType="STRING"/>
+		<param name="NUMERO_RESOLUCION_MINTIC" sqlType="STRING"/>
+		<param name="FECHA_RESOLUCION_MINTIC" sqlType="STRING"/>
+		<param name="ZONA_EXTERIOR" sqlType="STRING"/>
+		<param name="DIAS_TRANSITO" sqlType="STRING"/>
+		<param name="VALOR_TASA_CAMBIO" sqlType="STRING"/>
+		<param name="FECHA_TASA_CAMBIO" sqlType="STRING"/>
+		<param name="VALOR_TOTAL_PESOS" sqlType="STRING"/>
+		<param name="NRO_RADICADO_DOC_MINTIC" sqlType="STRING"/>
+		<param name="OBSERVACION_APROB" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_TIPO_VIATICO" sqlType="STRING"/>
+		<param name="KEY_CODSOLICITUD" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="viviaticos">
+		<call-query href="updateViviaticos">
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPO_VIATICO" query-param="TIPO_VIATICO"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="NUMSOLICITUD" query-param="NUMSOLICITUD"/>
+			<with-param name="NUMERO_RESOLUCION" query-param="NUMERO_RESOLUCION"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FECHAINICIO" query-param="FECHAINICIO"/>
+			<with-param name="FECHAFIN" query-param="FECHAFIN"/>
+			<with-param name="PERNOCTA" query-param="PERNOCTA"/>
+			<with-param name="VEHICULO" query-param="VEHICULO"/>
+			<with-param name="PLACA_VEHICULO" query-param="PLACA_VEHICULO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="JUSTIFICACION" query-param="JUSTIFICACION"/>
+			<with-param name="OBSERVACIONCOMITE" query-param="OBSERVACIONCOMITE"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="TVISITA" query-param="TVISITA"/>
+			<with-param name="PAIS_DESTINO" query-param="PAIS_DESTINO"/>
+			<with-param name="DEPARTAMENTO_DESTINO" query-param="DEPARTAMENTO_DESTINO"/>
+			<with-param name="CIUDAD_DESTINO" query-param="CIUDAD_DESTINO"/>
+			<with-param name="APROBADO" query-param="APROBADO"/>
+			<with-param name="SABADO" query-param="SABADO"/>
+			<with-param name="DOMINGO" query-param="DOMINGO"/>
+			<with-param name="FESTIVO" query-param="FESTIVO"/>
+			<with-param name="TRSNESPECIAL" query-param="TRSNESPECIAL"/>
+			<with-param name="NODIAS" query-param="NODIAS"/>
+			<with-param name="TSOLICITUD" query-param="TSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="TIPO_CPTE_PPTAL" query-param="TIPO_CPTE_PPTAL"/>
+			<with-param name="COMPROBANTE_PPTAL" query-param="COMPROBANTE_PPTAL"/>
+			<with-param name="TIPO_CPTE_CNT" query-param="TIPO_CPTE_CNT"/>
+			<with-param name="COMPROBANTE_CNT" query-param="COMPROBANTE_CNT"/>
+			<with-param name="VALORTOTALVIATICO" query-param="VALORTOTALVIATICO"/>
+			<with-param name="VALORABONADO" query-param="VALORABONADO"/>
+			<with-param name="SALDOTOTAL" query-param="SALDOTOTAL"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="ID_CATEGORIA" query-param="ID_CATEGORIA"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="PAIS_ORIGEN" query-param="PAIS_ORIGEN"/>
+			<with-param name="DEPARTAMENTO_ORIGEN" query-param="DEPARTAMENTO_ORIGEN"/>
+			<with-param name="CIUDAD_ORIGEN" query-param="CIUDAD_ORIGEN"/>
+			<with-param name="COD_PERSONA" query-param="COD_PERSONA"/>
+			<with-param name="TCOMISION" query-param="TCOMISION"/>
+			<with-param name="VALOR_RESERVA_INICIAL" query-param="VALOR_RESERVA_INICIAL"/>
+			<with-param name="VALOR_TIQUETE_EMITIDO" query-param="VALOR_TIQUETE_EMITIDO"/>
+			<with-param name="NUMERO_LOCALIZADOR" query-param="NUMERO_LOCALIZADOR"/>
+			<with-param name="ITINERARIO" query-param="ITINERARIO"/>
+			<with-param name="NUMERO_RADICADO" query-param="NUMERO_RADICADO"/>
+			<with-param name="FECHA_RADICADO" query-param="FECHA_RADICADO"/>
+			<with-param name="VALOR_FACTURA_TIQUETE" query-param="VALOR_FACTURA_TIQUETE"/>
+			<with-param name="FECHA_FACTURA_TIQUETE" query-param="FECHA_FACTURA_TIQUETE"/>
+			<with-param name="VALOR_DESCUENTO_AGENCIA" query-param="VALOR_DESCUENTO_AGENCIA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TIPOCOMISION" query-param="TIPOCOMISION"/>
+			<with-param name="JEFE_DEPENDENCIA" query-param="JEFE_DEPENDENCIA"/>
+			<with-param name="FECHA_NACIMIENTO" query-param="FECHA_NACIMIENTO"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="CTA_BANCARIA" query-param="CTA_BANCARIA"/>
+			<with-param name="TELEFONOS" query-param="TELEFONOS"/>
+			<with-param name="CORREO_ELECTRONICO" query-param="CORREO_ELECTRONICO"/>
+			<with-param name="OBSERVACION_SOLICITUD" query-param="OBSERVACION_SOLICITUD"/>
+			<with-param name="SUCURSAL_JEFE" query-param="SUCURSAL_JEFE"/>
+			<with-param name="FECHA_AUT_SIIF_NACION" query-param="FECHA_AUT_SIIF_NACION"/>
+			<with-param name="FECHA_COM_DESEMBOLSO_SIIF" query-param="FECHA_COM_DESEMBOLSO_SIIF"/>
+			<with-param name="FECHA_DESEMBOLSO_TRANSPORTE" query-param="FECHA_DESEMBOLSO_TRANSPORTE"/>
+			<with-param name="NUMERO_COM_DESEMBOLSO_SIIF" query-param="NUMERO_COM_DESEMBOLSO_SIIF"/>
+			<with-param name="NUMERO_COM_DESEM_TRANSPORTE" query-param="NUMERO_COM_DESEM_TRANSPORTE"/>
+			<with-param name="FECHA_APROBACION" query-param="FECHA_APROBACION"/>
+			<with-param name="SALARIO_COMISIONADO" query-param="SALARIO_COMISIONADO"/>
+			<with-param name="CLASE_TRANSPORTE" query-param="CLASE_TRANSPORTE"/>
+			<with-param name="DESCRIPCION_TRANS" query-param="DESCRIPCION_TRANS"/>
+			<with-param name="VALOR_TRANSPORTE" query-param="VALOR_TRANSPORTE"/>
+			<with-param name="DESTINO_CORRERIA" query-param="DESTINO_CORRERIA"/>
+			<with-param name="PAIS_REGRESO" query-param="PAIS_REGRESO"/>
+			<with-param name="DEPARTAMENTO_REGRESO" query-param="DEPARTAMENTO_REGRESO"/>
+			<with-param name="CIUDAD_REGRESO" query-param="CIUDAD_REGRESO"/>
+			<with-param name="HORA_SALIDA" query-param="HORA_SALIDA"/>
+			<with-param name="HORA_REGRESO" query-param="HORA_REGRESO"/>
+			<with-param name="NRO_RADICADO_DOC" query-param="NRO_RADICADO_DOC"/>
+			<with-param name="FECHA_RADICADO_DOC" query-param="FECHA_RADICADO_DOC"/>
+			<with-param name="GENERA_VIATICOS" query-param="GENERA_VIATICOS"/>
+			<with-param name="SOLICITA_TIQUETE" query-param="SOLICITA_TIQUETE"/>
+			<with-param name="VALOR_DIARIO_COMISION" query-param="VALOR_DIARIO_COMISION"/>
+			<with-param name="ESTADO_LEGALIZACION" query-param="ESTADO_LEGALIZACION"/>
+			<with-param name="OBSERVACION_LEGALIZACION" query-param="OBSERVACION_LEGALIZACION"/>
+			<with-param name="FECHA_APROBA_LEGA" query-param="FECHA_APROBA_LEGA"/>
+			<with-param name="VALOR_VIATICO_LEGALIZADO" query-param="VALOR_VIATICO_LEGALIZADO"/>
+			<with-param name="VALOR_TRANSPORTE_LEGALIZADO" query-param="VALOR_TRANSPORTE_LEGALIZADO"/>
+			<with-param name="VALOR_REEMBOLSADO" query-param="VALOR_REEMBOLSADO"/>
+			<with-param name="FECHA_REEMBOLSO" query-param="FECHA_REEMBOLSO"/>
+			<with-param name="VALOR_TRANSPORTE_REEMBOLSO" query-param="VALOR_TRANSPORTE_REEMBOLSO"/>
+			<with-param name="FECHA_TRANS_REEMBOLSO" query-param="FECHA_TRANS_REEMBOLSO"/>
+			<with-param name="FECHA_GRABACION_SIIF" query-param="FECHA_GRABACION_SIIF"/>
+			<with-param name="CIUDAD_EXPE" query-param="CIUDAD_EXPE"/>
+			<with-param name="DEPARTAMENTO_EXPE" query-param="DEPARTAMENTO_EXPE"/>
+			<with-param name="PAIS_EXPE" query-param="PAIS_EXPE"/>
+			<with-param name="FECHA_AUT_FACTURA" query-param="FECHA_AUT_FACTURA"/>
+			<with-param name="NUMERO_RADICADO_AUTO" query-param="NUMERO_RADICADO_AUTO"/>
+			<with-param name="FECHA_LEGALIZACION" query-param="FECHA_LEGALIZACION"/>
+			<with-param name="RESUMEN_ACTIVIDADES" query-param="RESUMEN_ACTIVIDADES"/>
+			<with-param name="LEGALIZADO_PLAZO" query-param="LEGALIZADO_PLAZO"/>
+			<with-param name="NUMERO_OFICIO_MINTIC" query-param="NUMERO_OFICIO_MINTIC"/>
+			<with-param name="FECHA_RADICADO_MINTIC" query-param="FECHA_RADICADO_MINTIC"/>
+			<with-param name="ESTADO_MINTIC" query-param="ESTADO_MINTIC"/>
+			<with-param name="FECHA_APROBA_MINTIC" query-param="FECHA_APROBA_MINTIC"/>
+			<with-param name="AVAL_COORDINADOR" query-param="AVAL_COORDINADOR"/>
+			<with-param name="NUMERO_RESOLUCION_MINTIC" query-param="NUMERO_RESOLUCION_MINTIC"/>
+			<with-param name="FECHA_RESOLUCION_MINTIC" query-param="FECHA_RESOLUCION_MINTIC"/>
+			<with-param name="ZONA_EXTERIOR" query-param="ZONA_EXTERIOR"/>
+			<with-param name="DIAS_TRANSITO" query-param="DIAS_TRANSITO"/>
+			<with-param name="VALOR_TASA_CAMBIO" query-param="VALOR_TASA_CAMBIO"/>
+			<with-param name="FECHA_TASA_CAMBIO" query-param="FECHA_TASA_CAMBIO"/>
+			<with-param name="VALOR_TOTAL_PESOS" query-param="VALOR_TOTAL_PESOS"/>
+			<with-param name="NRO_RADICADO_DOC_MINTIC" query-param="NRO_RADICADO_DOC_MINTIC"/>
+			<with-param name="OBSERVACION_APROB" query-param="OBSERVACION_APROB"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPO_VIATICO" query-param="KEY_TIPO_VIATICO"/>
+			<with-param name="KEY_CODSOLICITUD" query-param="KEY_CODSOLICITUD"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosPagSolicitudDeTiqueteQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.TERCERO , TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO ,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, CASE WHEN VI_VIATICOS.ESTADO IN ('P') THEN 'Pendiente' ELSE CASE WHEN VI_VIATICOS.ESTADO IN ('A') THEN 'Aprobado' ELSE CASE WHEN VI_VIATICOS.ESTADO IN ('N') THEN 'No Aprobado' ELSE CASE WHEN VI_VIATICOS.ESTADO IN ('C') THEN 'Cancelado' END END END END ESTADO  FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER(:TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_VIATICO":"$TIPO_VIATICO","CODSOLICITUD":"$CODSOLICITUD(type:long)","TERCERO":"$TERCERO","NOMBRETERCERO":"$NOMBRETERCERO","OBJETO":"$OBJETO","FECHA":"$FECHA","ESTADO":"$ESTADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/solicituddetiquete/pag">
+		<call-query href="getViviaticosPagSolicitudDeTiqueteQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosNumSolicitudDeTiqueteQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.TERCERO , TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO ,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, CASE WHEN VI_VIATICOS.ESTADO IN ('P') THEN 'Pendiente' ELSE CASE WHEN VI_VIATICOS.ESTADO IN ('A') THEN 'Aprobado' ELSE CASE WHEN VI_VIATICOS.ESTADO IN ('N') THEN 'No Aprobado' ELSE CASE WHEN VI_VIATICOS.ESTADO IN ('C') THEN 'Cancelado' END END END END ESTADO  FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER(:TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/solicituddetiquete/num">
+		<call-query href="getViviaticosNumSolicitudDeTiqueteQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosPagSolicitudLegalizacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, ANO, TIPO_VIATICO, CODSOLICITUD , NUMSOLICITUD, OBJETO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS WHERE COMPANIA = :COMPANIA AND ESTADO IN ('A') ORDER BY CODSOLICITUD) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN NUMSOLICITUD IS NULL THEN ' ' ELSE UPPER(NUMSOLICITUD) END)  LIKE UPPER( '%' || :NUMSOLICITUD || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_VIATICO":"$TIPO_VIATICO","CODSOLICITUD":"$CODSOLICITUD(type:long)","NUMSOLICITUD":"$NUMSOLICITUD(type:long)","OBJETO":"$OBJETO","FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="NUMSOLICITUD" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/solicitudlegalizacion/pag">
+		<call-query href="getViviaticosPagSolicitudLegalizacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="NUMSOLICITUD" query-param="NUMSOLICITUD"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosNumSolicitudLegalizacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, ANO, TIPO_VIATICO, CODSOLICITUD , NUMSOLICITUD, OBJETO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS WHERE COMPANIA = :COMPANIA AND ESTADO IN ('A') ORDER BY CODSOLICITUD) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN NUMSOLICITUD IS NULL THEN ' ' ELSE UPPER(NUMSOLICITUD) END)  LIKE UPPER( '%' || :NUMSOLICITUD || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="NUMSOLICITUD" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/solicitudlegalizacion/num">
+		<call-query href="getViviaticosNumSolicitudLegalizacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="NUMSOLICITUD" query-param="NUMSOLICITUD"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosPagAprobacionDeLegalizacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.TERCERO , TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO ,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND VI_VIATICOS.DEPENDENCIA = :DEPENDENCIA AND VI_VIATICOS.ESTADO IN ('A') AND VI_VIATICOS.ESTADO_LEGALIZACION IN ('P')) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER( '%' || :TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_VIATICO":"$TIPO_VIATICO","CODSOLICITUD":"$CODSOLICITUD(type:long)","TERCERO":"$TERCERO","NOMBRETERCERO":"$NOMBRETERCERO","OBJETO":"$OBJETO","FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/aprobaciondelegalizacion/pag">
+		<call-query href="getViviaticosPagAprobacionDeLegalizacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosNumAprobacionDeLegalizacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.TERCERO , TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO ,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND VI_VIATICOS.DEPENDENCIA = :DEPENDENCIA AND VI_VIATICOS.ESTADO IN ('A') AND VI_VIATICOS.ESTADO_LEGALIZACION IN ('P')) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER( '%' || :TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/aprobaciondelegalizacion/num">
+		<call-query href="getViviaticosNumAprobacionDeLegalizacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosPagRecepcionDeLegalizacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.TERCERO , TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO ,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND VI_VIATICOS.ESTADO IN ('A','O') AND VI_VIATICOS.ESTADO_LEGALIZACION IN ('A','L')) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER( '%' || :TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_VIATICO":"$TIPO_VIATICO","CODSOLICITUD":"$CODSOLICITUD(type:long)","TERCERO":"$TERCERO","NOMBRETERCERO":"$NOMBRETERCERO","OBJETO":"$OBJETO","FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/recepciondelegalizacion/pag">
+		<call-query href="getViviaticosPagRecepcionDeLegalizacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosNumRecepcionDeLegalizacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.TERCERO , TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO ,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND VI_VIATICOS.ESTADO IN ('A','O') AND VI_VIATICOS.ESTADO_LEGALIZACION IN ('A','L')) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER( '%' || :TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/recepciondelegalizacion/num">
+		<call-query href="getViviaticosNumRecepcionDeLegalizacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosPagSolicitudlegalizacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.TERCERO , TERCERO.NOMBRE NOMBRETERCERO,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND( VI_VIATICOS.ESTADO_LEGALIZACION NOT IN ('A','N','C') OR VI_VIATICOS.ESTADO_LEGALIZACION IS NULL) AND VI_VIATICOS.ESTADO NOT IN ('P')) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER( '%' || :TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_VIATICO":"$TIPO_VIATICO","CODSOLICITUD":"$CODSOLICITUD(type:long)","TERCERO":"$TERCERO","NOMBRETERCERO":"$NOMBRETERCERO","FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/solicitudlegalizacion/pag">
+		<call-query href="getViviaticosPagSolicitudlegalizacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosNumSolicitudlegalizacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.TERCERO , TERCERO.NOMBRE NOMBRETERCERO,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND( VI_VIATICOS.ESTADO_LEGALIZACION NOT IN ('A','N','C') OR VI_VIATICOS.ESTADO_LEGALIZACION IS NULL) AND VI_VIATICOS.ESTADO NOT IN ('P')) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER( '%' || :TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/solicitudlegalizacion/num">
+		<call-query href="getViviaticosNumSolicitudlegalizacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosPagAprobacionComisionMinticQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.TERCERO , TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO ,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND VI_VIATICOS.ESTADO_MINTIC IN ('P','A')) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER(:TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_VIATICO":"$TIPO_VIATICO","CODSOLICITUD":"$CODSOLICITUD(type:long)","TERCERO":"$TERCERO","NOMBRETERCERO":"$NOMBRETERCERO","OBJETO":"$OBJETO","FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/aprobacioncomisionmintic/pag">
+		<call-query href="getViviaticosPagAprobacionComisionMinticQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosNumAprobacionComisionMinticQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.TERCERO , TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO ,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND VI_VIATICOS.ESTADO_MINTIC IN ('P','A')) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER(:TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/aprobacioncomisionmintic/num">
+		<call-query href="getViviaticosNumAprobacionComisionMinticQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosPagRecepcionViaticosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.TERCERO , TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO ,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, CASE WHEN VI_VIATICOS.ESTADO IN ('P') THEN 'Pendiente' ELSE CASE WHEN VI_VIATICOS.ESTADO IN ('A') THEN 'Aprobado' ELSE CASE WHEN VI_VIATICOS.ESTADO IN ('N') THEN 'No Aprobado' ELSE CASE WHEN VI_VIATICOS.ESTADO IN ('C') THEN 'Cancelado' END END END END ESTADO  FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND VI_VIATICOS.ESTADO IN ('A') ORDER BY VI_VIATICOS.CODSOLICITUD) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER(:TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_VIATICO":"$TIPO_VIATICO","CODSOLICITUD":"$CODSOLICITUD(type:long)","TERCERO":"$TERCERO","NOMBRETERCERO":"$NOMBRETERCERO","OBJETO":"$OBJETO","FECHA":"$FECHA","ESTADO":"$ESTADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/recepcionviaticos/pag">
+		<call-query href="getViviaticosPagRecepcionViaticosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosNumRecepcionViaticosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD , VI_VIATICOS.TERCERO , TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO ,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, CASE WHEN VI_VIATICOS.ESTADO IN ('P') THEN 'Pendiente' ELSE CASE WHEN VI_VIATICOS.ESTADO IN ('A') THEN 'Aprobado' ELSE CASE WHEN VI_VIATICOS.ESTADO IN ('N') THEN 'No Aprobado' ELSE CASE WHEN VI_VIATICOS.ESTADO IN ('C') THEN 'Cancelado' END END END END ESTADO  FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND VI_VIATICOS.ESTADO IN ('A') ORDER BY VI_VIATICOS.CODSOLICITUD) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER(:TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/recepcionviaticos/num">
+		<call-query href="getViviaticosNumRecepcionViaticosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosPagNumerosolicitudQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMSOLICITUD, CODSOLICITUD,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, TT.NOMBRE  FROM VI_VIATICOS INNER JOIN TERCERO TT ON VI_VIATICOS.COMPANIA = TT.COMPANIA AND VI_VIATICOS.TERCERO = TT.NIT AND VI_VIATICOS.SUCURSAL = TT.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND VI_VIATICOS.ANO = :ANO AND VI_VIATICOS.TIPOCOMISION = :TIPO) WHERE (CASE WHEN NUMSOLICITUD IS NULL THEN ' ' ELSE UPPER(NUMSOLICITUD) END)  LIKE UPPER(:NUMSOLICITUD || '%')  AND (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER(:FECHA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMSOLICITUD":"$NUMSOLICITUD(type:long)","CODSOLICITUD":"$CODSOLICITUD(type:long)","FECHA":"$FECHA","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="NUMSOLICITUD" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/numerosolicitud/pag">
+		<call-query href="getViviaticosPagNumerosolicitudQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="NUMSOLICITUD" query-param="NUMSOLICITUD"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosNumNumerosolicitudQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMSOLICITUD, CODSOLICITUD,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, TT.NOMBRE  FROM VI_VIATICOS INNER JOIN TERCERO TT ON VI_VIATICOS.COMPANIA = TT.COMPANIA AND VI_VIATICOS.TERCERO = TT.NIT AND VI_VIATICOS.SUCURSAL = TT.SUCURSAL WHERE VI_VIATICOS.COMPANIA = :COMPANIA AND VI_VIATICOS.ANO = :ANO AND VI_VIATICOS.TIPOCOMISION = :TIPO) WHERE (CASE WHEN NUMSOLICITUD IS NULL THEN ' ' ELSE UPPER(NUMSOLICITUD) END)  LIKE UPPER(:NUMSOLICITUD || '%')  AND (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER(:FECHA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="NUMSOLICITUD" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/numerosolicitud/num">
+		<call-query href="getViviaticosNumNumerosolicitudQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="NUMSOLICITUD" query-param="NUMSOLICITUD"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosPagAprobacioncomisionautoservicioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD, VI_VIATICOS.TERCERO, TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, VI_VIATICOS.ESTADO , CASE VI_VIATICOS.ESTADO WHEN 'P' THEN 'Pendiente' WHEN 'A' THEN 'Aprobado' WHEN 'N' THEN 'No Aprobado' WHEN 'C' THEN 'Cancelado' ELSE '' END ESTADO1 , OBSERVACION_APROB  FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA =:COMPANIA AND VI_VIATICOS.DEPENDENCIA =:DEPENDENCIA AND VI_VIATICOS.ESTADO IN ('P')) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER(:TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN ESTADO1 IS NULL THEN ' ' ELSE UPPER(ESTADO1) END)  LIKE UPPER( '%' || :ESTADO1 || '%')  AND (CASE WHEN OBSERVACION_APROB IS NULL THEN ' ' ELSE UPPER(OBSERVACION_APROB) END)  LIKE UPPER( '%' || :OBSERVACION_APROB || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_VIATICO":"$TIPO_VIATICO","CODSOLICITUD":"$CODSOLICITUD(type:long)","TERCERO":"$TERCERO","NOMBRETERCERO":"$NOMBRETERCERO","OBJETO":"$OBJETO","FECHA":"$FECHA","ESTADO":"$ESTADO","ESTADO1":"$ESTADO1","OBSERVACION_APROB":"$OBSERVACION_APROB"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ESTADO1" sqlType="STRING"/>
+		<param name="OBSERVACION_APROB" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/aprobacioncomisionautoservicio/pag">
+		<call-query href="getViviaticosPagAprobacioncomisionautoservicioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ESTADO1" query-param="ESTADO1"/>
+			<with-param name="OBSERVACION_APROB" query-param="OBSERVACION_APROB"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosNumAprobacioncomisionautoservicioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD, VI_VIATICOS.TERCERO, TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, VI_VIATICOS.ESTADO , CASE VI_VIATICOS.ESTADO WHEN 'P' THEN 'Pendiente' WHEN 'A' THEN 'Aprobado' WHEN 'N' THEN 'No Aprobado' WHEN 'C' THEN 'Cancelado' ELSE '' END ESTADO1 , OBSERVACION_APROB  FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA =:COMPANIA AND VI_VIATICOS.DEPENDENCIA =:DEPENDENCIA AND VI_VIATICOS.ESTADO IN ('P')) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER(:TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN ESTADO1 IS NULL THEN ' ' ELSE UPPER(ESTADO1) END)  LIKE UPPER( '%' || :ESTADO1 || '%')  AND (CASE WHEN OBSERVACION_APROB IS NULL THEN ' ' ELSE UPPER(OBSERVACION_APROB) END)  LIKE UPPER( '%' || :OBSERVACION_APROB || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ESTADO1" sqlType="STRING"/>
+		<param name="OBSERVACION_APROB" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/aprobacioncomisionautoservicio/num">
+		<call-query href="getViviaticosNumAprobacioncomisionautoservicioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ESTADO1" query-param="ESTADO1"/>
+			<with-param name="OBSERVACION_APROB" query-param="OBSERVACION_APROB"/>
+
+		</call-query>
+	</resource>
+	<query id="updateViviaticosEstadoyobjetoauto" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE VI_VIATICOS SET ESTADO=:ESTADO, OBSERVACION_APROB=:OBSERVACION_APROB, FECHA_APROBACION=TO_DATE(:FECHA_APROBACION,'DD/MM/YYYY HH24:MI:SS'), DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE VI_VIATICOS.COMPANIA= :KEY_COMPANIA AND VI_VIATICOS.ANO= :KEY_ANO AND VI_VIATICOS.TIPO_VIATICO= :KEY_TIPO_VIATICO AND VI_VIATICOS.CODSOLICITUD= :KEY_CODSOLICITUD</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="OBSERVACION_APROB" sqlType="STRING"/>
+		<param name="FECHA_APROBACION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_TIPO_VIATICO" sqlType="STRING"/>
+		<param name="KEY_CODSOLICITUD" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="viviaticos/estadoyobjetoauto">
+		<call-query href="updateViviaticosEstadoyobjetoauto">
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="OBSERVACION_APROB" query-param="OBSERVACION_APROB"/>
+			<with-param name="FECHA_APROBACION" query-param="FECHA_APROBACION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPO_VIATICO" query-param="KEY_TIPO_VIATICO"/>
+			<with-param name="KEY_CODSOLICITUD" query-param="KEY_CODSOLICITUD"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosPagPendienteslegalizarautoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD, VI_VIATICOS.TERCERO, TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, OBSERVACION_LEGALIZACION,(CASE LEGALIZADO_PLAZO WHEN 0 THEN 'false' ELSE 'true' END) LEGALIZADO_PLAZO, ESTADO_LEGALIZACION, CASE ESTADO_LEGALIZACION WHEN 'P' THEN 'Pendiente' WHEN 'A' THEN 'Aprobado' WHEN 'N' THEN 'No Aprobado' ELSE '' END ESTADO_LEGALIZACION1  FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA =:COMPANIA AND VI_VIATICOS.DEPENDENCIA =:DEPENDENCIA AND VI_VIATICOS.ESTADO IN ('A') AND VI_VIATICOS.ESTADO_LEGALIZACION IN ('P')) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER( '%' || :TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN OBSERVACION_LEGALIZACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION_LEGALIZACION) END)  LIKE UPPER( '%' || :OBSERVACION_LEGALIZACION || '%')  AND (CASE WHEN LEGALIZADO_PLAZO IS NULL THEN ' ' ELSE UPPER(LEGALIZADO_PLAZO) END)  LIKE UPPER( '%' || :LEGALIZADO_PLAZO || '%')  AND (CASE WHEN ESTADO_LEGALIZACION1 IS NULL THEN ' ' ELSE UPPER(ESTADO_LEGALIZACION1) END)  LIKE UPPER( '%' || :ESTADO_LEGALIZACION1 || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_VIATICO":"$TIPO_VIATICO","CODSOLICITUD":"$CODSOLICITUD(type:long)","TERCERO":"$TERCERO","NOMBRETERCERO":"$NOMBRETERCERO","OBJETO":"$OBJETO","FECHA":"$FECHA","OBSERVACION_LEGALIZACION":"$OBSERVACION_LEGALIZACION","LEGALIZADO_PLAZO":"$LEGALIZADO_PLAZO(type:boolean)","ESTADO_LEGALIZACION":"$ESTADO_LEGALIZACION","ESTADO_LEGALIZACION1":"$ESTADO_LEGALIZACION1"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="OBSERVACION_LEGALIZACION" sqlType="STRING"/>
+		<param name="LEGALIZADO_PLAZO" sqlType="STRING"/>
+		<param name="ESTADO_LEGALIZACION1" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/pendienteslegalizarauto/pag">
+		<call-query href="getViviaticosPagPendienteslegalizarautoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="OBSERVACION_LEGALIZACION" query-param="OBSERVACION_LEGALIZACION"/>
+			<with-param name="LEGALIZADO_PLAZO" query-param="LEGALIZADO_PLAZO"/>
+			<with-param name="ESTADO_LEGALIZACION1" query-param="ESTADO_LEGALIZACION1"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViviaticosNumPendienteslegalizarautoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  VI_VIATICOS.COMPANIA, VI_VIATICOS.ANO, VI_VIATICOS.TIPO_VIATICO, VI_VIATICOS.CODSOLICITUD, VI_VIATICOS.TERCERO, TERCERO.NOMBRE NOMBRETERCERO, VI_VIATICOS.OBJETO,(TO_CHAR(VI_VIATICOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, OBSERVACION_LEGALIZACION,(CASE LEGALIZADO_PLAZO WHEN 0 THEN 'false' ELSE 'true' END) LEGALIZADO_PLAZO, ESTADO_LEGALIZACION, CASE ESTADO_LEGALIZACION WHEN 'P' THEN 'Pendiente' WHEN 'A' THEN 'Aprobado' WHEN 'N' THEN 'No Aprobado' ELSE '' END ESTADO_LEGALIZACION1  FROM VI_VIATICOS INNER JOIN TERCERO ON VI_VIATICOS.COMPANIA = TERCERO.COMPANIA AND VI_VIATICOS.TERCERO = TERCERO.NIT AND VI_VIATICOS.SUCURSAL = TERCERO.SUCURSAL WHERE VI_VIATICOS.COMPANIA =:COMPANIA AND VI_VIATICOS.DEPENDENCIA =:DEPENDENCIA AND VI_VIATICOS.ESTADO IN ('A') AND VI_VIATICOS.ESTADO_LEGALIZACION IN ('P')) WHERE (CASE WHEN CODSOLICITUD IS NULL THEN ' ' ELSE UPPER(CODSOLICITUD) END)  LIKE UPPER(:CODSOLICITUD || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER( '%' || :TERCERO || '%')  AND (CASE WHEN NOMBRETERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRETERCERO) END)  LIKE UPPER( '%' || :NOMBRETERCERO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN OBSERVACION_LEGALIZACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION_LEGALIZACION) END)  LIKE UPPER( '%' || :OBSERVACION_LEGALIZACION || '%')  AND (CASE WHEN LEGALIZADO_PLAZO IS NULL THEN ' ' ELSE UPPER(LEGALIZADO_PLAZO) END)  LIKE UPPER( '%' || :LEGALIZADO_PLAZO || '%')  AND (CASE WHEN ESTADO_LEGALIZACION1 IS NULL THEN ' ' ELSE UPPER(ESTADO_LEGALIZACION1) END)  LIKE UPPER( '%' || :ESTADO_LEGALIZACION1 || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODSOLICITUD" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRETERCERO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="OBSERVACION_LEGALIZACION" sqlType="STRING"/>
+		<param name="LEGALIZADO_PLAZO" sqlType="STRING"/>
+		<param name="ESTADO_LEGALIZACION1" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="viviaticos/pendienteslegalizarauto/num">
+		<call-query href="getViviaticosNumPendienteslegalizarautoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODSOLICITUD" query-param="CODSOLICITUD"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRETERCERO" query-param="NOMBRETERCERO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="OBSERVACION_LEGALIZACION" query-param="OBSERVACION_LEGALIZACION"/>
+			<with-param name="LEGALIZADO_PLAZO" query-param="LEGALIZADO_PLAZO"/>
+			<with-param name="ESTADO_LEGALIZACION1" query-param="ESTADO_LEGALIZACION1"/>
+
+		</call-query>
+	</resource>
+	<query id="updateViviaticosPendientesporautoservicio" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE VI_VIATICOS SET OBSERVACION_LEGALIZACION=:OBSERVACION_LEGALIZACION, LEGALIZADO_PLAZO=:LEGALIZADO_PLAZO, ESTADO_LEGALIZACION=:ESTADO_LEGALIZACION, FECHA_APROBA_LEGA=TO_DATE(:FECHA_APROBA_LEGA,'DD/MM/YYYY HH24:MI:SS'), DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE VI_VIATICOS.COMPANIA= :KEY_COMPANIA AND VI_VIATICOS.ANO= :KEY_ANO AND VI_VIATICOS.TIPO_VIATICO= :KEY_TIPO_VIATICO AND VI_VIATICOS.CODSOLICITUD= :KEY_CODSOLICITUD</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="OBSERVACION_LEGALIZACION" sqlType="STRING"/>
+		<param name="LEGALIZADO_PLAZO" sqlType="STRING"/>
+		<param name="ESTADO_LEGALIZACION" sqlType="STRING"/>
+		<param name="FECHA_APROBA_LEGA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_TIPO_VIATICO" sqlType="STRING"/>
+		<param name="KEY_CODSOLICITUD" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="viviaticos/pendientesporautoservicio">
+		<call-query href="updateViviaticosPendientesporautoservicio">
+			<with-param name="OBSERVACION_LEGALIZACION" query-param="OBSERVACION_LEGALIZACION"/>
+			<with-param name="LEGALIZADO_PLAZO" query-param="LEGALIZADO_PLAZO"/>
+			<with-param name="ESTADO_LEGALIZACION" query-param="ESTADO_LEGALIZACION"/>
+			<with-param name="FECHA_APROBA_LEGA" query-param="FECHA_APROBA_LEGA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPO_VIATICO" query-param="KEY_TIPO_VIATICO"/>
+			<with-param name="KEY_CODSOLICITUD" query-param="KEY_CODSOLICITUD"/>
+
+		</call-query>
+	</resource>
+
+</data>

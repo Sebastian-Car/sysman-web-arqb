@@ -1,0 +1,126 @@
+﻿<data name="epdetalleactividades" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertEpdetalleactividades" keyColumns="COMPANIA,CODIGO,COD_ESTUDIO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO EP_DETALLE_ACTIVIDADES (COMPANIA, CODIGO, COD_ESTUDIO, ACTIVIDAD, OBLIGACION_CONTRACTUAL, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :COD_ESTUDIO, :ACTIVIDAD, :OBLIGACION_CONTRACTUAL, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO","KEY_COD_ESTUDIO":"$COD_ESTUDIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="ACTIVIDAD" sqlType="STRING"/>
+		<param name="OBLIGACION_CONTRACTUAL" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="epdetalleactividades">
+		<call-query href="insertEpdetalleactividades">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="ACTIVIDAD" query-param="ACTIVIDAD"/>
+			<with-param name="OBLIGACION_CONTRACTUAL" query-param="OBLIGACION_CONTRACTUAL"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEpdetalleactividades" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM EP_DETALLE_ACTIVIDADES WHERE EP_DETALLE_ACTIVIDADES.COMPANIA= :KEY_COMPANIA AND EP_DETALLE_ACTIVIDADES.CODIGO= :KEY_CODIGO AND EP_DETALLE_ACTIVIDADES.COD_ESTUDIO= :KEY_COD_ESTUDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="epdetalleactividades">
+		<call-query href="deleteEpdetalleactividades">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_COD_ESTUDIO" query-param="KEY_COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEpdetalleactividadesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CODIGO, COD_ESTUDIO, ACTIVIDAD, OBLIGACION_CONTRACTUAL  FROM EP_DETALLE_ACTIVIDADES WHERE COMPANIA = :COMPANIA AND COD_ESTUDIO = :COD_ESTUDIO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN ACTIVIDAD IS NULL THEN ' ' ELSE UPPER(ACTIVIDAD) END)  LIKE UPPER( '%' || :ACTIVIDAD || '%')  AND (CASE WHEN OBLIGACION_CONTRACTUAL IS NULL THEN ' ' ELSE UPPER(OBLIGACION_CONTRACTUAL) END)  LIKE UPPER( '%' || :OBLIGACION_CONTRACTUAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","COD_ESTUDIO":"$COD_ESTUDIO","ACTIVIDAD":"$ACTIVIDAD","OBLIGACION_CONTRACTUAL":"$OBLIGACION_CONTRACTUAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ACTIVIDAD" sqlType="STRING"/>
+		<param name="OBLIGACION_CONTRACTUAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="epdetalleactividades">
+		<call-query href="getEpdetalleactividadesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ACTIVIDAD" query-param="ACTIVIDAD"/>
+			<with-param name="OBLIGACION_CONTRACTUAL" query-param="OBLIGACION_CONTRACTUAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEpdetalleactividadesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CODIGO, COD_ESTUDIO, ACTIVIDAD, OBLIGACION_CONTRACTUAL  FROM EP_DETALLE_ACTIVIDADES WHERE COMPANIA = :COMPANIA AND COD_ESTUDIO = :COD_ESTUDIO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN ACTIVIDAD IS NULL THEN ' ' ELSE UPPER(ACTIVIDAD) END)  LIKE UPPER( '%' || :ACTIVIDAD || '%')  AND (CASE WHEN OBLIGACION_CONTRACTUAL IS NULL THEN ' ' ELSE UPPER(OBLIGACION_CONTRACTUAL) END)  LIKE UPPER( '%' || :OBLIGACION_CONTRACTUAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ACTIVIDAD" sqlType="STRING"/>
+		<param name="OBLIGACION_CONTRACTUAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="epdetalleactividades/numero">
+		<call-query href="getEpdetalleactividadesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ACTIVIDAD" query-param="ACTIVIDAD"/>
+			<with-param name="OBLIGACION_CONTRACTUAL" query-param="OBLIGACION_CONTRACTUAL"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEpdetalleactividades" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE EP_DETALLE_ACTIVIDADES SET COMPANIA=:COMPANIA, CODIGO=:CODIGO, COD_ESTUDIO=:COD_ESTUDIO, ACTIVIDAD=:ACTIVIDAD, OBLIGACION_CONTRACTUAL=:OBLIGACION_CONTRACTUAL, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE EP_DETALLE_ACTIVIDADES.COMPANIA= :KEY_COMPANIA AND EP_DETALLE_ACTIVIDADES.CODIGO= :KEY_CODIGO AND EP_DETALLE_ACTIVIDADES.COD_ESTUDIO= :KEY_COD_ESTUDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="ACTIVIDAD" sqlType="STRING"/>
+		<param name="OBLIGACION_CONTRACTUAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="epdetalleactividades">
+		<call-query href="updateEpdetalleactividades">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="ACTIVIDAD" query-param="ACTIVIDAD"/>
+			<with-param name="OBLIGACION_CONTRACTUAL" query-param="OBLIGACION_CONTRACTUAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_COD_ESTUDIO" query-param="KEY_COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+
+</data>

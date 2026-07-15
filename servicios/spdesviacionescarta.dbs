@@ -1,0 +1,153 @@
+﻿<data name="spdesviacionescarta" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSpdesviacionescartaGeneralQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_DESVIACIONES_CARTA.COMPANIA, SP_DESVIACIONES_CARTA.DESVIACION, SP_DESVIACIONES_CARTA.CLASE, SP_DESVIACIONES_CARTA.SUBCLASE, ' ' NOMBREPLANTILLA, SP_DESVIACIONES_CARTA.CONSECUTIVO,(TO_CHAR(SP_DESVIACIONES_CARTA.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, SP_DESVIACIONES_CARTA.OBSERVACION,(TO_CHAR(SP_DESVIACIONES_CARTA.FECHAIMPRESION,'DD/MM/YYYY HH24:MI:SS')) FECHAIMPRESION,(CASE SP_DESVIACIONES_CARTA.IMPRESA WHEN 0 THEN 'false' ELSE 'true' END) IMPRESA FROM SP_DESVIACIONES_CARTA WHERE SP_DESVIACIONES_CARTA.COMPANIA = :COMPANIA AND SP_DESVIACIONES_CARTA.DESVIACION = :DESVIACIONCARTA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","DESVIACION":"$DESVIACION(type:long)","CLASE":"$CLASE","SUBCLASE":"$SUBCLASE(type:integer)","NOMBREPLANTILLA":"$NOMBREPLANTILLA","CONSECUTIVO":"$CONSECUTIVO","FECHA":"$FECHA","OBSERVACION":"$OBSERVACION","FECHAIMPRESION":"$FECHAIMPRESION","IMPRESA":"$IMPRESA(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DESVIACIONCARTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spdesviacionescarta/general">
+		<call-query href="getSpdesviacionescartaGeneralQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DESVIACIONCARTA" query-param="DESVIACIONCARTA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpdesviacionescartaImpresionCarta" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_DESVIACIONES_CARTA SET    SP_DESVIACIONES_CARTA.FECHAIMPRESION = SYSDATE ,    SP_DESVIACIONES_CARTA.CONSECUTIVO = :CONSECUTIVO,   SP_DESVIACIONES_CARTA.IMPRESA = -1 ,   SP_DESVIACIONES_CARTA.MODIFIED_BY = :MODIFIED_BY,   SP_DESVIACIONES_CARTA.DATE_MODIFIED = TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')  WHERE SP_DESVIACIONES_CARTA.COMPANIA = :COMPANIA    AND SP_DESVIACIONES_CARTA.DESVIACION = :DESVIACION    AND SP_DESVIACIONES_CARTA.SUBCLASE = :SUBCLASE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DESVIACION" sqlType="STRING"/>
+		<param name="SUBCLASE" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spdesviacionescarta/impresioncarta">
+		<call-query href="updateSpdesviacionescartaImpresionCarta">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DESVIACION" query-param="DESVIACION"/>
+			<with-param name="SUBCLASE" query-param="SUBCLASE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpdesviacionescartaPorDesviacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, DESVIACION, CLASE, SUBCLASE, TO_CHAR(FECHA, 'DD/MM/YYYY') FECHA, OBSERVACION  FROM SP_DESVIACIONES_CARTA WHERE COMPANIA = :COMPANIA AND DESVIACION = :DESVIACIONACTUAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","DESVIACION":"$DESVIACION(type:long)","CLASE":"$CLASE","SUBCLASE":"$SUBCLASE(type:integer)","FECHA":"$FECHA","OBSERVACION":"$OBSERVACION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DESVIACIONACTUAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spdesviacionescarta/pordesviacion">
+		<call-query href="getSpdesviacionescartaPorDesviacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DESVIACIONACTUAL" query-param="DESVIACIONACTUAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpdesviacionescartaObservacionesPorDesviacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TO_CHAR(SP_DESVIACIONES_CARTA.FECHA,'DD/MM/YYYY') FECHA, SP_DESVIACIONES_CARTA.OBSERVACION, SP_DESVIACIONES_CARTA.CONSECUTIVO, SP_DESVIACIONES_CARTA.SUBCLASE,(TO_CHAR(SP_DESVIACIONES_CARTA.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHAREG FROM SP_DESVIACIONES_CARTA WHERE SP_DESVIACIONES_CARTA.COMPANIA = :COMPANIA AND SP_DESVIACIONES_CARTA.DESVIACION = :ITEM</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FECHA":"$FECHA","OBSERVACION":"$OBSERVACION","CONSECUTIVO":"$CONSECUTIVO","SUBCLASE":"$SUBCLASE(type:integer)","FECHAREG":"$FECHAREG"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ITEM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spdesviacionescarta/observacionespordesviacion">
+		<call-query href="getSpdesviacionescartaObservacionesPorDesviacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ITEM" query-param="ITEM"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSpdesviacionescarta" keyColumns="COMPANIA,DESVIACION,CLASE,SUBCLASE" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_DESVIACIONES_CARTA (COMPANIA, DESVIACION, CLASE, SUBCLASE, CONSECUTIVO, FECHA, OBSERVACION, FECHAIMPRESION, IMPRESA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :DESVIACION, :CLASE, :SUBCLASE, :CONSECUTIVO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :OBSERVACION, TO_DATE(:FECHAIMPRESION,'DD/MM/YYYY HH24:MI:SS'), :IMPRESA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_DESVIACION":"$DESVIACION(type:long)","KEY_CLASE":"$CLASE","KEY_SUBCLASE":"$SUBCLASE(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DESVIACION" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="SUBCLASE" sqlType="STRING"/>
+		<param defaultValue="0" name="CONSECUTIVO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACION" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAIMPRESION" sqlType="STRING"/>
+		<param defaultValue="0" name="IMPRESA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="spdesviacionescarta">
+		<call-query href="insertSpdesviacionescarta">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DESVIACION" query-param="DESVIACION"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="SUBCLASE" query-param="SUBCLASE"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="FECHAIMPRESION" query-param="FECHAIMPRESION"/>
+			<with-param name="IMPRESA" query-param="IMPRESA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSpdesviacionescarta" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SP_DESVIACIONES_CARTA WHERE SP_DESVIACIONES_CARTA.COMPANIA= :KEY_COMPANIA AND SP_DESVIACIONES_CARTA.DESVIACION= :KEY_DESVIACION AND SP_DESVIACIONES_CARTA.CLASE= :KEY_CLASE AND SP_DESVIACIONES_CARTA.SUBCLASE= :KEY_SUBCLASE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_DESVIACION" sqlType="STRING"/>
+		<param name="KEY_CLASE" sqlType="STRING"/>
+		<param name="KEY_SUBCLASE" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="spdesviacionescarta">
+		<call-query href="deleteSpdesviacionescarta">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_DESVIACION" query-param="KEY_DESVIACION"/>
+			<with-param name="KEY_CLASE" query-param="KEY_CLASE"/>
+			<with-param name="KEY_SUBCLASE" query-param="KEY_SUBCLASE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpdesviacionescarta" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_DESVIACIONES_CARTA SET OBSERVACION=:OBSERVACION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SP_DESVIACIONES_CARTA.COMPANIA= :KEY_COMPANIA AND SP_DESVIACIONES_CARTA.DESVIACION= :KEY_DESVIACION AND SP_DESVIACIONES_CARTA.CLASE= :KEY_CLASE AND SP_DESVIACIONES_CARTA.SUBCLASE= :KEY_SUBCLASE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_DESVIACION" sqlType="STRING"/>
+		<param name="KEY_CLASE" sqlType="STRING"/>
+		<param name="KEY_SUBCLASE" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spdesviacionescarta">
+		<call-query href="updateSpdesviacionescarta">
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_DESVIACION" query-param="KEY_DESVIACION"/>
+			<with-param name="KEY_CLASE" query-param="KEY_CLASE"/>
+			<with-param name="KEY_SUBCLASE" query-param="KEY_SUBCLASE"/>
+
+		</call-query>
+	</resource>
+
+</data>

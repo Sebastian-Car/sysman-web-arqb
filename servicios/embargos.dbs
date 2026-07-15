@@ -1,0 +1,214 @@
+﻿<data name="embargos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getEmbargosTodosOprProcesoValorDeMandaFechaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PROCESO, VALORDEMANDA,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM EMBARGOS_CT WHERE COMPANIA=:COMPANIA AND NIT_DEMANDADO =:NIT AND SUCURSAL_DEMANDADO=:SUCURSAL AND ESTADO NOT IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PROCESO":"$PROCESO(type:long)","VALORDEMANDA":"$VALORDEMANDA","FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="embargos/todosoprprocesovalordemandafecha">
+		<call-query href="getEmbargosTodosOprProcesoValorDeMandaFechaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="insertEmbargos" keyColumns="COMPANIA,COD_RADICADO,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO EMBARGOS_CT (COMPANIA, COD_RADICADO, CONSECUTIVO, FECHA, PROCESO, NIT_DEMANDANTE, SUCURSAL_DEMANDANTE, DEMANDANTE, NIT_DEMANDADO, SUCURSAL_DEMANDADO, DEMANDADO, VALORDEMANDA, DESCRIPCION, JUZGADO, ESTADO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :COD_RADICADO, :CONSECUTIVO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :PROCESO, :NIT_DEMANDANTE, :SUCURSAL_DEMANDANTE, :DEMANDANTE, :NIT_DEMANDADO, :SUCURSAL_DEMANDADO, :DEMANDADO, :VALORDEMANDA, :DESCRIPCION, :JUZGADO, :ESTADO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_COD_RADICADO":"$COD_RADICADO(type:long)","KEY_CONSECUTIVO":"$CONSECUTIVO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_RADICADO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param defaultValue="0" name="PROCESO" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="NIT_DEMANDANTE" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL_DEMANDANTE" sqlType="STRING"/>
+		<param name="DEMANDANTE" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="NIT_DEMANDADO" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL_DEMANDADO" sqlType="STRING"/>
+		<param name="DEMANDADO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORDEMANDA" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="" name="JUZGADO" sqlType="STRING"/>
+		<param defaultValue="0" name="ESTADO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="embargos">
+		<call-query href="insertEmbargos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_RADICADO" query-param="COD_RADICADO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NIT_DEMANDANTE" query-param="NIT_DEMANDANTE"/>
+			<with-param name="SUCURSAL_DEMANDANTE" query-param="SUCURSAL_DEMANDANTE"/>
+			<with-param name="DEMANDANTE" query-param="DEMANDANTE"/>
+			<with-param name="NIT_DEMANDADO" query-param="NIT_DEMANDADO"/>
+			<with-param name="SUCURSAL_DEMANDADO" query-param="SUCURSAL_DEMANDADO"/>
+			<with-param name="DEMANDADO" query-param="DEMANDADO"/>
+			<with-param name="VALORDEMANDA" query-param="VALORDEMANDA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="JUZGADO" query-param="JUZGADO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEmbargos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM EMBARGOS_CT WHERE EMBARGOS_CT.COMPANIA= :KEY_COMPANIA AND EMBARGOS_CT.COD_RADICADO= :KEY_COD_RADICADO AND EMBARGOS_CT.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_RADICADO" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="embargos">
+		<call-query href="deleteEmbargos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_RADICADO" query-param="KEY_COD_RADICADO"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEmbargosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, COD_RADICADO, CONSECUTIVO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, PROCESO, NIT_DEMANDANTE, SUCURSAL_DEMANDANTE, DEMANDANTE, NIT_DEMANDADO, SUCURSAL_DEMANDADO, DEMANDADO, VALORDEMANDA, DESCRIPCION, JUZGADO,(CASE ESTADO WHEN 0 THEN 'false' ELSE 'true' END) ESTADO FROM EMBARGOS_CT WHERE COMPANIA = :COMPANIA ORDER BY COD_RADICADO,CONSECUTIVO) WHERE (CASE WHEN COD_RADICADO IS NULL THEN ' ' ELSE UPPER(COD_RADICADO) END)  LIKE UPPER(:COD_RADICADO || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN PROCESO IS NULL THEN ' ' ELSE UPPER(PROCESO) END)  LIKE UPPER( '%' || :PROCESO || '%')  AND (CASE WHEN NIT_DEMANDANTE IS NULL THEN ' ' ELSE UPPER(NIT_DEMANDANTE) END)  LIKE UPPER( '%' || :NIT_DEMANDANTE || '%')  AND (CASE WHEN DEMANDANTE IS NULL THEN ' ' ELSE UPPER(DEMANDANTE) END)  LIKE UPPER( '%' || :DEMANDANTE || '%')  AND (CASE WHEN NIT_DEMANDADO IS NULL THEN ' ' ELSE UPPER(NIT_DEMANDADO) END)  LIKE UPPER( '%' || :NIT_DEMANDADO || '%')  AND (CASE WHEN DEMANDADO IS NULL THEN ' ' ELSE UPPER(DEMANDADO) END)  LIKE UPPER( '%' || :DEMANDADO || '%')  AND (CASE WHEN VALORDEMANDA IS NULL THEN ' ' ELSE UPPER(VALORDEMANDA) END)  LIKE UPPER( '%' || :VALORDEMANDA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN JUZGADO IS NULL THEN ' ' ELSE UPPER(JUZGADO) END)  LIKE UPPER( '%' || :JUZGADO || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER(:ESTADO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","COD_RADICADO":"$COD_RADICADO(type:long)","CONSECUTIVO":"$CONSECUTIVO(type:integer)","FECHA":"$FECHA","PROCESO":"$PROCESO","NIT_DEMANDANTE":"$NIT_DEMANDANTE","SUCURSAL_DEMANDANTE":"$SUCURSAL_DEMANDANTE","DEMANDANTE":"$DEMANDANTE","NIT_DEMANDADO":"$NIT_DEMANDADO","SUCURSAL_DEMANDADO":"$SUCURSAL_DEMANDADO","DEMANDADO":"$DEMANDADO","VALORDEMANDA":"$VALORDEMANDA","DESCRIPCION":"$DESCRIPCION","JUZGADO":"$JUZGADO","ESTADO":"$ESTADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_RADICADO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NIT_DEMANDANTE" sqlType="STRING"/>
+		<param name="DEMANDANTE" sqlType="STRING"/>
+		<param name="NIT_DEMANDADO" sqlType="STRING"/>
+		<param name="DEMANDADO" sqlType="STRING"/>
+		<param name="VALORDEMANDA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="JUZGADO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="embargos">
+		<call-query href="getEmbargosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_RADICADO" query-param="COD_RADICADO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NIT_DEMANDANTE" query-param="NIT_DEMANDANTE"/>
+			<with-param name="DEMANDANTE" query-param="DEMANDANTE"/>
+			<with-param name="NIT_DEMANDADO" query-param="NIT_DEMANDADO"/>
+			<with-param name="DEMANDADO" query-param="DEMANDADO"/>
+			<with-param name="VALORDEMANDA" query-param="VALORDEMANDA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="JUZGADO" query-param="JUZGADO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEmbargosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, COD_RADICADO, CONSECUTIVO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, PROCESO, NIT_DEMANDANTE, SUCURSAL_DEMANDANTE, DEMANDANTE, NIT_DEMANDADO, SUCURSAL_DEMANDADO, DEMANDADO, VALORDEMANDA, DESCRIPCION, JUZGADO,(CASE ESTADO WHEN 0 THEN 'false' ELSE 'true' END) ESTADO FROM EMBARGOS_CT WHERE COMPANIA = :COMPANIA ORDER BY COD_RADICADO,CONSECUTIVO) WHERE (CASE WHEN COD_RADICADO IS NULL THEN ' ' ELSE UPPER(COD_RADICADO) END)  LIKE UPPER(:COD_RADICADO || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN PROCESO IS NULL THEN ' ' ELSE UPPER(PROCESO) END)  LIKE UPPER( '%' || :PROCESO || '%')  AND (CASE WHEN NIT_DEMANDANTE IS NULL THEN ' ' ELSE UPPER(NIT_DEMANDANTE) END)  LIKE UPPER( '%' || :NIT_DEMANDANTE || '%')  AND (CASE WHEN DEMANDANTE IS NULL THEN ' ' ELSE UPPER(DEMANDANTE) END)  LIKE UPPER( '%' || :DEMANDANTE || '%')  AND (CASE WHEN NIT_DEMANDADO IS NULL THEN ' ' ELSE UPPER(NIT_DEMANDADO) END)  LIKE UPPER( '%' || :NIT_DEMANDADO || '%')  AND (CASE WHEN DEMANDADO IS NULL THEN ' ' ELSE UPPER(DEMANDADO) END)  LIKE UPPER( '%' || :DEMANDADO || '%')  AND (CASE WHEN VALORDEMANDA IS NULL THEN ' ' ELSE UPPER(VALORDEMANDA) END)  LIKE UPPER( '%' || :VALORDEMANDA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN JUZGADO IS NULL THEN ' ' ELSE UPPER(JUZGADO) END)  LIKE UPPER( '%' || :JUZGADO || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER(:ESTADO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_RADICADO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NIT_DEMANDANTE" sqlType="STRING"/>
+		<param name="DEMANDANTE" sqlType="STRING"/>
+		<param name="NIT_DEMANDADO" sqlType="STRING"/>
+		<param name="DEMANDADO" sqlType="STRING"/>
+		<param name="VALORDEMANDA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="JUZGADO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="embargos/numero">
+		<call-query href="getEmbargosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_RADICADO" query-param="COD_RADICADO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NIT_DEMANDANTE" query-param="NIT_DEMANDANTE"/>
+			<with-param name="DEMANDANTE" query-param="DEMANDANTE"/>
+			<with-param name="NIT_DEMANDADO" query-param="NIT_DEMANDADO"/>
+			<with-param name="DEMANDADO" query-param="DEMANDADO"/>
+			<with-param name="VALORDEMANDA" query-param="VALORDEMANDA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="JUZGADO" query-param="JUZGADO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEmbargos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE EMBARGOS_CT SET COMPANIA=:COMPANIA, COD_RADICADO=:COD_RADICADO, CONSECUTIVO=:CONSECUTIVO, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), PROCESO=:PROCESO, NIT_DEMANDANTE=:NIT_DEMANDANTE, SUCURSAL_DEMANDANTE=:SUCURSAL_DEMANDANTE, DEMANDANTE=:DEMANDANTE, NIT_DEMANDADO=:NIT_DEMANDADO, SUCURSAL_DEMANDADO=:SUCURSAL_DEMANDADO, DEMANDADO=:DEMANDADO, VALORDEMANDA=:VALORDEMANDA, DESCRIPCION=:DESCRIPCION, JUZGADO=:JUZGADO, ESTADO=:ESTADO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE EMBARGOS_CT.COMPANIA= :KEY_COMPANIA AND EMBARGOS_CT.COD_RADICADO= :KEY_COD_RADICADO AND EMBARGOS_CT.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_RADICADO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NIT_DEMANDANTE" sqlType="STRING"/>
+		<param name="SUCURSAL_DEMANDANTE" sqlType="STRING"/>
+		<param name="DEMANDANTE" sqlType="STRING"/>
+		<param name="NIT_DEMANDADO" sqlType="STRING"/>
+		<param name="SUCURSAL_DEMANDADO" sqlType="STRING"/>
+		<param name="DEMANDADO" sqlType="STRING"/>
+		<param name="VALORDEMANDA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="JUZGADO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_RADICADO" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="embargos">
+		<call-query href="updateEmbargos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_RADICADO" query-param="COD_RADICADO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NIT_DEMANDANTE" query-param="NIT_DEMANDANTE"/>
+			<with-param name="SUCURSAL_DEMANDANTE" query-param="SUCURSAL_DEMANDANTE"/>
+			<with-param name="DEMANDANTE" query-param="DEMANDANTE"/>
+			<with-param name="NIT_DEMANDADO" query-param="NIT_DEMANDADO"/>
+			<with-param name="SUCURSAL_DEMANDADO" query-param="SUCURSAL_DEMANDADO"/>
+			<with-param name="DEMANDADO" query-param="DEMANDADO"/>
+			<with-param name="VALORDEMANDA" query-param="VALORDEMANDA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="JUZGADO" query-param="JUZGADO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_RADICADO" query-param="KEY_COD_RADICADO"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,116 @@
+﻿<data name="natdiarios" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getNatdiariosTodosLosDiariosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT NAT_DIARIOS.DIARIO, NAT_DIARIOS.NOMBRE  FROM NAT_DIARIOS ORDER BY NAT_DIARIOS.DIARIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DIARIO":"$DIARIO","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="natdiarios/todoslosdiarios">
+		<call-query href="getNatdiariosTodosLosDiariosQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="insertNatdiarios" keyColumns="COMPANIA,DIARIO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO NAT_DIARIOS (COMPANIA, DIARIO, NOMBRE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :DIARIO, :NOMBRE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_DIARIO":"$DIARIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DIARIO" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="natdiarios">
+		<call-query href="insertNatdiarios">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DIARIO" query-param="DIARIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteNatdiarios" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM NAT_DIARIOS WHERE NAT_DIARIOS.COMPANIA= :KEY_COMPANIA AND NAT_DIARIOS.DIARIO= :KEY_DIARIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_DIARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="natdiarios">
+		<call-query href="deleteNatdiarios">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_DIARIO" query-param="KEY_DIARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatdiariosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, DIARIO, NOMBRE  FROM NAT_DIARIOS WHERE COMPANIA = :COMPANIA ORDER BY DIARIO) WHERE (CASE WHEN DIARIO IS NULL THEN ' ' ELSE UPPER(DIARIO) END)  LIKE UPPER(:DIARIO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","DIARIO":"$DIARIO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DIARIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="natdiarios">
+		<call-query href="getNatdiariosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DIARIO" query-param="DIARIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatdiariosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, DIARIO, NOMBRE  FROM NAT_DIARIOS WHERE COMPANIA = :COMPANIA ORDER BY DIARIO) WHERE (CASE WHEN DIARIO IS NULL THEN ' ' ELSE UPPER(DIARIO) END)  LIKE UPPER(:DIARIO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DIARIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="natdiarios/numero">
+		<call-query href="getNatdiariosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DIARIO" query-param="DIARIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateNatdiarios" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE NAT_DIARIOS SET COMPANIA=:COMPANIA, DIARIO=:DIARIO, NOMBRE=:NOMBRE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE NAT_DIARIOS.COMPANIA= :KEY_COMPANIA AND NAT_DIARIOS.DIARIO= :KEY_DIARIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DIARIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_DIARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="natdiarios">
+		<call-query href="updateNatdiarios">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DIARIO" query-param="DIARIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_DIARIO" query-param="KEY_DIARIO"/>
+
+		</call-query>
+	</resource>
+
+</data>

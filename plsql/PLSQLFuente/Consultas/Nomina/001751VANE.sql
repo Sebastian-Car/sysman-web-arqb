@@ -1,0 +1,44 @@
+SELECT V_VOLANTES.ID_DE_CONCEPTO,
+  V_VOLANTES.NOMBRE_CONCEPTO,
+  V_VOLANTES.CLASE,
+  V_VOLANTES.CUENTA,
+  V_VOLANTES.NOMBRE_BANCO NOMBRE,
+  V_VOLANTES.DESCUENTOS,
+  V_VOLANTES.DEVENGOS,
+  V_VOLANTES.NUMERO_DCTO,
+  V_VOLANTES.CODIGOGRADO,
+  V_VOLANTES.NOMBRE_DE_CARGO,
+  V_VOLANTES.NOMBRECOMPLETO,
+  TO_CHAR(PCK_NOMINA.FC_FECHAINIFINPERIODO( UN_COMPANIA     => V_VOLANTES.COMPANIA, 
+                                            UN_PROCESO      => V_VOLANTES.ID_DE_PROCESO, 
+                                            UN_ANIO         => V_VOLANTES.ANO, 
+                                            UN_MES          => V_VOLANTES.MES, 
+                                            UN_PERIODO      => V_VOLANTES.PERIODO,
+                                            UN_FECHAINICIO  => 1), 'DD/MM/YYYY')
+  || ' AL '
+  || TO_CHAR(PCK_NOMINA.FC_FECHAINIFINPERIODO(UN_COMPANIA     => V_VOLANTES.COMPANIA, 
+                                              UN_PROCESO      => V_VOLANTES.ID_DE_PROCESO, 
+                                              UN_ANIO         => V_VOLANTES.ANO, 
+                                              UN_MES          => V_VOLANTES.MES, 
+                                              UN_PERIODO      => V_VOLANTES.PERIODO,
+                                              UN_FECHAINICIO  => 2), 'DD/MM/YYYY') PERIODO,
+  V_VOLANTES.NOMBRE_FONDOPENSION FONDOPENSION,
+  V_VOLANTES.NOMBRE_FONDOSALUD FONDOSALUD,
+  V_VOLANTES.NOMBRE_CAJACOMPENSACION FONDOCOMPENSACION,
+  V_VOLANTES.NOMBRE_FONDORIESGOS FONDORIESGOS,
+  V_VOLANTES.NOMBRE_FONDOPENSION_VOL FONDOPENSIONVOL,
+  V_VOLANTES.NOMBRE_FONDOCESANTIAS FONDOCESANTIAS,
+  V_VOLANTES.SALARIOBASEHISTORICO SALARIO_BASE,
+  V_VOLANTES.CANTIDAD
+FROM V_VOLANTES
+WHERE V_VOLANTES.COMPANIA      = s$compania$s 
+  AND V_VOLANTES.ID_DE_PROCESO = s$proceso$s 
+  AND V_VOLANTES.ANO           = s$ano$s 
+  AND V_VOLANTES.MES           = s$mes$s 
+  AND V_VOLANTES.PERIODO       = s$periodo$s
+ AND V_VOLANTES.ID_DE_EMPLEADO BETWEEN TO_NUMBER(CASE WHEN 's$empleadoIni$s' = CHR(32)  THEN '0' ELSE 's$empleadoIni$s' END)
+                                   AND TO_NUMBER(CASE WHEN 's$empleadoFin$s' = CHR(255) THEN '99999' ELSE 's$empleadoFin$s' END)   
+AND V_VOLANTES.ID_CENTRO_DE_COSTO BETWEEN 's$centroCostoIni$s' AND 's$centroCostoFin$s'
+ORDER BY 
+  V_VOLANTES.ID_DE_EMPLEADO,
+  V_VOLANTES.ID_DE_CONCEPTO

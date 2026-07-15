@@ -1,0 +1,97 @@
+﻿<data name="escriteriosfac" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getEscriteriosfacListaSubcriteriosFacproyQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ES_CRITERIOSFAC.COMPANIA, ES_CRITERIOSFAC.CODIGOESTUDIO, ES_CRITERIOSFAC.CODIGOMODALIDAD, ES_CRITERIOSFAC.CODIGOCRITERIO, ES_CRITERIOS.NOMBRE, SUM(NVL(ES_DFACTORES.PUNTAJE,0)) PUNTAJE  FROM ES_CRITERIOS LEFT JOIN ES_CRITERIOSFAC ON ES_CRITERIOS.COMPANIA = ES_CRITERIOSFAC.COMPANIA AND ES_CRITERIOS.CODIGOMODALIDAD = ES_CRITERIOSFAC.CODIGOMODALIDAD AND ES_CRITERIOS.CODIGOCRITERIO = ES_CRITERIOSFAC.CODIGOCRITERIO LEFT JOIN ES_DFACTORES ON ES_CRITERIOSFAC.COMPANIA = ES_DFACTORES.COMPANIA AND ES_CRITERIOSFAC.CODIGOESTUDIO = ES_DFACTORES.CODIGOESTUDIO AND ES_CRITERIOSFAC.CODIGOMODALIDAD = ES_DFACTORES.CODIGOMODALIDAD AND ES_CRITERIOSFAC.CODIGOCRITERIO = ES_DFACTORES.CODIGOCRITERIO WHERE ES_CRITERIOSFAC.COMPANIA = :COMPANIA AND ES_CRITERIOSFAC.CODIGOESTUDIO = :CODIGOESTUDIO AND ES_CRITERIOSFAC.CODIGOMODALIDAD = :TIPO GROUP BY ES_CRITERIOSFAC.COMPANIA, ES_CRITERIOSFAC.CODIGOESTUDIO, ES_CRITERIOSFAC.CODIGOMODALIDAD, ES_CRITERIOSFAC.CODIGOCRITERIO, ES_CRITERIOS.NOMBRE ORDER BY CODIGOCRITERIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGOESTUDIO":"$CODIGOESTUDIO","CODIGOMODALIDAD":"$CODIGOMODALIDAD","CODIGOCRITERIO":"$CODIGOCRITERIO","NOMBRE":"$NOMBRE","PUNTAJE":"$PUNTAJE(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOESTUDIO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="escriteriosfac/listasubcriteriosfacproy">
+		<call-query href="getEscriteriosfacListaSubcriteriosFacproyQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOESTUDIO" query-param="CODIGOESTUDIO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEscriteriosfacExistenciaCriterioPorTipoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT 'X' AS X  FROM ES_CRITERIOSFAC WHERE COMPANIA = :COMPANIA AND CODIGOESTUDIO = :CODIGOESTUDIO AND CODIGOMODALIDAD = :TIPO AND CODIGOCRITERIO = :CRITERIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"X":"$X"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOESTUDIO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CRITERIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="escriteriosfac/existenciacriterioportipo">
+		<call-query href="getEscriteriosfacExistenciaCriterioPorTipoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOESTUDIO" query-param="CODIGOESTUDIO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CRITERIO" query-param="CRITERIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertEscriteriosfac" keyColumns="COMPANIA,CODIGOESTUDIO,CODIGOMODALIDAD,CODIGOCRITERIO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ES_CRITERIOSFAC (CODIGOCRITERIO, CODIGOESTUDIO, CODIGOMODALIDAD, COMPANIA, PUNTAJE, DATE_CREATED, CREATED_BY) VALUES (:CODIGOCRITERIO, :CODIGOESTUDIO, :CODIGOMODALIDAD, :COMPANIA, :PUNTAJE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGOESTUDIO":"$CODIGOESTUDIO","KEY_CODIGOMODALIDAD":"$CODIGOMODALIDAD","KEY_CODIGOCRITERIO":"$CODIGOCRITERIO"}]}}		</result>
+		<param name="CODIGOCRITERIO" sqlType="STRING"/>
+		<param name="CODIGOESTUDIO" sqlType="STRING"/>
+		<param name="CODIGOMODALIDAD" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="0" name="PUNTAJE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="escriteriosfac">
+		<call-query href="insertEscriteriosfac">
+			<with-param name="CODIGOCRITERIO" query-param="CODIGOCRITERIO"/>
+			<with-param name="CODIGOESTUDIO" query-param="CODIGOESTUDIO"/>
+			<with-param name="CODIGOMODALIDAD" query-param="CODIGOMODALIDAD"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PUNTAJE" query-param="PUNTAJE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEscriteriosfac" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ES_CRITERIOSFAC SET CODIGOCRITERIO=:CODIGOCRITERIO, CODIGOESTUDIO=:CODIGOESTUDIO, CODIGOMODALIDAD=:CODIGOMODALIDAD, PUNTAJE=:PUNTAJE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ES_CRITERIOSFAC.COMPANIA= :KEY_COMPANIA AND ES_CRITERIOSFAC.CODIGOESTUDIO= :KEY_CODIGOESTUDIO AND ES_CRITERIOSFAC.CODIGOMODALIDAD= :KEY_CODIGOMODALIDAD AND ES_CRITERIOSFAC.CODIGOCRITERIO= :KEY_CODIGOCRITERIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGOCRITERIO" sqlType="STRING"/>
+		<param name="CODIGOESTUDIO" sqlType="STRING"/>
+		<param name="CODIGOMODALIDAD" sqlType="STRING"/>
+		<param name="PUNTAJE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOESTUDIO" sqlType="STRING"/>
+		<param name="KEY_CODIGOMODALIDAD" sqlType="STRING"/>
+		<param name="KEY_CODIGOCRITERIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="escriteriosfac">
+		<call-query href="updateEscriteriosfac">
+			<with-param name="CODIGOCRITERIO" query-param="CODIGOCRITERIO"/>
+			<with-param name="CODIGOESTUDIO" query-param="CODIGOESTUDIO"/>
+			<with-param name="CODIGOMODALIDAD" query-param="CODIGOMODALIDAD"/>
+			<with-param name="PUNTAJE" query-param="PUNTAJE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOESTUDIO" query-param="KEY_CODIGOESTUDIO"/>
+			<with-param name="KEY_CODIGOMODALIDAD" query-param="KEY_CODIGOMODALIDAD"/>
+			<with-param name="KEY_CODIGOCRITERIO" query-param="KEY_CODIGOCRITERIO"/>
+
+		</call-query>
+	</resource>
+
+</data>

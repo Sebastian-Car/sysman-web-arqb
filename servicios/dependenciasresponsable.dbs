@@ -1,0 +1,1062 @@
+﻿<data name="dependenciasresponsable" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getDependenciasresponsableSubdependenciasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DEPENDENCIA_RESPONSABLE.COMPANIA, DEPENDENCIA_RESPONSABLE.DEPENDENCIA, DEPENDENCIA_RESPONSABLE.RESPONSABLE, DEPENDENCIA_RESPONSABLE.SUCURSAL, (SELECT TERCERO.NOMBRE FROM TERCERO WHERE COMPANIA = DEPENDENCIA_RESPONSABLE.COMPANIA AND NIT = DEPENDENCIA_RESPONSABLE.RESPONSABLE AND SUCURSAL = DEPENDENCIA_RESPONSABLE.SUCURSAL) NOMRESPONSABLE, DEPENDENCIA_RESPONSABLE.CARGO,(CASE DEPENDENCIA_RESPONSABLE.RESPONSABLEALMACEN WHEN 0 THEN 'false' ELSE 'true' END) RESPONSABLEALMACEN,(CASE DEPENDENCIA_RESPONSABLE.JEFEUNIDAD WHEN 0 THEN 'false' ELSE 'true' END) JEFEUNIDAD,(CASE DEPENDENCIA_RESPONSABLE.ACTIVO_RECEP WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO_RECEP FROM DEPENDENCIA_RESPONSABLE WHERE COMPANIA= :COMPANIA AND DEPENDENCIA= :DEPENDENCIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","DEPENDENCIA":"$DEPENDENCIA","RESPONSABLE":"$RESPONSABLE","SUCURSAL":"$SUCURSAL","NOMRESPONSABLE":"$NOMRESPONSABLE","CARGO":"$CARGO","RESPONSABLEALMACEN":"$RESPONSABLEALMACEN(type:boolean)","JEFEUNIDAD":"$JEFEUNIDAD(type:boolean)","ACTIVO_RECEP":"$ACTIVO_RECEP(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/subdependencias">
+		<call-query href="getDependenciasresponsableSubdependenciasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagTerceroResponsableQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE INNER JOIN TERCERO ON DEPENDENCIA_RESPONSABLE.COMPANIA=TERCERO.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE=TERCERO.NIT AND DEPENDENCIA_RESPONSABLE.SUCURSAL=TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END)  LIKE UPPER( '%' || :SUCURSAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/terceroresponsable/pag">
+		<call-query href="getDependenciasresponsablePagTerceroResponsableQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumTerceroResponsableQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE INNER JOIN TERCERO ON DEPENDENCIA_RESPONSABLE.COMPANIA=TERCERO.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE=TERCERO.NIT AND DEPENDENCIA_RESPONSABLE.SUCURSAL=TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END)  LIKE UPPER( '%' || :SUCURSAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/terceroresponsable/num">
+		<call-query href="getDependenciasresponsableNumTerceroResponsableQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableDependenciaResponsableQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DISTINCT DEPENDENCIA_RESPONSABLE.DEPENDENCIA, DEPENDENCIA.NOMBRE FROM DEPENDENCIA_RESPONSABLE INNER JOIN DEPENDENCIA ON DEPENDENCIA_RESPONSABLE.COMPANIA=DEPENDENCIA.COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA=DEPENDENCIA.CODIGO WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = :RESPONSABLE AND DEPENDENCIA_RESPONSABLE.SUCURSAL= :SUCURSAL ORDER BY DEPENDENCIA_RESPONSABLE.DEPENDENCIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DEPENDENCIA":"$DEPENDENCIA","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/dependenciaresponsable">
+		<call-query href="getDependenciasresponsableDependenciaResponsableQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableTodosPorCargoResponsableQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DEPENDENCIA_RESPONSABLE.CARGO  FROM DEPENDENCIA_RESPONSABLE WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA =:DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.CARGO IS NOT NULL ORDER BY DEPENDENCIA_RESPONSABLE.COMPANIA, DEPENDENCIA_RESPONSABLE.DEPENDENCIA, DEPENDENCIA_RESPONSABLE.CARGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CARGO":"$CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todosporcargoresponsable">
+		<call-query href="getDependenciasresponsableTodosPorCargoResponsableQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagTodosPorDependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DEPENDENCIA_RESPONSABLE.RESPONSABLE, TRIM(TERCERO.NOMBRE) NOMBRE, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN TERCERO ON DEPENDENCIA_RESPONSABLE.RESPONSABLE = TERCERO.NIT AND DEPENDENCIA_RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND DEPENDENCIA_RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA ORDER BY DEPENDENCIA_RESPONSABLE.RESPONSABLE) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todospordependencia/pag">
+		<call-query href="getDependenciasresponsablePagTodosPorDependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumTodosPorDependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DEPENDENCIA_RESPONSABLE.RESPONSABLE, TRIM(TERCERO.NOMBRE) NOMBRE, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN TERCERO ON DEPENDENCIA_RESPONSABLE.RESPONSABLE = TERCERO.NIT AND DEPENDENCIA_RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND DEPENDENCIA_RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA ORDER BY DEPENDENCIA_RESPONSABLE.RESPONSABLE) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todospordependencia/num">
+		<call-query href="getDependenciasresponsableNumTodosPorDependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagTodosPorCompaniaYDependQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, CASE WHEN DEPENDENCIA_RESPONSABLE.JEFEUNIDAD &lt;&gt;0 THEN 'SI' ELSE 'NO' END AS JEFEUNIDAD, RESPONSABLE.CEDULA, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN RESPONSABLE ON DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA AND DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL INNER JOIN DEPENDENCIA ON DEPENDENCIA_RESPONSABLE.COMPANIA = DEPENDENCIA.COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = DEPENDENCIA.CODIGO WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE","JEFEUNIDAD":"$JEFEUNIDAD","CEDULA":"$CEDULA","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todosporcompaniaydepend/pag">
+		<call-query href="getDependenciasresponsablePagTodosPorCompaniaYDependQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumTodosPorCompaniaYDependQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, CASE WHEN DEPENDENCIA_RESPONSABLE.JEFEUNIDAD &lt;&gt;0 THEN 'SI' ELSE 'NO' END AS JEFEUNIDAD, RESPONSABLE.CEDULA, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN RESPONSABLE ON DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA AND DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL INNER JOIN DEPENDENCIA ON DEPENDENCIA_RESPONSABLE.COMPANIA = DEPENDENCIA.COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = DEPENDENCIA.CODIGO WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todosporcompaniaydepend/num">
+		<call-query href="getDependenciasresponsableNumTodosPorCompaniaYDependQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertDependenciasresponsable" keyColumns="COMPANIA,DEPENDENCIA,RESPONSABLE,SUCURSAL" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO DEPENDENCIA_RESPONSABLE (COMPANIA, DEPENDENCIA, RESPONSABLE, SUCURSAL, CARGO, RESPONSABLEALMACEN, JEFEUNIDAD, ACTIVO_RECEP, SUPERVISOR, SUCURSAL_SUPERVISOR, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :DEPENDENCIA, :RESPONSABLE, :SUCURSAL, :CARGO, :RESPONSABLEALMACEN, :JEFEUNIDAD, :ACTIVO_RECEP, :SUPERVISOR, :SUCURSAL_SUPERVISOR, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_DEPENDENCIA":"$DEPENDENCIA","KEY_RESPONSABLE":"$RESPONSABLE","KEY_SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="" name="CARGO" sqlType="STRING"/>
+		<param defaultValue="0" name="RESPONSABLEALMACEN" sqlType="STRING"/>
+		<param defaultValue="0" name="JEFEUNIDAD" sqlType="STRING"/>
+		<param defaultValue="0" name="ACTIVO_RECEP" sqlType="STRING"/>
+		<param defaultValue="" name="SUPERVISOR" sqlType="STRING"/>
+		<param defaultValue="" name="SUCURSAL_SUPERVISOR" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="dependenciasresponsable">
+		<call-query href="insertDependenciasresponsable">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="RESPONSABLEALMACEN" query-param="RESPONSABLEALMACEN"/>
+			<with-param name="JEFEUNIDAD" query-param="JEFEUNIDAD"/>
+			<with-param name="ACTIVO_RECEP" query-param="ACTIVO_RECEP"/>
+			<with-param name="SUPERVISOR" query-param="SUPERVISOR"/>
+			<with-param name="SUCURSAL_SUPERVISOR" query-param="SUCURSAL_SUPERVISOR"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteDependenciasresponsable" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM DEPENDENCIA_RESPONSABLE WHERE DEPENDENCIA_RESPONSABLE.COMPANIA= :KEY_COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA= :KEY_DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE= :KEY_RESPONSABLE AND DEPENDENCIA_RESPONSABLE.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_DEPENDENCIA" sqlType="STRING"/>
+		<param name="KEY_RESPONSABLE" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="dependenciasresponsable">
+		<call-query href="deleteDependenciasresponsable">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_DEPENDENCIA" query-param="KEY_DEPENDENCIA"/>
+			<with-param name="KEY_RESPONSABLE" query-param="KEY_RESPONSABLE"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DR.COMPANIA, TRIM(DR.DEPENDENCIA) DEPENDENCIA, TRIM(D.NOMBRE) NOMDEPENDENCIA, DR.RESPONSABLE,(CASE DR.RESPONSABLEALMACEN WHEN 0 THEN 'false' ELSE 'true' END) RESPONSABLEALMACEN,(CASE DR.JEFEUNIDAD WHEN 0 THEN 'false' ELSE 'true' END) JEFEUNIDAD,(CASE DR.ACTIVO_RECEP WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO_RECEP, DR.CARGO, DR.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE DR INNER JOIN DEPENDENCIA D ON DR.COMPANIA = D.COMPANIA AND DR.DEPENDENCIA = D.CODIGO WHERE DR.COMPANIA = :COMPANIA AND DR.RESPONSABLE = :CEDULA) WHERE (CASE WHEN DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(DEPENDENCIA) END)  LIKE UPPER( '%' || :DEPENDENCIA || '%')  AND (CASE WHEN NOMDEPENDENCIA IS NULL THEN ' ' ELSE UPPER(NOMDEPENDENCIA) END)  LIKE UPPER( '%' || :NOMDEPENDENCIA || '%')  AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END)  LIKE UPPER( '%' || :CARGO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","DEPENDENCIA":"$DEPENDENCIA","NOMDEPENDENCIA":"$NOMDEPENDENCIA","RESPONSABLE":"$RESPONSABLE","RESPONSABLEALMACEN":"$RESPONSABLEALMACEN(type:boolean)","JEFEUNIDAD":"$JEFEUNIDAD(type:boolean)","ACTIVO_RECEP":"$ACTIVO_RECEP(type:boolean)","CARGO":"$CARGO","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="NOMDEPENDENCIA" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable">
+		<call-query href="getDependenciasresponsablePaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="NOMDEPENDENCIA" query-param="NOMDEPENDENCIA"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DR.COMPANIA, TRIM(DR.DEPENDENCIA) DEPENDENCIA, TRIM(D.NOMBRE) NOMDEPENDENCIA, DR.RESPONSABLE,(CASE DR.RESPONSABLEALMACEN WHEN 0 THEN 'false' ELSE 'true' END) RESPONSABLEALMACEN,(CASE DR.JEFEUNIDAD WHEN 0 THEN 'false' ELSE 'true' END) JEFEUNIDAD,(CASE DR.ACTIVO_RECEP WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO_RECEP, DR.CARGO, DR.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE DR INNER JOIN DEPENDENCIA D ON DR.COMPANIA = D.COMPANIA AND DR.DEPENDENCIA = D.CODIGO WHERE DR.COMPANIA = :COMPANIA AND DR.RESPONSABLE = :CEDULA) WHERE (CASE WHEN DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(DEPENDENCIA) END)  LIKE UPPER( '%' || :DEPENDENCIA || '%')  AND (CASE WHEN NOMDEPENDENCIA IS NULL THEN ' ' ELSE UPPER(NOMDEPENDENCIA) END)  LIKE UPPER( '%' || :NOMDEPENDENCIA || '%')  AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END)  LIKE UPPER( '%' || :CARGO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="NOMDEPENDENCIA" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/numero">
+		<call-query href="getDependenciasresponsableNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="NOMDEPENDENCIA" query-param="NOMDEPENDENCIA"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDependenciasresponsable" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE DEPENDENCIA_RESPONSABLE SET COMPANIA=:COMPANIA, DEPENDENCIA=:DEPENDENCIA, RESPONSABLE=:RESPONSABLE, SUCURSAL=:SUCURSAL, CARGO=:CARGO, RESPONSABLEALMACEN=:RESPONSABLEALMACEN, JEFEUNIDAD=:JEFEUNIDAD, ACTIVO_RECEP=:ACTIVO_RECEP, SUPERVISOR=:SUPERVISOR, SUCURSAL_SUPERVISOR=:SUCURSAL_SUPERVISOR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE DEPENDENCIA_RESPONSABLE.COMPANIA= :KEY_COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA= :KEY_DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE= :KEY_RESPONSABLE AND DEPENDENCIA_RESPONSABLE.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="RESPONSABLEALMACEN" sqlType="STRING"/>
+		<param name="JEFEUNIDAD" sqlType="STRING"/>
+		<param name="ACTIVO_RECEP" sqlType="STRING"/>
+		<param name="SUPERVISOR" sqlType="STRING"/>
+		<param name="SUCURSAL_SUPERVISOR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_DEPENDENCIA" sqlType="STRING"/>
+		<param name="KEY_RESPONSABLE" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="dependenciasresponsable">
+		<call-query href="updateDependenciasresponsable">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="RESPONSABLEALMACEN" query-param="RESPONSABLEALMACEN"/>
+			<with-param name="JEFEUNIDAD" query-param="JEFEUNIDAD"/>
+			<with-param name="ACTIVO_RECEP" query-param="ACTIVO_RECEP"/>
+			<with-param name="SUPERVISOR" query-param="SUPERVISOR"/>
+			<with-param name="SUCURSAL_SUPERVISOR" query-param="SUCURSAL_SUPERVISOR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_DEPENDENCIA" query-param="KEY_DEPENDENCIA"/>
+			<with-param name="KEY_RESPONSABLE" query-param="KEY_RESPONSABLE"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagSucursalPorDependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, RESPONSABLE.CARGO, RESPONSABLE.SUCURSAL, (CASE WHEN DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN (0) THEN 'SI' ELSE 'NO' END ) JEFEUNIDAD, RESPONSABLE.CEDULA  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA ORDER BY TERCERO.NOMBRE) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE","CARGO":"$CARGO","SUCURSAL":"$SUCURSAL","JEFEUNIDAD":"$JEFEUNIDAD","CEDULA":"$CEDULA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/sucursalpordependencia/pag">
+		<call-query href="getDependenciasresponsablePagSucursalPorDependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumSucursalPorDependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, RESPONSABLE.CARGO, RESPONSABLE.SUCURSAL, (CASE WHEN DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN (0) THEN 'SI' ELSE 'NO' END ) JEFEUNIDAD, RESPONSABLE.CEDULA  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA ORDER BY TERCERO.NOMBRE) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/sucursalpordependencia/num">
+		<call-query href="getDependenciasresponsableNumSucursalPorDependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableSucursalPorResponsableQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, RESPONSABLE.CARGO, RESPONSABLE.SUCURSAL, ( CASE WHEN DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN (0) THEN 'SI' ELSE 'NO' END ) JEFEUNIDAD, RESPONSABLE.CEDULA  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = :RESPONSABLE ORDER BY TERCERO.NOMBRE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE","CARGO":"$CARGO","SUCURSAL":"$SUCURSAL","JEFEUNIDAD":"$JEFEUNIDAD","CEDULA":"$CEDULA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/sucursalporresponsable">
+		<call-query href="getDependenciasresponsableSucursalPorResponsableQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNomPorCiaDependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, DEPENDENCIA_RESPONSABLE.DEPENDENCIA  FROM DEPENDENCIA_RESPONSABLE INNER JOIN RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA AND DEPENDENCIA_RESPONSABLE.SUCURSAL = RESPONSABLE.SUCURSAL INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE","DEPENDENCIA":"$DEPENDENCIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/nomporciadependencia">
+		<call-query href="getDependenciasresponsableNomPorCiaDependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE  FROM DEPENDENCIA_RESPONSABLE INNER JOIN RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA AND DEPENDENCIA_RESPONSABLE.SUCURSAL = RESPONSABLE.SUCURSAL INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL INNER JOIN DEPENDENCIA ON DEPENDENCIA_RESPONSABLE.COMPANIA = DEPENDENCIA.COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = DEPENDENCIA.CODIGO WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA.ACTIVO NOT IN(0)) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todosporcompania/pag">
+		<call-query href="getDependenciasresponsablePagTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE  FROM DEPENDENCIA_RESPONSABLE INNER JOIN RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA AND DEPENDENCIA_RESPONSABLE.SUCURSAL = RESPONSABLE.SUCURSAL INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL INNER JOIN DEPENDENCIA ON DEPENDENCIA_RESPONSABLE.COMPANIA = DEPENDENCIA.COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = DEPENDENCIA.CODIGO WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA.ACTIVO NOT IN(0)) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todosporcompania/num">
+		<call-query href="getDependenciasresponsableNumTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagRepNomEnTerceroPorCiaDepQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, DEPENDENCIA_RESPONSABLE.DEPENDENCIA  FROM DEPENDENCIA_RESPONSABLE INNER JOIN RESPONSABLE ON DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA AND DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA AND DEPENDENCIA_RESPONSABLE.SUCURSAL = RESPONSABLE.SUCURSAL INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(DEPENDENCIA) END)  LIKE UPPER(:DEPENDENCIA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE","DEPENDENCIA":"$DEPENDENCIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/repnomenterceroporciadep/pag">
+		<call-query href="getDependenciasresponsablePagRepNomEnTerceroPorCiaDepQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumRepNomEnTerceroPorCiaDepQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, DEPENDENCIA_RESPONSABLE.DEPENDENCIA  FROM DEPENDENCIA_RESPONSABLE INNER JOIN RESPONSABLE ON DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA AND DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA AND DEPENDENCIA_RESPONSABLE.SUCURSAL = RESPONSABLE.SUCURSAL INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(DEPENDENCIA) END)  LIKE UPPER(:DEPENDENCIA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/repnomenterceroporciadep/num">
+		<call-query href="getDependenciasresponsableNumRepNomEnTerceroPorCiaDepQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagTodosPorCompaniaNitDependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN TERCERO ON DEPENDENCIA_RESPONSABLE.RESPONSABLE =TERCERO.NIT WHERE DEPENDENCIA_RESPONSABLE.COMPANIA =:COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA=:DEPENDENCIA) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END)  LIKE UPPER(:SUCURSAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todosporcompanianitdependencia/pag">
+		<call-query href="getDependenciasresponsablePagTodosPorCompaniaNitDependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumTodosPorCompaniaNitDependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN TERCERO ON DEPENDENCIA_RESPONSABLE.RESPONSABLE =TERCERO.NIT WHERE DEPENDENCIA_RESPONSABLE.COMPANIA =:COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA=:DEPENDENCIA) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END)  LIKE UPPER(:SUCURSAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todosporcompanianitdependencia/num">
+		<call-query href="getDependenciasresponsableNumTodosPorCompaniaNitDependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableResponsableSucursalPorDependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  RESPONSABLE, SUCURSAL  FROM DEPENDENCIA_RESPONSABLE WHERE COMPANIA = :COMPANIA AND DEPENDENCIA = :DEPENDENCIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/responsablesucursalpordependencia">
+		<call-query href="getDependenciasresponsableResponsableSucursalPorDependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagTodosPorIndicadorDeJefeUnidadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, RESTER.CARGO, RESTER.SUCURSAL, ( CASE WHEN DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN ( 0 ) THEN 'SI' ELSE 'NO' END ) JEFEUNIDAD, (CONCAT(RESTER.NOMBRE1 ,CONCAT( ' ' ,CONCAT( RESTER.NOMBRE2 ,CONCAT( ' ' ,CONCAT( RESTER.APELLIDO1 ,CONCAT( ' ' ,RESTER.APELLIDO2))) )))) NOMBRE FROM DEPENDENCIA_RESPONSABLE LEFT JOIN ( SELECT RESPONSABLE.COMPANIA, RESPONSABLE.CEDULA, RESPONSABLE.SUCURSAL, TERCERO.NOMBRE1, TERCERO.NOMBRE2, TERCERO.APELLIDO1, TERCERO.APELLIDO2, RESPONSABLE.CARGO FROM RESPONSABLE INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL ) RESTER ON DEPENDENCIA_RESPONSABLE.COMPANIA = RESTER.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESTER.CEDULA AND DEPENDENCIA_RESPONSABLE.SUCURSAL = RESTER.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA =:COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA =:DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN ( 0 ) ORDER BY NOMBRE) INI WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END) LIKE UPPER(CONCAT(:RESPONSABLE, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","CARGO":"$CARGO","SUCURSAL":"$SUCURSAL","JEFEUNIDAD":"$JEFEUNIDAD","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todosporindicadordejefeunidad/pag">
+		<call-query href="getDependenciasresponsablePagTodosPorIndicadorDeJefeUnidadQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumTodosPorIndicadorDeJefeUnidadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, RESTER.CARGO, RESTER.SUCURSAL, ( CASE WHEN DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN ( 0 ) THEN 'SI' ELSE 'NO' END ) JEFEUNIDAD, (CONCAT(RESTER.NOMBRE1 ,CONCAT( ' ' ,CONCAT( RESTER.NOMBRE2 ,CONCAT( ' ' ,CONCAT( RESTER.APELLIDO1 ,CONCAT( ' ' ,RESTER.APELLIDO2))) )))) NOMBRE FROM DEPENDENCIA_RESPONSABLE LEFT JOIN ( SELECT RESPONSABLE.COMPANIA, RESPONSABLE.CEDULA, RESPONSABLE.SUCURSAL, TERCERO.NOMBRE1, TERCERO.NOMBRE2, TERCERO.APELLIDO1, TERCERO.APELLIDO2, RESPONSABLE.CARGO FROM RESPONSABLE INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL ) RESTER ON DEPENDENCIA_RESPONSABLE.COMPANIA = RESTER.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESTER.CEDULA AND DEPENDENCIA_RESPONSABLE.SUCURSAL = RESTER.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA =:COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA =:DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN ( 0 ) ORDER BY NOMBRE) INI WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END) LIKE UPPER(CONCAT(:RESPONSABLE, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todosporindicadordejefeunidad/num">
+		<call-query href="getDependenciasresponsableNumTodosPorIndicadorDeJefeUnidadQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagTodosPorJefeuniQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, RESPONSABLE.CARGO  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN RESPONSABLE ON (DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA) AND (DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA) LEFT JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN (0)) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE","CARGO":"$CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todosporjefeuni/pag">
+		<call-query href="getDependenciasresponsablePagTodosPorJefeuniQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumTodosPorJefeuniQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, RESPONSABLE.CARGO  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN RESPONSABLE ON (DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA) AND (DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA) LEFT JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN (0)) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todosporjefeuni/num">
+		<call-query href="getDependenciasresponsableNumTodosPorJefeuniQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagTodosPorActivorecepQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, RESPONSABLE.CARGO, DEPENDENCIA_RESPONSABLE.DEPENDENCIA, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN RESPONSABLE ON (DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA) AND (DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA) LEFT JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.ACTIVO_RECEP NOT IN (0)) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END)  LIKE UPPER( '%' || :CARGO || '%')  AND (CASE WHEN DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(DEPENDENCIA) END)  LIKE UPPER(:DEPENDENCIA || '%')  AND (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END)  LIKE UPPER( '%' || :SUCURSAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE","CARGO":"$CARGO","DEPENDENCIA":"$DEPENDENCIA","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todosporactivorecep/pag">
+		<call-query href="getDependenciasresponsablePagTodosPorActivorecepQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumTodosPorActivorecepQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, RESPONSABLE.CARGO, DEPENDENCIA_RESPONSABLE.DEPENDENCIA, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN RESPONSABLE ON (DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA) AND (DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA) LEFT JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.ACTIVO_RECEP NOT IN (0)) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END)  LIKE UPPER( '%' || :CARGO || '%')  AND (CASE WHEN DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(DEPENDENCIA) END)  LIKE UPPER(:DEPENDENCIA || '%')  AND (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END)  LIKE UPPER( '%' || :SUCURSAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todosporactivorecep/num">
+		<call-query href="getDependenciasresponsableNumTodosPorActivorecepQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableSucursalResponsableQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SUCURSAL  FROM DEPENDENCIA_RESPONSABLE WHERE COMPANIA = :COMPANIA AND DEPENDENCIA = :DEPENDENCIA AND RESPONSABLE = :RESPONSABLE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/sucursalresponsable">
+		<call-query href="getDependenciasresponsableSucursalResponsableQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagResponsablesQueEstenEnTerceroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE INNER JOIN TERCERO ON DEPENDENCIA_RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = TERCERO.NIT AND DEPENDENCIA_RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/responsablesqueestenentercero/pag">
+		<call-query href="getDependenciasresponsablePagResponsablesQueEstenEnTerceroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumResponsablesQueEstenEnTerceroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE INNER JOIN TERCERO ON DEPENDENCIA_RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = TERCERO.NIT AND DEPENDENCIA_RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/responsablesqueestenentercero/num">
+		<call-query href="getDependenciasresponsableNumResponsablesQueEstenEnTerceroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableConsultarJefeDependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.DEPENDENCIA CODAMISIONAL, DEPENDENCIA_RESPONSABLE.RESPONSABLE FUNCIONARIO  FROM DEPENDENCIA_RESPONSABLE INNER JOIN RESPONSABLE ON RESPONSABLE.COMPANIA = DEPENDENCIA_RESPONSABLE.COMPANIA AND RESPONSABLE.CEDULA = DEPENDENCIA_RESPONSABLE.RESPONSABLE AND RESPONSABLE.SUCURSAL = DEPENDENCIA_RESPONSABLE.SUCURSAL INNER JOIN DEPENDENCIA ON DEPENDENCIA_RESPONSABLE.COMPANIA = DEPENDENCIA.COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = DEPENDENCIA.CODIGO INNER JOIN PERSONAL ON RESPONSABLE.COMPANIA = PERSONAL.COMPANIA AND RESPONSABLE.CEDULA = PERSONAL.NUMERO_DCTO AND RESPONSABLE.SUCURSAL = PERSONAL.SUCURSAL WHERE RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA.CODIGO = :DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN (0) AND PERSONAL.ESTADO_ACTUAL NOT IN (3)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODAMISIONAL":"$CODAMISIONAL","FUNCIONARIO":"$FUNCIONARIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/consultarjefedependencia">
+		<call-query href="getDependenciasresponsableConsultarJefeDependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagTodaslasdependenciasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.DEPENDENCIA CODIGO, DEPENDENCIA.NOMBRE NOMBRE_DEPENDENCIA  FROM DEPENDENCIA_RESPONSABLE INNER JOIN DEPENDENCIA ON DEPENDENCIA_RESPONSABLE.COMPANIA = DEPENDENCIA.COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = DEPENDENCIA.CODIGO WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.SUCURSAL NOT IN ('999') AND DEPENDENCIA_RESPONSABLE.RESPONSABLE IS NOT NULL AND DEPENDENCIA.VERSOLICITUD NOT IN (0) ORDER BY DEPENDENCIA_RESPONSABLE.DEPENDENCIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE_DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEPENDENCIA) END)  LIKE UPPER( '%' || :NOMBRE_DEPENDENCIA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE_DEPENDENCIA":"$NOMBRE_DEPENDENCIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEPENDENCIA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todaslasdependencias/pag">
+		<call-query href="getDependenciasresponsablePagTodaslasdependenciasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE_DEPENDENCIA" query-param="NOMBRE_DEPENDENCIA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumTodaslasdependenciasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.DEPENDENCIA CODIGO, DEPENDENCIA.NOMBRE NOMBRE_DEPENDENCIA  FROM DEPENDENCIA_RESPONSABLE INNER JOIN DEPENDENCIA ON DEPENDENCIA_RESPONSABLE.COMPANIA = DEPENDENCIA.COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = DEPENDENCIA.CODIGO WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.SUCURSAL NOT IN ('999') AND DEPENDENCIA_RESPONSABLE.RESPONSABLE IS NOT NULL AND DEPENDENCIA.VERSOLICITUD NOT IN (0) ORDER BY DEPENDENCIA_RESPONSABLE.DEPENDENCIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE_DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEPENDENCIA) END)  LIKE UPPER( '%' || :NOMBRE_DEPENDENCIA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEPENDENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todaslasdependencias/num">
+		<call-query href="getDependenciasresponsableNumTodaslasdependenciasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE_DEPENDENCIA" query-param="NOMBRE_DEPENDENCIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagTodoslosresponsablesporareaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE NIT, TERCERO.NOMBRE NOMBRE_TERCERO, TERCERO.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE INNER JOIN TERCERO ON DEPENDENCIA_RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = TERCERO.NIT AND DEPENDENCIA_RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.SUCURSAL NOT IN ('999') AND DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN (0) ORDER BY DEPENDENCIA_RESPONSABLE.RESPONSABLE) WHERE (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END)  LIKE UPPER(:NIT || '%')  AND (CASE WHEN NOMBRE_TERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRE_TERCERO) END)  LIKE UPPER( '%' || :NOMBRE_TERCERO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NIT":"$NIT","NOMBRE_TERCERO":"$NOMBRE_TERCERO","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRE_TERCERO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todoslosresponsablesporarea/pag">
+		<call-query href="getDependenciasresponsablePagTodoslosresponsablesporareaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRE_TERCERO" query-param="NOMBRE_TERCERO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumTodoslosresponsablesporareaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE NIT, TERCERO.NOMBRE NOMBRE_TERCERO, TERCERO.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE INNER JOIN TERCERO ON DEPENDENCIA_RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = TERCERO.NIT AND DEPENDENCIA_RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.SUCURSAL NOT IN ('999') AND DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN (0) ORDER BY DEPENDENCIA_RESPONSABLE.RESPONSABLE) WHERE (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END)  LIKE UPPER(:NIT || '%')  AND (CASE WHEN NOMBRE_TERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRE_TERCERO) END)  LIKE UPPER( '%' || :NOMBRE_TERCERO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRE_TERCERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/todoslosresponsablesporarea/num">
+		<call-query href="getDependenciasresponsableNumTodoslosresponsablesporareaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRE_TERCERO" query-param="NOMBRE_TERCERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagSolicitudCdpQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, TERCERO.SUCURSAL, RESPONSABLE.CARGO  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN RESPONSABLE ON (DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA) AND (DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA) LEFT JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN (0)) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE","SUCURSAL":"$SUCURSAL","CARGO":"$CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/solicitudcdp/pag">
+		<call-query href="getDependenciasresponsablePagSolicitudCdpQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumSolicitudCdpQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, TERCERO.SUCURSAL, RESPONSABLE.CARGO  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN RESPONSABLE ON (DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA) AND (DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA) LEFT JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN (0)) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/solicitudcdp/num">
+		<call-query href="getDependenciasresponsableNumSolicitudCdpQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagRespConIndAlmQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT TERCERO.NIT, TERCERO.NOMBRE,(CASE DEPENDENCIA_RESPONSABLE.RESPONSABLEALMACEN WHEN 0 THEN 'false' ELSE 'true' END) RESPONSABLEALMACEN, TERCERO.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE INNER JOIN TERCERO ON DEPENDENCIA_RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = TERCERO.NIT AND DEPENDENCIA_RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLEALMACEN NOT IN (0) ORDER BY TERCERO.NOMBRE) WHERE (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END)  LIKE UPPER(:NIT || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NIT":"$NIT","NOMBRE":"$NOMBRE","RESPONSABLEALMACEN":"$RESPONSABLEALMACEN(type:boolean)","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/respconindalm/pag">
+		<call-query href="getDependenciasresponsablePagRespConIndAlmQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumRespConIndAlmQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT TERCERO.NIT, TERCERO.NOMBRE,(CASE DEPENDENCIA_RESPONSABLE.RESPONSABLEALMACEN WHEN 0 THEN 'false' ELSE 'true' END) RESPONSABLEALMACEN, TERCERO.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE INNER JOIN TERCERO ON DEPENDENCIA_RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = TERCERO.NIT AND DEPENDENCIA_RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLEALMACEN NOT IN (0) ORDER BY TERCERO.NOMBRE) WHERE (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END)  LIKE UPPER(:NIT || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/respconindalm/num">
+		<call-query href="getDependenciasresponsableNumRespConIndAlmQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagRespalmacenactivoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DEPENDENCIA_RESPONSABLE.RESPONSABLE, TRIM(TERCERO.NOMBRE) NOMBRE, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE INNER JOIN RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA AND DEPENDENCIA_RESPONSABLE.SUCURSAL = RESPONSABLE.SUCURSAL INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA AND RESPONSABLE.ACTIVO NOT IN(0) AND DEPENDENCIA_RESPONSABLE.RESPONSABLEALMACEN NOT IN (0) ORDER BY DEPENDENCIA_RESPONSABLE.RESPONSABLE) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/respalmacenactivo/pag">
+		<call-query href="getDependenciasresponsablePagRespalmacenactivoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumRespalmacenactivoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DEPENDENCIA_RESPONSABLE.RESPONSABLE, TRIM(TERCERO.NOMBRE) NOMBRE, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE INNER JOIN RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA AND DEPENDENCIA_RESPONSABLE.SUCURSAL = RESPONSABLE.SUCURSAL INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA AND RESPONSABLE.ACTIVO NOT IN(0) AND DEPENDENCIA_RESPONSABLE.RESPONSABLEALMACEN NOT IN (0) ORDER BY DEPENDENCIA_RESPONSABLE.RESPONSABLE) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/respalmacenactivo/num">
+		<call-query href="getDependenciasresponsableNumRespalmacenactivoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagResponsablenombrecargodependenciasucursalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, RESPONSABLE.CARGO, DEPENDENCIA_RESPONSABLE.DEPENDENCIA, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN RESPONSABLE ON (DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA) AND (DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA) LEFT JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END)  LIKE UPPER( '%' || :CARGO || '%')  AND (CASE WHEN DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(DEPENDENCIA) END)  LIKE UPPER(:DEPENDENCIA || '%')  AND (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END)  LIKE UPPER(:SUCURSAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE":"$RESPONSABLE","NOMBRE":"$NOMBRE","CARGO":"$CARGO","DEPENDENCIA":"$DEPENDENCIA","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/responsablenombrecargodependenciasucursal/pag">
+		<call-query href="getDependenciasresponsablePagResponsablenombrecargodependenciasucursalQuery">
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumResponsablenombrecargodependenciasucursalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT DEPENDENCIA_RESPONSABLE.RESPONSABLE, TERCERO.NOMBRE, RESPONSABLE.CARGO, DEPENDENCIA_RESPONSABLE.DEPENDENCIA, DEPENDENCIA_RESPONSABLE.SUCURSAL  FROM DEPENDENCIA_RESPONSABLE LEFT JOIN RESPONSABLE ON (DEPENDENCIA_RESPONSABLE.COMPANIA = RESPONSABLE.COMPANIA) AND (DEPENDENCIA_RESPONSABLE.RESPONSABLE = RESPONSABLE.CEDULA) LEFT JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL) WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END)  LIKE UPPER( '%' || :CARGO || '%')  AND (CASE WHEN DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(DEPENDENCIA) END)  LIKE UPPER(:DEPENDENCIA || '%')  AND (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END)  LIKE UPPER(:SUCURSAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/responsablenombrecargodependenciasucursal/num">
+		<call-query href="getDependenciasresponsableNumResponsablenombrecargodependenciasucursalQuery">
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableCargousuarioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CARGO  FROM DEPENDENCIA_RESPONSABLE WHERE COMPANIA = :COMPANIA AND RESPONSABLE = :RESPONSABLE AND RESPONSABLEALMACEN IN (-1)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CARGO":"$CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/cargousuario">
+		<call-query href="getDependenciasresponsableCargousuarioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsablePagResponsablepordepenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DEPENDENCIA_RESPONSABLE.COMPANIA, DEPENDENCIA_RESPONSABLE.DEPENDENCIA, DEPENDENCIA_RESPONSABLE.RESPONSABLE, DEPENDENCIA_RESPONSABLE.SUCURSAL, TERCERO.NOMBRE NOMRESPONSABLE, DEPENDENCIA_RESPONSABLE.CARGO,(CASE DEPENDENCIA_RESPONSABLE.RESPONSABLEALMACEN WHEN 0 THEN 'false' ELSE 'true' END) RESPONSABLEALMACEN,(CASE DEPENDENCIA_RESPONSABLE.JEFEUNIDAD WHEN 0 THEN 'false' ELSE 'true' END) JEFEUNIDAD,(CASE DEPENDENCIA_RESPONSABLE.ACTIVO_RECEP WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO_RECEP, DEPENDENCIA_RESPONSABLE.SUPERVISOR, DEPENDENCIA_RESPONSABLE.SUCURSAL_SUPERVISOR, TER_SUP.NOMBRE NOMBRESUPERVISOR FROM DEPENDENCIA_RESPONSABLE LEFT JOIN TERCERO ON TERCERO.COMPANIA = DEPENDENCIA_RESPONSABLE.COMPANIA AND TERCERO.NIT = DEPENDENCIA_RESPONSABLE.RESPONSABLE AND TERCERO.SUCURSAL = DEPENDENCIA_RESPONSABLE.SUCURSAL LEFT JOIN TERCERO TER_SUP ON TER_SUP.COMPANIA = DEPENDENCIA_RESPONSABLE.COMPANIA AND TER_SUP.NIT = DEPENDENCIA_RESPONSABLE.SUPERVISOR AND TER_SUP.SUCURSAL = DEPENDENCIA_RESPONSABLE.SUCURSAL_SUPERVISOR WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA) INI WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END) LIKE UPPER(CONCAT(:RESPONSABLE, '%')) AND (CASE WHEN NOMRESPONSABLE IS NULL THEN ' ' ELSE UPPER(NOMRESPONSABLE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMRESPONSABLE), '%')) AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CARGO), '%')) AND (CASE WHEN RESPONSABLEALMACEN IS NULL THEN ' ' ELSE UPPER(RESPONSABLEALMACEN) END) LIKE UPPER(CONCAT(:RESPONSABLEALMACEN, '%')) AND (CASE WHEN JEFEUNIDAD IS NULL THEN ' ' ELSE UPPER(JEFEUNIDAD) END) LIKE UPPER(CONCAT(:JEFEUNIDAD, '%')) AND (CASE WHEN ACTIVO_RECEP IS NULL THEN ' ' ELSE UPPER(ACTIVO_RECEP) END) LIKE UPPER(CONCAT(:ACTIVO_RECEP, '%')) AND (CASE WHEN SUPERVISOR IS NULL THEN ' ' ELSE UPPER(SUPERVISOR) END) LIKE UPPER(CONCAT(:SUPERVISOR, '%')) AND (CASE WHEN SUCURSAL_SUPERVISOR IS NULL THEN ' ' ELSE UPPER(SUCURSAL_SUPERVISOR) END) LIKE UPPER(CONCAT(:SUCURSAL_SUPERVISOR, '%')) AND (CASE WHEN NOMBRESUPERVISOR IS NULL THEN ' ' ELSE UPPER(NOMBRESUPERVISOR) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRESUPERVISOR), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","DEPENDENCIA":"$DEPENDENCIA","RESPONSABLE":"$RESPONSABLE","SUCURSAL":"$SUCURSAL","NOMRESPONSABLE":"$NOMRESPONSABLE","CARGO":"$CARGO","RESPONSABLEALMACEN":"$RESPONSABLEALMACEN(type:boolean)","JEFEUNIDAD":"$JEFEUNIDAD(type:boolean)","ACTIVO_RECEP":"$ACTIVO_RECEP(type:boolean)","SUPERVISOR":"$SUPERVISOR","SUCURSAL_SUPERVISOR":"$SUCURSAL_SUPERVISOR","NOMBRESUPERVISOR":"$NOMBRESUPERVISOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMRESPONSABLE" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="RESPONSABLEALMACEN" sqlType="STRING"/>
+		<param name="JEFEUNIDAD" sqlType="STRING"/>
+		<param name="ACTIVO_RECEP" sqlType="STRING"/>
+		<param name="SUPERVISOR" sqlType="STRING"/>
+		<param name="SUCURSAL_SUPERVISOR" sqlType="STRING"/>
+		<param name="NOMBRESUPERVISOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/responsablepordepencia/pag">
+		<call-query href="getDependenciasresponsablePagResponsablepordepenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMRESPONSABLE" query-param="NOMRESPONSABLE"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="RESPONSABLEALMACEN" query-param="RESPONSABLEALMACEN"/>
+			<with-param name="JEFEUNIDAD" query-param="JEFEUNIDAD"/>
+			<with-param name="ACTIVO_RECEP" query-param="ACTIVO_RECEP"/>
+			<with-param name="SUPERVISOR" query-param="SUPERVISOR"/>
+			<with-param name="SUCURSAL_SUPERVISOR" query-param="SUCURSAL_SUPERVISOR"/>
+			<with-param name="NOMBRESUPERVISOR" query-param="NOMBRESUPERVISOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableNumResponsablepordepenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DEPENDENCIA_RESPONSABLE.COMPANIA, DEPENDENCIA_RESPONSABLE.DEPENDENCIA, DEPENDENCIA_RESPONSABLE.RESPONSABLE, DEPENDENCIA_RESPONSABLE.SUCURSAL, TERCERO.NOMBRE NOMRESPONSABLE, DEPENDENCIA_RESPONSABLE.CARGO,(CASE DEPENDENCIA_RESPONSABLE.RESPONSABLEALMACEN WHEN 0 THEN 'false' ELSE 'true' END) RESPONSABLEALMACEN,(CASE DEPENDENCIA_RESPONSABLE.JEFEUNIDAD WHEN 0 THEN 'false' ELSE 'true' END) JEFEUNIDAD,(CASE DEPENDENCIA_RESPONSABLE.ACTIVO_RECEP WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO_RECEP, DEPENDENCIA_RESPONSABLE.SUPERVISOR, DEPENDENCIA_RESPONSABLE.SUCURSAL_SUPERVISOR, TER_SUP.NOMBRE NOMBRESUPERVISOR FROM DEPENDENCIA_RESPONSABLE LEFT JOIN TERCERO ON TERCERO.COMPANIA = DEPENDENCIA_RESPONSABLE.COMPANIA AND TERCERO.NIT = DEPENDENCIA_RESPONSABLE.RESPONSABLE AND TERCERO.SUCURSAL = DEPENDENCIA_RESPONSABLE.SUCURSAL LEFT JOIN TERCERO TER_SUP ON TER_SUP.COMPANIA = DEPENDENCIA_RESPONSABLE.COMPANIA AND TER_SUP.NIT = DEPENDENCIA_RESPONSABLE.SUPERVISOR AND TER_SUP.SUCURSAL = DEPENDENCIA_RESPONSABLE.SUCURSAL_SUPERVISOR WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA) INI WHERE (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END) LIKE UPPER(CONCAT(:RESPONSABLE, '%')) AND (CASE WHEN NOMRESPONSABLE IS NULL THEN ' ' ELSE UPPER(NOMRESPONSABLE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMRESPONSABLE), '%')) AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CARGO), '%')) AND (CASE WHEN RESPONSABLEALMACEN IS NULL THEN ' ' ELSE UPPER(RESPONSABLEALMACEN) END) LIKE UPPER(CONCAT(:RESPONSABLEALMACEN, '%')) AND (CASE WHEN JEFEUNIDAD IS NULL THEN ' ' ELSE UPPER(JEFEUNIDAD) END) LIKE UPPER(CONCAT(:JEFEUNIDAD, '%')) AND (CASE WHEN ACTIVO_RECEP IS NULL THEN ' ' ELSE UPPER(ACTIVO_RECEP) END) LIKE UPPER(CONCAT(:ACTIVO_RECEP, '%')) AND (CASE WHEN SUPERVISOR IS NULL THEN ' ' ELSE UPPER(SUPERVISOR) END) LIKE UPPER(CONCAT(:SUPERVISOR, '%')) AND (CASE WHEN SUCURSAL_SUPERVISOR IS NULL THEN ' ' ELSE UPPER(SUCURSAL_SUPERVISOR) END) LIKE UPPER(CONCAT(:SUCURSAL_SUPERVISOR, '%')) AND (CASE WHEN NOMBRESUPERVISOR IS NULL THEN ' ' ELSE UPPER(NOMBRESUPERVISOR) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRESUPERVISOR), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="NOMRESPONSABLE" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="RESPONSABLEALMACEN" sqlType="STRING"/>
+		<param name="JEFEUNIDAD" sqlType="STRING"/>
+		<param name="ACTIVO_RECEP" sqlType="STRING"/>
+		<param name="SUPERVISOR" sqlType="STRING"/>
+		<param name="SUCURSAL_SUPERVISOR" sqlType="STRING"/>
+		<param name="NOMBRESUPERVISOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/responsablepordepencia/num">
+		<call-query href="getDependenciasresponsableNumResponsablepordepenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="NOMRESPONSABLE" query-param="NOMRESPONSABLE"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="RESPONSABLEALMACEN" query-param="RESPONSABLEALMACEN"/>
+			<with-param name="JEFEUNIDAD" query-param="JEFEUNIDAD"/>
+			<with-param name="ACTIVO_RECEP" query-param="ACTIVO_RECEP"/>
+			<with-param name="SUPERVISOR" query-param="SUPERVISOR"/>
+			<with-param name="SUCURSAL_SUPERVISOR" query-param="SUCURSAL_SUPERVISOR"/>
+			<with-param name="NOMBRESUPERVISOR" query-param="NOMBRESUPERVISOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableCargardependenciaresponsableQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DISTINCT DEPENDENCIA_RESPONSABLE.DEPENDENCIA, DEPENDENCIA.NOMBRE FROM DEPENDENCIA_RESPONSABLE INNER JOIN DEPENDENCIA ON DEPENDENCIA_RESPONSABLE.COMPANIA =DEPENDENCIA.COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA =DEPENDENCIA.CODIGO WHERE DEPENDENCIA_RESPONSABLE.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = :RESPONSABLE ORDER BY DEPENDENCIA_RESPONSABLE.DEPENDENCIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DEPENDENCIA":"$DEPENDENCIA","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/cargardependenciaresponsable">
+		<call-query href="getDependenciasresponsableCargardependenciaresponsableQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDependenciasresponsableJefeunidadporusuarioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DEPENDENCIA FROM DEPENDENCIA_RESPONSABLE DT LEFT JOIN USUARIO U ON DT.RESPONSABLE = U.CEDULA AND DT.SUCURSAL = U.SUCURSAL WHERE DT.COMPANIA = :COMPANIA AND U.CODIGO = :CODIGO AND DT.JEFEUNIDAD NOT IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DEPENDENCIA":"$DEPENDENCIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dependenciasresponsable/jefeunidadporusuario">
+		<call-query href="getDependenciasresponsableJefeunidadporusuarioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

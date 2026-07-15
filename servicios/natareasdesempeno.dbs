@@ -1,0 +1,42 @@
+﻿<data name="natareasdesempeno" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getNatareasdesempenoPagTodosCodareaNomareaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT NAT_AREAS_DESEMPENO.CODAREA, NAT_AREAS_DESEMPENO.NOMBRE_AREA  FROM NAT_AREAS_DESEMPENO WHERE NAT_AREAS_DESEMPENO.COMPANIA = :COMPANIA) WHERE (CASE WHEN CODAREA IS NULL THEN ' ' ELSE UPPER(CODAREA) END)  LIKE UPPER(:CODAREA || '%')  AND (CASE WHEN NOMBRE_AREA IS NULL THEN ' ' ELSE UPPER(NOMBRE_AREA) END)  LIKE UPPER( '%' || :NOMBRE_AREA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODAREA":"$CODAREA","NOMBRE_AREA":"$NOMBRE_AREA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODAREA" sqlType="STRING"/>
+		<param name="NOMBRE_AREA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="natareasdesempeno/todoscodareanomarea/pag">
+		<call-query href="getNatareasdesempenoPagTodosCodareaNomareaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODAREA" query-param="CODAREA"/>
+			<with-param name="NOMBRE_AREA" query-param="NOMBRE_AREA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatareasdesempenoNumTodosCodareaNomareaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT NAT_AREAS_DESEMPENO.CODAREA, NAT_AREAS_DESEMPENO.NOMBRE_AREA  FROM NAT_AREAS_DESEMPENO WHERE NAT_AREAS_DESEMPENO.COMPANIA = :COMPANIA) WHERE (CASE WHEN CODAREA IS NULL THEN ' ' ELSE UPPER(CODAREA) END)  LIKE UPPER(:CODAREA || '%')  AND (CASE WHEN NOMBRE_AREA IS NULL THEN ' ' ELSE UPPER(NOMBRE_AREA) END)  LIKE UPPER( '%' || :NOMBRE_AREA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODAREA" sqlType="STRING"/>
+		<param name="NOMBRE_AREA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="natareasdesempeno/todoscodareanomarea/num">
+		<call-query href="getNatareasdesempenoNumTodosCodareaNomareaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODAREA" query-param="CODAREA"/>
+			<with-param name="NOMBRE_AREA" query-param="NOMBRE_AREA"/>
+
+		</call-query>
+	</resource>
+
+</data>

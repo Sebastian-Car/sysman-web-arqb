@@ -1,0 +1,74 @@
+﻿<data name="formularios" transports="http https local">
+	<config enableOData="false" id="sysmanirisst">
+		<property name="carbon_datasource_name">SYSMANIRISST</property>
+	</config>
+	<query id="getFormulariosPagAplicacionQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  F.CODIGO_FORMULARIO,F.NOMBRE_FORMULARIO,F.DESCRIPCION_FORMULARIO,FA.RUTA  FROM FORMULARIO F INNER JOIN FORMULARIO_APLICACION FA ON( F.CODIGO_FORMULARIO=FA.FORMULARIO) WHERE FA.APLICACION = :APLICACION ORDER BY CODIGO_FORMULARIO) WHERE (CASE WHEN CODIGO_FORMULARIO IS NULL THEN ' ' ELSE UPPER(CODIGO_FORMULARIO) END)  LIKE UPPER(:CODIGO_FORMULARIO || '%')  AND (CASE WHEN NOMBRE_FORMULARIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_FORMULARIO) END)  LIKE UPPER( '%' || :NOMBRE_FORMULARIO || '%')  AND (CASE WHEN DESCRIPCION_FORMULARIO IS NULL THEN ' ' ELSE UPPER(DESCRIPCION_FORMULARIO) END)  LIKE UPPER( '%' || :DESCRIPCION_FORMULARIO || '%')  AND (CASE WHEN RUTA IS NULL THEN ' ' ELSE UPPER(RUTA) END)  LIKE UPPER( '%' || :RUTA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO_FORMULARIO":"$CODIGO_FORMULARIO(type:integer)","NOMBRE_FORMULARIO":"$NOMBRE_FORMULARIO","DESCRIPCION_FORMULARIO":"$DESCRIPCION_FORMULARIO","RUTA":"$RUTA"}]}}		</result>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="CODIGO_FORMULARIO" sqlType="STRING"/>
+		<param name="NOMBRE_FORMULARIO" sqlType="STRING"/>
+		<param name="DESCRIPCION_FORMULARIO" sqlType="STRING"/>
+		<param name="RUTA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="formularios/aplicacion/pag">
+		<call-query href="getFormulariosPagAplicacionQuery">
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="CODIGO_FORMULARIO" query-param="CODIGO_FORMULARIO"/>
+			<with-param name="NOMBRE_FORMULARIO" query-param="NOMBRE_FORMULARIO"/>
+			<with-param name="DESCRIPCION_FORMULARIO" query-param="DESCRIPCION_FORMULARIO"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getFormulariosNumAplicacionQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  F.CODIGO_FORMULARIO,F.NOMBRE_FORMULARIO,F.DESCRIPCION_FORMULARIO,FA.RUTA  FROM FORMULARIO F INNER JOIN FORMULARIO_APLICACION FA ON( F.CODIGO_FORMULARIO=FA.FORMULARIO) WHERE FA.APLICACION = :APLICACION ORDER BY CODIGO_FORMULARIO) WHERE (CASE WHEN CODIGO_FORMULARIO IS NULL THEN ' ' ELSE UPPER(CODIGO_FORMULARIO) END)  LIKE UPPER(:CODIGO_FORMULARIO || '%')  AND (CASE WHEN NOMBRE_FORMULARIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_FORMULARIO) END)  LIKE UPPER( '%' || :NOMBRE_FORMULARIO || '%')  AND (CASE WHEN DESCRIPCION_FORMULARIO IS NULL THEN ' ' ELSE UPPER(DESCRIPCION_FORMULARIO) END)  LIKE UPPER( '%' || :DESCRIPCION_FORMULARIO || '%')  AND (CASE WHEN RUTA IS NULL THEN ' ' ELSE UPPER(RUTA) END)  LIKE UPPER( '%' || :RUTA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="CODIGO_FORMULARIO" sqlType="STRING"/>
+		<param name="NOMBRE_FORMULARIO" sqlType="STRING"/>
+		<param name="DESCRIPCION_FORMULARIO" sqlType="STRING"/>
+		<param name="RUTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="formularios/aplicacion/num">
+		<call-query href="getFormulariosNumAplicacionQuery">
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="CODIGO_FORMULARIO" query-param="CODIGO_FORMULARIO"/>
+			<with-param name="NOMBRE_FORMULARIO" query-param="NOMBRE_FORMULARIO"/>
+			<with-param name="DESCRIPCION_FORMULARIO" query-param="DESCRIPCION_FORMULARIO"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+
+		</call-query>
+	</resource>
+	<query id="getFormulariosTodoQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  CODIGO_FORMULARIO,(CASE MODAL WHEN 0 THEN 'false' ELSE 'true' END) MODAL FROM FORMULARIO WHERE CODIGO_FORMULARIO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO_FORMULARIO":"$CODIGO_FORMULARIO(type:integer)","MODAL":"$MODAL(type:boolean)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="formularios/todo">
+		<call-query href="getFormulariosTodoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getFormulariosPorCodigoQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  NOMBRE_FORMULARIO , RUTA ,(CASE MODAL WHEN 0 THEN 'false' ELSE 'true' END) MODAL, ANCHO_MODAL , ALTO_MODAL  FROM FORMULARIO WHERE CODIGO_FORMULARIO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE_FORMULARIO":"$NOMBRE_FORMULARIO","RUTA":"$RUTA","MODAL":"$MODAL(type:boolean)","ANCHO_MODAL":"$ANCHO_MODAL(type:double)","ALTO_MODAL":"$ALTO_MODAL(type:double)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="formularios/porcodigo">
+		<call-query href="getFormulariosPorCodigoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

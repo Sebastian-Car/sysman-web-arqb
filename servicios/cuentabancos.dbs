@@ -1,0 +1,383 @@
+﻿<data name="cuentabancos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getCuentabancosExistePorIdContableQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT 'X' REGISTRO  FROM CUENTABANCOS WHERE COMPANIA = :COMPANIA AND IDCONTABLE = :IDCONTABLE AND ANO = :ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"REGISTRO":"$REGISTRO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="IDCONTABLE" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cuentabancos/existeporidcontable">
+		<call-query href="getCuentabancosExistePorIdContableQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="IDCONTABLE" query-param="IDCONTABLE"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCuentabancosPagConfiguracionCuentasBancariasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CUENTABANCOS.COMPANIA, CUENTABANCOS.ANO, CUENTABANCOS.IDCONTABLE, CUENTABANCOS.CUENTANUMERO, CUENTABANCOS.BANCO,(CASE CUENTABANCOS.ESOFICIAL WHEN 0 THEN 'false' ELSE 'true' END) ESOFICIAL, CUENTABANCOS.CLASECUENTA, CUENTABANCOS.TIPO_CF, CUENTABANCOS.TIPO_SALUD, CASE CUENTABANCOS.TIPO_SALUD WHEN 'RS' THEN 'REGIMEN SUBSIDIADO' WHEN 'SPC' THEN 'SALUD PUBLICA COLECTIVA' WHEN 'PSO' THEN 'PRESTACION DEL SERVICIO OFERTA' WHEN 'OGSI' THEN 'OTROS GASTOS SALUD INVERSION' WHEN 'OGSF' THEN 'OTROS GASTOS SALUD FUNCIONAMIENTO' ELSE ' ' END NOMBRETIPOSALUD, FUENTE_RECURSOS.NOMBRE NOMBREFUENTE, CLASECUENTABANCO.NOMBRE NOMBRETIPOCUENTA, BANCO.NOMBREBANCO, CASE CUENTABANCOS.TIPO_CF WHEN 'EF' THEN 'SALDO_ENCARGOS_FIDUCIARIOS' WHEN 'IT' THEN 'INVERSIONES_TEMPORALES' WHEN 'RT' THEN 'RECURSOS_TERCEROS' ELSE ' ' END NOMBRECIERREF FROM CUENTABANCOS LEFT JOIN FUENTE_RECURSOS ON CUENTABANCOS.COMPANIA = FUENTE_RECURSOS.COMPANIA AND CUENTABANCOS.ANO = FUENTE_RECURSOS.ANO AND CUENTABANCOS.RECURSOS = FUENTE_RECURSOS.CODIGO INNER JOIN BANCO ON CUENTABANCOS.COMPANIA = BANCO.COMPANIA AND CUENTABANCOS.BANCO = BANCO.BANCO INNER JOIN CLASECUENTABANCO ON CUENTABANCOS.CLASECUENTA = CLASECUENTABANCO.CODIGO WHERE CUENTABANCOS.COMPANIA =:COMPANIA AND CUENTABANCOS.ANO =:ANO) INI WHERE (CASE WHEN IDCONTABLE IS NULL THEN ' ' ELSE UPPER(IDCONTABLE) END) LIKE UPPER(CONCAT(:IDCONTABLE, '%')) AND (CASE WHEN CUENTANUMERO IS NULL THEN ' ' ELSE UPPER(CUENTANUMERO) END) LIKE UPPER(CONCAT(:CUENTANUMERO, '%')) AND (CASE WHEN ESOFICIAL IS NULL THEN ' ' ELSE UPPER(ESOFICIAL) END) LIKE UPPER(CONCAT(:ESOFICIAL, '%')) AND (CASE WHEN NOMBRETIPOSALUD IS NULL THEN ' ' ELSE UPPER(NOMBRETIPOSALUD) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRETIPOSALUD), '%')) AND (CASE WHEN NOMBREFUENTE IS NULL THEN ' ' ELSE UPPER(NOMBREFUENTE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBREFUENTE), '%')) AND (CASE WHEN NOMBRETIPOCUENTA IS NULL THEN ' ' ELSE UPPER(NOMBRETIPOCUENTA) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRETIPOCUENTA), '%')) AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBREBANCO), '%')) AND (CASE WHEN NOMBRECIERREF IS NULL THEN ' ' ELSE UPPER(NOMBRECIERREF) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRECIERREF), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","IDCONTABLE":"$IDCONTABLE","CUENTANUMERO":"$CUENTANUMERO","BANCO":"$BANCO","ESOFICIAL":"$ESOFICIAL(type:boolean)","CLASECUENTA":"$CLASECUENTA","TIPO_CF":"$TIPO_CF","TIPO_SALUD":"$TIPO_SALUD","NOMBRETIPOSALUD":"$NOMBRETIPOSALUD","NOMBREFUENTE":"$NOMBREFUENTE","NOMBRETIPOCUENTA":"$NOMBRETIPOCUENTA","NOMBREBANCO":"$NOMBREBANCO","NOMBRECIERREF":"$NOMBRECIERREF"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="IDCONTABLE" sqlType="STRING"/>
+		<param name="CUENTANUMERO" sqlType="STRING"/>
+		<param name="ESOFICIAL" sqlType="STRING"/>
+		<param name="NOMBRETIPOSALUD" sqlType="STRING"/>
+		<param name="NOMBREFUENTE" sqlType="STRING"/>
+		<param name="NOMBRETIPOCUENTA" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="NOMBRECIERREF" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cuentabancos/configuracioncuentasbancarias/pag">
+		<call-query href="getCuentabancosPagConfiguracionCuentasBancariasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="IDCONTABLE" query-param="IDCONTABLE"/>
+			<with-param name="CUENTANUMERO" query-param="CUENTANUMERO"/>
+			<with-param name="ESOFICIAL" query-param="ESOFICIAL"/>
+			<with-param name="NOMBRETIPOSALUD" query-param="NOMBRETIPOSALUD"/>
+			<with-param name="NOMBREFUENTE" query-param="NOMBREFUENTE"/>
+			<with-param name="NOMBRETIPOCUENTA" query-param="NOMBRETIPOCUENTA"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="NOMBRECIERREF" query-param="NOMBRECIERREF"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCuentabancosNumConfiguracionCuentasBancariasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CUENTABANCOS.COMPANIA, CUENTABANCOS.ANO, CUENTABANCOS.IDCONTABLE, CUENTABANCOS.CUENTANUMERO, CUENTABANCOS.BANCO,(CASE CUENTABANCOS.ESOFICIAL WHEN 0 THEN 'false' ELSE 'true' END) ESOFICIAL, CUENTABANCOS.CLASECUENTA, CUENTABANCOS.TIPO_CF, CUENTABANCOS.TIPO_SALUD, CASE CUENTABANCOS.TIPO_SALUD WHEN 'RS' THEN 'REGIMEN SUBSIDIADO' WHEN 'SPC' THEN 'SALUD PUBLICA COLECTIVA' WHEN 'PSO' THEN 'PRESTACION DEL SERVICIO OFERTA' WHEN 'OGSI' THEN 'OTROS GASTOS SALUD INVERSION' WHEN 'OGSF' THEN 'OTROS GASTOS SALUD FUNCIONAMIENTO' ELSE ' ' END NOMBRETIPOSALUD, FUENTE_RECURSOS.NOMBRE NOMBREFUENTE, CLASECUENTABANCO.NOMBRE NOMBRETIPOCUENTA, BANCO.NOMBREBANCO, CASE CUENTABANCOS.TIPO_CF WHEN 'EF' THEN 'SALDO_ENCARGOS_FIDUCIARIOS' WHEN 'IT' THEN 'INVERSIONES_TEMPORALES' WHEN 'RT' THEN 'RECURSOS_TERCEROS' ELSE ' ' END NOMBRECIERREF FROM CUENTABANCOS LEFT JOIN FUENTE_RECURSOS ON CUENTABANCOS.COMPANIA = FUENTE_RECURSOS.COMPANIA AND CUENTABANCOS.ANO = FUENTE_RECURSOS.ANO AND CUENTABANCOS.RECURSOS = FUENTE_RECURSOS.CODIGO INNER JOIN BANCO ON CUENTABANCOS.COMPANIA = BANCO.COMPANIA AND CUENTABANCOS.BANCO = BANCO.BANCO INNER JOIN CLASECUENTABANCO ON CUENTABANCOS.CLASECUENTA = CLASECUENTABANCO.CODIGO WHERE CUENTABANCOS.COMPANIA =:COMPANIA AND CUENTABANCOS.ANO =:ANO) INI WHERE (CASE WHEN IDCONTABLE IS NULL THEN ' ' ELSE UPPER(IDCONTABLE) END) LIKE UPPER(CONCAT(:IDCONTABLE, '%')) AND (CASE WHEN CUENTANUMERO IS NULL THEN ' ' ELSE UPPER(CUENTANUMERO) END) LIKE UPPER(CONCAT(:CUENTANUMERO, '%')) AND (CASE WHEN ESOFICIAL IS NULL THEN ' ' ELSE UPPER(ESOFICIAL) END) LIKE UPPER(CONCAT(:ESOFICIAL, '%')) AND (CASE WHEN NOMBRETIPOSALUD IS NULL THEN ' ' ELSE UPPER(NOMBRETIPOSALUD) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRETIPOSALUD), '%')) AND (CASE WHEN NOMBREFUENTE IS NULL THEN ' ' ELSE UPPER(NOMBREFUENTE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBREFUENTE), '%')) AND (CASE WHEN NOMBRETIPOCUENTA IS NULL THEN ' ' ELSE UPPER(NOMBRETIPOCUENTA) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRETIPOCUENTA), '%')) AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBREBANCO), '%')) AND (CASE WHEN NOMBRECIERREF IS NULL THEN ' ' ELSE UPPER(NOMBRECIERREF) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRECIERREF), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="IDCONTABLE" sqlType="STRING"/>
+		<param name="CUENTANUMERO" sqlType="STRING"/>
+		<param name="ESOFICIAL" sqlType="STRING"/>
+		<param name="NOMBRETIPOSALUD" sqlType="STRING"/>
+		<param name="NOMBREFUENTE" sqlType="STRING"/>
+		<param name="NOMBRETIPOCUENTA" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="NOMBRECIERREF" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cuentabancos/configuracioncuentasbancarias/num">
+		<call-query href="getCuentabancosNumConfiguracionCuentasBancariasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="IDCONTABLE" query-param="IDCONTABLE"/>
+			<with-param name="CUENTANUMERO" query-param="CUENTANUMERO"/>
+			<with-param name="ESOFICIAL" query-param="ESOFICIAL"/>
+			<with-param name="NOMBRETIPOSALUD" query-param="NOMBRETIPOSALUD"/>
+			<with-param name="NOMBREFUENTE" query-param="NOMBREFUENTE"/>
+			<with-param name="NOMBRETIPOCUENTA" query-param="NOMBRETIPOCUENTA"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="NOMBRECIERREF" query-param="NOMBRECIERREF"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCuentabancosConfiguracionCuentasBancarias" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CUENTABANCOS SET BANCO=:BANCO, ESOFICIAL=:ESOFICIAL, CLASECUENTA=:CLASECUENTA, TIPO_CF=:TIPO_CF, TIPO_SALUD=:TIPO_SALUD, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CUENTABANCOS.COMPANIA= :KEY_COMPANIA AND CUENTABANCOS.ANO= :KEY_ANO AND CUENTABANCOS.IDCONTABLE= :KEY_IDCONTABLE AND CUENTABANCOS.BANCO= :KEY_BANCO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="ESOFICIAL" sqlType="STRING"/>
+		<param name="CLASECUENTA" sqlType="STRING"/>
+		<param name="TIPO_CF" sqlType="STRING"/>
+		<param name="TIPO_SALUD" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_IDCONTABLE" sqlType="STRING"/>
+		<param name="KEY_BANCO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cuentabancos/configuracioncuentasbancarias">
+		<call-query href="updateCuentabancosConfiguracionCuentasBancarias">
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="ESOFICIAL" query-param="ESOFICIAL"/>
+			<with-param name="CLASECUENTA" query-param="CLASECUENTA"/>
+			<with-param name="TIPO_CF" query-param="TIPO_CF"/>
+			<with-param name="TIPO_SALUD" query-param="TIPO_SALUD"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_IDCONTABLE" query-param="KEY_IDCONTABLE"/>
+			<with-param name="KEY_BANCO" query-param="KEY_BANCO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCuentabancosCuentaBancoAsobancariaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT IDCONTABLE FROM BANCO INNER JOIN CUENTABANCOS ON BANCO.COMPANIA = CUENTABANCOS.COMPANIA AND BANCO.BANCO = CUENTABANCOS.BANCO WHERE BANCO.COMPANIA = :COMPANIA AND CUENTABANCOS.ANO = EXTRACT(YEAR FROM SYSDATE) AND BANCO.BANCOASOBANCARIA = :BANCO AND CLASECUENTA IN ('C') AND ESTADO IN ('A') AND ROWNUM = 1</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"IDCONTABLE":"$IDCONTABLE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cuentabancos/cuentabancoasobancaria">
+		<call-query href="getCuentabancosCuentaBancoAsobancariaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCuentabancosGetcuentasbancoxcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT C.CUENTANUMERO FROM CUENTABANCOS C INNER JOIN BANCO B ON C.BANCO = B.BANCO AND C.COMPANIA = B.COMPANIA WHERE C.COMPANIA =:COMPANIA AND C.ANO =:ANO AND C.CUENTANUMERO IS NOT NULL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTANUMERO":"$CUENTANUMERO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cuentabancos/getcuentasbancoxcompania">
+		<call-query href="getCuentabancosGetcuentasbancoxcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertCuentabancos" keyColumns="COMPANIA,ANO,IDCONTABLE,BANCO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CUENTABANCOS (COMPANIA, ANO, IDCONTABLE, BANCO, SUCURSALBANCO, FECHAAPERTURA, FECHACANCELACION, TIPOCUENTA, DIRECCION, CUENTANUMERO, CLASECUENTA, RECURSOS, ESTADO, GERENTE, ESOFICIAL, CODBANCO_SIA, TIPO_CF, SGP, TELEFONO, FAX, CODIGO_ENTIDAD, PAGOBANCOLOMBIA, DOC_SIIF_BANCO, NIT_SIIF, TIPO_SALUD, DESTINO_RECURSOS, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :IDCONTABLE, :BANCO, :SUCURSALBANCO, TO_DATE(:FECHAAPERTURA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHACANCELACION,'DD/MM/YYYY HH24:MI:SS'), :TIPOCUENTA, :DIRECCION, :CUENTANUMERO, :CLASECUENTA, :RECURSOS, :ESTADO, :GERENTE, :ESOFICIAL, :CODBANCO_SIA, :TIPO_CF, :SGP, :TELEFONO, :FAX, :CODIGO_ENTIDAD, :PAGOBANCOLOMBIA, :DOC_SIIF_BANCO, :NIT_SIIF, :TIPO_SALUD, :DESTINO_RECURSOS, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_IDCONTABLE":"$IDCONTABLE","KEY_BANCO":"$BANCO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="IDCONTABLE" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param defaultValue="" name="SUCURSALBANCO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAAPERTURA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHACANCELACION" sqlType="STRING"/>
+		<param defaultValue="" name="TIPOCUENTA" sqlType="STRING"/>
+		<param defaultValue="" name="DIRECCION" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTANUMERO" sqlType="STRING"/>
+		<param defaultValue="" name="CLASECUENTA" sqlType="STRING"/>
+		<param defaultValue="" name="RECURSOS" sqlType="STRING"/>
+		<param defaultValue="A" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="GERENTE" sqlType="STRING"/>
+		<param defaultValue="0" name="ESOFICIAL" sqlType="STRING"/>
+		<param defaultValue="" name="CODBANCO_SIA" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_CF" sqlType="STRING"/>
+		<param defaultValue="0" name="SGP" sqlType="STRING"/>
+		<param defaultValue="" name="TELEFONO" sqlType="STRING"/>
+		<param defaultValue="" name="FAX" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGO_ENTIDAD" sqlType="STRING"/>
+		<param defaultValue="0" name="PAGOBANCOLOMBIA" sqlType="STRING"/>
+		<param defaultValue="" name="DOC_SIIF_BANCO" sqlType="STRING"/>
+		<param defaultValue="" name="NIT_SIIF" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_SALUD" sqlType="STRING"/>
+		<param defaultValue="" name="DESTINO_RECURSOS" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="cuentabancos">
+		<call-query href="insertCuentabancos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="IDCONTABLE" query-param="IDCONTABLE"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="SUCURSALBANCO" query-param="SUCURSALBANCO"/>
+			<with-param name="FECHAAPERTURA" query-param="FECHAAPERTURA"/>
+			<with-param name="FECHACANCELACION" query-param="FECHACANCELACION"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="CUENTANUMERO" query-param="CUENTANUMERO"/>
+			<with-param name="CLASECUENTA" query-param="CLASECUENTA"/>
+			<with-param name="RECURSOS" query-param="RECURSOS"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="GERENTE" query-param="GERENTE"/>
+			<with-param name="ESOFICIAL" query-param="ESOFICIAL"/>
+			<with-param name="CODBANCO_SIA" query-param="CODBANCO_SIA"/>
+			<with-param name="TIPO_CF" query-param="TIPO_CF"/>
+			<with-param name="SGP" query-param="SGP"/>
+			<with-param name="TELEFONO" query-param="TELEFONO"/>
+			<with-param name="FAX" query-param="FAX"/>
+			<with-param name="CODIGO_ENTIDAD" query-param="CODIGO_ENTIDAD"/>
+			<with-param name="PAGOBANCOLOMBIA" query-param="PAGOBANCOLOMBIA"/>
+			<with-param name="DOC_SIIF_BANCO" query-param="DOC_SIIF_BANCO"/>
+			<with-param name="NIT_SIIF" query-param="NIT_SIIF"/>
+			<with-param name="TIPO_SALUD" query-param="TIPO_SALUD"/>
+			<with-param name="DESTINO_RECURSOS" query-param="DESTINO_RECURSOS"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCuentabancos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CUENTABANCOS WHERE CUENTABANCOS.COMPANIA= :KEY_COMPANIA AND CUENTABANCOS.ANO= :KEY_ANO AND CUENTABANCOS.IDCONTABLE= :KEY_IDCONTABLE AND CUENTABANCOS.BANCO= :KEY_BANCO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_IDCONTABLE" sqlType="STRING"/>
+		<param name="KEY_BANCO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="cuentabancos">
+		<call-query href="deleteCuentabancos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_IDCONTABLE" query-param="KEY_IDCONTABLE"/>
+			<with-param name="KEY_BANCO" query-param="KEY_BANCO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCuentabancosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, ANO, BANCO, IDCONTABLE, TO_CHAR(FECHAAPERTURA,'DD/MM/YYYY HH24:MI:SS') FECHAAPERTURA, TO_CHAR(FECHACANCELACION,'DD/MM/YYYY HH24:MI:SS') FECHACANCELACION, CASE TIPOCUENTA WHEN 'C' THEN 'Cuentas Corrientes' WHEN 'A' THEN 'Cuentas Ahorros' WHEN 'E' THEN 'Encargo Fiduciario' WHEN 'I' THEN 'Infis' WHEN 'X' THEN 'Otros Depósitos' WHEN 'Y' THEN 'Otros Entidad' WHEN 'R' THEN 'Rendimientos' WHEN 'D' THEN 'Cdt' WHEN 'T' THEN 'Tes' WHEN 'N' THEN 'Carteras Colectivas' WHEN 'Z' THEN 'Otras Inversiones' END TIPOCUENTA, TIPO_SALUD  FROM CUENTABANCOS WHERE COMPANIA = :COMPANIA AND IDCONTABLE = :IDCONTABLE AND ANO = :ANO) WHERE (CASE WHEN IDCONTABLE IS NULL THEN ' ' ELSE UPPER(IDCONTABLE) END)  LIKE UPPER(:IDCONTABLE || '%')  AND (CASE WHEN FECHAAPERTURA IS NULL THEN ' ' ELSE UPPER(FECHAAPERTURA) END)  LIKE UPPER(:FECHAAPERTURA || '%')  AND (CASE WHEN FECHACANCELACION IS NULL THEN ' ' ELSE UPPER(FECHACANCELACION) END)  LIKE UPPER(:FECHACANCELACION || '%')  AND (CASE WHEN TIPOCUENTA IS NULL THEN ' ' ELSE UPPER(TIPOCUENTA) END)  LIKE UPPER( '%' || :TIPOCUENTA || '%')  AND (CASE WHEN TIPO_SALUD IS NULL THEN ' ' ELSE UPPER(TIPO_SALUD) END)  LIKE UPPER( '%' || :TIPO_SALUD || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","BANCO":"$BANCO","IDCONTABLE":"$IDCONTABLE","FECHAAPERTURA":"$FECHAAPERTURA","FECHACANCELACION":"$FECHACANCELACION","TIPOCUENTA":"$TIPOCUENTA","TIPO_SALUD":"$TIPO_SALUD"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="IDCONTABLE" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="FECHAAPERTURA" sqlType="STRING"/>
+		<param name="FECHACANCELACION" sqlType="STRING"/>
+		<param name="TIPOCUENTA" sqlType="STRING"/>
+		<param name="TIPO_SALUD" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cuentabancos">
+		<call-query href="getCuentabancosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="IDCONTABLE" query-param="IDCONTABLE"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="FECHAAPERTURA" query-param="FECHAAPERTURA"/>
+			<with-param name="FECHACANCELACION" query-param="FECHACANCELACION"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+			<with-param name="TIPO_SALUD" query-param="TIPO_SALUD"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCuentabancosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, ANO, BANCO, IDCONTABLE, TO_CHAR(FECHAAPERTURA,'DD/MM/YYYY HH24:MI:SS') FECHAAPERTURA, TO_CHAR(FECHACANCELACION,'DD/MM/YYYY HH24:MI:SS') FECHACANCELACION, CASE TIPOCUENTA WHEN 'C' THEN 'Cuentas Corrientes' WHEN 'A' THEN 'Cuentas Ahorros' WHEN 'E' THEN 'Encargo Fiduciario' WHEN 'I' THEN 'Infis' WHEN 'X' THEN 'Otros Depósitos' WHEN 'Y' THEN 'Otros Entidad' WHEN 'R' THEN 'Rendimientos' WHEN 'D' THEN 'Cdt' WHEN 'T' THEN 'Tes' WHEN 'N' THEN 'Carteras Colectivas' WHEN 'Z' THEN 'Otras Inversiones' END TIPOCUENTA, TIPO_SALUD  FROM CUENTABANCOS WHERE COMPANIA = :COMPANIA AND IDCONTABLE = :IDCONTABLE AND ANO = :ANO) WHERE (CASE WHEN IDCONTABLE IS NULL THEN ' ' ELSE UPPER(IDCONTABLE) END)  LIKE UPPER(:IDCONTABLE || '%')  AND (CASE WHEN FECHAAPERTURA IS NULL THEN ' ' ELSE UPPER(FECHAAPERTURA) END)  LIKE UPPER(:FECHAAPERTURA || '%')  AND (CASE WHEN FECHACANCELACION IS NULL THEN ' ' ELSE UPPER(FECHACANCELACION) END)  LIKE UPPER(:FECHACANCELACION || '%')  AND (CASE WHEN TIPOCUENTA IS NULL THEN ' ' ELSE UPPER(TIPOCUENTA) END)  LIKE UPPER( '%' || :TIPOCUENTA || '%')  AND (CASE WHEN TIPO_SALUD IS NULL THEN ' ' ELSE UPPER(TIPO_SALUD) END)  LIKE UPPER( '%' || :TIPO_SALUD || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="IDCONTABLE" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="FECHAAPERTURA" sqlType="STRING"/>
+		<param name="FECHACANCELACION" sqlType="STRING"/>
+		<param name="TIPOCUENTA" sqlType="STRING"/>
+		<param name="TIPO_SALUD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cuentabancos/numero">
+		<call-query href="getCuentabancosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="IDCONTABLE" query-param="IDCONTABLE"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="FECHAAPERTURA" query-param="FECHAAPERTURA"/>
+			<with-param name="FECHACANCELACION" query-param="FECHACANCELACION"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+			<with-param name="TIPO_SALUD" query-param="TIPO_SALUD"/>
+
+		</call-query>
+	</resource>
+	<query id="getCuentabancosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, ANO, IDCONTABLE, BANCO, SUCURSALBANCO,(TO_CHAR(FECHAAPERTURA,'DD/MM/YYYY HH24:MI:SS')) FECHAAPERTURA,(TO_CHAR(FECHACANCELACION,'DD/MM/YYYY HH24:MI:SS')) FECHACANCELACION, TIPOCUENTA, DIRECCION, CUENTANUMERO, CLASECUENTA, RECURSOS, ESTADO, GERENTE,(CASE ESOFICIAL WHEN 0 THEN 'false' ELSE 'true' END) ESOFICIAL, CODBANCO_SIA, TIPO_CF,(CASE SGP WHEN 0 THEN 'false' ELSE 'true' END) SGP, TELEFONO, FAX, CODIGO_ENTIDAD,(CASE PAGOBANCOLOMBIA WHEN 0 THEN 'false' ELSE 'true' END) PAGOBANCOLOMBIA, DOC_SIIF_BANCO, NIT_SIIF, TIPO_SALUD, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, DESTINO_RECURSOS  FROM CUENTABANCOS WHERE CUENTABANCOS.COMPANIA= :KEY_COMPANIA AND CUENTABANCOS.ANO= :KEY_ANO AND CUENTABANCOS.IDCONTABLE= :KEY_IDCONTABLE AND CUENTABANCOS.BANCO= :KEY_BANCO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","IDCONTABLE":"$IDCONTABLE","BANCO":"$BANCO","SUCURSALBANCO":"$SUCURSALBANCO","FECHAAPERTURA":"$FECHAAPERTURA","FECHACANCELACION":"$FECHACANCELACION","TIPOCUENTA":"$TIPOCUENTA","DIRECCION":"$DIRECCION","CUENTANUMERO":"$CUENTANUMERO","CLASECUENTA":"$CLASECUENTA","RECURSOS":"$RECURSOS","ESTADO":"$ESTADO","GERENTE":"$GERENTE","ESOFICIAL":"$ESOFICIAL(type:boolean)","CODBANCO_SIA":"$CODBANCO_SIA","TIPO_CF":"$TIPO_CF","SGP":"$SGP(type:boolean)","TELEFONO":"$TELEFONO","FAX":"$FAX","CODIGO_ENTIDAD":"$CODIGO_ENTIDAD","PAGOBANCOLOMBIA":"$PAGOBANCOLOMBIA(type:boolean)","DOC_SIIF_BANCO":"$DOC_SIIF_BANCO","NIT_SIIF":"$NIT_SIIF","TIPO_SALUD":"$TIPO_SALUD","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","DESTINO_RECURSOS":"$DESTINO_RECURSOS"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_IDCONTABLE" sqlType="STRING"/>
+		<param name="KEY_BANCO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cuentabancos/data">
+		<call-query href="getCuentabancosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_IDCONTABLE" query-param="KEY_IDCONTABLE"/>
+			<with-param name="KEY_BANCO" query-param="KEY_BANCO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCuentabancos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CUENTABANCOS SET COMPANIA=:COMPANIA, ANO=:ANO, IDCONTABLE=:IDCONTABLE, BANCO=:BANCO, SUCURSALBANCO=:SUCURSALBANCO, FECHAAPERTURA=TO_DATE(:FECHAAPERTURA,'DD/MM/YYYY HH24:MI:SS'), FECHACANCELACION=TO_DATE(:FECHACANCELACION,'DD/MM/YYYY HH24:MI:SS'), TIPOCUENTA=:TIPOCUENTA, DIRECCION=:DIRECCION, CUENTANUMERO=:CUENTANUMERO, CLASECUENTA=:CLASECUENTA, RECURSOS=:RECURSOS, ESTADO=:ESTADO, GERENTE=:GERENTE, ESOFICIAL=:ESOFICIAL, CODBANCO_SIA=:CODBANCO_SIA, TIPO_CF=:TIPO_CF, SGP=:SGP, TELEFONO=:TELEFONO, FAX=:FAX, CODIGO_ENTIDAD=:CODIGO_ENTIDAD, PAGOBANCOLOMBIA=:PAGOBANCOLOMBIA, DOC_SIIF_BANCO=:DOC_SIIF_BANCO, NIT_SIIF=:NIT_SIIF, TIPO_SALUD=:TIPO_SALUD, DESTINO_RECURSOS=:DESTINO_RECURSOS, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CUENTABANCOS.COMPANIA= :KEY_COMPANIA AND CUENTABANCOS.ANO= :KEY_ANO AND CUENTABANCOS.IDCONTABLE= :KEY_IDCONTABLE AND CUENTABANCOS.BANCO= :KEY_BANCO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="IDCONTABLE" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="SUCURSALBANCO" sqlType="STRING"/>
+		<param name="FECHAAPERTURA" sqlType="STRING"/>
+		<param name="FECHACANCELACION" sqlType="STRING"/>
+		<param name="TIPOCUENTA" sqlType="STRING"/>
+		<param name="DIRECCION" sqlType="STRING"/>
+		<param name="CUENTANUMERO" sqlType="STRING"/>
+		<param name="CLASECUENTA" sqlType="STRING"/>
+		<param name="RECURSOS" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="GERENTE" sqlType="STRING"/>
+		<param name="ESOFICIAL" sqlType="STRING"/>
+		<param name="CODBANCO_SIA" sqlType="STRING"/>
+		<param name="TIPO_CF" sqlType="STRING"/>
+		<param name="SGP" sqlType="STRING"/>
+		<param name="TELEFONO" sqlType="STRING"/>
+		<param name="FAX" sqlType="STRING"/>
+		<param name="CODIGO_ENTIDAD" sqlType="STRING"/>
+		<param name="PAGOBANCOLOMBIA" sqlType="STRING"/>
+		<param name="DOC_SIIF_BANCO" sqlType="STRING"/>
+		<param name="NIT_SIIF" sqlType="STRING"/>
+		<param name="TIPO_SALUD" sqlType="STRING"/>
+		<param name="DESTINO_RECURSOS" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_IDCONTABLE" sqlType="STRING"/>
+		<param name="KEY_BANCO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cuentabancos">
+		<call-query href="updateCuentabancos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="IDCONTABLE" query-param="IDCONTABLE"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="SUCURSALBANCO" query-param="SUCURSALBANCO"/>
+			<with-param name="FECHAAPERTURA" query-param="FECHAAPERTURA"/>
+			<with-param name="FECHACANCELACION" query-param="FECHACANCELACION"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="CUENTANUMERO" query-param="CUENTANUMERO"/>
+			<with-param name="CLASECUENTA" query-param="CLASECUENTA"/>
+			<with-param name="RECURSOS" query-param="RECURSOS"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="GERENTE" query-param="GERENTE"/>
+			<with-param name="ESOFICIAL" query-param="ESOFICIAL"/>
+			<with-param name="CODBANCO_SIA" query-param="CODBANCO_SIA"/>
+			<with-param name="TIPO_CF" query-param="TIPO_CF"/>
+			<with-param name="SGP" query-param="SGP"/>
+			<with-param name="TELEFONO" query-param="TELEFONO"/>
+			<with-param name="FAX" query-param="FAX"/>
+			<with-param name="CODIGO_ENTIDAD" query-param="CODIGO_ENTIDAD"/>
+			<with-param name="PAGOBANCOLOMBIA" query-param="PAGOBANCOLOMBIA"/>
+			<with-param name="DOC_SIIF_BANCO" query-param="DOC_SIIF_BANCO"/>
+			<with-param name="NIT_SIIF" query-param="NIT_SIIF"/>
+			<with-param name="TIPO_SALUD" query-param="TIPO_SALUD"/>
+			<with-param name="DESTINO_RECURSOS" query-param="DESTINO_RECURSOS"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_IDCONTABLE" query-param="KEY_IDCONTABLE"/>
+			<with-param name="KEY_BANCO" query-param="KEY_BANCO"/>
+
+		</call-query>
+	</resource>
+
+</data>

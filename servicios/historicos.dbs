@@ -1,0 +1,790 @@
+﻿<data name="historicos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="deleteHistoricosBorrarHistoricosPorEmpleado" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM HISTORICOS WHERE HISTORICOS.COMPANIA    = :COMPANIA AND HISTORICOS.ID_DE_PROCESO = :PROCESO AND HISTORICOS.ANO           = :ANO AND HISTORICOS.MES           = :MES AND HISTORICOS.PERIODO       = :PERIODO AND HISTORICOS.ID_DE_EMPLEADO= :ID_DE_EMPLEADO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="historicos/borrarhistoricosporempleado">
+		<call-query href="deleteHistoricosBorrarHistoricosPorEmpleado">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteHistoricosTodosOprCompaniaIdProcesoEmpleado" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM HISTORICOS WHERE HISTORICOS.COMPANIA              = :COMPANIA AND HISTORICOS.ID_DE_PROCESO          = :ID_DE_PROCESO AND HISTORICOS.ANO=:ANO AND HISTORICOS.MES=:MES AND HISTORICOS.PERIODO=:PERIODO AND HISTORICOS.ID_DE_EMPLEADO=:ID_DE_EMPLEADO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="historicos/todosoprcompaniaidprocesoempleado">
+		<call-query href="deleteHistoricosTodosOprCompaniaIdProcesoEmpleado">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosSumavalorQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT Sum(Historicos.Valor) AS SumaConcepto_  FROM Historicos LEFT JOIN periodos ON (Historicos.COMPANIA = periodos.COMPANIA) AND (Historicos.ID_DE_PROCESO = periodos.ID_DE_PROCESO) AND (Historicos.ANO = periodos.ANO) AND (Historicos.MES = periodos.MES) AND (Historicos.PERIODO = periodos.PERIODO) WHERE Historicos.COMPANIA = :COMPANIA AND periodos.ACUMULADO = -1 AND Historicos.ID_DE_EMPLEADO= :CODIGO AND HISTORICOS.ANO BETWEEN :ANOINICIAL AND :ANOFINAL AND HISTORICOS.MES BETWEEN :MESINICIAL AND :MESFINAL AND HISTORICOS.PERIODO BETWEEN :PERIODOINICIAL AND :PERIODOFINAL AND Historicos.ID_DE_CONCEPTO= :CONCEPTO AND Historicos.VALOR &lt;&gt; 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SUMACONCEPTO_":"$SUMACONCEPTO_(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ANOINICIAL" sqlType="STRING"/>
+		<param name="ANOFINAL" sqlType="STRING"/>
+		<param name="MESINICIAL" sqlType="STRING"/>
+		<param name="MESFINAL" sqlType="STRING"/>
+		<param name="PERIODOINICIAL" sqlType="STRING"/>
+		<param name="PERIODOFINAL" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/sumavalor">
+		<call-query href="getHistoricosSumavalorQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ANOINICIAL" query-param="ANOINICIAL"/>
+			<with-param name="ANOFINAL" query-param="ANOFINAL"/>
+			<with-param name="MESINICIAL" query-param="MESINICIAL"/>
+			<with-param name="MESFINAL" query-param="MESFINAL"/>
+			<with-param name="PERIODOINICIAL" query-param="PERIODOINICIAL"/>
+			<with-param name="PERIODOFINAL" query-param="PERIODOFINAL"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosSumavalorpornoceroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SUM(HISTORICOS.VALOR) AS SUMACONCEPTO  FROM HISTORICOS INNER JOIN PERIODOS ON (HISTORICOS.COMPANIA=PERIODOS.COMPANIA) AND (HISTORICOS.ID_DE_PROCESO = PERIODOS.ID_DE_PROCESO) AND (HISTORICOS.ANO = PERIODOS.ANO) AND (HISTORICOS.MES = PERIODOS.MES) AND PERIODOS.ANO = HISTORICOS.ANO AND PERIODOS.MES = HISTORICOS.MES AND PERIODOS.PERIODO = HISTORICOS.PERIODO WHERE HISTORICOS.COMPANIA = :COMPANIA AND HISTORICOS.ANO BETWEEN :ANOINICIAL AND :ANOFINAL AND HISTORICOS.MES BETWEEN :MESINICIAL AND :MESFINAL AND HISTORICOS.PERIODO BETWEEN :PERIODOINICIAL AND :PERIODOFINAL AND HISTORICOS.ID_DE_EMPLEADO = :CODIGO AND HISTORICOS.ID_DE_CONCEPTO= :CONCEPTO AND PERIODOS.ACUMULADO NOT IN (0) AND HISTORICOS.VALOR NOT IN (0) GROUP BY HISTORICOS.ANO,HISTORICOS.MES</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SUMACONCEPTO":"$SUMACONCEPTO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANOINICIAL" sqlType="STRING"/>
+		<param name="ANOFINAL" sqlType="STRING"/>
+		<param name="MESINICIAL" sqlType="STRING"/>
+		<param name="MESFINAL" sqlType="STRING"/>
+		<param name="PERIODOINICIAL" sqlType="STRING"/>
+		<param name="PERIODOFINAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/sumavalorpornocero">
+		<call-query href="getHistoricosSumavalorpornoceroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANOINICIAL" query-param="ANOINICIAL"/>
+			<with-param name="ANOFINAL" query-param="ANOFINAL"/>
+			<with-param name="MESINICIAL" query-param="MESINICIAL"/>
+			<with-param name="MESFINAL" query-param="MESFINAL"/>
+			<with-param name="PERIODOINICIAL" query-param="PERIODOINICIAL"/>
+			<with-param name="PERIODOFINAL" query-param="PERIODOFINAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteHistoricosTodosporempleadocalculo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE  FROM HISTORICOS WHERE HISTORICOS.COMPANIA          = :COMPANIA AND HISTORICOS.ID_DE_PROCESO       =:PROCESO AND HISTORICOS.ANO                 =:ANO AND HISTORICOS.MES                 =:MES AND HISTORICOS.PERIODO             =:PERIODO AND HISTORICOS.ID_DE_EMPLEADO IN  (       SELECT DISTINCT PERSONAL.ID_DE_EMPLEADO       FROM   PERSONAL, PERIODOS       WHERE PERSONAL.COMPANIA = :COMPANIA       AND PERSONAL.ID_DE_EMPLEADO BETWEEN :EMPINICIAL AND :EMPFINAL       AND PERSONAL.DEPENDENCIA BETWEEN :DEPENDENCIAINI AND :DEPENDENCIAFIN       AND PERSONAL.ID_DE_TIPO BETWEEN :TIPOINI AND :TIPOFIN       AND PERSONAL.ID_CENTRO_DE_COSTO BETWEEN :CENTROINI  AND :CENTROFIN       AND PERIODOS.COMPANIA            =:COMPANIA       AND PERIODOS.ID_DE_PROCESO       =:PROCESO       AND PERIODOS.ANO                 =:ANO       AND PERIODOS.MES                 =:MES       AND PERIODOS.PERIODO             =:PERIODO       AND ( PERSONAL.FECHA_DE_INGRESO &lt;= PERIODOS.FECHAFINAL       AND PERSONAL.ESTADO_ACTUAL      &lt;&gt; 3        OR PERSONAL.FECHA_DE_RETIRO     &gt;=PERIODOS.FECHAFINAL       AND PERSONAL.FECHA_DE_INGRESO   &lt;=PERIODOS.FECHAINICIO       AND PERSONAL.ESTADO_ACTUAL       = 3 ) )</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="EMPINICIAL" sqlType="STRING"/>
+		<param name="EMPFINAL" sqlType="STRING"/>
+		<param name="DEPENDENCIAINI" sqlType="STRING"/>
+		<param name="DEPENDENCIAFIN" sqlType="STRING"/>
+		<param name="TIPOINI" sqlType="STRING"/>
+		<param name="TIPOFIN" sqlType="STRING"/>
+		<param name="CENTROINI" sqlType="STRING"/>
+		<param name="CENTROFIN" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="historicos/todosporempleadocalculo">
+		<call-query href="deleteHistoricosTodosporempleadocalculo">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="EMPINICIAL" query-param="EMPINICIAL"/>
+			<with-param name="EMPFINAL" query-param="EMPFINAL"/>
+			<with-param name="DEPENDENCIAINI" query-param="DEPENDENCIAINI"/>
+			<with-param name="DEPENDENCIAFIN" query-param="DEPENDENCIAFIN"/>
+			<with-param name="TIPOINI" query-param="TIPOINI"/>
+			<with-param name="TIPOFIN" query-param="TIPOFIN"/>
+			<with-param name="CENTROINI" query-param="CENTROINI"/>
+			<with-param name="CENTROFIN" query-param="CENTROFIN"/>
+
+		</call-query>
+	</resource>
+	<query id="insertHistoricosEmpleadocalculo" keyColumns="COMPANIA,ID_DE_PROCESO,ANO,MES,PERIODO,ID_DE_EMPLEADO,ID_DE_CONCEPTO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO HISTORICOS (COMPANIA, ID_DE_PROCESO, ANO, MES, PERIODO, ID_DE_EMPLEADO, ID_DE_CONCEPTO, VALOR, FECHA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ID_DE_PROCESO, :ANO, :MES, :PERIODO, :ID_DE_EMPLEADO, :ID_DE_CONCEPTO, :VALOR, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_DE_PROCESO":"$ID_DE_PROCESO(type:integer)","KEY_ANO":"$ANO(type:integer)","KEY_MES":"$MES(type:integer)","KEY_PERIODO":"$PERIODO(type:integer)","KEY_ID_DE_EMPLEADO":"$ID_DE_EMPLEADO(type:integer)","KEY_ID_DE_CONCEPTO":"$ID_DE_CONCEPTO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="ID_DE_CONCEPTO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="historicos/empleadocalculo">
+		<call-query href="insertHistoricosEmpleadocalculo">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="ID_DE_CONCEPTO" query-param="ID_DE_CONCEPTO"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosAcumconceptocalcnominaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT SUM(HISTORICOS.VALOR) SUMACONCEPTO, COUNT(HISTORICOS.VALOR) CUENTACONCEPTO FROM HISTORICOS LEFT JOIN PERIODOS ON ( HISTORICOS.COMPANIA = PERIODOS.COMPANIA ) AND ( HISTORICOS.ID_DE_PROCESO = PERIODOS.ID_DE_PROCESO ) AND ( HISTORICOS.ANO = PERIODOS.ANO ) AND ( HISTORICOS.MES = PERIODOS.MES ) AND ( HISTORICOS.PERIODO = PERIODOS.PERIODO ) WHERE HISTORICOS.COMPANIA =:COMPANIA AND PERIODOS.ACUMULADO &lt;&gt; 0 AND HISTORICOS.ID_DE_EMPLEADO =:EMPLEADO AND CONCAT( HISTORICOS.ANO , CONCAT( '-' ,CONCAT( HISTORICOS.MES ,CONCAT( '-', HISTORICOS.PERIODO )))) BETWEEN :PERIODOIN AND :PERIODOFIN AND HISTORICOS.ID_DE_CONCEPTO =:CONCEPTO AND HISTORICOS.VALOR &lt;&gt; 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SUMACONCEPTO":"$SUMACONCEPTO(type:double)","CUENTACONCEPTO":"$CUENTACONCEPTO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="EMPLEADO" sqlType="STRING"/>
+		<param name="PERIODOIN" sqlType="STRING"/>
+		<param name="PERIODOFIN" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/acumconceptocalcnomina">
+		<call-query href="getHistoricosAcumconceptocalcnominaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="EMPLEADO" query-param="EMPLEADO"/>
+			<with-param name="PERIODOIN" query-param="PERIODOIN"/>
+			<with-param name="PERIODOFIN" query-param="PERIODOFIN"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosAcumcalcnominaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT SUM(HISTORICOS.VALOR) SUMACONCEPTO, ID_DE_CONCEPTO FROM HISTORICOS LEFT JOIN PERIODOS ON ( HISTORICOS.COMPANIA = PERIODOS.COMPANIA ) AND ( HISTORICOS.ID_DE_PROCESO = PERIODOS.ID_DE_PROCESO ) AND ( HISTORICOS.ANO = PERIODOS.ANO ) AND ( HISTORICOS.MES = PERIODOS.MES ) AND ( HISTORICOS.PERIODO = PERIODOS.PERIODO ) WHERE HISTORICOS.COMPANIA =:COMPANIA AND PERIODOS.ACUMULADO &lt;&gt; 0 AND HISTORICOS.ID_DE_EMPLEADO =:EMPLEADO AND CONCAT( HISTORICOS.ANO , CONCAT( '-' ,CONCAT( HISTORICOS.MES , CONCAT( '-' , HISTORICOS.PERIODO )))) BETWEEN :PERIODOIN AND :PERIODOFIN GROUP BY ID_DE_CONCEPTO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SUMACONCEPTO":"$SUMACONCEPTO(type:double)","ID_DE_CONCEPTO":"$ID_DE_CONCEPTO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="EMPLEADO" sqlType="STRING"/>
+		<param name="PERIODOIN" sqlType="STRING"/>
+		<param name="PERIODOFIN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/acumcalcnomina">
+		<call-query href="getHistoricosAcumcalcnominaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="EMPLEADO" query-param="EMPLEADO"/>
+			<with-param name="PERIODOIN" query-param="PERIODOIN"/>
+			<with-param name="PERIODOFIN" query-param="PERIODOFIN"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosPagFondoDeRiesgosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  PERSONAL.COMPANIA, PERSONAL.ID_DE_EMPLEADO, PERSONAL.DCTO_IDENTIDAD, PERSONAL.NUMERO_DCTO, PERSONAL.APELLIDO1, PERSONAL.APELLIDO2, PERSONAL.NOMBRES, SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '035' THEN HISTORICOS.VALOR ELSE 0 END) DIASVAC, SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '350' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '351' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '352' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '353' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '354' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '355' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '358' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '367' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '368' THEN HISTORICOS.VALOR ELSE 0 END)DIASINCAPACIDAD, SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '009' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '011' THEN HISTORICOS.VALOR ELSE 0 END) TOTALDIAS, SUM(SUELDOBASICO.VALOR) SUELDO, SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '112' THEN HISTORICOS.VALOR ELSE 0 END) IBC, PATRONALES.FACTOR FACTOR, SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '111' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '' THEN HISTORICOS.VALOR ELSE 0 END) COTRIESGOS  FROM HISTORICOS INNER JOIN PERSONAL ON HISTORICOS.COMPANIA = PERSONAL.COMPANIA AND HISTORICOS.ID_DE_EMPLEADO = PERSONAL.ID_DE_EMPLEADO INNER JOIN PERSONAL_HISTORICO ON HISTORICOS.ID_DE_EMPLEADO = PERSONAL_HISTORICO.ID_DE_EMPLEADO AND HISTORICOS.MES = PERSONAL_HISTORICO.MES AND HISTORICOS.ANO = PERSONAL_HISTORICO.ANO AND HISTORICOS.ID_DE_PROCESO = PERSONAL_HISTORICO.ID_DE_PROCESO AND HISTORICOS.COMPANIA = PERSONAL_HISTORICO.COMPANIA AND HISTORICOS.PERIODO = PERSONAL_HISTORICO.PERIODO INNER JOIN PATRONALES ON PERSONAL.NUMEROPATRONAL = PATRONALES.SUCURSAL AND PERSONAL.COMPANIA = PATRONALES.COMPANIA LEFT JOIN (SELECT HISTORICOS.COMPANIA, HISTORICOS.ID_DE_PROCESO, HISTORICOS.ANO, HISTORICOS.MES, HISTORICOS.PERIODO, HISTORICOS.ID_DE_EMPLEADO, HISTORICOS.ID_DE_CONCEPTO, HISTORICOS.VALOR FROM HISTORICOS WHERE HISTORICOS.COMPANIA = :COMPANIA AND HISTORICOS.ID_DE_PROCESO = :ID_DE_PROCESO AND HISTORICOS.ANO = :ANO AND HISTORICOS.MES = :MES AND HISTORICOS.PERIODO = :PERIODO AND HISTORICOS.ID_DE_CONCEPTO = 1 )SUELDOBASICO ON HISTORICOS.COMPANIA = SUELDOBASICO.COMPANIA AND HISTORICOS.ID_DE_PROCESO = SUELDOBASICO.ID_DE_PROCESO AND HISTORICOS.ANO = SUELDOBASICO.ANO AND HISTORICOS.MES = SUELDOBASICO.MES AND HISTORICOS.PERIODO = SUELDOBASICO.PERIODO AND HISTORICOS.ID_DE_EMPLEADO = SUELDOBASICO.ID_DE_EMPLEADO AND HISTORICOS.ID_DE_CONCEPTO = SUELDOBASICO.ID_DE_CONCEPTO WHERE HISTORICOS.COMPANIA = :COMPANIA AND HISTORICOS.ANO = :ANO AND HISTORICOS.MES = :MES AND PERSONAL_HISTORICO.FONDO_RIESGOS = :FONDORIESGOS GROUP BY PERSONAL.DCTO_IDENTIDAD, PERSONAL.NUMERO_DCTO, PERSONAL.APELLIDO1, PERSONAL.APELLIDO2, PERSONAL.NOMBRES, PATRONALES.FACTOR, PERSONAL_HISTORICO.FONDO_RIESGOS, HISTORICOS.ID_DE_EMPLEADO, PERSONAL.COMPANIA, PERSONAL.ID_DE_EMPLEADO) WHERE (CASE WHEN DCTO_IDENTIDAD IS NULL THEN ' ' ELSE UPPER(DCTO_IDENTIDAD) END)  LIKE UPPER( '%' || :DCTO_IDENTIDAD || '%')  AND (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END)  LIKE UPPER(:NUMERO_DCTO || '%')  AND (CASE WHEN APELLIDO1 IS NULL THEN ' ' ELSE UPPER(APELLIDO1) END)  LIKE UPPER( '%' || :APELLIDO1 || '%')  AND (CASE WHEN APELLIDO2 IS NULL THEN ' ' ELSE UPPER(APELLIDO2) END)  LIKE UPPER( '%' || :APELLIDO2 || '%')  AND (CASE WHEN NOMBRES IS NULL THEN ' ' ELSE UPPER(NOMBRES) END)  LIKE UPPER( '%' || :NOMBRES || '%')  AND (CASE WHEN DIASVAC IS NULL THEN ' ' ELSE UPPER(DIASVAC) END)  LIKE UPPER(:DIASVAC || '%')  AND (CASE WHEN DIASINCAPACIDAD IS NULL THEN ' ' ELSE UPPER(DIASINCAPACIDAD) END)  LIKE UPPER(:DIASINCAPACIDAD || '%')  AND (CASE WHEN TOTALDIAS IS NULL THEN ' ' ELSE UPPER(TOTALDIAS) END)  LIKE UPPER(:TOTALDIAS || '%')  AND (CASE WHEN SUELDO IS NULL THEN ' ' ELSE UPPER(SUELDO) END)  LIKE UPPER(:SUELDO || '%')  AND (CASE WHEN IBC IS NULL THEN ' ' ELSE UPPER(IBC) END)  LIKE UPPER(:IBC || '%')  AND (CASE WHEN FACTOR IS NULL THEN ' ' ELSE UPPER(FACTOR) END)  LIKE UPPER(:FACTOR || '%')  AND (CASE WHEN COTRIESGOS IS NULL THEN ' ' ELSE UPPER(COTRIESGOS) END)  LIKE UPPER(:COTRIESGOS || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_DE_EMPLEADO":"$ID_DE_EMPLEADO(type:integer)","DCTO_IDENTIDAD":"$DCTO_IDENTIDAD","NUMERO_DCTO":"$NUMERO_DCTO","APELLIDO1":"$APELLIDO1","APELLIDO2":"$APELLIDO2","NOMBRES":"$NOMBRES","DIASVAC":"$DIASVAC(type:integer)","DIASINCAPACIDAD":"$DIASINCAPACIDAD(type:integer)","TOTALDIAS":"$TOTALDIAS(type:integer)","SUELDO":"$SUELDO(type:integer)","IBC":"$IBC(type:integer)","FACTOR":"$FACTOR","COTRIESGOS":"$COTRIESGOS(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="FONDORIESGOS" sqlType="STRING"/>
+		<param name="DCTO_IDENTIDAD" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="APELLIDO1" sqlType="STRING"/>
+		<param name="APELLIDO2" sqlType="STRING"/>
+		<param name="NOMBRES" sqlType="STRING"/>
+		<param name="DIASVAC" sqlType="STRING"/>
+		<param name="DIASINCAPACIDAD" sqlType="STRING"/>
+		<param name="TOTALDIAS" sqlType="STRING"/>
+		<param name="SUELDO" sqlType="STRING"/>
+		<param name="IBC" sqlType="STRING"/>
+		<param name="FACTOR" sqlType="STRING"/>
+		<param name="COTRIESGOS" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="historicos/fondoderiesgos/pag">
+		<call-query href="getHistoricosPagFondoDeRiesgosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="FONDORIESGOS" query-param="FONDORIESGOS"/>
+			<with-param name="DCTO_IDENTIDAD" query-param="DCTO_IDENTIDAD"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="APELLIDO1" query-param="APELLIDO1"/>
+			<with-param name="APELLIDO2" query-param="APELLIDO2"/>
+			<with-param name="NOMBRES" query-param="NOMBRES"/>
+			<with-param name="DIASVAC" query-param="DIASVAC"/>
+			<with-param name="DIASINCAPACIDAD" query-param="DIASINCAPACIDAD"/>
+			<with-param name="TOTALDIAS" query-param="TOTALDIAS"/>
+			<with-param name="SUELDO" query-param="SUELDO"/>
+			<with-param name="IBC" query-param="IBC"/>
+			<with-param name="FACTOR" query-param="FACTOR"/>
+			<with-param name="COTRIESGOS" query-param="COTRIESGOS"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertHistoricos" keyColumns="COMPANIA,ID_DE_PROCESO,ANO,MES,PERIODO,ID_DE_EMPLEADO,ID_DE_CONCEPTO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO HISTORICOS (COMPANIA, ID_DE_PROCESO, ANO, MES, FECHA, PERIODO, ID_DE_EMPLEADO, ID_DE_CONCEPTO, VALOR, OBSERVACIONES, MANUAL, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ID_DE_PROCESO, :ANO, :MES, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :PERIODO, :ID_DE_EMPLEADO, :ID_DE_CONCEPTO, :VALOR, :OBSERVACIONES, :MANUAL, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_DE_PROCESO":"$ID_DE_PROCESO(type:integer)","KEY_ANO":"$ANO(type:integer)","KEY_MES":"$MES(type:integer)","KEY_PERIODO":"$PERIODO(type:integer)","KEY_ID_DE_EMPLEADO":"$ID_DE_EMPLEADO(type:integer)","KEY_ID_DE_CONCEPTO":"$ID_DE_CONCEPTO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="ID_DE_CONCEPTO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACIONES" sqlType="STRING"/>
+		<param defaultValue="0" name="MANUAL" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="historicos">
+		<call-query href="insertHistoricos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="ID_DE_CONCEPTO" query-param="ID_DE_CONCEPTO"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="MANUAL" query-param="MANUAL"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteHistoricos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM HISTORICOS WHERE HISTORICOS.COMPANIA= :KEY_COMPANIA AND HISTORICOS.ID_DE_PROCESO= :KEY_ID_DE_PROCESO AND HISTORICOS.ANO= :KEY_ANO AND HISTORICOS.MES= :KEY_MES AND HISTORICOS.PERIODO= :KEY_PERIODO AND HISTORICOS.ID_DE_EMPLEADO= :KEY_ID_DE_EMPLEADO AND HISTORICOS.ID_DE_CONCEPTO= :KEY_ID_DE_CONCEPTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_DE_PROCESO" sqlType="INTEGER"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_MES" sqlType="INTEGER"/>
+		<param name="KEY_PERIODO" sqlType="INTEGER"/>
+		<param name="KEY_ID_DE_EMPLEADO" sqlType="INTEGER"/>
+		<param name="KEY_ID_DE_CONCEPTO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="historicos">
+		<call-query href="deleteHistoricos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_DE_PROCESO" query-param="KEY_ID_DE_PROCESO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_MES" query-param="KEY_MES"/>
+			<with-param name="KEY_PERIODO" query-param="KEY_PERIODO"/>
+			<with-param name="KEY_ID_DE_EMPLEADO" query-param="KEY_ID_DE_EMPLEADO"/>
+			<with-param name="KEY_ID_DE_CONCEPTO" query-param="KEY_ID_DE_CONCEPTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT HISTORICOS.COMPANIA, HISTORICOS.ID_DE_PROCESO, HISTORICOS.ANO, HISTORICOS.MES, HISTORICOS.PERIODO, HISTORICOS.ID_DE_EMPLEADO, HISTORICOS.ID_DE_CONCEPTO, CONCEPTOS.NOMBRE_CONCEPTO, HISTORICOS.VALOR, HISTORICOS.OBSERVACIONES,(CASE HISTORICOS.MANUAL WHEN 0 THEN 'false' ELSE 'true' END) MANUAL, CONCEPTOS.RANGO1, CONCEPTOS.RANGO2 FROM HISTORICOS LEFT JOIN CONCEPTOS ON (HISTORICOS.COMPANIA = CONCEPTOS.COMPANIA) AND (HISTORICOS.ID_DE_CONCEPTO = CONCEPTOS.ID_DE_CONCEPTO) WHERE HISTORICOS.COMPANIA =CONCEPTOS.COMPANIA AND CONCEPTOS.COMPANIA = :COMPANIA AND HISTORICOS.ID_DE_EMPLEADO = :EMPLEADO AND HISTORICOS.ID_DE_PROCESO = :PROCESO AND HISTORICOS.ANO = :ANO AND HISTORICOS.MES = :MES AND HISTORICOS.PERIODO = :PERIODO ORDER BY HISTORICOS.ID_DE_PROCESO, HISTORICOS.ANO, HISTORICOS.MES, HISTORICOS.PERIODO, HISTORICOS.ID_DE_EMPLEADO, HISTORICOS.ID_DE_CONCEPTO) INI WHERE (CASE WHEN ID_DE_EMPLEADO IS NULL THEN ' ' ELSE UPPER(ID_DE_EMPLEADO) END) LIKE UPPER(CONCAT(:ID_DE_EMPLEADO, '%')) AND (CASE WHEN ID_DE_CONCEPTO IS NULL THEN ' ' ELSE UPPER(ID_DE_CONCEPTO) END) LIKE UPPER(CONCAT(CONCAT('%',:ID_DE_CONCEPTO), '%')) AND (CASE WHEN NOMBRE_CONCEPTO IS NULL THEN ' ' ELSE UPPER(NOMBRE_CONCEPTO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_CONCEPTO), '%')) AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END) LIKE UPPER(CONCAT(CONCAT('%',:VALOR), '%')) AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END) LIKE UPPER(CONCAT(CONCAT('%',:OBSERVACIONES), '%')) AND (CASE WHEN MANUAL IS NULL THEN ' ' ELSE UPPER(MANUAL) END) LIKE UPPER(CONCAT(CONCAT('%',:MANUAL), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_DE_PROCESO":"$ID_DE_PROCESO(type:integer)","ANO":"$ANO(type:integer)","MES":"$MES(type:integer)","PERIODO":"$PERIODO(type:integer)","ID_DE_EMPLEADO":"$ID_DE_EMPLEADO(type:integer)","ID_DE_CONCEPTO":"$ID_DE_CONCEPTO(type:integer)","NOMBRE_CONCEPTO":"$NOMBRE_CONCEPTO","VALOR":"$VALOR","OBSERVACIONES":"$OBSERVACIONES","MANUAL":"$MANUAL(type:boolean)","RANGO1":"$RANGO1","RANGO2":"$RANGO2"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="EMPLEADO" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="ID_DE_CONCEPTO" sqlType="STRING"/>
+		<param name="NOMBRE_CONCEPTO" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="MANUAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="historicos">
+		<call-query href="getHistoricosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="EMPLEADO" query-param="EMPLEADO"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="ID_DE_CONCEPTO" query-param="ID_DE_CONCEPTO"/>
+			<with-param name="NOMBRE_CONCEPTO" query-param="NOMBRE_CONCEPTO"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="MANUAL" query-param="MANUAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT HISTORICOS.COMPANIA, HISTORICOS.ID_DE_PROCESO, HISTORICOS.ANO, HISTORICOS.MES, HISTORICOS.PERIODO, HISTORICOS.ID_DE_EMPLEADO, HISTORICOS.ID_DE_CONCEPTO, CONCEPTOS.NOMBRE_CONCEPTO, HISTORICOS.VALOR, HISTORICOS.OBSERVACIONES,(CASE HISTORICOS.MANUAL WHEN 0 THEN 'false' ELSE 'true' END) MANUAL, CONCEPTOS.RANGO1, CONCEPTOS.RANGO2 FROM HISTORICOS LEFT JOIN CONCEPTOS ON (HISTORICOS.COMPANIA = CONCEPTOS.COMPANIA) AND (HISTORICOS.ID_DE_CONCEPTO = CONCEPTOS.ID_DE_CONCEPTO) WHERE HISTORICOS.COMPANIA =CONCEPTOS.COMPANIA AND CONCEPTOS.COMPANIA = :COMPANIA AND HISTORICOS.ID_DE_EMPLEADO = :EMPLEADO AND HISTORICOS.ID_DE_PROCESO = :PROCESO AND HISTORICOS.ANO = :ANO AND HISTORICOS.MES = :MES AND HISTORICOS.PERIODO = :PERIODO ORDER BY HISTORICOS.ID_DE_PROCESO, HISTORICOS.ANO, HISTORICOS.MES, HISTORICOS.PERIODO, HISTORICOS.ID_DE_EMPLEADO, HISTORICOS.ID_DE_CONCEPTO) INI WHERE (CASE WHEN ID_DE_EMPLEADO IS NULL THEN ' ' ELSE UPPER(ID_DE_EMPLEADO) END) LIKE UPPER(CONCAT(:ID_DE_EMPLEADO, '%')) AND (CASE WHEN ID_DE_CONCEPTO IS NULL THEN ' ' ELSE UPPER(ID_DE_CONCEPTO) END) LIKE UPPER(CONCAT(CONCAT('%',:ID_DE_CONCEPTO), '%')) AND (CASE WHEN NOMBRE_CONCEPTO IS NULL THEN ' ' ELSE UPPER(NOMBRE_CONCEPTO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_CONCEPTO), '%')) AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END) LIKE UPPER(CONCAT(CONCAT('%',:VALOR), '%')) AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END) LIKE UPPER(CONCAT(CONCAT('%',:OBSERVACIONES), '%')) AND (CASE WHEN MANUAL IS NULL THEN ' ' ELSE UPPER(MANUAL) END) LIKE UPPER(CONCAT(CONCAT('%',:MANUAL), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="EMPLEADO" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="ID_DE_CONCEPTO" sqlType="STRING"/>
+		<param name="NOMBRE_CONCEPTO" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="MANUAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/numero">
+		<call-query href="getHistoricosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="EMPLEADO" query-param="EMPLEADO"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="ID_DE_CONCEPTO" query-param="ID_DE_CONCEPTO"/>
+			<with-param name="NOMBRE_CONCEPTO" query-param="NOMBRE_CONCEPTO"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="MANUAL" query-param="MANUAL"/>
+
+		</call-query>
+	</resource>
+	<query id="updateHistoricos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE HISTORICOS SET ID_DE_PROCESO=:ID_DE_PROCESO, ANO=:ANO, MES=:MES, PERIODO=:PERIODO, ID_DE_EMPLEADO=:ID_DE_EMPLEADO, ID_DE_CONCEPTO=:ID_DE_CONCEPTO, VALOR=:VALOR, OBSERVACIONES=:OBSERVACIONES, MANUAL=:MANUAL, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE HISTORICOS.COMPANIA= :KEY_COMPANIA AND HISTORICOS.ID_DE_PROCESO= :KEY_ID_DE_PROCESO AND HISTORICOS.ANO= :KEY_ANO AND HISTORICOS.MES= :KEY_MES AND HISTORICOS.PERIODO= :KEY_PERIODO AND HISTORICOS.ID_DE_EMPLEADO= :KEY_ID_DE_EMPLEADO AND HISTORICOS.ID_DE_CONCEPTO= :KEY_ID_DE_CONCEPTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="ID_DE_CONCEPTO" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="MANUAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_MES" sqlType="STRING"/>
+		<param name="KEY_PERIODO" sqlType="STRING"/>
+		<param name="KEY_ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="KEY_ID_DE_CONCEPTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="historicos">
+		<call-query href="updateHistoricos">
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="ID_DE_CONCEPTO" query-param="ID_DE_CONCEPTO"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="MANUAL" query-param="MANUAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_DE_PROCESO" query-param="KEY_ID_DE_PROCESO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_MES" query-param="KEY_MES"/>
+			<with-param name="KEY_PERIODO" query-param="KEY_PERIODO"/>
+			<with-param name="KEY_ID_DE_EMPLEADO" query-param="KEY_ID_DE_EMPLEADO"/>
+			<with-param name="KEY_ID_DE_CONCEPTO" query-param="KEY_ID_DE_CONCEPTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosNumFondoDeRiesgosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  PERSONAL.COMPANIA, PERSONAL.ID_DE_EMPLEADO, PERSONAL.DCTO_IDENTIDAD, PERSONAL.NUMERO_DCTO, PERSONAL.APELLIDO1, PERSONAL.APELLIDO2, PERSONAL.NOMBRES, SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '035' THEN HISTORICOS.VALOR ELSE 0 END) DIASVAC, SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '350' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '351' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '352' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '353' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '354' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '355' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '358' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '367' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '368' THEN HISTORICOS.VALOR ELSE 0 END)DIASINCAPACIDAD, SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '009' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '011' THEN HISTORICOS.VALOR ELSE 0 END) TOTALDIAS, SUM(SUELDOBASICO.VALOR) SUELDO, SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '112' THEN HISTORICOS.VALOR ELSE 0 END) IBC, PATRONALES.FACTOR FACTOR, SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '111' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '' THEN HISTORICOS.VALOR ELSE 0 END) COTRIESGOS  FROM HISTORICOS INNER JOIN PERSONAL ON HISTORICOS.COMPANIA = PERSONAL.COMPANIA AND HISTORICOS.ID_DE_EMPLEADO = PERSONAL.ID_DE_EMPLEADO INNER JOIN PERSONAL_HISTORICO ON HISTORICOS.ID_DE_EMPLEADO = PERSONAL_HISTORICO.ID_DE_EMPLEADO AND HISTORICOS.MES = PERSONAL_HISTORICO.MES AND HISTORICOS.ANO = PERSONAL_HISTORICO.ANO AND HISTORICOS.ID_DE_PROCESO = PERSONAL_HISTORICO.ID_DE_PROCESO AND HISTORICOS.COMPANIA = PERSONAL_HISTORICO.COMPANIA AND HISTORICOS.PERIODO = PERSONAL_HISTORICO.PERIODO INNER JOIN PATRONALES ON PERSONAL.NUMEROPATRONAL = PATRONALES.SUCURSAL AND PERSONAL.COMPANIA = PATRONALES.COMPANIA LEFT JOIN (SELECT HISTORICOS.COMPANIA, HISTORICOS.ID_DE_PROCESO, HISTORICOS.ANO, HISTORICOS.MES, HISTORICOS.PERIODO, HISTORICOS.ID_DE_EMPLEADO, HISTORICOS.ID_DE_CONCEPTO, HISTORICOS.VALOR FROM HISTORICOS WHERE HISTORICOS.COMPANIA = :COMPANIA AND HISTORICOS.ID_DE_PROCESO = :ID_DE_PROCESO AND HISTORICOS.ANO = :ANO AND HISTORICOS.MES = :MES AND HISTORICOS.PERIODO = :PERIODO AND HISTORICOS.ID_DE_CONCEPTO = 1 )SUELDOBASICO ON HISTORICOS.COMPANIA = SUELDOBASICO.COMPANIA AND HISTORICOS.ID_DE_PROCESO = SUELDOBASICO.ID_DE_PROCESO AND HISTORICOS.ANO = SUELDOBASICO.ANO AND HISTORICOS.MES = SUELDOBASICO.MES AND HISTORICOS.PERIODO = SUELDOBASICO.PERIODO AND HISTORICOS.ID_DE_EMPLEADO = SUELDOBASICO.ID_DE_EMPLEADO AND HISTORICOS.ID_DE_CONCEPTO = SUELDOBASICO.ID_DE_CONCEPTO WHERE HISTORICOS.COMPANIA = :COMPANIA AND HISTORICOS.ANO = :ANO AND HISTORICOS.MES = :MES AND PERSONAL_HISTORICO.FONDO_RIESGOS = :FONDORIESGOS GROUP BY PERSONAL.DCTO_IDENTIDAD, PERSONAL.NUMERO_DCTO, PERSONAL.APELLIDO1, PERSONAL.APELLIDO2, PERSONAL.NOMBRES, PATRONALES.FACTOR, PERSONAL_HISTORICO.FONDO_RIESGOS, HISTORICOS.ID_DE_EMPLEADO, PERSONAL.COMPANIA, PERSONAL.ID_DE_EMPLEADO) WHERE (CASE WHEN DCTO_IDENTIDAD IS NULL THEN ' ' ELSE UPPER(DCTO_IDENTIDAD) END)  LIKE UPPER( '%' || :DCTO_IDENTIDAD || '%')  AND (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END)  LIKE UPPER(:NUMERO_DCTO || '%')  AND (CASE WHEN APELLIDO1 IS NULL THEN ' ' ELSE UPPER(APELLIDO1) END)  LIKE UPPER( '%' || :APELLIDO1 || '%')  AND (CASE WHEN APELLIDO2 IS NULL THEN ' ' ELSE UPPER(APELLIDO2) END)  LIKE UPPER( '%' || :APELLIDO2 || '%')  AND (CASE WHEN NOMBRES IS NULL THEN ' ' ELSE UPPER(NOMBRES) END)  LIKE UPPER( '%' || :NOMBRES || '%')  AND (CASE WHEN DIASVAC IS NULL THEN ' ' ELSE UPPER(DIASVAC) END)  LIKE UPPER(:DIASVAC || '%')  AND (CASE WHEN DIASINCAPACIDAD IS NULL THEN ' ' ELSE UPPER(DIASINCAPACIDAD) END)  LIKE UPPER(:DIASINCAPACIDAD || '%')  AND (CASE WHEN TOTALDIAS IS NULL THEN ' ' ELSE UPPER(TOTALDIAS) END)  LIKE UPPER(:TOTALDIAS || '%')  AND (CASE WHEN SUELDO IS NULL THEN ' ' ELSE UPPER(SUELDO) END)  LIKE UPPER(:SUELDO || '%')  AND (CASE WHEN IBC IS NULL THEN ' ' ELSE UPPER(IBC) END)  LIKE UPPER(:IBC || '%')  AND (CASE WHEN FACTOR IS NULL THEN ' ' ELSE UPPER(FACTOR) END)  LIKE UPPER(:FACTOR || '%')  AND (CASE WHEN COTRIESGOS IS NULL THEN ' ' ELSE UPPER(COTRIESGOS) END)  LIKE UPPER(:COTRIESGOS || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="FONDORIESGOS" sqlType="STRING"/>
+		<param name="DCTO_IDENTIDAD" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="APELLIDO1" sqlType="STRING"/>
+		<param name="APELLIDO2" sqlType="STRING"/>
+		<param name="NOMBRES" sqlType="STRING"/>
+		<param name="DIASVAC" sqlType="STRING"/>
+		<param name="DIASINCAPACIDAD" sqlType="STRING"/>
+		<param name="TOTALDIAS" sqlType="STRING"/>
+		<param name="SUELDO" sqlType="STRING"/>
+		<param name="IBC" sqlType="STRING"/>
+		<param name="FACTOR" sqlType="STRING"/>
+		<param name="COTRIESGOS" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/fondoderiesgos/num">
+		<call-query href="getHistoricosNumFondoDeRiesgosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="FONDORIESGOS" query-param="FONDORIESGOS"/>
+			<with-param name="DCTO_IDENTIDAD" query-param="DCTO_IDENTIDAD"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="APELLIDO1" query-param="APELLIDO1"/>
+			<with-param name="APELLIDO2" query-param="APELLIDO2"/>
+			<with-param name="NOMBRES" query-param="NOMBRES"/>
+			<with-param name="DIASVAC" query-param="DIASVAC"/>
+			<with-param name="DIASINCAPACIDAD" query-param="DIASINCAPACIDAD"/>
+			<with-param name="TOTALDIAS" query-param="TOTALDIAS"/>
+			<with-param name="SUELDO" query-param="SUELDO"/>
+			<with-param name="IBC" query-param="IBC"/>
+			<with-param name="FACTOR" query-param="FACTOR"/>
+			<with-param name="COTRIESGOS" query-param="COTRIESGOS"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosTotalesDeAutoliquidacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NVL(SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '035' THEN HISTORICOS.VALOR ELSE 0 END),0) DIASVAC, NVL(SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '350' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '351' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '352' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '353' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '354' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '355' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '358' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '367' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '368' THEN HISTORICOS.VALOR ELSE 0 END),0)DIASINCAPACIDAD, NVL(SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '009' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '011' THEN HISTORICOS.VALOR ELSE 0 END),0) TOTALDIAS, NVL(SUM(SUELDOBASICO.VALOR),0) SUELDO, NVL(SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '112' THEN HISTORICOS.VALOR ELSE 0 END),0) IBC, NVL(SUM( CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '111' THEN HISTORICOS.VALOR ELSE 0 END + CASE WHEN HISTORICOS.ID_DE_CONCEPTO = '' THEN HISTORICOS.VALOR ELSE 0 END),0) COTRIESGOS  FROM HISTORICOS INNER JOIN PERSONAL ON HISTORICOS.COMPANIA = PERSONAL.COMPANIA AND HISTORICOS.ID_DE_EMPLEADO = PERSONAL.ID_DE_EMPLEADO INNER JOIN PERSONAL_HISTORICO ON HISTORICOS.ID_DE_EMPLEADO = PERSONAL_HISTORICO.ID_DE_EMPLEADO AND HISTORICOS.MES = PERSONAL_HISTORICO.MES AND HISTORICOS.ANO = PERSONAL_HISTORICO.ANO AND HISTORICOS.ID_DE_PROCESO = PERSONAL_HISTORICO.ID_DE_PROCESO AND HISTORICOS.COMPANIA = PERSONAL_HISTORICO.COMPANIA AND HISTORICOS.PERIODO = PERSONAL_HISTORICO.PERIODO LEFT JOIN (SELECT HISTORICOS.COMPANIA, HISTORICOS.ID_DE_PROCESO, HISTORICOS.ANO, HISTORICOS.MES, HISTORICOS.PERIODO, HISTORICOS.ID_DE_EMPLEADO, HISTORICOS.ID_DE_CONCEPTO, HISTORICOS.VALOR FROM HISTORICOS WHERE HISTORICOS.COMPANIA = :COMPANIA AND HISTORICOS.ID_DE_PROCESO = :ID_DE_PROCESO AND HISTORICOS.ANO = :ANO AND HISTORICOS.MES = :MES AND HISTORICOS.PERIODO = :PERIODO AND HISTORICOS.ID_DE_CONCEPTO = 1 )SUELDOBASICO ON HISTORICOS.COMPANIA = SUELDOBASICO.COMPANIA AND HISTORICOS.ID_DE_PROCESO = SUELDOBASICO.ID_DE_PROCESO AND HISTORICOS.ANO = SUELDOBASICO.ANO AND HISTORICOS.MES = SUELDOBASICO.MES AND HISTORICOS.PERIODO = SUELDOBASICO.PERIODO AND HISTORICOS.ID_DE_EMPLEADO = SUELDOBASICO.ID_DE_EMPLEADO AND HISTORICOS.ID_DE_CONCEPTO = SUELDOBASICO.ID_DE_CONCEPTO WHERE HISTORICOS.COMPANIA = :COMPANIA AND HISTORICOS.ANO = :ANO AND HISTORICOS.MES = :MES AND PERSONAL_HISTORICO.FONDO_RIESGOS = :FONDORIESGOS</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DIASVAC":"$DIASVAC(type:integer)","DIASINCAPACIDAD":"$DIASINCAPACIDAD(type:integer)","TOTALDIAS":"$TOTALDIAS(type:integer)","SUELDO":"$SUELDO(type:integer)","IBC":"$IBC(type:integer)","COTRIESGOS":"$COTRIESGOS(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="FONDORIESGOS" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/totalesdeautoliquidacion">
+		<call-query href="getHistoricosTotalesDeAutoliquidacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="FONDORIESGOS" query-param="FONDORIESGOS"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosReportesFinancierosSiifQuery"  useConfig="sysmandsunist">
+		<sql>SELECT HISTORICOS.COMPANIA, CONCEPTOS.CLASE CLASE, SUM(HISTORICOS.VALOR) TOTAL, CASE WHEN NVL(CONCEPTOS.SIIF_ATRIBUTOEMPLEADO,' ') &lt;&gt; ' ' OR ( NVL(CONCEPTOS.SIIF_ATRIBUTOEMPLEADO,' ') = ' ' AND V_FONDOS.PUBLICO NOT IN ( 0 ) ) THEN 'Privado' ELSE 'Público' END TPUBLICO, CASE WHEN V_FONDOS.COMPANIA IS NULL THEN CONCEPTOS.NITCONCEPTO ELSE V_FONDOS.NOMBRE_FONDO END NOMBREFONDO, CASE WHEN NVL(CONCEPTOS.SIIF_ATRIBUTOEMPLEADO,' ') &lt;&gt; ' ' THEN CONCEPTOS.SIIF_ATRIBUTOEMPLEADO ELSE V_FONDOS.RUBRO_SIIF_EMPLEADO END RUBROS_SIIF, CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 130 ) THEN 1 ELSE CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 131 ) THEN 2 ELSE CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 132 ) THEN 3 ELSE CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 124 ) THEN 6 ELSE CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 127 ) THEN 5 ELSE CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 100, 200, 205 ) THEN 7 ELSE CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 125 ) THEN 8 ELSE CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 120 ) THEN 3 ELSE 8 END END END END END END END END ORDEN, CASE WHEN V_FONDOS.COMPANIA IS NULL THEN CONCEPTOS.NITCONCEPTO ELSE V_FONDOS.NIT END NIT FROM HISTORICOS INNER JOIN PERIODOS ON HISTORICOS.COMPANIA = PERIODOS.COMPANIA AND HISTORICOS.ID_DE_PROCESO = PERIODOS.ID_DE_PROCESO AND HISTORICOS.ANO = PERIODOS.ANO AND HISTORICOS.MES = PERIODOS.MES AND HISTORICOS.PERIODO = PERIODOS.PERIODO INNER JOIN CONCEPTOS ON HISTORICOS.COMPANIA = CONCEPTOS.COMPANIA AND HISTORICOS.ID_DE_CONCEPTO = CONCEPTOS.ID_DE_CONCEPTO INNER JOIN PERSONAL ON HISTORICOS.COMPANIA = PERSONAL.COMPANIA AND HISTORICOS.ID_DE_EMPLEADO = PERSONAL.ID_DE_EMPLEADO LEFT JOIN V_FONDOS ON PERSONAL.COMPANIA = V_FONDOS.COMPANIA AND CASE WHEN CONCEPTOS.ID_DE_CONCEPTO IN (113,130,123) THEN PERSONAL.FONDO_SALUD ELSE CASE WHEN CONCEPTOS.ID_DE_CONCEPTO IN ( 120, 131, 132 ) THEN PERSONAL.ID_DEL_FONDO ELSE CASE WHEN CONCEPTOS.ID_DE_CONCEPTO IN ( 124 ) THEN PERSONAL.FONDO_PENSION_VOL ELSE CASE WHEN CONCEPTOS.ID_DE_CONCEPTO IN ( 127 ) THEN PERSONAL.FONDO_AFC ELSE CASE WHEN CONCEPTOS.ID_DE_CONCEPTO IN ( 100, 200, 205 ) THEN PERSONAL.MEDICINA_PREPAGADA ELSE ' ' END END END END END = V_FONDOS.COD_FONDO WHERE HISTORICOS.COMPANIA =:COMPANIA AND CONCAT(HISTORICOS.ID_DE_PROCESO,CONCAT(HISTORICOS.ANO,CONCAT(HISTORICOS.MES,HISTORICOS.PERIODO) ) ) = CONCAT(:PROCESO,CONCAT (:ANO,CONCAT(:MES,:PERIODO) ) ) AND CONCEPTOS.CLASE IN (5) AND PERIODOS.ACUMULADO NOT IN (0) GROUP BY HISTORICOS.COMPANIA, CONCEPTOS.CLASE, CASE WHEN NVL(CONCEPTOS.SIIF_ATRIBUTOEMPLEADO,' ') &lt;&gt; ' ' OR ( NVL(CONCEPTOS.SIIF_ATRIBUTOEMPLEADO,' ') = ' ' AND V_FONDOS.PUBLICO NOT IN ( 0 ) ) THEN 'Privado' ELSE 'Público' END, CASE WHEN V_FONDOS.COMPANIA IS NULL THEN CONCEPTOS.NITCONCEPTO ELSE V_FONDOS.NOMBRE_FONDO END, CASE WHEN NVL(CONCEPTOS.SIIF_ATRIBUTOEMPLEADO,' ') &lt;&gt; ' ' THEN CONCEPTOS.SIIF_ATRIBUTOEMPLEADO ELSE V_FONDOS.RUBRO_SIIF_EMPLEADO END, CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 130 ) THEN 1 ELSE CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 131 ) THEN 2 ELSE CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 132 ) THEN 3 ELSE CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 124 ) THEN 6 ELSE CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 127 ) THEN 5 ELSE CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 100, 200, 205 ) THEN 7 ELSE CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 125 ) THEN 8 ELSE CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN ( 120 ) THEN 3 ELSE 8 END END END END END END END END, CASE WHEN V_FONDOS.COMPANIA IS NULL THEN CONCEPTOS.NITCONCEPTO ELSE V_FONDOS.NIT END ORDER BY CASE WHEN NVL(CONCEPTOS.SIIF_ATRIBUTOEMPLEADO,' ') &lt;&gt; ' ' THEN CONCEPTOS.SIIF_ATRIBUTOEMPLEADO ELSE V_FONDOS.RUBRO_SIIF_EMPLEADO END, CASE WHEN V_FONDOS.COMPANIA IS NULL THEN CONCEPTOS.NITCONCEPTO ELSE V_FONDOS.NIT END ASC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CLASE":"$CLASE","TOTAL":"$TOTAL(type:integer)","TPUBLICO":"$TPUBLICO","NOMBREFONDO":"$NOMBREFONDO","RUBROS_SIIF":"$RUBROS_SIIF","ORDEN":"$ORDEN(type:integer)","NIT":"$NIT"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/reportesfinancierossiif">
+		<call-query href="getHistoricosReportesFinancierosSiifQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosPagPersonalEmpleadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DISTINCT PERSONAL.ID_DE_EMPLEADO, CONCAT(APELLIDO1,CONCAT(' ',CONCAT(APELLIDO2,CONCAT(' ',NOMBRES) ) ) ) NOMBRECOMPLETO, PERSONAL.ESTADO_ACTUAL, PERSONAL.NUMERO_DCTO, PERSONAL.COMPANIA, HISTORICOS.ANO, HISTORICOS.MES, HISTORICOS.PERIODO, HISTORICOS.ID_DE_PROCESO FROM HISTORICOS RIGHT JOIN PERSONAL ON HISTORICOS.ID_DE_EMPLEADO = PERSONAL.ID_DE_EMPLEADO AND HISTORICOS.COMPANIA = PERSONAL.COMPANIA WHERE PERSONAL.COMPANIA =:COMPANIA AND HISTORICOS.ANO =:ANO AND HISTORICOS.MES =:MES AND HISTORICOS.PERIODO =:PERIODO AND HISTORICOS.ID_DE_PROCESO =:PROCESO) INI WHERE (CASE WHEN ID_DE_EMPLEADO IS NULL THEN ' ' ELSE UPPER(ID_DE_EMPLEADO) END) LIKE UPPER(CONCAT(:ID_DE_EMPLEADO, '%')) AND (CASE WHEN NOMBRECOMPLETO IS NULL THEN ' ' ELSE UPPER(NOMBRECOMPLETO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRECOMPLETO), '%')) AND (CASE WHEN ESTADO_ACTUAL IS NULL THEN ' ' ELSE UPPER(ESTADO_ACTUAL) END) LIKE UPPER(CONCAT(:ESTADO_ACTUAL, '%')) AND (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END) LIKE UPPER(CONCAT(:NUMERO_DCTO, '%')) AND (CASE WHEN COMPANIA IS NULL THEN ' ' ELSE UPPER(COMPANIA) END) LIKE UPPER(CONCAT(:COMPANIA, '%')) AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(:ANO, '%')) AND (CASE WHEN MES IS NULL THEN ' ' ELSE UPPER(MES) END) LIKE UPPER(CONCAT(:MES, '%')) AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END) LIKE UPPER(CONCAT(:PERIODO, '%')) AND (CASE WHEN ID_DE_PROCESO IS NULL THEN ' ' ELSE UPPER(ID_DE_PROCESO) END) LIKE UPPER(CONCAT(:ID_DE_PROCESO, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_EMPLEADO":"$ID_DE_EMPLEADO(type:integer)","NOMBRECOMPLETO":"$NOMBRECOMPLETO","ESTADO_ACTUAL":"$ESTADO_ACTUAL","NUMERO_DCTO":"$NUMERO_DCTO","COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","MES":"$MES(type:integer)","PERIODO":"$PERIODO(type:integer)","ID_DE_PROCESO":"$ID_DE_PROCESO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="NOMBRECOMPLETO" sqlType="STRING"/>
+		<param name="ESTADO_ACTUAL" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="historicos/personalempleado/pag">
+		<call-query href="getHistoricosPagPersonalEmpleadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="NOMBRECOMPLETO" query-param="NOMBRECOMPLETO"/>
+			<with-param name="ESTADO_ACTUAL" query-param="ESTADO_ACTUAL"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosNumPersonalEmpleadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DISTINCT PERSONAL.ID_DE_EMPLEADO, CONCAT(APELLIDO1,CONCAT(' ',CONCAT(APELLIDO2,CONCAT(' ',NOMBRES) ) ) ) NOMBRECOMPLETO, PERSONAL.ESTADO_ACTUAL, PERSONAL.NUMERO_DCTO, PERSONAL.COMPANIA, HISTORICOS.ANO, HISTORICOS.MES, HISTORICOS.PERIODO, HISTORICOS.ID_DE_PROCESO FROM HISTORICOS RIGHT JOIN PERSONAL ON HISTORICOS.ID_DE_EMPLEADO = PERSONAL.ID_DE_EMPLEADO AND HISTORICOS.COMPANIA = PERSONAL.COMPANIA WHERE PERSONAL.COMPANIA =:COMPANIA AND HISTORICOS.ANO =:ANO AND HISTORICOS.MES =:MES AND HISTORICOS.PERIODO =:PERIODO AND HISTORICOS.ID_DE_PROCESO =:PROCESO) INI WHERE (CASE WHEN ID_DE_EMPLEADO IS NULL THEN ' ' ELSE UPPER(ID_DE_EMPLEADO) END) LIKE UPPER(CONCAT(:ID_DE_EMPLEADO, '%')) AND (CASE WHEN NOMBRECOMPLETO IS NULL THEN ' ' ELSE UPPER(NOMBRECOMPLETO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRECOMPLETO), '%')) AND (CASE WHEN ESTADO_ACTUAL IS NULL THEN ' ' ELSE UPPER(ESTADO_ACTUAL) END) LIKE UPPER(CONCAT(:ESTADO_ACTUAL, '%')) AND (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END) LIKE UPPER(CONCAT(:NUMERO_DCTO, '%')) AND (CASE WHEN COMPANIA IS NULL THEN ' ' ELSE UPPER(COMPANIA) END) LIKE UPPER(CONCAT(:COMPANIA, '%')) AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(:ANO, '%')) AND (CASE WHEN MES IS NULL THEN ' ' ELSE UPPER(MES) END) LIKE UPPER(CONCAT(:MES, '%')) AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END) LIKE UPPER(CONCAT(:PERIODO, '%')) AND (CASE WHEN ID_DE_PROCESO IS NULL THEN ' ' ELSE UPPER(ID_DE_PROCESO) END) LIKE UPPER(CONCAT(:ID_DE_PROCESO, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="NOMBRECOMPLETO" sqlType="STRING"/>
+		<param name="ESTADO_ACTUAL" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/personalempleado/num">
+		<call-query href="getHistoricosNumPersonalEmpleadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="NOMBRECOMPLETO" query-param="NOMBRECOMPLETO"/>
+			<with-param name="ESTADO_ACTUAL" query-param="ESTADO_ACTUAL"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosPagIdNomDctoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DISTINCT PERSONAL.ID_DE_EMPLEADO, CONCAT(APELLIDO1,CONCAT(' ',CONCAT(APELLIDO2,CONCAT(' ',NOMBRES) ) ) ) NOMBRECOMPLETO, PERSONAL.NUMERO_DCTO FROM HISTORICOS INNER JOIN PERSONAL ON HISTORICOS.ID_DE_EMPLEADO = PERSONAL.ID_DE_EMPLEADO AND HISTORICOS.COMPANIA = PERSONAL.COMPANIA WHERE PERSONAL.COMPANIA =:COMPANIA AND HISTORICOS.ANO =:ANO AND HISTORICOS.MES =:MES AND HISTORICOS.PERIODO =:PERIODO AND HISTORICOS.ID_DE_PROCESO =:PROCESO) INI WHERE (CASE WHEN ID_DE_EMPLEADO IS NULL THEN ' ' ELSE UPPER(ID_DE_EMPLEADO) END) LIKE UPPER(CONCAT(:ID_DE_EMPLEADO, '%')) AND (CASE WHEN NOMBRECOMPLETO IS NULL THEN ' ' ELSE UPPER(NOMBRECOMPLETO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRECOMPLETO), '%')) AND (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END) LIKE UPPER(CONCAT(:NUMERO_DCTO, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_EMPLEADO":"$ID_DE_EMPLEADO(type:integer)","NOMBRECOMPLETO":"$NOMBRECOMPLETO","NUMERO_DCTO":"$NUMERO_DCTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="NOMBRECOMPLETO" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="historicos/idnomdcto/pag">
+		<call-query href="getHistoricosPagIdNomDctoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="NOMBRECOMPLETO" query-param="NOMBRECOMPLETO"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosNumIdNomDctoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DISTINCT PERSONAL.ID_DE_EMPLEADO, CONCAT(APELLIDO1,CONCAT(' ',CONCAT(APELLIDO2,CONCAT(' ',NOMBRES) ) ) ) NOMBRECOMPLETO, PERSONAL.NUMERO_DCTO FROM HISTORICOS INNER JOIN PERSONAL ON HISTORICOS.ID_DE_EMPLEADO = PERSONAL.ID_DE_EMPLEADO AND HISTORICOS.COMPANIA = PERSONAL.COMPANIA WHERE PERSONAL.COMPANIA =:COMPANIA AND HISTORICOS.ANO =:ANO AND HISTORICOS.MES =:MES AND HISTORICOS.PERIODO =:PERIODO AND HISTORICOS.ID_DE_PROCESO =:PROCESO) INI WHERE (CASE WHEN ID_DE_EMPLEADO IS NULL THEN ' ' ELSE UPPER(ID_DE_EMPLEADO) END) LIKE UPPER(CONCAT(:ID_DE_EMPLEADO, '%')) AND (CASE WHEN NOMBRECOMPLETO IS NULL THEN ' ' ELSE UPPER(NOMBRECOMPLETO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRECOMPLETO), '%')) AND (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END) LIKE UPPER(CONCAT(:NUMERO_DCTO, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="NOMBRECOMPLETO" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/idnomdcto/num">
+		<call-query href="getHistoricosNumIdNomDctoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="NOMBRECOMPLETO" query-param="NOMBRECOMPLETO"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosPivotNombreDeConceptosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DISTINCT CONCAT(CONCEPTOS.CLASE,CONCAT('_',CONCAT(LPAD(HISTORICOS.ID_DE_CONCEPTO,3,0),CONCAT('_',CONCEPTOS.NOMBRE_CONCEPTO) ) ) ) NOMBRECONCEPTO FROM HISTORICOS INNER JOIN CONCEPTOS ON HISTORICOS.COMPANIA = CONCEPTOS.COMPANIA AND HISTORICOS.ID_DE_CONCEPTO = CONCEPTOS.ID_DE_CONCEPTO INNER JOIN PERIODOS ON HISTORICOS.COMPANIA = PERIODOS.COMPANIA AND HISTORICOS.ID_DE_PROCESO = PERIODOS.ID_DE_PROCESO AND HISTORICOS.ANO = PERIODOS.ANO AND HISTORICOS.MES = PERIODOS.MES AND HISTORICOS.PERIODO = PERIODOS.PERIODO INNER JOIN PERSONAL ON HISTORICOS.COMPANIA = PERSONAL.COMPANIA AND HISTORICOS.ID_DE_EMPLEADO = PERSONAL.ID_DE_EMPLEADO LEFT JOIN ESTABLECIMIENTOS_DOCENTES ON PERSONAL.COMPANIA = ESTABLECIMIENTOS_DOCENTES.COMPANIA AND PERSONAL.CODIGO_ESTABLECIMIENTO = ESTABLECIMIENTOS_DOCENTES.CODIGO INNER JOIN DEPENDENCIA ON PERSONAL.COMPANIA = DEPENDENCIA.COMPANIA AND PERSONAL.DEPENDENCIA = DEPENDENCIA.CODIGO INNER JOIN CENTRO_COSTO ON PERSONAL.COMPANIA = CENTRO_COSTO.COMPANIA AND PERSONAL.ID_CENTRO_DE_COSTO = CENTRO_COSTO.CODIGO AND HISTORICOS.ANO = CENTRO_COSTO.ANO WHERE HISTORICOS.COMPANIA =:COMPANIA AND HISTORICOS.ID_DE_PROCESO =:ID_DE_PROCESO AND HISTORICOS.ANO =:ANO AND HISTORICOS.MES =:MES AND HISTORICOS.PERIODO =:PERIODO AND PERIODOS.ACUMULADO NOT IN ( 0 ) AND ( CONCEPTOS.CLASE BETWEEN 3 AND 8 OR HISTORICOS.ID_DE_CONCEPTO IN ( 1, 9, 11 ) ) ORDER BY CONCAT(CONCEPTOS.CLASE,CONCAT('_',CONCAT(LPAD(HISTORICOS.ID_DE_CONCEPTO,3,0),CONCAT('_',CONCEPTOS.NOMBRE_CONCEPTO) ) ) )</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRECONCEPTO":"$NOMBRECONCEPTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/pivotnombredeconceptos">
+		<call-query href="getHistoricosPivotNombreDeConceptosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosPivotNombreConceptosMaestraQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DISTINCT CONCAT(CONCEPTOS.CLASE,CONCAT('_',CONCAT(LPAD(HISTORICOS.ID_DE_CONCEPTO,3,0),CONCAT('_',CONCEPTOS.NOMBRE_CONCEPTO) ) ) ) NOMBRECONCEPTO FROM HISTORICOS INNER JOIN CONCEPTOS ON HISTORICOS.COMPANIA = CONCEPTOS.COMPANIA AND HISTORICOS.ID_DE_CONCEPTO = CONCEPTOS.ID_DE_CONCEPTO INNER JOIN PERIODOS ON HISTORICOS.COMPANIA = PERIODOS.COMPANIA AND HISTORICOS.ID_DE_PROCESO = PERIODOS.ID_DE_PROCESO AND HISTORICOS.ANO = PERIODOS.ANO AND HISTORICOS.MES = PERIODOS.MES AND HISTORICOS.PERIODO = PERIODOS.PERIODO INNER JOIN PERSONAL ON HISTORICOS.COMPANIA = PERSONAL.COMPANIA AND HISTORICOS.ID_DE_EMPLEADO = PERSONAL.ID_DE_EMPLEADO LEFT JOIN ESTABLECIMIENTOS_DOCENTES ON PERSONAL.COMPANIA = ESTABLECIMIENTOS_DOCENTES.COMPANIA AND PERSONAL.CODIGO_ESTABLECIMIENTO = ESTABLECIMIENTOS_DOCENTES.CODIGO INNER JOIN DEPENDENCIA ON PERSONAL.COMPANIA = DEPENDENCIA.COMPANIA AND PERSONAL.DEPENDENCIA = DEPENDENCIA.CODIGO INNER JOIN CENTRO_COSTO ON PERSONAL.COMPANIA = CENTRO_COSTO.COMPANIA AND PERSONAL.ID_CENTRO_DE_COSTO = CENTRO_COSTO.CODIGO AND HISTORICOS.ANO = CENTRO_COSTO.ANO WHERE HISTORICOS.COMPANIA =:COMPANIA AND HISTORICOS.ID_DE_PROCESO =:ID_DE_PROCESO AND HISTORICOS.ANO =:ANO AND HISTORICOS.MES =:MES AND HISTORICOS.PERIODO =:PERIODO AND PERIODOS.ACUMULADO NOT IN (0) AND CONCEPTOS.CLASE BETWEEN 1 AND 8 AND HISTORICOS.ID_DE_CONCEPTO &lt; 900 ORDER BY CONCAT(CONCEPTOS.CLASE,CONCAT('_',CONCAT(LPAD(HISTORICOS.ID_DE_CONCEPTO,3,0),CONCAT('_',CONCEPTOS.NOMBRE_CONCEPTO) ) ) )</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRECONCEPTO":"$NOMBRECONCEPTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/pivotnombreconceptosmaestra">
+		<call-query href="getHistoricosPivotNombreConceptosMaestraQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosGetkardexcuneQuery"  useConfig="sysmandsunist">
+		<sql>SELECT PER.NOMBRECOMPLETO ANOMBRES, H.ANO BANO, H.MES CMES, PER.NUMERO_DCTO DNUMERO_DCTO, SUM( (CASE WHEN C.CONCEPTO_CUNE = 'NIE111' THEN H.VALOR ELSE 0 END)+ (CASE WHEN C.CONCEPTO_CUNE = 'NIE069' THEN H.VALOR ELSE 0 END) + (CASE WHEN C.CONCEPTO_CUNE = 'NIE130' THEN H.VALOR ELSE 0 END) + (CASE WHEN C.CONCEPTO_CUNE = 'NIE134' THEN H.VALOR ELSE 0 END) + (CASE WHEN C.CONCEPTO_CUNE = 'NIE138' THEN H.VALOR ELSE 0 END) ) AS CTOTALDIAS, MAX(PER.ID_DE_EMPLEADO) AS NIE009, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE062' THEN H.VALOR ELSE 0 END) NIE062, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE069' THEN H.VALOR ELSE 0 END) NIE069, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE070' THEN H.VALOR ELSE 0 END) NIE070, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE071' THEN H.VALOR ELSE 0 END) NIE071, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE072' THEN H.VALOR ELSE 0 END) NIE072, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE073' THEN H.VALOR ELSE 0 END) NIE073, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE076' THEN H.VALOR ELSE 0 END) NIE076, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE078' THEN H.VALOR ELSE 0 END) NIE078, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE081' THEN H.VALOR ELSE 0 END) NIE081, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE083' THEN H.VALOR ELSE 0 END) NIE083, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE086' THEN H.VALOR ELSE 0 END) NIE086, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE088' THEN H.VALOR ELSE 0 END) NIE088, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE091' THEN H.VALOR ELSE 0 END) NIE091, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE093' THEN H.VALOR ELSE 0 END) NIE093, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE096' THEN H.VALOR ELSE 0 END) NIE096, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE098' THEN H.VALOR ELSE 0 END) NIE098, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE101' THEN H.VALOR ELSE 0 END) NIE101, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE103' THEN H.VALOR ELSE 0 END) NIE103, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE106' THEN H.VALOR ELSE 0 END) NIE106, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE108' THEN H.VALOR ELSE 0 END) NIE108, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE111' THEN H.VALOR ELSE 0 END) NIE111, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE112' THEN H.VALOR ELSE 0 END) NIE112, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE115' THEN H.VALOR ELSE 0 END) NIE115, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE116' THEN H.VALOR ELSE 0 END) NIE116, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE117' THEN H.VALOR ELSE 0 END) NIE117, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE118' THEN H.VALOR ELSE 0 END) NIE118, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE119' THEN H.VALOR ELSE 0 END) NIE119, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE120' THEN H.VALOR ELSE 0 END) NIE120, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE122' THEN H.VALOR ELSE 0 END) NIE122, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE125' THEN H.VALOR ELSE 0 END) NIE125, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE127' THEN H.VALOR ELSE 0 END) NIE127, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE130' THEN H.VALOR ELSE 0 END) NIE130, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE131' THEN H.VALOR ELSE 0 END) NIE131, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE134' THEN H.VALOR ELSE 0 END) NIE134, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE135' THEN H.VALOR ELSE 0 END) NIE135, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE138' THEN H.VALOR ELSE 0 END) NIE138, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE139' THEN H.VALOR ELSE 0 END) NIE139, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE140' THEN H.VALOR ELSE 0 END) NIE140, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE141' THEN H.VALOR ELSE 0 END) NIE141, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE142' THEN H.VALOR ELSE 0 END) NIE142, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE145' THEN H.VALOR ELSE 0 END) NIE145, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE147' THEN H.VALOR ELSE 0 END) NIE147, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE148' THEN H.VALOR ELSE 0 END) NIE148, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE149' THEN H.VALOR ELSE 0 END) NIE149, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE150' THEN H.VALOR ELSE 0 END) NIE150, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE151' THEN H.VALOR ELSE 0 END) NIE151, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE152' THEN H.VALOR ELSE 0 END) NIE152, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE153' THEN H.VALOR ELSE 0 END) NIE153, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE154' THEN H.VALOR ELSE 0 END) NIE154, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE155' THEN H.VALOR ELSE 0 END) NIE155, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE156' THEN H.VALOR ELSE 0 END) NIE156, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE157' THEN H.VALOR ELSE 0 END) NIE157, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE158' THEN H.VALOR ELSE 0 END) NIE158, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE159' THEN H.VALOR ELSE 0 END) NIE159, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE160' THEN H.VALOR ELSE 0 END) NIE160, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE163' THEN H.VALOR ELSE 0 END) NIE163, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE166' THEN H.VALOR ELSE 0 END) NIE166, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE168' THEN H.VALOR ELSE 0 END) NIE168, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE170' THEN H.VALOR ELSE 0 END) NIE170, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE172' THEN H.VALOR ELSE 0 END) NIE172, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE174' THEN H.VALOR ELSE 0 END) NIE174, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE176' THEN H.VALOR ELSE 0 END) NIE176, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE177' THEN H.VALOR ELSE 0 END) NIE177, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE179' THEN H.VALOR ELSE 0 END) NIE179, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE180' THEN H.VALOR ELSE 0 END) NIE180, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE181' THEN H.VALOR ELSE 0 END) NIE181, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE182' THEN H.VALOR ELSE 0 END) NIE182, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE183' THEN H.VALOR ELSE 0 END) NIE183, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE184' THEN H.VALOR ELSE 0 END) NIE184, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE185' THEN H.VALOR ELSE 0 END) NIE185, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE186' THEN H.VALOR ELSE 0 END) NIE186, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE187' THEN H.VALOR ELSE 0 END) NIE187, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE188' THEN H.VALOR ELSE 0 END) NIE188, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE189' THEN H.VALOR ELSE 0 END) NIE189, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE193' THEN H.VALOR ELSE 0 END) NIE193, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE194' THEN H.VALOR ELSE 0 END) NIE194, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE195' THEN H.VALOR ELSE 0 END) NIE195, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE196' THEN H.VALOR ELSE 0 END) NIE196, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE197' THEN H.VALOR ELSE 0 END) NIE197, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE198' THEN H.VALOR ELSE 0 END) NIE198, SUM(CASE WHEN C.CONCEPTO_CUNE = 'NIE201' THEN H.VALOR ELSE 0 END) NIE201 FROM HISTORICOS H INNER JOIN CONCEPTOS C ON H.ID_DE_CONCEPTO = C.ID_DE_CONCEPTO AND H.COMPANIA = C.COMPANIA INNER JOIN PERSONAL PER ON H.ID_DE_EMPLEADO = PER.ID_DE_EMPLEADO AND H.COMPANIA = PER.COMPANIA INNER JOIN PERIODOS P ON H.PERIODO = P.PERIODO AND H.MES = P.MES AND H.ANO = P.ANO AND H.ID_DE_PROCESO = P.ID_DE_PROCESO AND H.COMPANIA = P.COMPANIA INNER JOIN COMPANIA ON H.COMPANIA = COMPANIA.CODIGO WHERE H.COMPANIA = :UN_COMPANIA AND H.ANO = :UN_ANO AND H.MES = :UN_MES AND C.CONCEPTO_CUNE IS NOT NULL AND P.ACUMULADO NOT IN (0) AND H.ID_DE_PROCESO &lt;&gt; '99' AND PER.GENERACUNE NOT IN (0) AND COMPANIA.GENERA_CUNE NOT IN (0) GROUP BY PER.NOMBRECOMPLETO, H.ANO, H.MES, PER.NUMERO_DCTO, H.COMPANIA ORDER BY PER.NOMBRECOMPLETO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANOMBRES":"$ANOMBRES","BANO":"$BANO(type:integer)","CMES":"$CMES(type:integer)","DNUMERO_DCTO":"$DNUMERO_DCTO","CTOTALDIAS":"$CTOTALDIAS(type:integer)","NIE009":"$NIE009(type:integer)","NIE062":"$NIE062(type:double)","NIE069":"$NIE069(type:integer)","NIE070":"$NIE070(type:integer)","NIE071":"$NIE071(type:integer)","NIE072":"$NIE072(type:integer)","NIE073":"$NIE073(type:integer)","NIE076":"$NIE076(type:double)","NIE078":"$NIE078(type:integer)","NIE081":"$NIE081(type:double)","NIE083":"$NIE083(type:integer)","NIE086":"$NIE086(type:double)","NIE088":"$NIE088(type:integer)","NIE091":"$NIE091(type:double)","NIE093":"$NIE093(type:integer)","NIE096":"$NIE096(type:double)","NIE098":"$NIE098(type:integer)","NIE101":"$NIE101(type:double)","NIE103":"$NIE103(type:integer)","NIE106":"$NIE106(type:double)","NIE108":"$NIE108(type:integer)","NIE111":"$NIE111(type:double)","NIE112":"$NIE112(type:integer)","NIE115":"$NIE115(type:double)","NIE116":"$NIE116(type:integer)","NIE117":"$NIE117(type:integer)","NIE118":"$NIE118(type:integer)","NIE119":"$NIE119(type:integer)","NIE120":"$NIE120(type:integer)","NIE122":"$NIE122(type:integer)","NIE125":"$NIE125(type:integer)","NIE127":"$NIE127(type:integer)","NIE130":"$NIE130(type:integer)","NIE131":"$NIE131(type:integer)","NIE134":"$NIE134(type:integer)","NIE135":"$NIE135(type:integer)","NIE138":"$NIE138(type:integer)","NIE139":"$NIE139(type:integer)","NIE140":"$NIE140(type:integer)","NIE141":"$NIE141(type:integer)","NIE142":"$NIE142(type:integer)","NIE145":"$NIE145(type:integer)","NIE147":"$NIE147(type:integer)","NIE148":"$NIE148(type:integer)","NIE149":"$NIE149(type:integer)","NIE150":"$NIE150(type:integer)","NIE151":"$NIE151(type:integer)","NIE152":"$NIE152(type:integer)","NIE153":"$NIE153(type:integer)","NIE154":"$NIE154(type:integer)","NIE155":"$NIE155(type:integer)","NIE156":"$NIE156(type:integer)","NIE157":"$NIE157(type:integer)","NIE158":"$NIE158(type:integer)","NIE159":"$NIE159(type:integer)","NIE160":"$NIE160(type:integer)","NIE163":"$NIE163(type:integer)","NIE166":"$NIE166(type:integer)","NIE168":"$NIE168(type:integer)","NIE170":"$NIE170(type:integer)","NIE172":"$NIE172(type:integer)","NIE174":"$NIE174(type:integer)","NIE176":"$NIE176(type:integer)","NIE177":"$NIE177(type:integer)","NIE179":"$NIE179(type:integer)","NIE180":"$NIE180(type:integer)","NIE181":"$NIE181(type:integer)","NIE182":"$NIE182(type:integer)","NIE183":"$NIE183(type:integer)","NIE184":"$NIE184(type:integer)","NIE185":"$NIE185(type:integer)","NIE186":"$NIE186(type:integer)","NIE187":"$NIE187(type:integer)","NIE188":"$NIE188(type:integer)","NIE189":"$NIE189(type:integer)","NIE193":"$NIE193(type:integer)","NIE194":"$NIE194(type:integer)","NIE195":"$NIE195(type:integer)","NIE196":"$NIE196(type:integer)","NIE197":"$NIE197(type:integer)","NIE198":"$NIE198(type:integer)","NIE201":"$NIE201(type:integer)"}]}}		</result>
+		<param name="UN_COMPANIA" sqlType="STRING"/>
+		<param name="UN_ANO" sqlType="STRING"/>
+		<param name="UN_MES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/getkardexcune">
+		<call-query href="getHistoricosGetkardexcuneQuery">
+			<with-param name="UN_COMPANIA" query-param="UN_COMPANIA"/>
+			<with-param name="UN_ANO" query-param="UN_ANO"/>
+			<with-param name="UN_MES" query-param="UN_MES"/>
+
+		</call-query>
+	</resource>
+
+<query id="getHistoricosPagGethistoricosnumcptoqueryqueryQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DISTINCT HISTORICOS.ID_DE_CONCEPTO, CONCEPTOS.NOMBRE_CONCEPTO NOMBRE_CONCEPTO FROM HISTORICOS LEFT JOIN CONCEPTOS ON (HISTORICOS.COMPANIA = CONCEPTOS.COMPANIA) AND (HISTORICOS.ID_DE_CONCEPTO = CONCEPTOS.ID_DE_CONCEPTO) WHERE (((HISTORICOS.COMPANIA) = :COMPANIA) AND ((HISTORICOS.ID_DE_PROCESO) = :ID_DE_PROCESO) AND ((HISTORICOS.PERIODO) = :PERIODO) AND ((HISTORICOS.ANO) = :ANO) AND ((HISTORICOS.MES) = :MES) AND (CONCEPTOS.CLASE in (3,4,5,6) ) AND (CONCEPTOS.ID_DE_CONCEPTO not in (97,140,144) ) ) ORDER BY HISTORICOS.ID_DE_CONCEPTO) INI WHERE (CASE WHEN ID_DE_CONCEPTO IS NULL THEN ' ' ELSE UPPER(ID_DE_CONCEPTO) END) LIKE UPPER(CONCAT(:ID_DE_CONCEPTO, '%')) AND (CASE WHEN NOMBRE_CONCEPTO IS NULL THEN ' ' ELSE UPPER(NOMBRE_CONCEPTO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_CONCEPTO), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CONCEPTO":"$ID_DE_CONCEPTO(type:integer)","NOMBRE_CONCEPTO":"$NOMBRE_CONCEPTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="ID_DE_CONCEPTO" sqlType="STRING"/>
+		<param name="NOMBRE_CONCEPTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="historicos/gethistoricosnumcptoqueryquery/pag">
+		<call-query href="getHistoricosPagGethistoricosnumcptoqueryqueryQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="ID_DE_CONCEPTO" query-param="ID_DE_CONCEPTO"/>
+			<with-param name="NOMBRE_CONCEPTO" query-param="NOMBRE_CONCEPTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosNumGethistoricosnumcptoqueryqueryQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DISTINCT HISTORICOS.ID_DE_CONCEPTO, CONCEPTOS.NOMBRE_CONCEPTO NOMBRE_CONCEPTO FROM HISTORICOS LEFT JOIN CONCEPTOS ON (HISTORICOS.COMPANIA = CONCEPTOS.COMPANIA) AND (HISTORICOS.ID_DE_CONCEPTO = CONCEPTOS.ID_DE_CONCEPTO) WHERE (((HISTORICOS.COMPANIA) = :COMPANIA) AND ((HISTORICOS.ID_DE_PROCESO) = :ID_DE_PROCESO) AND ((HISTORICOS.PERIODO) = :PERIODO) AND ((HISTORICOS.ANO) = :ANO) AND ((HISTORICOS.MES) = :MES) AND (CONCEPTOS.CLASE in (3,4,5,6) ) AND (CONCEPTOS.ID_DE_CONCEPTO not in (97,140,144) ) ) ORDER BY HISTORICOS.ID_DE_CONCEPTO) INI WHERE (CASE WHEN ID_DE_CONCEPTO IS NULL THEN ' ' ELSE UPPER(ID_DE_CONCEPTO) END) LIKE UPPER(CONCAT(:ID_DE_CONCEPTO, '%')) AND (CASE WHEN NOMBRE_CONCEPTO IS NULL THEN ' ' ELSE UPPER(NOMBRE_CONCEPTO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_CONCEPTO), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="ID_DE_CONCEPTO" sqlType="STRING"/>
+		<param name="NOMBRE_CONCEPTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/gethistoricosnumcptoqueryquery/num">
+		<call-query href="getHistoricosNumGethistoricosnumcptoqueryqueryQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="ID_DE_CONCEPTO" query-param="ID_DE_CONCEPTO"/>
+			<with-param name="NOMBRE_CONCEPTO" query-param="NOMBRE_CONCEPTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistoricosInfperiodosdicQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(*) REG FROM HISTORICOS WHERE COMPANIA = :COMPANIA AND ID_DE_PROCESO = :ID_DE_PROCESO AND ANO = :ANIO AND MES = :MES AND PERIODO IN(4,8)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"REG":"$REG(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="historicos/infperiodosdic">
+		<call-query href="getHistoricosInfperiodosdicQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="MES" query-param="MES"/>
+
+		</call-query>
+	</resource>
+	
+</data>

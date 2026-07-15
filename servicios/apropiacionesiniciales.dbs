@@ -1,0 +1,377 @@
+﻿<data name="apropiacionesiniciales" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getApropiacionesinicialesContarPorCodigoAnoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(CODIGO) CODIGO  FROM APROPIACIONESINICIALES WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND CONTABILIZADO NOT IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="apropiacionesiniciales/contarporcodigoano">
+		<call-query href="getApropiacionesinicialesContarPorCodigoAnoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getApropiacionesinicialesConteoPorCompaniaAnoCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT('X') CUENTA  FROM APROPIACIONESINICIALES WHERE APROPIACIONESINICIALES.COMPANIA = :COMPANIA AND APROPIACIONESINICIALES.ANO = :ANO AND APROPIACIONESINICIALES.CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTA":"$CUENTA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="apropiacionesiniciales/conteoporcompaniaanocodigo">
+		<call-query href="getApropiacionesinicialesConteoPorCompaniaAnoCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getApropiacionesinicialesPagApropiacionesInicialesDiferentesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DISTINCT APROPIACIONESINICIALES.COMPANIA, APROPIACIONESINICIALES.ANO, APROPIACIONESINICIALES.CODIGO, V_PLAN_PRESUPUESTAL.NOMBRE NOMBRE_CODIGO, V_PLAN_PRESUPUESTAL.NATURALEZA, APROPIACIONESINICIALES.TERCERO, APROPIACIONESINICIALES.SUCURSAL, APROPIACIONESINICIALES.AUXILIAR, AUXILIAR.NOMBRE NOMBRE_AUXILIAR, APROPIACIONESINICIALES.CENTRO_COSTO, CENTRO_COSTO.NOMBRE NOMBRE_CENTROCOSTO, APROPIACIONESINICIALES.REFERENCIA, REFERENCIA.NOMBRE NOMBRE_REFERENCIA, APROPIACIONESINICIALES.FUENTE_RECURSO, FUENTE_RECURSOS.NOMBRE NOMBRE_FUENTERECURSOS, APROPIACIONESINICIALES.APROPIACIONINICIAL ,APROPIACIONESINICIALES.CODIGO_CCPET ,APROPIACIONESINICIALES.PROGRAMA ,APROPIACIONESINICIALES.CODIGOUNIDADEJE ,APROPIACIONESINICIALES.CODIGOBPIN, APROPIACIONESINICIALES.DETALLESECTORIAL, APROPIACIONESINICIALES.RECURSO_SGR, APROPIACIONESINICIALES.SECTOR FROM APROPIACIONESINICIALES INNER JOIN PLAN_PRESUPUESTAL V_PLAN_PRESUPUESTAL ON APROPIACIONESINICIALES.COMPANIA = V_PLAN_PRESUPUESTAL.COMPANIA AND APROPIACIONESINICIALES.ANO = V_PLAN_PRESUPUESTAL.ANO AND APROPIACIONESINICIALES.CODIGO = V_PLAN_PRESUPUESTAL.CODIGO INNER JOIN CENTRO_COSTO ON APROPIACIONESINICIALES.COMPANIA = CENTRO_COSTO.COMPANIA AND APROPIACIONESINICIALES.ANO = CENTRO_COSTO.ANO AND APROPIACIONESINICIALES.CENTRO_COSTO = CENTRO_COSTO.CODIGO INNER JOIN AUXILIAR ON APROPIACIONESINICIALES.COMPANIA = AUXILIAR.COMPANIA AND APROPIACIONESINICIALES.ANO = AUXILIAR.ANO AND APROPIACIONESINICIALES.AUXILIAR = AUXILIAR.CODIGO INNER JOIN REFERENCIA ON APROPIACIONESINICIALES.COMPANIA = REFERENCIA.COMPANIA AND APROPIACIONESINICIALES.ANO = REFERENCIA.ANO AND APROPIACIONESINICIALES.REFERENCIA = REFERENCIA.CODIGO INNER JOIN FUENTE_RECURSOS ON APROPIACIONESINICIALES.COMPANIA = FUENTE_RECURSOS.COMPANIA AND APROPIACIONESINICIALES.ANO = FUENTE_RECURSOS.ANO AND APROPIACIONESINICIALES.FUENTE_RECURSO = FUENTE_RECURSOS.CODIGO WHERE APROPIACIONESINICIALES.COMPANIA = :COMPANIA AND APROPIACIONESINICIALES.ANO = :ANO ORDER BY APROPIACIONESINICIALES.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE_CODIGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_CODIGO), '%')) AND (CASE WHEN AUXILIAR IS NULL THEN ' ' ELSE UPPER(AUXILIAR) END) LIKE UPPER(CONCAT(:AUXILIAR, '%')) AND (CASE WHEN NOMBRE_AUXILIAR IS NULL THEN ' ' ELSE UPPER(NOMBRE_AUXILIAR) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_AUXILIAR), '%')) AND (CASE WHEN CENTRO_COSTO IS NULL THEN ' ' ELSE UPPER(CENTRO_COSTO) END) LIKE UPPER(CONCAT(:CENTRO_COSTO, '%')) AND (CASE WHEN NOMBRE_CENTROCOSTO IS NULL THEN ' ' ELSE UPPER(NOMBRE_CENTROCOSTO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_CENTROCOSTO), '%')) AND (CASE WHEN REFERENCIA IS NULL THEN ' ' ELSE UPPER(REFERENCIA) END) LIKE UPPER(CONCAT(:REFERENCIA, '%')) AND (CASE WHEN NOMBRE_REFERENCIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_REFERENCIA) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_REFERENCIA), '%')) AND (CASE WHEN FUENTE_RECURSO IS NULL THEN ' ' ELSE UPPER(FUENTE_RECURSO) END) LIKE UPPER(CONCAT(:FUENTE_RECURSO, '%')) AND (CASE WHEN NOMBRE_FUENTERECURSOS IS NULL THEN ' ' ELSE UPPER(NOMBRE_FUENTERECURSOS) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_FUENTERECURSOS), '%')) AND (CASE WHEN APROPIACIONINICIAL IS NULL THEN ' ' ELSE UPPER(APROPIACIONINICIAL) END) LIKE UPPER(CONCAT(:APROPIACIONINICIAL, '%')) AND (CASE WHEN CODIGO_CCPET IS NULL THEN ' ' ELSE UPPER(CODIGO_CCPET) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO_CCPET), '%')) AND (CASE WHEN PROGRAMA IS NULL THEN ' ' ELSE UPPER(PROGRAMA) END) LIKE UPPER(CONCAT(CONCAT('%',:PROGRAMA), '%')) AND (CASE WHEN CODIGOUNIDADEJE IS NULL THEN ' ' ELSE UPPER(CODIGOUNIDADEJE) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGOUNIDADEJE), '%')) AND (CASE WHEN CODIGOBPIN IS NULL THEN ' ' ELSE UPPER(CODIGOBPIN) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGOBPIN), '%')) AND (CASE WHEN DETALLESECTORIAL IS NULL THEN ' ' ELSE UPPER(DETALLESECTORIAL) END) LIKE UPPER(CONCAT(CONCAT('%',:DETALLESECTORIAL), '%')) AND (CASE WHEN RECURSO_SGR IS NULL THEN ' ' ELSE UPPER(RECURSO_SGR) END) LIKE UPPER(CONCAT(CONCAT('%',:RECURSO_SGR), '%')) AND (CASE WHEN SECTOR IS NULL THEN ' ' ELSE UPPER(SECTOR) END) LIKE UPPER(CONCAT(CONCAT('%',:SECTOR), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","CODIGO":"$CODIGO","NOMBRE_CODIGO":"$NOMBRE_CODIGO","NATURALEZA":"$NATURALEZA","TERCERO":"$TERCERO","SUCURSAL":"$SUCURSAL","AUXILIAR":"$AUXILIAR","NOMBRE_AUXILIAR":"$NOMBRE_AUXILIAR","CENTRO_COSTO":"$CENTRO_COSTO","NOMBRE_CENTROCOSTO":"$NOMBRE_CENTROCOSTO","REFERENCIA":"$REFERENCIA","NOMBRE_REFERENCIA":"$NOMBRE_REFERENCIA","FUENTE_RECURSO":"$FUENTE_RECURSO","NOMBRE_FUENTERECURSOS":"$NOMBRE_FUENTERECURSOS","APROPIACIONINICIAL":"$APROPIACIONINICIAL","CODIGO_CCPET":"$CODIGO_CCPET","PROGRAMA":"$PROGRAMA","CODIGOUNIDADEJE":"$CODIGOUNIDADEJE","CODIGOBPIN":"$CODIGOBPIN","DETALLESECTORIAL":"$DETALLESECTORIAL","RECURSO_SGR":"$RECURSO_SGR","SECTOR":"$SECTOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE_CODIGO" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="NOMBRE_AUXILIAR" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="NOMBRE_CENTROCOSTO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="NOMBRE_REFERENCIA" sqlType="STRING"/>
+		<param name="FUENTE_RECURSO" sqlType="STRING"/>
+		<param name="NOMBRE_FUENTERECURSOS" sqlType="STRING"/>
+		<param name="APROPIACIONINICIAL" sqlType="STRING"/>
+		<param name="CODIGO_CCPET" sqlType="STRING"/>
+		<param name="PROGRAMA" sqlType="STRING"/>
+		<param name="CODIGOUNIDADEJE" sqlType="STRING"/>
+		<param name="CODIGOBPIN" sqlType="STRING"/>
+		<param name="DETALLESECTORIAL" sqlType="STRING"/>
+		<param name="RECURSO_SGR" sqlType="STRING"/>
+		<param name="SECTOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="apropiacionesiniciales/apropiacionesinicialesdiferentes/pag">
+		<call-query href="getApropiacionesinicialesPagApropiacionesInicialesDiferentesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE_CODIGO" query-param="NOMBRE_CODIGO"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="NOMBRE_AUXILIAR" query-param="NOMBRE_AUXILIAR"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="NOMBRE_CENTROCOSTO" query-param="NOMBRE_CENTROCOSTO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="NOMBRE_REFERENCIA" query-param="NOMBRE_REFERENCIA"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+			<with-param name="NOMBRE_FUENTERECURSOS" query-param="NOMBRE_FUENTERECURSOS"/>
+			<with-param name="APROPIACIONINICIAL" query-param="APROPIACIONINICIAL"/>
+			<with-param name="CODIGO_CCPET" query-param="CODIGO_CCPET"/>
+			<with-param name="PROGRAMA" query-param="PROGRAMA"/>
+			<with-param name="CODIGOUNIDADEJE" query-param="CODIGOUNIDADEJE"/>
+			<with-param name="CODIGOBPIN" query-param="CODIGOBPIN"/>
+			<with-param name="DETALLESECTORIAL" query-param="DETALLESECTORIAL"/>
+			<with-param name="RECURSO_SGR" query-param="RECURSO_SGR"/>
+			<with-param name="SECTOR" query-param="SECTOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getApropiacionesinicialesNumApropiacionesInicialesDiferentesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DISTINCT APROPIACIONESINICIALES.COMPANIA, APROPIACIONESINICIALES.ANO, APROPIACIONESINICIALES.CODIGO, V_PLAN_PRESUPUESTAL.NOMBRE NOMBRE_CODIGO, V_PLAN_PRESUPUESTAL.NATURALEZA, APROPIACIONESINICIALES.TERCERO, APROPIACIONESINICIALES.SUCURSAL, APROPIACIONESINICIALES.AUXILIAR, AUXILIAR.NOMBRE NOMBRE_AUXILIAR, APROPIACIONESINICIALES.CENTRO_COSTO, CENTRO_COSTO.NOMBRE NOMBRE_CENTROCOSTO, APROPIACIONESINICIALES.REFERENCIA, REFERENCIA.NOMBRE NOMBRE_REFERENCIA, APROPIACIONESINICIALES.FUENTE_RECURSO, FUENTE_RECURSOS.NOMBRE NOMBRE_FUENTERECURSOS, APROPIACIONESINICIALES.APROPIACIONINICIAL ,APROPIACIONESINICIALES.CODIGO_CCPET ,APROPIACIONESINICIALES.PROGRAMA ,APROPIACIONESINICIALES.CODIGOUNIDADEJE ,APROPIACIONESINICIALES.CODIGOBPIN, APROPIACIONESINICIALES.DETALLESECTORIAL, APROPIACIONESINICIALES.RECURSO_SGR, APROPIACIONESINICIALES.SECTOR FROM APROPIACIONESINICIALES INNER JOIN PLAN_PRESUPUESTAL V_PLAN_PRESUPUESTAL ON APROPIACIONESINICIALES.COMPANIA = V_PLAN_PRESUPUESTAL.COMPANIA AND APROPIACIONESINICIALES.ANO = V_PLAN_PRESUPUESTAL.ANO AND APROPIACIONESINICIALES.CODIGO = V_PLAN_PRESUPUESTAL.CODIGO INNER JOIN CENTRO_COSTO ON APROPIACIONESINICIALES.COMPANIA = CENTRO_COSTO.COMPANIA AND APROPIACIONESINICIALES.ANO = CENTRO_COSTO.ANO AND APROPIACIONESINICIALES.CENTRO_COSTO = CENTRO_COSTO.CODIGO INNER JOIN AUXILIAR ON APROPIACIONESINICIALES.COMPANIA = AUXILIAR.COMPANIA AND APROPIACIONESINICIALES.ANO = AUXILIAR.ANO AND APROPIACIONESINICIALES.AUXILIAR = AUXILIAR.CODIGO INNER JOIN REFERENCIA ON APROPIACIONESINICIALES.COMPANIA = REFERENCIA.COMPANIA AND APROPIACIONESINICIALES.ANO = REFERENCIA.ANO AND APROPIACIONESINICIALES.REFERENCIA = REFERENCIA.CODIGO INNER JOIN FUENTE_RECURSOS ON APROPIACIONESINICIALES.COMPANIA = FUENTE_RECURSOS.COMPANIA AND APROPIACIONESINICIALES.ANO = FUENTE_RECURSOS.ANO AND APROPIACIONESINICIALES.FUENTE_RECURSO = FUENTE_RECURSOS.CODIGO WHERE APROPIACIONESINICIALES.COMPANIA = :COMPANIA AND APROPIACIONESINICIALES.ANO = :ANO ORDER BY APROPIACIONESINICIALES.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE_CODIGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_CODIGO), '%')) AND (CASE WHEN AUXILIAR IS NULL THEN ' ' ELSE UPPER(AUXILIAR) END) LIKE UPPER(CONCAT(:AUXILIAR, '%')) AND (CASE WHEN NOMBRE_AUXILIAR IS NULL THEN ' ' ELSE UPPER(NOMBRE_AUXILIAR) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_AUXILIAR), '%')) AND (CASE WHEN CENTRO_COSTO IS NULL THEN ' ' ELSE UPPER(CENTRO_COSTO) END) LIKE UPPER(CONCAT(:CENTRO_COSTO, '%')) AND (CASE WHEN NOMBRE_CENTROCOSTO IS NULL THEN ' ' ELSE UPPER(NOMBRE_CENTROCOSTO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_CENTROCOSTO), '%')) AND (CASE WHEN REFERENCIA IS NULL THEN ' ' ELSE UPPER(REFERENCIA) END) LIKE UPPER(CONCAT(:REFERENCIA, '%')) AND (CASE WHEN NOMBRE_REFERENCIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_REFERENCIA) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_REFERENCIA), '%')) AND (CASE WHEN FUENTE_RECURSO IS NULL THEN ' ' ELSE UPPER(FUENTE_RECURSO) END) LIKE UPPER(CONCAT(:FUENTE_RECURSO, '%')) AND (CASE WHEN NOMBRE_FUENTERECURSOS IS NULL THEN ' ' ELSE UPPER(NOMBRE_FUENTERECURSOS) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_FUENTERECURSOS), '%')) AND (CASE WHEN APROPIACIONINICIAL IS NULL THEN ' ' ELSE UPPER(APROPIACIONINICIAL) END) LIKE UPPER(CONCAT(:APROPIACIONINICIAL, '%')) AND (CASE WHEN CODIGO_CCPET IS NULL THEN ' ' ELSE UPPER(CODIGO_CCPET) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO_CCPET), '%')) AND (CASE WHEN PROGRAMA IS NULL THEN ' ' ELSE UPPER(PROGRAMA) END) LIKE UPPER(CONCAT(CONCAT('%',:PROGRAMA), '%')) AND (CASE WHEN CODIGOUNIDADEJE IS NULL THEN ' ' ELSE UPPER(CODIGOUNIDADEJE) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGOUNIDADEJE), '%')) AND (CASE WHEN CODIGOBPIN IS NULL THEN ' ' ELSE UPPER(CODIGOBPIN) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGOBPIN), '%')) AND (CASE WHEN DETALLESECTORIAL IS NULL THEN ' ' ELSE UPPER(DETALLESECTORIAL) END) LIKE UPPER(CONCAT(CONCAT('%',:DETALLESECTORIAL), '%')) AND (CASE WHEN RECURSO_SGR IS NULL THEN ' ' ELSE UPPER(RECURSO_SGR) END) LIKE UPPER(CONCAT(CONCAT('%',:RECURSO_SGR), '%')) AND (CASE WHEN SECTOR IS NULL THEN ' ' ELSE UPPER(SECTOR) END) LIKE UPPER(CONCAT(CONCAT('%',:SECTOR), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE_CODIGO" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="NOMBRE_AUXILIAR" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="NOMBRE_CENTROCOSTO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="NOMBRE_REFERENCIA" sqlType="STRING"/>
+		<param name="FUENTE_RECURSO" sqlType="STRING"/>
+		<param name="NOMBRE_FUENTERECURSOS" sqlType="STRING"/>
+		<param name="APROPIACIONINICIAL" sqlType="STRING"/>
+		<param name="CODIGO_CCPET" sqlType="STRING"/>
+		<param name="PROGRAMA" sqlType="STRING"/>
+		<param name="CODIGOUNIDADEJE" sqlType="STRING"/>
+		<param name="CODIGOBPIN" sqlType="STRING"/>
+		<param name="DETALLESECTORIAL" sqlType="STRING"/>
+		<param name="RECURSO_SGR" sqlType="STRING"/>
+		<param name="SECTOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="apropiacionesiniciales/apropiacionesinicialesdiferentes/num">
+		<call-query href="getApropiacionesinicialesNumApropiacionesInicialesDiferentesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE_CODIGO" query-param="NOMBRE_CODIGO"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="NOMBRE_AUXILIAR" query-param="NOMBRE_AUXILIAR"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="NOMBRE_CENTROCOSTO" query-param="NOMBRE_CENTROCOSTO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="NOMBRE_REFERENCIA" query-param="NOMBRE_REFERENCIA"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+			<with-param name="NOMBRE_FUENTERECURSOS" query-param="NOMBRE_FUENTERECURSOS"/>
+			<with-param name="APROPIACIONINICIAL" query-param="APROPIACIONINICIAL"/>
+			<with-param name="CODIGO_CCPET" query-param="CODIGO_CCPET"/>
+			<with-param name="PROGRAMA" query-param="PROGRAMA"/>
+			<with-param name="CODIGOUNIDADEJE" query-param="CODIGOUNIDADEJE"/>
+			<with-param name="CODIGOBPIN" query-param="CODIGOBPIN"/>
+			<with-param name="DETALLESECTORIAL" query-param="DETALLESECTORIAL"/>
+			<with-param name="RECURSO_SGR" query-param="RECURSO_SGR"/>
+			<with-param name="SECTOR" query-param="SECTOR"/>
+
+		</call-query>
+	</resource>
+	<query id="insertApropiacionesinicialesApropiacionInicial" keyColumns="COMPANIA,ANO,CODIGO,TERCERO,SUCURSAL,AUXILIAR,CENTRO_COSTO,REFERENCIA,FUENTE_RECURSO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO APROPIACIONESINICIALES (COMPANIA, ANO, CODIGO, TERCERO, SUCURSAL, AUXILIAR, CENTRO_COSTO, REFERENCIA, FUENTE_RECURSO, APROPIACIONINICIAL, CODIGO_CCPET, PROGRAMA, CODIGOUNIDADEJE, CODIGOBPIN, DETALLESECTORIAL, RECURSO_SGR, SECTOR, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :CODIGO, :TERCERO, :SUCURSAL, :AUXILIAR, :CENTRO_COSTO, :REFERENCIA, :FUENTE_RECURSO, :APROPIACIONINICIAL, :CODIGO_CCPET, :PROGRAMA, :CODIGOUNIDADEJE, :CODIGOBPIN, :DETALLESECTORIAL, :RECURSO_SGR, :SECTOR, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_CODIGO":"$CODIGO","KEY_TERCERO":"$TERCERO","KEY_SUCURSAL":"$SUCURSAL","KEY_AUXILIAR":"$AUXILIAR","KEY_CENTRO_COSTO":"$CENTRO_COSTO","KEY_REFERENCIA":"$REFERENCIA","KEY_FUENTE_RECURSO":"$FUENTE_RECURSO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="FUENTE_RECURSO" sqlType="STRING"/>
+		<param defaultValue="0" name="APROPIACIONINICIAL" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGO_CCPET" sqlType="STRING"/>
+		<param defaultValue="" name="PROGRAMA" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOUNIDADEJE" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOBPIN" sqlType="STRING"/>
+		<param defaultValue="" name="DETALLESECTORIAL" sqlType="STRING"/>
+		<param defaultValue="" name="RECURSO_SGR" sqlType="STRING"/>
+		<param defaultValue="" name="SECTOR" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="apropiacionesiniciales/apropiacioninicial">
+		<call-query href="insertApropiacionesinicialesApropiacionInicial">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+			<with-param name="APROPIACIONINICIAL" query-param="APROPIACIONINICIAL"/>
+			<with-param name="CODIGO_CCPET" query-param="CODIGO_CCPET"/>
+			<with-param name="PROGRAMA" query-param="PROGRAMA"/>
+			<with-param name="CODIGOUNIDADEJE" query-param="CODIGOUNIDADEJE"/>
+			<with-param name="CODIGOBPIN" query-param="CODIGOBPIN"/>
+			<with-param name="DETALLESECTORIAL" query-param="DETALLESECTORIAL"/>
+			<with-param name="RECURSO_SGR" query-param="RECURSO_SGR"/>
+			<with-param name="SECTOR" query-param="SECTOR"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteApropiacionesinicialesApropiacionInicial" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE APROPIACIONESINICIALES WHERE COMPANIA = :KEY_COMPANIA AND ANO = :KEY_ANO AND CODIGO = :KEY_CODIGO AND TERCERO = :KEY_TERCERO AND SUCURSAL = :KEY_SUCURSAL AND AUXILIAR = :KEY_AUXILIAR AND CENTRO_COSTO = :KEY_CENTRO_COSTO AND REFERENCIA = :KEY_REFERENCIA AND FUENTE_RECURSO = :KEY_FUENTE_RECURSO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_TERCERO" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_AUXILIAR" sqlType="STRING"/>
+		<param name="KEY_CENTRO_COSTO" sqlType="STRING"/>
+		<param name="KEY_REFERENCIA" sqlType="STRING"/>
+		<param name="KEY_FUENTE_RECURSO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="apropiacionesiniciales/apropiacioninicial">
+		<call-query href="deleteApropiacionesinicialesApropiacionInicial">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_TERCERO" query-param="KEY_TERCERO"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_AUXILIAR" query-param="KEY_AUXILIAR"/>
+			<with-param name="KEY_CENTRO_COSTO" query-param="KEY_CENTRO_COSTO"/>
+			<with-param name="KEY_REFERENCIA" query-param="KEY_REFERENCIA"/>
+			<with-param name="KEY_FUENTE_RECURSO" query-param="KEY_FUENTE_RECURSO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateApropiacionesinicialesApropiacionInicial" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE APROPIACIONESINICIALES SET APROPIACIONINICIAL=:APROPIACIONINICIAL, TERCERO=:TERCERO, SUCURSAL=:SUCURSAL, AUXILIAR=:AUXILIAR, CENTRO_COSTO=:CENTRO_COSTO, REFERENCIA=:REFERENCIA, FUENTE_RECURSO=:FUENTE_RECURSO, CODIGO_CCPET=:CODIGO_CCPET, PROGRAMA=:PROGRAMA, CODIGOUNIDADEJE=:CODIGOUNIDADEJE, CODIGOBPIN=:CODIGOBPIN, DETALLESECTORIAL=:DETALLESECTORIAL, RECURSO_SGR=:RECURSO_SGR, SECTOR=:SECTOR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE APROPIACIONESINICIALES.COMPANIA= :KEY_COMPANIA AND APROPIACIONESINICIALES.ANO= :KEY_ANO AND APROPIACIONESINICIALES.CODIGO= :KEY_CODIGO AND APROPIACIONESINICIALES.TERCERO= :KEY_TERCERO AND APROPIACIONESINICIALES.SUCURSAL= :KEY_SUCURSAL AND APROPIACIONESINICIALES.AUXILIAR= :KEY_AUXILIAR AND APROPIACIONESINICIALES.CENTRO_COSTO= :KEY_CENTRO_COSTO AND APROPIACIONESINICIALES.REFERENCIA= :KEY_REFERENCIA AND APROPIACIONESINICIALES.FUENTE_RECURSO= :KEY_FUENTE_RECURSO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="APROPIACIONINICIAL" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="FUENTE_RECURSO" sqlType="STRING"/>
+		<param name="CODIGO_CCPET" sqlType="STRING"/>
+		<param name="PROGRAMA" sqlType="STRING"/>
+		<param name="CODIGOUNIDADEJE" sqlType="STRING"/>
+		<param name="CODIGOBPIN" sqlType="STRING"/>
+		<param name="DETALLESECTORIAL" sqlType="STRING"/>
+		<param name="RECURSO_SGR" sqlType="STRING"/>
+		<param name="SECTOR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_TERCERO" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_AUXILIAR" sqlType="STRING"/>
+		<param name="KEY_CENTRO_COSTO" sqlType="STRING"/>
+		<param name="KEY_REFERENCIA" sqlType="STRING"/>
+		<param name="KEY_FUENTE_RECURSO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="apropiacionesiniciales/apropiacioninicial">
+		<call-query href="updateApropiacionesinicialesApropiacionInicial">
+			<with-param name="APROPIACIONINICIAL" query-param="APROPIACIONINICIAL"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+			<with-param name="CODIGO_CCPET" query-param="CODIGO_CCPET"/>
+			<with-param name="PROGRAMA" query-param="PROGRAMA"/>
+			<with-param name="CODIGOUNIDADEJE" query-param="CODIGOUNIDADEJE"/>
+			<with-param name="CODIGOBPIN" query-param="CODIGOBPIN"/>
+			<with-param name="DETALLESECTORIAL" query-param="DETALLESECTORIAL"/>
+			<with-param name="RECURSO_SGR" query-param="RECURSO_SGR"/>
+			<with-param name="SECTOR" query-param="SECTOR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_TERCERO" query-param="KEY_TERCERO"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_AUXILIAR" query-param="KEY_AUXILIAR"/>
+			<with-param name="KEY_CENTRO_COSTO" query-param="KEY_CENTRO_COSTO"/>
+			<with-param name="KEY_REFERENCIA" query-param="KEY_REFERENCIA"/>
+			<with-param name="KEY_FUENTE_RECURSO" query-param="KEY_FUENTE_RECURSO"/>
+
+		</call-query>
+	</resource>
+	<query id="getApropiacionesinicialesCentrocostoporcuentaanoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CENTRO_COSTO  FROM APROPIACIONESINICIALES WHERE COMPANIA = :COMPANIA AND ANO = :ANIO AND CODIGO = :CODCUENTA AND CENTRO_COSTO &lt;&gt; :CENTROCOSTOEXCLUIDO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CENTRO_COSTO":"$CENTRO_COSTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="CODCUENTA" sqlType="STRING"/>
+		<param name="CENTROCOSTOEXCLUIDO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="apropiacionesiniciales/centrocostoporcuentaano">
+		<call-query href="getApropiacionesinicialesCentrocostoporcuentaanoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="CODCUENTA" query-param="CODCUENTA"/>
+			<with-param name="CENTROCOSTOEXCLUIDO" query-param="CENTROCOSTOEXCLUIDO"/>
+
+		</call-query>
+	</resource>
+	<query id="getApropiacionesinicialesFuenteauxiliarporcodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  FUENTE_RECURSO, AUXILIAR AS AUX  FROM APROPIACIONESINICIALES WHERE COMPANIA = :COMPANIA AND ANO = :ANIO AND CODIGO = :CODCUENTA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FUENTE_RECURSO":"$FUENTE_RECURSO","AUX":"$AUX"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="CODCUENTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="apropiacionesiniciales/fuenteauxiliarporcodigo">
+		<call-query href="getApropiacionesinicialesFuenteauxiliarporcodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="CODCUENTA" query-param="CODCUENTA"/>
+
+		</call-query>
+	</resource>
+	<query id="getApropiacionesinicialesAuxiliaresQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  FUENTE_RECURSO, AUXILIAR, CENTRO_COSTO, REFERENCIA, TERCERO  FROM APROPIACIONESINICIALES WHERE COMPANIA = :COMPANIA AND ANO = :ANIO AND CODIGO = :CODCUENTA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FUENTE_RECURSO":"$FUENTE_RECURSO","AUXILIAR":"$AUXILIAR","CENTRO_COSTO":"$CENTRO_COSTO","REFERENCIA":"$REFERENCIA","TERCERO":"$TERCERO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="CODCUENTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="apropiacionesiniciales/auxiliares">
+		<call-query href="getApropiacionesinicialesAuxiliaresQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="CODCUENTA" query-param="CODCUENTA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateApropiacionesinicialesUpdateapropiacionesinicialespptal" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE APROPIACIONESINICIALES SET CODIGOBPIN=:CODIGOBPIN, CODIGO_CCPET=:CODIGO_CCPET, PROGRAMA=:PROGRAMA, CODIGOUNIDADEJE=:CODIGOUNIDADEJE, DETALLESECTORIAL=:DETALLESECTORIAL, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE APROPIACIONESINICIALES.COMPANIA= :KEY_COMPANIA AND APROPIACIONESINICIALES.ANO= :KEY_ANO AND APROPIACIONESINICIALES.CODIGO= :KEY_CODIGO AND APROPIACIONESINICIALES.TERCERO= :KEY_TERCERO AND APROPIACIONESINICIALES.SUCURSAL= :KEY_SUCURSAL AND APROPIACIONESINICIALES.AUXILIAR= :KEY_AUXILIAR AND APROPIACIONESINICIALES.CENTRO_COSTO= :KEY_CENTRO_COSTO AND APROPIACIONESINICIALES.REFERENCIA= :KEY_REFERENCIA AND APROPIACIONESINICIALES.FUENTE_RECURSO= :KEY_FUENTE_RECURSO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGOBPIN" sqlType="STRING"/>
+		<param name="CODIGO_CCPET" sqlType="STRING"/>
+		<param name="PROGRAMA" sqlType="STRING"/>
+		<param name="CODIGOUNIDADEJE" sqlType="STRING"/>
+		<param name="DETALLESECTORIAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_TERCERO" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_AUXILIAR" sqlType="STRING"/>
+		<param name="KEY_CENTRO_COSTO" sqlType="STRING"/>
+		<param name="KEY_REFERENCIA" sqlType="STRING"/>
+		<param name="KEY_FUENTE_RECURSO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="apropiacionesiniciales/updateapropiacionesinicialespptal">
+		<call-query href="updateApropiacionesinicialesUpdateapropiacionesinicialespptal">
+			<with-param name="CODIGOBPIN" query-param="CODIGOBPIN"/>
+			<with-param name="CODIGO_CCPET" query-param="CODIGO_CCPET"/>
+			<with-param name="PROGRAMA" query-param="PROGRAMA"/>
+			<with-param name="CODIGOUNIDADEJE" query-param="CODIGOUNIDADEJE"/>
+			<with-param name="DETALLESECTORIAL" query-param="DETALLESECTORIAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_TERCERO" query-param="KEY_TERCERO"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_AUXILIAR" query-param="KEY_AUXILIAR"/>
+			<with-param name="KEY_CENTRO_COSTO" query-param="KEY_CENTRO_COSTO"/>
+			<with-param name="KEY_REFERENCIA" query-param="KEY_REFERENCIA"/>
+			<with-param name="KEY_FUENTE_RECURSO" query-param="KEY_FUENTE_RECURSO"/>
+
+		</call-query>
+	</resource>
+
+</data>

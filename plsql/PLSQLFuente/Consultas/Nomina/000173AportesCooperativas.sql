@@ -1,0 +1,25 @@
+SELECT HISTORICOS.ID_DE_PROCESO, 
+                HISTORICOS.COMPANIA,
+                HISTORICOS.ANO,
+                HISTORICOS.MES, 
+                HISTORICOS.PERIODO, 
+                HISTORICOS.ID_DE_EMPLEADO, 
+                HISTORICOS.ID_DE_CONCEPTO, 
+                HISTORICOS.FECHA, 
+                HISTORICOS.VALOR AS APORTE, 
+                CONCEPTOS.NOMBRE_CONCEPTO AS NOMBRE_CONCEPTO,
+                PERSONAL.NOMBRECOMPLETO AS NOMCOMPLETO,
+                PERSONAL.NUMERO_DCTO
+                FROM  HISTORICOS LEFT JOIN
+                CONCEPTOS ON 
+                 HISTORICOS.COMPANIA = CONCEPTOS.COMPANIA  AND 
+                 HISTORICOS.ID_DE_CONCEPTO = CONCEPTOS.ID_DE_CONCEPTO   LEFT JOIN 
+                PERSONAL ON 
+                 HISTORICOS.COMPANIA = PERSONAL.COMPANIA  AND 
+                 HISTORICOS.ID_DE_EMPLEADO = PERSONAL.ID_DE_EMPLEADO 
+                WHERE    HISTORICOS.COMPANIA = s$compania$s 
+                AND   HISTORICOS.ANO = s$ano1$s 
+                AND   HISTORICOS.MES = s$mes1$s 
+                AND  HISTORICOS.PERIODO = s$periodo1$s 
+                AND  HISTORICOS.ID_DE_CONCEPTO NOT IN (130,131,132,134)
+                AND   CONCEPTOS.CLASE =5

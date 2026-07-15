@@ -1,0 +1,207 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	template="/templateModalDatos.xhtml" xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+            } 
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TT_FR1243}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<section class="radiusModal">
+			<f:event type="preRenderView"
+				listener="#{ubicacionsControlador.cargarForma}" />
+			<div id="FR1243" style="height: 610px;">
+				<h:form style="height: 100%;" id="FRFR1243">
+					<p:growl id="alert" showDetail="true" sticky="false"
+						widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+					<div id="PL2381" class="
+"
+						style="position: relative; height: 40px;">
+						<h:outputLabel id="LB31813" value="#{idm.TT_LB31813}"
+							style="position: absolute; width:349px; height: 25px; left: 109px;   top: 14px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 16px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}" id="dlg"
+						widgetVar="dlg" resizable="false" modal="true"
+						rendered="#{ubicacionsControlador.permisos[0]}"
+						position="center top"
+						onHide="restaurarCampos(['CP38270','CP38271'])">
+						<h:panelGrid columns="2" cellpadding="2">
+							<h:outputLabel value="#{idm.TG_CODIGO7}:" id="LCP38270" />
+							<p:inputText id="CP38270" widgetVar="CP38270"
+								styleClass="inputTab"
+								value="#{ubicacionsControlador.registro.campos['CODIGO']}"
+								label="LCP38270" style=" width: 95%; float: left;">
+							</p:inputText>
+							<h:outputLabel value="#{idm.TG_NOMBRE3}:" id="LCP38271" />
+							<p:inputText id="CP38271" widgetVar="CP38271"
+								styleClass="inputTab"
+								value="#{ubicacionsControlador.registro.campos['NOMBRE']}"
+								label="LCP38271" style=" width: 95%; float: left;">
+							</p:inputText>
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TI_GUARDAR}"
+										style="padding:10px;" update="FRFR1243,"
+										actionListener="#{ubicacionsControlador.agregarRegistroNuevo}"
+										oncomplete="PF('dlg').hide(); PF('blockGuardar').hide();"
+										onclick="     if (!validarVaciosModal(['CP38270','CP38271'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockGuardar').show();" />
+									<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+										href="#" onclick="PF('dlg').hide();" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<p:confirmDialog global="true" showEffect="fade">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<div id="PL2382" class="
+"
+						style="position: relative; height: 10px;">
+						<p:remoteCommand name="refreshTab" update="TBFR1243"
+							oncomplete="PF('blockGuardar').hide();" />
+						<p:dataTable id="TBFR1243" var="reg"
+							value="#{ubicacionsControlador.listaInicial}" editable="true"
+							widgetVar="TBFR1243" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="10" rowIndexVar="rowNun" paginator="true" scrollable="true"
+							scrollWidth="100%" lazy="true">
+							<f:facet name="{Exporters}"
+								rendered="#{ubicacionsControlador.permisos[4] }">
+								<h:commandLink rendered="#{ubicacionsControlador.permisos[4] }"
+									title="#{idm.TI_VER_EXCEL}">
+									<p:graphicImage name="/images/general/excel.png" width="24" />
+									<p:dataExporter type="xls" target="TBFR1243" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+								<h:commandLink rendered="#{ubicacionsControlador.permisos[4] }"
+									title="#{idm.TI_VER_PDF}">
+									<p:graphicImage name="/images/general/pdf.png" width="24" />
+									<p:dataExporter type="pdf" target="TBFR1243" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+							</f:facet>
+							<p:ajax event="rowEdit" update=":FRFR1243:alert,"
+								listener="#{ubicacionsControlador.editar}"
+								oncomplete="refreshTab(); mostarEditor();"
+								onstart="PF('blockGuardar').show();" />
+							<p:ajax event="rowEditCancel"
+								listener="#{ubicacionsControlador.cancelarEdicion}"
+								oncomplete="  mostarEditor();" />
+							<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+							<f:facet name="header">
+								<div style="position: relative; height: 50px">
+									<h:panelGroup class="acme"
+										rendered="#{ubicacionsControlador.permisos[0]  }">
+										<h:outputLink value="javascript:void(0)"
+											onclick="
+		PF('dlg').show();
+		"
+											title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;">
+											<center>
+												<p:graphicImage name="/images/menus/32/add.png" />
+												<div>#{idm.TI_NUEVO}</div>
+											</center>
+										</h:outputLink>
+									</h:panelGroup>
+									<p:remoteCommand name="rcCerrar"
+										actionListener="#{ubicacionsControlador.ejecutarrcCerrar}" />
+									<h:panelGroup class="acme">
+										<p:commandLink onclick="cerrarModalDefault();"
+											title="#{idm.TI_CERRAR_FORMULARIO}"
+											style="padding-top: 10px;" id="btCerrar">
+											<center>
+												<p:graphicImage name="/images/menus/32/close.png" />
+												<div>#{idm.TI_CERRAR}</div>
+											</center>
+										</p:commandLink>
+									</h:panelGroup>
+								</div>	 
+                            #{idm.TT_FR1243}
+                            </f:facet>
+							<p:column headerText="#{idm.TG_CODIGO7}"
+								filterBy="#{reg.campos['CODIGO']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="78" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['CODIGO']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP38270" styleClass="inputTab"
+											value="#{reg.campos['CODIGO']}" style="width:100%">
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE3}"
+								filterBy="#{reg.campos['NOMBRE']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="432" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['NOMBRE']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP38271" styleClass="inputTab"
+											value="#{reg.campos['NOMBRE']}" style="width:100%">
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column width="30" exportable="false"
+								rendered="#{ubicacionsControlador.permisos[2] }">
+								<p:rowEditor />
+							</p:column>
+							<p:column width="30" exportable="false"
+								rendered="#{ubicacionsControlador.permisos[1] }">
+								<p:commandButton icon="ui-icon-trash"
+									title="#{idm.TI_ELIMINAR_REGISTRO}"
+									onclick="PF('blockGuardar').show()"
+									action="#{ubicacionsControlador.eliminarReg(reg)}"
+									oncomplete="refreshTab(); PF('blockGuardar').hide();"
+									update=":FRFR1243:alert,"
+									style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;">
+									<p:confirm header="#{sessionBean.tituloMensajes}"
+										message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+								</p:commandButton>
+							</p:column>
+						</p:dataTable>
+						<p:blockUI block="FRFR1243" widgetVar="blockGuardar">
+                        #{idm.TI_GUARDANDO_CAMBIOS}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+						<p:blockUI block="FRFR1243" widgetVar="blockCarga"
+							trigger="TBFR1243,">
+                        #{idm.TI_CARGANDO}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+					</div>
+				</h:form>
+			</div>
+		</section>
+	</ui:define>
+</ui:composition>

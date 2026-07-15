@@ -1,0 +1,90 @@
+﻿<data name="vpfactura" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getVpfacturaPagFacturaacuerdoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID, NUMERO_FACTURA  FROM VP_FACTURA WHERE COMPANIA = :COMPANIA AND CODIGO_PROYECTO = :PROYECTO AND ID_BENEFICIARIOS = :BENEFICIARIO AND ESTADO IN ('A')) WHERE (CASE WHEN NUMERO_FACTURA IS NULL THEN ' ' ELSE UPPER(NUMERO_FACTURA) END)  LIKE UPPER( '%' || :NUMERO_FACTURA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","NUMERO_FACTURA":"$NUMERO_FACTURA(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROYECTO" sqlType="STRING"/>
+		<param name="BENEFICIARIO" sqlType="STRING"/>
+		<param name="NUMERO_FACTURA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vpfactura/facturaacuerdo/pag">
+		<call-query href="getVpfacturaPagFacturaacuerdoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROYECTO" query-param="PROYECTO"/>
+			<with-param name="BENEFICIARIO" query-param="BENEFICIARIO"/>
+			<with-param name="NUMERO_FACTURA" query-param="NUMERO_FACTURA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getVpfacturaNumFacturaacuerdoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID, NUMERO_FACTURA  FROM VP_FACTURA WHERE COMPANIA = :COMPANIA AND CODIGO_PROYECTO = :PROYECTO AND ID_BENEFICIARIOS = :BENEFICIARIO AND ESTADO IN ('A')) WHERE (CASE WHEN NUMERO_FACTURA IS NULL THEN ' ' ELSE UPPER(NUMERO_FACTURA) END)  LIKE UPPER( '%' || :NUMERO_FACTURA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROYECTO" sqlType="STRING"/>
+		<param name="BENEFICIARIO" sqlType="STRING"/>
+		<param name="NUMERO_FACTURA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vpfactura/facturaacuerdo/num">
+		<call-query href="getVpfacturaNumFacturaacuerdoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROYECTO" query-param="PROYECTO"/>
+			<with-param name="BENEFICIARIO" query-param="BENEFICIARIO"/>
+			<with-param name="NUMERO_FACTURA" query-param="NUMERO_FACTURA"/>
+
+		</call-query>
+	</resource>
+	<query id="getVpfacturaPagFiltrarporcompaniayclaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  GN_ACUERDO.ID, VP_FACTURA.ID ID_FACTURA, VP_FACTURA.CODIGO_PROYECTO, VP_FACTURA.NUMERO_FACTURA  FROM VP_FACTURA INNER JOIN GN_ACUERDO ON VP_FACTURA.ID = GN_ACUERDO.REFERENCIA WHERE VP_FACTURA.COMPANIA = :COMPANIA AND VP_FACTURA.CLASE_PROYECTO = :CLASE ORDER BY CODIGO_PROYECTO, NUMERO_FACTURA) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN CODIGO_PROYECTO IS NULL THEN ' ' ELSE UPPER(CODIGO_PROYECTO) END)  LIKE UPPER(:CODIGO_PROYECTO || '%')  AND (CASE WHEN NUMERO_FACTURA IS NULL THEN ' ' ELSE UPPER(NUMERO_FACTURA) END)  LIKE UPPER( '%' || :NUMERO_FACTURA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","ID_FACTURA":"$ID_FACTURA","CODIGO_PROYECTO":"$CODIGO_PROYECTO","NUMERO_FACTURA":"$NUMERO_FACTURA(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="CODIGO_PROYECTO" sqlType="STRING"/>
+		<param name="NUMERO_FACTURA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vpfactura/filtrarporcompaniayclase/pag">
+		<call-query href="getVpfacturaPagFiltrarporcompaniayclaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="CODIGO_PROYECTO" query-param="CODIGO_PROYECTO"/>
+			<with-param name="NUMERO_FACTURA" query-param="NUMERO_FACTURA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getVpfacturaNumFiltrarporcompaniayclaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  GN_ACUERDO.ID, VP_FACTURA.ID ID_FACTURA, VP_FACTURA.CODIGO_PROYECTO, VP_FACTURA.NUMERO_FACTURA  FROM VP_FACTURA INNER JOIN GN_ACUERDO ON VP_FACTURA.ID = GN_ACUERDO.REFERENCIA WHERE VP_FACTURA.COMPANIA = :COMPANIA AND VP_FACTURA.CLASE_PROYECTO = :CLASE ORDER BY CODIGO_PROYECTO, NUMERO_FACTURA) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN CODIGO_PROYECTO IS NULL THEN ' ' ELSE UPPER(CODIGO_PROYECTO) END)  LIKE UPPER(:CODIGO_PROYECTO || '%')  AND (CASE WHEN NUMERO_FACTURA IS NULL THEN ' ' ELSE UPPER(NUMERO_FACTURA) END)  LIKE UPPER( '%' || :NUMERO_FACTURA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="CODIGO_PROYECTO" sqlType="STRING"/>
+		<param name="NUMERO_FACTURA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vpfactura/filtrarporcompaniayclase/num">
+		<call-query href="getVpfacturaNumFiltrarporcompaniayclaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="CODIGO_PROYECTO" query-param="CODIGO_PROYECTO"/>
+			<with-param name="NUMERO_FACTURA" query-param="NUMERO_FACTURA"/>
+
+		</call-query>
+	</resource>
+
+</data>

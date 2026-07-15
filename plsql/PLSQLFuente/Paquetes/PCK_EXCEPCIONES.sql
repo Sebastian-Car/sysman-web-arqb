@@ -1,0 +1,204 @@
+create or replace PACKAGE PCK_EXCEPCIONES AS 
+  
+  /*Excepcion lanzada en operaciones de insert */
+  EXC_INSERTAR  EXCEPTION;
+  PRAGMA EXCEPTION_INIT(EXC_INSERTAR,-20501); 
+
+  /*Excepcion lanzada en operaciones de update */
+  EXC_ACTUALIZAR  EXCEPTION;
+  PRAGMA EXCEPTION_INIT(EXC_ACTUALIZAR,-20502);
+
+  /*Excepcion lanzada en operaciones de delete */   
+  EXC_ELIMINAR  EXCEPTION;
+  PRAGMA EXCEPTION_INIT(EXC_ELIMINAR,-20503);
+
+  /*Excepcion lanzada en operaciones de merge */   
+  EXC_MERGE  EXCEPTION;
+  PRAGMA EXCEPTION_INIT(EXC_MERGE,-20504);
+
+
+  /*Excepcion para el modulo general */
+	EXC_GENERAL EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_GENERAL,-20000);
+
+	/*Excepcion para el modulo de contabilidad */
+	EXC_CONTABILIDAD EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_CONTABILIDAD,-20001);
+
+	/*Excepcion para el modulo de presupuesto*/
+	EXC_PRESUPUESTO EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_PRESUPUESTO,-20003);
+
+	/*Excepcion para el modulo de distribucion*/
+	EXC_DISTRIBUCION EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_DISTRIBUCION,-20004);
+
+	/*Excepcion para el modulo de facturacion*/
+	EXC_FACTURACION EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_FACTURACION,-20005);
+
+	/*Excepcion para el modulo de nomina*/
+	EXC_NOMINA EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_NOMINA,-20006);
+
+	/*Excepcion para el modulo de */
+	EXC_CONTROLCONTRATOS EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_CONTROLCONTRATOS,-20009);
+
+	/*Excepcion para el modulo de almacen*/
+	EXC_ALMACEN EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_ALMACEN,-20010);
+
+	/*Excepcion para el modulo de consoludador*/
+	EXC_CONSOLIDADOR EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_CONSOLIDADOR,-20011);
+
+	/*Excepcion para el modulo de */
+	EXC_INGRESOSVARIOS EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_INGRESOSVARIOS,-20012);
+
+	/*Excepcion para el modulo de recaudo predial*/
+	EXC_RECAUDOPREDIAL EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_RECAUDOPREDIAL,-20013);
+
+	/*Excepcion para el modulo de recaudo comercio*/
+	EXC_RECAUDOCOMERCIO EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_RECAUDOCOMERCIO,-20014);
+
+	/*Excepcion para el modulo de sysmanpj*/
+	EXC_SYSMANPJ EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_SYSMANPJ,-20015);
+
+	/*Excepcion para el modulo de precontractual*/
+	EXC_PRECONTRACTUAL EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_PRECONTRACTUAL,-20019);
+
+	/*Excepcion para el modulo de contratacion*/
+	EXC_CONTRATACION EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_CONTRATACION,-20020);
+
+	/*Excepcion para el modulo de hojas de vida*/
+	EXC_HOJAS_VIDA EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_HOJAS_VIDA,-20021);
+
+	/*Excepcion para el modulo de radicacion*/
+	EXC_RADICACION EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_RADICACION,-20030);
+
+  /*Excepcion para el modulo de Workflow (35)*/
+  EXC_WORKFLOW EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_WORKFLOW,-20035);
+
+	/*Excepcion para el modulo de planeacion*/
+	EXC_PLANEACION EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_PLANEACION,-20040);
+
+	/*Excepcion para el modulo de sysmaph*/
+	EXC_SYSMANPH EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_SYSMANPH,-20042);
+
+	/*Excepcion para el modulo de sysmanalhc*/
+	EXC_SYSMANALHC EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_SYSMANALHC,-20043);
+
+	/*Excepcion para el modulo de exogenas*/
+	EXC_EXOGENAS EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_EXOGENAS,-20047);
+
+	/*Excepcion para el modulo de sysmansia*/
+	EXC_SYSMANSIA EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_SYSMANSIA,-20048);
+
+	/*Excepcion para el modulo de mantenimiento de activos*/
+	EXC_MANTENIMIENTO EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_MANTENIMIENTO,-20050);
+
+	/*Excepcion para el modulo de banco de proyectos*/
+	EXC_BANCO_PROYECTOS EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_BANCO_PROYECTOS,-20052);
+
+	/*Excepcion para el modulo de predial*/
+	EXC_PREDIAL EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_PREDIAL,-20060);
+
+  /*Excepcion para el modulo de Plusvalia*/
+	EXC_PLUSVALIA EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_PLUSVALIA,-20061);
+
+	/*Excepcion para el modulo de programacion de visitas*/
+	EXC_PROGRAMACION_VISITAS EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_PROGRAMACION_VISITAS,-20065);
+
+	/*Excepcion para el modulo de carpeta comercial*/
+	EXC_CARPETA_COMERCIAL EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_CARPETA_COMERCIAL,-20066);
+
+	/*Excepcion para el modulo de sysmansf*/
+	EXC_SYSMANSF EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_SYSMANSF,-20069);
+
+	/*Excepcion para el modulo de comercio*/
+	EXC_COMERCIO EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_COMERCIO,-20070);
+
+	/*Excepcion para el modulo de facturacion de servicios publicos*/
+	EXC_FACTURACION_SERV_PUBLICOS EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_FACTURACION_SERV_PUBLICOS,-20074);
+
+	/*Excepcion para el modulo de energia*/
+	EXC_ENERGIA EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_ENERGIA,-20076);
+
+	/*Excepcion para el modulo de impuestos declarados*/
+	EXC_IMPUESTOSD EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_IMPUESTOSD,-20078);
+
+	/*Excepcion para el modulo de */
+	EXC_SYSMANWEBL EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_SYSMANWEBL,-20080);
+
+    /*Excepcion para el modulo de Auditoria Cuentas Medicas*/
+	EXC_AUDITORIACUENTASMEDICAS EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_AUDITORIACUENTASMEDICAS,-20084);
+
+	/*Excepcion para el modulo de */
+	EXC_RIPS EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_RIPS,-20085);
+
+	/*Excepcion para el modulo de circulacion y transito*/
+	EXC_CIRCULACION_TRANSITO EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_CIRCULACION_TRANSITO,-20086);
+
+	/*Excepcion para el modulo de interfaz(contabilizar)*/
+	EXC_INTERFAZ EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_INTERFAZ,-20096);
+
+	/*Excepcion para el modulo de utilidades especiales*/
+	EXC_ENTESDECONTROL EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_ENTESDECONTROL,-20099);
+
+  /*Excepcion para el modulo de sysman*/
+	EXC_VIATICOS EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_VIATICOS,-20007);	
+
+	/*Excepcion para el modulo de sysman*/
+	EXC_SYSMAN EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_SYSMAN,-20999);	
+
+  /*Excepcion para el modulo de plan de desarrollo*/
+	EXC_PLANDES EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_PLANDES,-20067);	
+
+  /*Excepcion para el modulo de chip fut*/
+	EXC_ENTESCONTROL EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_ENTESCONTROL,-20099);	  
+
+  /*Excepcion para el modulo de circular única*/
+	EXC_CIRUNICA EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_CIRUNICA,-20300);
+
+   /*Excepcion para el modulo de circular única*/
+	EXC_TRANSAUTOMAT EXCEPTION;
+	PRAGMA EXCEPTION_INIT(EXC_TRANSAUTOMAT,-20098);
+
+END PCK_EXCEPCIONES;

@@ -1,0 +1,134 @@
+﻿<data name="consolidadas" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getConsolidadasPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CONSOLIDADA.COMPANIACON, CONSOLIDADA.NITCOMPANIA, COMPANIA.NOMBRE NOMBRECOMP,(CASE CONSOLIDADA.APLICA_ALM WHEN 0 THEN 'false' ELSE 'true' END) APLICA_ALM FROM CONSOLIDADA INNER JOIN COMPANIA ON COMPANIA.CODIGO = CONSOLIDADA.NITCOMPANIA WHERE COMPANIACON=:CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIACON":"$COMPANIACON","NITCOMPANIA":"$NITCOMPANIA","NOMBRECOMP":"$NOMBRECOMP","APLICA_ALM":"$APLICA_ALM(type:boolean)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="consolidadas/porcodigo">
+		<call-query href="getConsolidadasPorCodigoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getConsolidadasNitConsolidadaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NITCOMPANIA  FROM CONSOLIDADA WHERE COMPANIACON = :CODIGO ORDER BY NITCOMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NITCOMPANIA":"$NITCOMPANIA"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="consolidadas/nitconsolidada">
+		<call-query href="getConsolidadasNitConsolidadaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertConsolidadas" keyColumns="COMPANIACON,NITCOMPANIA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CONSOLIDADA (COMPANIACON, NITCOMPANIA, APLICA_ALM, DATE_CREATED, CREATED_BY) VALUES (:COMPANIACON, :NITCOMPANIA, :APLICA_ALM, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIACON":"$COMPANIACON","KEY_NITCOMPANIA":"$NITCOMPANIA"}]}}		</result>
+		<param name="COMPANIACON" sqlType="STRING"/>
+		<param name="NITCOMPANIA" sqlType="STRING"/>
+		<param defaultValue="0" name="APLICA_ALM" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="consolidadas">
+		<call-query href="insertConsolidadas">
+			<with-param name="COMPANIACON" query-param="COMPANIACON"/>
+			<with-param name="NITCOMPANIA" query-param="NITCOMPANIA"/>
+			<with-param name="APLICA_ALM" query-param="APLICA_ALM"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteConsolidadas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CONSOLIDADA WHERE CONSOLIDADA.COMPANIACON= :KEY_COMPANIACON AND CONSOLIDADA.NITCOMPANIA= :KEY_NITCOMPANIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIACON" sqlType="STRING"/>
+		<param name="KEY_NITCOMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="consolidadas">
+		<call-query href="deleteConsolidadas">
+			<with-param name="KEY_COMPANIACON" query-param="KEY_COMPANIACON"/>
+			<with-param name="KEY_NITCOMPANIA" query-param="KEY_NITCOMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getConsolidadasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CONSOLIDADA.COMPANIACON, CONSOLIDADA.NITCOMPANIA, COMPANIA.NOMBRE NOMBRECOMP,(CASE CONSOLIDADA.APLICA_ALM WHEN 0 THEN 'false' ELSE 'true' END) APLICA_ALM FROM CONSOLIDADA INNER JOIN COMPANIA ON COMPANIA.CODIGO = CONSOLIDADA.NITCOMPANIA WHERE COMPANIACON=:CODIGO) INI WHERE (CASE WHEN NITCOMPANIA IS NULL THEN ' ' ELSE UPPER(NITCOMPANIA) END) LIKE UPPER(CONCAT(CONCAT('%',:NITCOMPANIA), '%')) AND (CASE WHEN NOMBRECOMP IS NULL THEN ' ' ELSE UPPER(NOMBRECOMP) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRECOMP), '%')) AND (CASE WHEN APLICA_ALM IS NULL THEN ' ' ELSE UPPER(APLICA_ALM) END) LIKE UPPER(CONCAT(:APLICA_ALM, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIACON":"$COMPANIACON","NITCOMPANIA":"$NITCOMPANIA","NOMBRECOMP":"$NOMBRECOMP","APLICA_ALM":"$APLICA_ALM(type:boolean)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NITCOMPANIA" sqlType="STRING"/>
+		<param name="NOMBRECOMP" sqlType="STRING"/>
+		<param name="APLICA_ALM" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="consolidadas">
+		<call-query href="getConsolidadasPaginaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NITCOMPANIA" query-param="NITCOMPANIA"/>
+			<with-param name="NOMBRECOMP" query-param="NOMBRECOMP"/>
+			<with-param name="APLICA_ALM" query-param="APLICA_ALM"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getConsolidadasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CONSOLIDADA.COMPANIACON, CONSOLIDADA.NITCOMPANIA, COMPANIA.NOMBRE NOMBRECOMP,(CASE CONSOLIDADA.APLICA_ALM WHEN 0 THEN 'false' ELSE 'true' END) APLICA_ALM FROM CONSOLIDADA INNER JOIN COMPANIA ON COMPANIA.CODIGO = CONSOLIDADA.NITCOMPANIA WHERE COMPANIACON=:CODIGO) INI WHERE (CASE WHEN NITCOMPANIA IS NULL THEN ' ' ELSE UPPER(NITCOMPANIA) END) LIKE UPPER(CONCAT(CONCAT('%',:NITCOMPANIA), '%')) AND (CASE WHEN NOMBRECOMP IS NULL THEN ' ' ELSE UPPER(NOMBRECOMP) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRECOMP), '%')) AND (CASE WHEN APLICA_ALM IS NULL THEN ' ' ELSE UPPER(APLICA_ALM) END) LIKE UPPER(CONCAT(:APLICA_ALM, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NITCOMPANIA" sqlType="STRING"/>
+		<param name="NOMBRECOMP" sqlType="STRING"/>
+		<param name="APLICA_ALM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="consolidadas/numero">
+		<call-query href="getConsolidadasNumeroQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NITCOMPANIA" query-param="NITCOMPANIA"/>
+			<with-param name="NOMBRECOMP" query-param="NOMBRECOMP"/>
+			<with-param name="APLICA_ALM" query-param="APLICA_ALM"/>
+
+		</call-query>
+	</resource>
+	<query id="updateConsolidadas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CONSOLIDADA SET COMPANIACON=:COMPANIACON, NITCOMPANIA=:NITCOMPANIA, APLICA_ALM=:APLICA_ALM, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CONSOLIDADA.COMPANIACON= :KEY_COMPANIACON AND CONSOLIDADA.NITCOMPANIA= :KEY_NITCOMPANIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIACON" sqlType="STRING"/>
+		<param name="NITCOMPANIA" sqlType="STRING"/>
+		<param name="APLICA_ALM" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIACON" sqlType="STRING"/>
+		<param name="KEY_NITCOMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="consolidadas">
+		<call-query href="updateConsolidadas">
+			<with-param name="COMPANIACON" query-param="COMPANIACON"/>
+			<with-param name="NITCOMPANIA" query-param="NITCOMPANIA"/>
+			<with-param name="APLICA_ALM" query-param="APLICA_ALM"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIACON" query-param="KEY_COMPANIACON"/>
+			<with-param name="KEY_NITCOMPANIA" query-param="KEY_NITCOMPANIA"/>
+
+		</call-query>
+	</resource>
+
+</data>

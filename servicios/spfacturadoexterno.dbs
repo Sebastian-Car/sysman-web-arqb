@@ -1,0 +1,89 @@
+﻿<data name="spfacturadoexterno" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSpfacturadoexternoRecaudadoporcicloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SUM(VALOR_RECAUDO) RECAUDADO  FROM SP_FACTURADO_EXTERNO WHERE COMPANIA = :COMPANIA AND CICLO = :CICLO AND ANO = :ANO AND PERIODO = :PERIODO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RECAUDADO":"$RECAUDADO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfacturadoexterno/recaudadoporciclo">
+		<call-query href="getSpfacturadoexternoRecaudadoporcicloQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSpfacturadoexternoPorciclo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM   SP_FACTURADO_EXTERNO WHERE COMPANIA = :COMPANIA AND CICLO      = :CICLO AND ANO        = :ANO AND PERIODO    = :PERIODO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="spfacturadoexterno/porciclo">
+		<call-query href="deleteSpfacturadoexternoPorciclo">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSpfacturadoexternoFacturadosExcel" keyColumns="COMPANIA,CICLO,CODIGORUTA,ANO,PERIODO,CONCEPTO,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_FACTURADO_EXTERNO (CONCEPTO, COMPANIA, CONSECUTIVO, CODIGORUTA, CICLO, ANO, VALOR_FACTURADO, PERIODO, DATE_CREATED, CREATED_BY) VALUES (:CONCEPTO, :COMPANIA, :CONSECUTIVO, :CODIGORUTA, :CICLO, :ANO, :VALOR_FACTURADO, :PERIODO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CICLO":"$CICLO(type:integer)","KEY_CODIGORUTA":"$CODIGORUTA","KEY_ANO":"$ANO(type:integer)","KEY_PERIODO":"$PERIODO","KEY_CONCEPTO":"$CONCEPTO(type:integer)","KEY_CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_FACTURADO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="spfacturadoexterno/facturadosexcel">
+		<call-query href="insertSpfacturadoexternoFacturadosExcel">
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="VALOR_FACTURADO" query-param="VALOR_FACTURADO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpfacturadoexternoConsultarTotalRecaudoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SUM(SP_FACTURADO_EXTERNO.VALOR_RECAUDO) TOTALRECAUDO  FROM SP_FACTURADO_EXTERNO WHERE SP_FACTURADO_EXTERNO.FECHA_PAGO BETWEEN :FECHAINICIAL AND :FECHAFINAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTALRECAUDO":"$TOTALRECAUDO(type:integer)"}]}}		</result>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfacturadoexterno/consultartotalrecaudo">
+		<call-query href="getSpfacturadoexternoConsultarTotalRecaudoQuery">
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+
+		</call-query>
+	</resource>
+
+</data>

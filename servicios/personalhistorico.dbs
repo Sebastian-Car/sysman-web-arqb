@@ -1,0 +1,208 @@
+﻿<data name="personalhistorico" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="updatePersonalhistoricoEnvioDeCorreo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PERSONAL_HISTORICO SET ENVIO_CORREO                      = ENVIO_CORREO + 1 WHERE PERSONAL_HISTORICO.COMPANIA     = :COMPANIA AND PERSONAL_HISTORICO.ID_DE_PROCESO  = :ID_DE_PROCESO AND PERSONAL_HISTORICO.ANO            = :ANO AND PERSONAL_HISTORICO.MES            = :MES AND PERSONAL_HISTORICO.PERIODO        = :PERIODO AND PERSONAL_HISTORICO.ID_DE_EMPLEADO = :ID_DE_EMPLEADO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="personalhistorico/enviodecorreo">
+		<call-query href="updatePersonalhistoricoEnvioDeCorreo">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPersonalhistoricoPagTodosporcompaniayestadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TO_CHAR(ID_DE_EMPLEADO) CODIGO, NOMBRECOMPLETO NOMBRE  FROM PERSONAL_HISTORICO WHERE COMPANIA = :COMPANIA AND ESTADO_ACTUAL NOT IN(3)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="personalhistorico/todosporcompaniayestado/pag">
+		<call-query href="getPersonalhistoricoPagTodosporcompaniayestadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPersonalhistoricoNumTodosporcompaniayestadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TO_CHAR(ID_DE_EMPLEADO) CODIGO, NOMBRECOMPLETO NOMBRE  FROM PERSONAL_HISTORICO WHERE COMPANIA = :COMPANIA AND ESTADO_ACTUAL NOT IN(3)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="personalhistorico/todosporcompaniayestado/num">
+		<call-query href="getPersonalhistoricoNumTodosporcompaniayestadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getPersonalhistoricoPagListacambiarfondoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, ID_DE_PROCESO, ANO, MES, PERIODO, ID_DE_EMPLEADO, NOMBRECOMPLETO, ID_DEL_FONDO, NOMBRE_FONDOPENSION, FONDO_SALUD, NOMBRE_FONDOSALUD, FONDO_RIESGOS, NOMBRE_FONDORIESGOS, FONDO_PENSION_VOL, NOMBRE_FONDOPENSION_VOL, MEDICINA_PREPAGADA, NOMBRE_MEDICINAPREPAGADA FROM PERSONAL_HISTORICO WHERE COMPANIA = :COMPANIA AND ID_DE_PROCESO = :PROCESO AND ANO = :ANO AND MES = :MES AND PERIODO = :PERIODO ORDER BY ID_DE_EMPLEADO) INI WHERE (CASE WHEN ID_DE_EMPLEADO IS NULL THEN ' ' ELSE UPPER(ID_DE_EMPLEADO) END) LIKE UPPER(CONCAT(:ID_DE_EMPLEADO, '%')) AND (CASE WHEN NOMBRECOMPLETO IS NULL THEN ' ' ELSE UPPER(NOMBRECOMPLETO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRECOMPLETO), '%')) AND (CASE WHEN ID_DEL_FONDO IS NULL THEN ' ' ELSE UPPER(ID_DEL_FONDO) END) LIKE UPPER(CONCAT(:ID_DEL_FONDO, '%')) AND (CASE WHEN NOMBRE_FONDOPENSION IS NULL THEN ' ' ELSE UPPER(NOMBRE_FONDOPENSION) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_FONDOPENSION), '%')) AND (CASE WHEN FONDO_SALUD IS NULL THEN ' ' ELSE UPPER(FONDO_SALUD) END) LIKE UPPER(CONCAT(:FONDO_SALUD, '%')) AND (CASE WHEN NOMBRE_FONDOSALUD IS NULL THEN ' ' ELSE UPPER(NOMBRE_FONDOSALUD) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_FONDOSALUD), '%')) AND (CASE WHEN FONDO_RIESGOS IS NULL THEN ' ' ELSE UPPER(FONDO_RIESGOS) END) LIKE UPPER(CONCAT(:FONDO_RIESGOS, '%')) AND (CASE WHEN NOMBRE_FONDORIESGOS IS NULL THEN ' ' ELSE UPPER(NOMBRE_FONDORIESGOS) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_FONDORIESGOS), '%')) AND (CASE WHEN FONDO_PENSION_VOL IS NULL THEN ' ' ELSE UPPER(FONDO_PENSION_VOL) END) LIKE UPPER(CONCAT(:FONDO_PENSION_VOL, '%')) AND (CASE WHEN NOMBRE_FONDOPENSION_VOL IS NULL THEN ' ' ELSE UPPER(NOMBRE_FONDOPENSION_VOL) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_FONDOPENSION_VOL), '%')) AND (CASE WHEN MEDICINA_PREPAGADA IS NULL THEN ' ' ELSE UPPER(MEDICINA_PREPAGADA) END) LIKE UPPER(CONCAT(:MEDICINA_PREPAGADA, '%')) AND (CASE WHEN NOMBRE_MEDICINAPREPAGADA IS NULL THEN ' ' ELSE UPPER(NOMBRE_MEDICINAPREPAGADA) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_MEDICINAPREPAGADA), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_DE_PROCESO":"$ID_DE_PROCESO(type:integer)","ANO":"$ANO(type:integer)","MES":"$MES(type:integer)","PERIODO":"$PERIODO(type:integer)","ID_DE_EMPLEADO":"$ID_DE_EMPLEADO(type:integer)","NOMBRECOMPLETO":"$NOMBRECOMPLETO","ID_DEL_FONDO":"$ID_DEL_FONDO","NOMBRE_FONDOPENSION":"$NOMBRE_FONDOPENSION","FONDO_SALUD":"$FONDO_SALUD","NOMBRE_FONDOSALUD":"$NOMBRE_FONDOSALUD","FONDO_RIESGOS":"$FONDO_RIESGOS","NOMBRE_FONDORIESGOS":"$NOMBRE_FONDORIESGOS","FONDO_PENSION_VOL":"$FONDO_PENSION_VOL","NOMBRE_FONDOPENSION_VOL":"$NOMBRE_FONDOPENSION_VOL","MEDICINA_PREPAGADA":"$MEDICINA_PREPAGADA","NOMBRE_MEDICINAPREPAGADA":"$NOMBRE_MEDICINAPREPAGADA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="NOMBRECOMPLETO" sqlType="STRING"/>
+		<param name="ID_DEL_FONDO" sqlType="STRING"/>
+		<param name="NOMBRE_FONDOPENSION" sqlType="STRING"/>
+		<param name="FONDO_SALUD" sqlType="STRING"/>
+		<param name="NOMBRE_FONDOSALUD" sqlType="STRING"/>
+		<param name="FONDO_RIESGOS" sqlType="STRING"/>
+		<param name="NOMBRE_FONDORIESGOS" sqlType="STRING"/>
+		<param name="FONDO_PENSION_VOL" sqlType="STRING"/>
+		<param name="NOMBRE_FONDOPENSION_VOL" sqlType="STRING"/>
+		<param name="MEDICINA_PREPAGADA" sqlType="STRING"/>
+		<param name="NOMBRE_MEDICINAPREPAGADA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="personalhistorico/listacambiarfondo/pag">
+		<call-query href="getPersonalhistoricoPagListacambiarfondoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="NOMBRECOMPLETO" query-param="NOMBRECOMPLETO"/>
+			<with-param name="ID_DEL_FONDO" query-param="ID_DEL_FONDO"/>
+			<with-param name="NOMBRE_FONDOPENSION" query-param="NOMBRE_FONDOPENSION"/>
+			<with-param name="FONDO_SALUD" query-param="FONDO_SALUD"/>
+			<with-param name="NOMBRE_FONDOSALUD" query-param="NOMBRE_FONDOSALUD"/>
+			<with-param name="FONDO_RIESGOS" query-param="FONDO_RIESGOS"/>
+			<with-param name="NOMBRE_FONDORIESGOS" query-param="NOMBRE_FONDORIESGOS"/>
+			<with-param name="FONDO_PENSION_VOL" query-param="FONDO_PENSION_VOL"/>
+			<with-param name="NOMBRE_FONDOPENSION_VOL" query-param="NOMBRE_FONDOPENSION_VOL"/>
+			<with-param name="MEDICINA_PREPAGADA" query-param="MEDICINA_PREPAGADA"/>
+			<with-param name="NOMBRE_MEDICINAPREPAGADA" query-param="NOMBRE_MEDICINAPREPAGADA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPersonalhistoricoNumListacambiarfondoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, ID_DE_PROCESO, ANO, MES, PERIODO, ID_DE_EMPLEADO, NOMBRECOMPLETO, ID_DEL_FONDO, NOMBRE_FONDOPENSION, FONDO_SALUD, NOMBRE_FONDOSALUD, FONDO_RIESGOS, NOMBRE_FONDORIESGOS, FONDO_PENSION_VOL, NOMBRE_FONDOPENSION_VOL, MEDICINA_PREPAGADA, NOMBRE_MEDICINAPREPAGADA FROM PERSONAL_HISTORICO WHERE COMPANIA = :COMPANIA AND ID_DE_PROCESO = :PROCESO AND ANO = :ANO AND MES = :MES AND PERIODO = :PERIODO ORDER BY ID_DE_EMPLEADO) INI WHERE (CASE WHEN ID_DE_EMPLEADO IS NULL THEN ' ' ELSE UPPER(ID_DE_EMPLEADO) END) LIKE UPPER(CONCAT(:ID_DE_EMPLEADO, '%')) AND (CASE WHEN NOMBRECOMPLETO IS NULL THEN ' ' ELSE UPPER(NOMBRECOMPLETO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRECOMPLETO), '%')) AND (CASE WHEN ID_DEL_FONDO IS NULL THEN ' ' ELSE UPPER(ID_DEL_FONDO) END) LIKE UPPER(CONCAT(:ID_DEL_FONDO, '%')) AND (CASE WHEN NOMBRE_FONDOPENSION IS NULL THEN ' ' ELSE UPPER(NOMBRE_FONDOPENSION) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_FONDOPENSION), '%')) AND (CASE WHEN FONDO_SALUD IS NULL THEN ' ' ELSE UPPER(FONDO_SALUD) END) LIKE UPPER(CONCAT(:FONDO_SALUD, '%')) AND (CASE WHEN NOMBRE_FONDOSALUD IS NULL THEN ' ' ELSE UPPER(NOMBRE_FONDOSALUD) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_FONDOSALUD), '%')) AND (CASE WHEN FONDO_RIESGOS IS NULL THEN ' ' ELSE UPPER(FONDO_RIESGOS) END) LIKE UPPER(CONCAT(:FONDO_RIESGOS, '%')) AND (CASE WHEN NOMBRE_FONDORIESGOS IS NULL THEN ' ' ELSE UPPER(NOMBRE_FONDORIESGOS) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_FONDORIESGOS), '%')) AND (CASE WHEN FONDO_PENSION_VOL IS NULL THEN ' ' ELSE UPPER(FONDO_PENSION_VOL) END) LIKE UPPER(CONCAT(:FONDO_PENSION_VOL, '%')) AND (CASE WHEN NOMBRE_FONDOPENSION_VOL IS NULL THEN ' ' ELSE UPPER(NOMBRE_FONDOPENSION_VOL) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_FONDOPENSION_VOL), '%')) AND (CASE WHEN MEDICINA_PREPAGADA IS NULL THEN ' ' ELSE UPPER(MEDICINA_PREPAGADA) END) LIKE UPPER(CONCAT(:MEDICINA_PREPAGADA, '%')) AND (CASE WHEN NOMBRE_MEDICINAPREPAGADA IS NULL THEN ' ' ELSE UPPER(NOMBRE_MEDICINAPREPAGADA) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_MEDICINAPREPAGADA), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="NOMBRECOMPLETO" sqlType="STRING"/>
+		<param name="ID_DEL_FONDO" sqlType="STRING"/>
+		<param name="NOMBRE_FONDOPENSION" sqlType="STRING"/>
+		<param name="FONDO_SALUD" sqlType="STRING"/>
+		<param name="NOMBRE_FONDOSALUD" sqlType="STRING"/>
+		<param name="FONDO_RIESGOS" sqlType="STRING"/>
+		<param name="NOMBRE_FONDORIESGOS" sqlType="STRING"/>
+		<param name="FONDO_PENSION_VOL" sqlType="STRING"/>
+		<param name="NOMBRE_FONDOPENSION_VOL" sqlType="STRING"/>
+		<param name="MEDICINA_PREPAGADA" sqlType="STRING"/>
+		<param name="NOMBRE_MEDICINAPREPAGADA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="personalhistorico/listacambiarfondo/num">
+		<call-query href="getPersonalhistoricoNumListacambiarfondoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="NOMBRECOMPLETO" query-param="NOMBRECOMPLETO"/>
+			<with-param name="ID_DEL_FONDO" query-param="ID_DEL_FONDO"/>
+			<with-param name="NOMBRE_FONDOPENSION" query-param="NOMBRE_FONDOPENSION"/>
+			<with-param name="FONDO_SALUD" query-param="FONDO_SALUD"/>
+			<with-param name="NOMBRE_FONDOSALUD" query-param="NOMBRE_FONDOSALUD"/>
+			<with-param name="FONDO_RIESGOS" query-param="FONDO_RIESGOS"/>
+			<with-param name="NOMBRE_FONDORIESGOS" query-param="NOMBRE_FONDORIESGOS"/>
+			<with-param name="FONDO_PENSION_VOL" query-param="FONDO_PENSION_VOL"/>
+			<with-param name="NOMBRE_FONDOPENSION_VOL" query-param="NOMBRE_FONDOPENSION_VOL"/>
+			<with-param name="MEDICINA_PREPAGADA" query-param="MEDICINA_PREPAGADA"/>
+			<with-param name="NOMBRE_MEDICINAPREPAGADA" query-param="NOMBRE_MEDICINAPREPAGADA"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePersonalhistoricoUpdatecambiofondo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PERSONAL_HISTORICO SET ID_DEL_FONDO=:ID_DEL_FONDO, NOMBRE_FONDOPENSION=:NOMBRE_FONDOPENSION, FONDO_SALUD=:FONDO_SALUD, NOMBRE_FONDOSALUD=:NOMBRE_FONDOSALUD, FONDO_RIESGOS=:FONDO_RIESGOS, NOMBRE_FONDORIESGOS=:NOMBRE_FONDORIESGOS, FONDO_PENSION_VOL=:FONDO_PENSION_VOL, NOMBRE_FONDOPENSION_VOL=:NOMBRE_FONDOPENSION_VOL, MEDICINA_PREPAGADA=:MEDICINA_PREPAGADA, NOMBRE_MEDICINAPREPAGADA=:NOMBRE_MEDICINAPREPAGADA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PERSONAL_HISTORICO.COMPANIA= :KEY_COMPANIA AND PERSONAL_HISTORICO.ID_DE_PROCESO= :KEY_ID_DE_PROCESO AND PERSONAL_HISTORICO.ANO= :KEY_ANO AND PERSONAL_HISTORICO.MES= :KEY_MES AND PERSONAL_HISTORICO.PERIODO= :KEY_PERIODO AND PERSONAL_HISTORICO.ID_DE_EMPLEADO= :KEY_ID_DE_EMPLEADO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ID_DEL_FONDO" sqlType="STRING"/>
+		<param name="NOMBRE_FONDOPENSION" sqlType="STRING"/>
+		<param name="FONDO_SALUD" sqlType="STRING"/>
+		<param name="NOMBRE_FONDOSALUD" sqlType="STRING"/>
+		<param name="FONDO_RIESGOS" sqlType="STRING"/>
+		<param name="NOMBRE_FONDORIESGOS" sqlType="STRING"/>
+		<param name="FONDO_PENSION_VOL" sqlType="STRING"/>
+		<param name="NOMBRE_FONDOPENSION_VOL" sqlType="STRING"/>
+		<param name="MEDICINA_PREPAGADA" sqlType="STRING"/>
+		<param name="NOMBRE_MEDICINAPREPAGADA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_MES" sqlType="STRING"/>
+		<param name="KEY_PERIODO" sqlType="STRING"/>
+		<param name="KEY_ID_DE_EMPLEADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="personalhistorico/updatecambiofondo">
+		<call-query href="updatePersonalhistoricoUpdatecambiofondo">
+			<with-param name="ID_DEL_FONDO" query-param="ID_DEL_FONDO"/>
+			<with-param name="NOMBRE_FONDOPENSION" query-param="NOMBRE_FONDOPENSION"/>
+			<with-param name="FONDO_SALUD" query-param="FONDO_SALUD"/>
+			<with-param name="NOMBRE_FONDOSALUD" query-param="NOMBRE_FONDOSALUD"/>
+			<with-param name="FONDO_RIESGOS" query-param="FONDO_RIESGOS"/>
+			<with-param name="NOMBRE_FONDORIESGOS" query-param="NOMBRE_FONDORIESGOS"/>
+			<with-param name="FONDO_PENSION_VOL" query-param="FONDO_PENSION_VOL"/>
+			<with-param name="NOMBRE_FONDOPENSION_VOL" query-param="NOMBRE_FONDOPENSION_VOL"/>
+			<with-param name="MEDICINA_PREPAGADA" query-param="MEDICINA_PREPAGADA"/>
+			<with-param name="NOMBRE_MEDICINAPREPAGADA" query-param="NOMBRE_MEDICINAPREPAGADA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_DE_PROCESO" query-param="KEY_ID_DE_PROCESO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_MES" query-param="KEY_MES"/>
+			<with-param name="KEY_PERIODO" query-param="KEY_PERIODO"/>
+			<with-param name="KEY_ID_DE_EMPLEADO" query-param="KEY_ID_DE_EMPLEADO"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,250 @@
+﻿<data name="tipoembargos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTipoembargosTodoPorNombreCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CODIGO, NOMBRE FROM TIPO_EMBARGO WHERE COMPANIA = :COMPANIA ORDER BY CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipoembargos/todopornombrecodigo">
+		<call-query href="getTipoembargosTodoPorNombreCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoembargosPagTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, NOMBRE, COMPANIA FROM TIPO_EMBARGO WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","COMPANIA":"$COMPANIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipoembargos/todosporcompania/pag">
+		<call-query href="getTipoembargosPagTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoembargosNumTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, NOMBRE, COMPANIA FROM TIPO_EMBARGO WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipoembargos/todosporcompania/num">
+		<call-query href="getTipoembargosNumTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertTipoembargosTipodeembargo" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TIPO_EMBARGO (CODIGO, NOMBRE, COMPANIA, DATE_CREATED, CREATED_BY) VALUES (:CODIGO, :NOMBRE, :COMPANIA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="tipoembargos/tipodeembargo">
+		<call-query href="insertTipoembargosTipodeembargo">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTipoembargosTipodeembargo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TIPO_EMBARGO SET CODIGO=:CODIGO, NOMBRE=:NOMBRE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TIPO_EMBARGO.COMPANIA= :KEY_COMPANIA AND TIPO_EMBARGO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tipoembargos/tipodeembargo">
+		<call-query href="updateTipoembargosTipodeembargo">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTipoembargosTipodeembargo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE TIPO_EMBARGO WHERE COMPANIA = :KEY_COMPANIA AND CODIGO = :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="tipoembargos/tipodeembargo">
+		<call-query href="deleteTipoembargosTipodeembargo">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoembargosCodynombreordernombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CODIGO, NOMBRE FROM TIPO_EMBARGO WHERE COMPANIA = :COMPANIA ORDER BY NOMBRE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipoembargos/codynombreordernombre">
+		<call-query href="getTipoembargosCodynombreordernombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertTipoembargos" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TIPO_EMBARGO (COMPANIA, CODIGO, NOMBRE, DESCRIPCION, CONCEPTO_DESCUENTO, CONCEPTO_PORCENTAJE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :NOMBRE, :DESCRIPCION, :CONCEPTO_DESCUENTO, :CONCEPTO_PORCENTAJE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="" name="CONCEPTO_DESCUENTO" sqlType="STRING"/>
+		<param defaultValue="" name="CONCEPTO_PORCENTAJE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="tipoembargos">
+		<call-query href="insertTipoembargos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CONCEPTO_DESCUENTO" query-param="CONCEPTO_DESCUENTO"/>
+			<with-param name="CONCEPTO_PORCENTAJE" query-param="CONCEPTO_PORCENTAJE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTipoembargos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TIPO_EMBARGO WHERE TIPO_EMBARGO.COMPANIA= :KEY_COMPANIA AND TIPO_EMBARGO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="tipoembargos">
+		<call-query href="deleteTipoembargos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoembargosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT TIPO_EMBARGO.COMPANIA, TIPO_EMBARGO.CODIGO, TIPO_EMBARGO.NOMBRE, TIPO_EMBARGO.DESCRIPCION, TIPO_EMBARGO.CONCEPTO_DESCUENTO, TIPO_EMBARGO.CONCEPTO_PORCENTAJE, PCK_NOMINA_COM2.FC_NOMBRECONCEPTO(TIPO_EMBARGO.COMPANIA,TIPO_EMBARGO.CONCEPTO_DESCUENTO) NOMCONCEPTOD, PCK_NOMINA_COM2.FC_NOMBRECONCEPTO(TIPO_EMBARGO.COMPANIA,TIPO_EMBARGO.CONCEPTO_PORCENTAJE) NOMCONCEPTOP FROM TIPO_EMBARGO WHERE TIPO_EMBARGO.COMPANIA = :COMPANIA ORDER BY TIPO_EMBARGO.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN NOMCONCEPTOD IS NULL THEN ' ' ELSE UPPER(NOMCONCEPTOD) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMCONCEPTOD), '%')) AND (CASE WHEN NOMCONCEPTOP IS NULL THEN ' ' ELSE UPPER(NOMCONCEPTOP) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMCONCEPTOP), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","DESCRIPCION":"$DESCRIPCION","CONCEPTO_DESCUENTO":"$CONCEPTO_DESCUENTO","CONCEPTO_PORCENTAJE":"$CONCEPTO_PORCENTAJE","NOMCONCEPTOD":"$NOMCONCEPTOD","NOMCONCEPTOP":"$NOMCONCEPTOP"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="NOMCONCEPTOD" sqlType="STRING"/>
+		<param name="NOMCONCEPTOP" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipoembargos">
+		<call-query href="getTipoembargosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="NOMCONCEPTOD" query-param="NOMCONCEPTOD"/>
+			<with-param name="NOMCONCEPTOP" query-param="NOMCONCEPTOP"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoembargosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT TIPO_EMBARGO.COMPANIA, TIPO_EMBARGO.CODIGO, TIPO_EMBARGO.NOMBRE, TIPO_EMBARGO.DESCRIPCION, TIPO_EMBARGO.CONCEPTO_DESCUENTO, TIPO_EMBARGO.CONCEPTO_PORCENTAJE, PCK_NOMINA_COM2.FC_NOMBRECONCEPTO(TIPO_EMBARGO.COMPANIA,TIPO_EMBARGO.CONCEPTO_DESCUENTO) NOMCONCEPTOD, PCK_NOMINA_COM2.FC_NOMBRECONCEPTO(TIPO_EMBARGO.COMPANIA,TIPO_EMBARGO.CONCEPTO_PORCENTAJE) NOMCONCEPTOP FROM TIPO_EMBARGO WHERE TIPO_EMBARGO.COMPANIA = :COMPANIA ORDER BY TIPO_EMBARGO.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN NOMCONCEPTOD IS NULL THEN ' ' ELSE UPPER(NOMCONCEPTOD) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMCONCEPTOD), '%')) AND (CASE WHEN NOMCONCEPTOP IS NULL THEN ' ' ELSE UPPER(NOMCONCEPTOP) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMCONCEPTOP), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="NOMCONCEPTOD" sqlType="STRING"/>
+		<param name="NOMCONCEPTOP" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipoembargos/numero">
+		<call-query href="getTipoembargosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="NOMCONCEPTOD" query-param="NOMCONCEPTOD"/>
+			<with-param name="NOMCONCEPTOP" query-param="NOMCONCEPTOP"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTipoembargos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TIPO_EMBARGO SET CODIGO=:CODIGO, NOMBRE=:NOMBRE, DESCRIPCION=:DESCRIPCION, CONCEPTO_DESCUENTO=:CONCEPTO_DESCUENTO, CONCEPTO_PORCENTAJE=:CONCEPTO_PORCENTAJE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TIPO_EMBARGO.COMPANIA= :KEY_COMPANIA AND TIPO_EMBARGO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="CONCEPTO_DESCUENTO" sqlType="STRING"/>
+		<param name="CONCEPTO_PORCENTAJE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tipoembargos">
+		<call-query href="updateTipoembargos">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CONCEPTO_DESCUENTO" query-param="CONCEPTO_DESCUENTO"/>
+			<with-param name="CONCEPTO_PORCENTAJE" query-param="CONCEPTO_PORCENTAJE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

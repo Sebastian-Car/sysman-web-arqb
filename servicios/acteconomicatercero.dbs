@@ -1,0 +1,202 @@
+﻿<data name="acteconomicatercero" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getActeconomicaterceroPagTodosporterceroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COD_CIIU, DESCRIPCION FROM ACT_ECONOMICA_TERCERO INNER JOIN ACTIVIDAD_ECONOMICA ON ACTIVIDAD_ECONOMICA.COD_ACTIVIDAD = ACT_ECONOMICA_TERCERO.COD_CIIU WHERE COMPANIA = :COMPANIA AND TERCERO = :TERCERO AND SUCURSAL = :SUCURSAL) INI WHERE (CASE WHEN COD_CIIU IS NULL THEN ' ' ELSE UPPER(COD_CIIU) END) LIKE UPPER(CONCAT(:COD_CIIU, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COD_CIIU":"$COD_CIIU","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="COD_CIIU" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="acteconomicatercero/todosportercero/pag">
+		<call-query href="getActeconomicaterceroPagTodosporterceroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="COD_CIIU" query-param="COD_CIIU"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getActeconomicaterceroNumTodosporterceroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COD_CIIU, DESCRIPCION FROM ACT_ECONOMICA_TERCERO INNER JOIN ACTIVIDAD_ECONOMICA ON ACTIVIDAD_ECONOMICA.COD_ACTIVIDAD = ACT_ECONOMICA_TERCERO.COD_CIIU WHERE COMPANIA = :COMPANIA AND TERCERO = :TERCERO AND SUCURSAL = :SUCURSAL) INI WHERE (CASE WHEN COD_CIIU IS NULL THEN ' ' ELSE UPPER(COD_CIIU) END) LIKE UPPER(CONCAT(:COD_CIIU, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="COD_CIIU" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="acteconomicatercero/todosportercero/num">
+		<call-query href="getActeconomicaterceroNumTodosporterceroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="COD_CIIU" query-param="COD_CIIU"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getActeconomicaterceroIndicadorprincipalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE PRINCIPAL WHEN 0 THEN 'false' ELSE 'true' END) PRINCIPAL FROM ACT_ECONOMICA_TERCERO WHERE COMPANIA = :COMPANIA AND TERCERO = :TERCERO AND SUCURSAL = :SUCURSAL AND PRINCIPAL NOT IN(0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PRINCIPAL":"$PRINCIPAL(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="acteconomicatercero/indicadorprincipal">
+		<call-query href="getActeconomicaterceroIndicadorprincipalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="insertActeconomicatercero" keyColumns="COMPANIA,TERCERO,SUCURSAL,COD_CIIU" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ACT_ECONOMICA_TERCERO (COMPANIA, TERCERO, SUCURSAL, COD_CIIU, PRINCIPAL, SECUNDARIO, CREATED_BY, DATE_CREATED) VALUES (:COMPANIA, :TERCERO, :SUCURSAL, :COD_CIIU, :PRINCIPAL, :SECUNDARIO, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_TERCERO":"$TERCERO","KEY_SUCURSAL":"$SUCURSAL","KEY_COD_CIIU":"$COD_CIIU"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="COD_CIIU" sqlType="STRING"/>
+		<param defaultValue="0" name="PRINCIPAL" sqlType="STRING"/>
+		<param defaultValue="0" name="SECUNDARIO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="acteconomicatercero">
+		<call-query href="insertActeconomicatercero">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="COD_CIIU" query-param="COD_CIIU"/>
+			<with-param name="PRINCIPAL" query-param="PRINCIPAL"/>
+			<with-param name="SECUNDARIO" query-param="SECUNDARIO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteActeconomicatercero" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ACT_ECONOMICA_TERCERO WHERE ACT_ECONOMICA_TERCERO.COMPANIA= :KEY_COMPANIA AND ACT_ECONOMICA_TERCERO.TERCERO= :KEY_TERCERO AND ACT_ECONOMICA_TERCERO.SUCURSAL= :KEY_SUCURSAL AND ACT_ECONOMICA_TERCERO.COD_CIIU= :KEY_COD_CIIU</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TERCERO" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_COD_CIIU" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="acteconomicatercero">
+		<call-query href="deleteActeconomicatercero">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TERCERO" query-param="KEY_TERCERO"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_COD_CIIU" query-param="KEY_COD_CIIU"/>
+
+		</call-query>
+	</resource>
+	<query id="getActeconomicaterceroPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, TERCERO, SUCURSAL, COD_CIIU, DESCRIPCION,(CASE PRINCIPAL WHEN 0 THEN 'false' ELSE 'true' END) PRINCIPAL,(CASE SECUNDARIO WHEN 0 THEN 'false' ELSE 'true' END) SECUNDARIO FROM ACT_ECONOMICA_TERCERO INNER JOIN ACTIVIDAD_ECONOMICA ON ACTIVIDAD_ECONOMICA.COD_ACTIVIDAD = ACT_ECONOMICA_TERCERO.COD_CIIU WHERE COMPANIA = :COMPANIA AND TERCERO = :TERCERO AND SUCURSAL = :SUCURSAL) INI WHERE (CASE WHEN COD_CIIU IS NULL THEN ' ' ELSE UPPER(COD_CIIU) END) LIKE UPPER(CONCAT(:COD_CIIU, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN PRINCIPAL IS NULL THEN ' ' ELSE UPPER(PRINCIPAL) END) LIKE UPPER(CONCAT(:PRINCIPAL, '%')) AND (CASE WHEN SECUNDARIO IS NULL THEN ' ' ELSE UPPER(SECUNDARIO) END) LIKE UPPER(CONCAT(:SECUNDARIO, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TERCERO":"$TERCERO","SUCURSAL":"$SUCURSAL","COD_CIIU":"$COD_CIIU","DESCRIPCION":"$DESCRIPCION","PRINCIPAL":"$PRINCIPAL(type:boolean)","SECUNDARIO":"$SECUNDARIO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="COD_CIIU" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PRINCIPAL" sqlType="STRING"/>
+		<param name="SECUNDARIO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="acteconomicatercero">
+		<call-query href="getActeconomicaterceroPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="COD_CIIU" query-param="COD_CIIU"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PRINCIPAL" query-param="PRINCIPAL"/>
+			<with-param name="SECUNDARIO" query-param="SECUNDARIO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getActeconomicaterceroNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, TERCERO, SUCURSAL, COD_CIIU, DESCRIPCION,(CASE PRINCIPAL WHEN 0 THEN 'false' ELSE 'true' END) PRINCIPAL,(CASE SECUNDARIO WHEN 0 THEN 'false' ELSE 'true' END) SECUNDARIO FROM ACT_ECONOMICA_TERCERO INNER JOIN ACTIVIDAD_ECONOMICA ON ACTIVIDAD_ECONOMICA.COD_ACTIVIDAD = ACT_ECONOMICA_TERCERO.COD_CIIU WHERE COMPANIA = :COMPANIA AND TERCERO = :TERCERO AND SUCURSAL = :SUCURSAL) INI WHERE (CASE WHEN COD_CIIU IS NULL THEN ' ' ELSE UPPER(COD_CIIU) END) LIKE UPPER(CONCAT(:COD_CIIU, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN PRINCIPAL IS NULL THEN ' ' ELSE UPPER(PRINCIPAL) END) LIKE UPPER(CONCAT(:PRINCIPAL, '%')) AND (CASE WHEN SECUNDARIO IS NULL THEN ' ' ELSE UPPER(SECUNDARIO) END) LIKE UPPER(CONCAT(:SECUNDARIO, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="COD_CIIU" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PRINCIPAL" sqlType="STRING"/>
+		<param name="SECUNDARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="acteconomicatercero/numero">
+		<call-query href="getActeconomicaterceroNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="COD_CIIU" query-param="COD_CIIU"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PRINCIPAL" query-param="PRINCIPAL"/>
+			<with-param name="SECUNDARIO" query-param="SECUNDARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateActeconomicatercero" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ACT_ECONOMICA_TERCERO SET COMPANIA=:COMPANIA, TERCERO=:TERCERO, SUCURSAL=:SUCURSAL, COD_CIIU=:COD_CIIU, PRINCIPAL=:PRINCIPAL, SECUNDARIO=:SECUNDARIO, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE ACT_ECONOMICA_TERCERO.COMPANIA= :KEY_COMPANIA AND ACT_ECONOMICA_TERCERO.TERCERO= :KEY_TERCERO AND ACT_ECONOMICA_TERCERO.SUCURSAL= :KEY_SUCURSAL AND ACT_ECONOMICA_TERCERO.COD_CIIU= :KEY_COD_CIIU</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="COD_CIIU" sqlType="STRING"/>
+		<param name="PRINCIPAL" sqlType="STRING"/>
+		<param name="SECUNDARIO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TERCERO" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_COD_CIIU" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="acteconomicatercero">
+		<call-query href="updateActeconomicatercero">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="COD_CIIU" query-param="COD_CIIU"/>
+			<with-param name="PRINCIPAL" query-param="PRINCIPAL"/>
+			<with-param name="SECUNDARIO" query-param="SECUNDARIO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TERCERO" query-param="KEY_TERCERO"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_COD_CIIU" query-param="KEY_COD_CIIU"/>
+
+		</call-query>
+	</resource>
+
+</data>

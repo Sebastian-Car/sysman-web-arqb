@@ -1,0 +1,45 @@
+SELECT 
+  COMPANIA    COMP
+ ,ANO         ANOCOMP
+ ,TIPO_CPTE   TIPOCOMP
+ ,COMPROBANTE NUMCOMP
+ ,TIPO_COMPROBANTE_NOM NOMBRE
+ ,CODIGO_CUENTA CTABANCO
+ ,CASE WHEN LAG(COMPROBANTE, 1, 0) OVER (ORDER BY COMPROBANTE) NOT IN(COMPROBANTE)
+       THEN PCK_CONTABILIDAD2.FC_LLENARFORMATOCHEQUETOTAL(UN_COMPANIA       => COMPANIA
+                                                         ,UN_NOMBRECOMPANIA => s$nombreCompania$s
+                                                         ,UN_MODULO         => PCK_DATOS.FC_MODULOCONTABILIDAD
+                                                         ,UN_ANO            => ANO
+                                                         ,UN_TIPO           => TIPO_CPTE
+                                                         ,UN_NUMERO         => COMPROBANTE)
+       ELSE 'X'
+  END FORMATO 
+ ,FECHA
+ ,TERCERO_COM_NOM NOMBRETERCERO1
+ ,TERCERO_COM TERCERO
+ ,TERCERO_COM_DIR TERCERODIRE
+ ,NRO_DOCUMENTO
+ ,FECHA FECHA_VCN_DOC
+ ,VLRAGIRAR
+ ,PCK_SYSMAN_UTL.FC_VALOR_LETRAS(UN_NUMT => VLRAGIRAR) VLRAGIRARLETRAS
+ ,DESCRIPCION
+ ,TEXTO
+ ,CASE WHEN VALOR_DEBITO IN(0)
+       THEN 'Z'
+       ELSE 'A'
+  END || CODIGO_CUENTA SEC
+  ,CODIGO_CUENTA_DET CODIGO_CUENTA
+  ,CUENTANOMBRE
+  ,VALOR_DEBITO
+  ,VALOR_CREDITO
+  ,COMPROBANTE NUMERO
+  ,TIPO_CPTE TIPO
+  ,CODIGOPOSTAL
+FROM V_DETALLE_AUXILIAR_CNT
+WHERE COMPANIA  = s$compania$s
+  AND ANO       = s$ano$s
+  AND TIPO_CPTE = 's$tipoCpte$s'
+  AND COMPROBANTE BETWEEN s$numeroPptoInicial$s AND s$numeroPptoFinal$s
+ORDER BY 
+  NUMCOMP
+ ,SEC  

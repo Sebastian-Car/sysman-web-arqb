@@ -1,0 +1,215 @@
+﻿<data name="ipcertificadops" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getIpcertificadopsPagNoAnuladosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_CERTIFICADOPS.NUMCER, TO_CHAR(IP_CERTIFICADOPS.FECHA_EXP,'DD/MM/YYYY') FECHA_EXP, IP_CERTIFICADOPS.NOMBRE  FROM IP_CERTIFICADOPS WHERE IP_CERTIFICADOPS.COMPANIA = :COMPANIA AND IP_CERTIFICADOPS.ANULADO IN (0) ORDER BY IP_CERTIFICADOPS.NUMCER DESC) WHERE (CASE WHEN NUMCER IS NULL THEN ' ' ELSE UPPER(NUMCER) END)  LIKE UPPER(:NUMCER || '%')  AND (CASE WHEN FECHA_EXP IS NULL THEN ' ' ELSE UPPER(FECHA_EXP) END)  LIKE UPPER(:FECHA_EXP || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMCER":"$NUMCER","FECHA_EXP":"$FECHA_EXP","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMCER" sqlType="STRING"/>
+		<param name="FECHA_EXP" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ipcertificadops/noanuladosporcompania/pag">
+		<call-query href="getIpcertificadopsPagNoAnuladosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMCER" query-param="NUMCER"/>
+			<with-param name="FECHA_EXP" query-param="FECHA_EXP"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpcertificadopsNumNoAnuladosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_CERTIFICADOPS.NUMCER, TO_CHAR(IP_CERTIFICADOPS.FECHA_EXP,'DD/MM/YYYY') FECHA_EXP, IP_CERTIFICADOPS.NOMBRE  FROM IP_CERTIFICADOPS WHERE IP_CERTIFICADOPS.COMPANIA = :COMPANIA AND IP_CERTIFICADOPS.ANULADO IN (0) ORDER BY IP_CERTIFICADOPS.NUMCER DESC) WHERE (CASE WHEN NUMCER IS NULL THEN ' ' ELSE UPPER(NUMCER) END)  LIKE UPPER(:NUMCER || '%')  AND (CASE WHEN FECHA_EXP IS NULL THEN ' ' ELSE UPPER(FECHA_EXP) END)  LIKE UPPER( '%' || :FECHA_EXP || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMCER" sqlType="STRING"/>
+		<param name="FECHA_EXP" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipcertificadops/noanuladosporcompania/num">
+		<call-query href="getIpcertificadopsNumNoAnuladosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMCER" query-param="NUMCER"/>
+			<with-param name="FECHA_EXP" query-param="FECHA_EXP"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpcertificadopsAnulado" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_CERTIFICADOPS SET IP_CERTIFICADOPS.ANULADO =-1, IP_CERTIFICADOPS.ANULADO_POR =:ANULADO, IP_CERTIFICADOPS.FECHA_ANULADO = TRUNC(SYSDATE), IP_CERTIFICADOPS.HORA_ANULADO = TO_DATE(CONCAT('30/12/1899',TO_CHAR(SYSDATE,' HH:MI:SS') ),'DD/MM/YYYY HH:MI:SS'), IP_CERTIFICADOPS.MODIFIED_BY =:ANULADO, IP_CERTIFICADOPS.DATE_MODIFIED = SYSDATE WHERE IP_CERTIFICADOPS.COMPANIA =:COMPANIA AND IP_CERTIFICADOPS.NUMCER =:RECIBO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ANULADO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="RECIBO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipcertificadops/anulado">
+		<call-query href="updateIpcertificadopsAnulado">
+			<with-param name="ANULADO" query-param="ANULADO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RECIBO" query-param="RECIBO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpcertificadopsCantidadDeCertificadosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT (0) CANT  FROM IP_CERTIFICADOPS WHERE COMPANIA = :COMPANIA AND CODIGOPREDIO = :CODIGO AND ANOAVALUO = :ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CANT":"$CANT(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipcertificadops/cantidaddecertificados">
+		<call-query href="getIpcertificadopsCantidadDeCertificadosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpcertificadopsPagConsecPorCiaCodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMCER, CODIGOPREDIO, NOMBRE, NIT, DIRECCION,(TO_CHAR(FECHA_EXP,'DD/MM/YYYY HH24:MI:SS')) FECHA_EXP, DESTINO, REC_VALORIZACION, NUMERO_ORDEN  FROM IP_CERTIFICADOPS WHERE COMPANIA = :COMPANIA AND CODIGOPREDIO = :CODIGO ORDER BY NUMCER) WHERE (CASE WHEN NUMCER IS NULL THEN ' ' ELSE UPPER(NUMCER) END)  LIKE UPPER(:NUMCER || '%')  AND (CASE WHEN CODIGOPREDIO IS NULL THEN ' ' ELSE UPPER(CODIGOPREDIO) END)  LIKE UPPER(:CODIGOPREDIO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN DIRECCION IS NULL THEN ' ' ELSE UPPER(DIRECCION) END)  LIKE UPPER( '%' || :DIRECCION || '%')  AND (CASE WHEN FECHA_EXP IS NULL THEN ' ' ELSE UPPER(FECHA_EXP) END)  LIKE UPPER( '%' || :FECHA_EXP || '%')  AND (CASE WHEN DESTINO IS NULL THEN ' ' ELSE UPPER(DESTINO) END)  LIKE UPPER( '%' || :DESTINO || '%')  AND (CASE WHEN REC_VALORIZACION IS NULL THEN ' ' ELSE UPPER(REC_VALORIZACION) END)  LIKE UPPER( '%' || :REC_VALORIZACION || '%')  AND (CASE WHEN NUMERO_ORDEN IS NULL THEN ' ' ELSE UPPER(NUMERO_ORDEN) END)  LIKE UPPER( '%' || :NUMERO_ORDEN || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMCER":"$NUMCER","CODIGOPREDIO":"$CODIGOPREDIO","NOMBRE":"$NOMBRE","NIT":"$NIT","DIRECCION":"$DIRECCION","FECHA_EXP":"$FECHA_EXP","DESTINO":"$DESTINO","REC_VALORIZACION":"$REC_VALORIZACION","NUMERO_ORDEN":"$NUMERO_ORDEN"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMCER" sqlType="STRING"/>
+		<param name="CODIGOPREDIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DIRECCION" sqlType="STRING"/>
+		<param name="FECHA_EXP" sqlType="STRING"/>
+		<param name="DESTINO" sqlType="STRING"/>
+		<param name="REC_VALORIZACION" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ipcertificadops/consecporciacod/pag">
+		<call-query href="getIpcertificadopsPagConsecPorCiaCodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMCER" query-param="NUMCER"/>
+			<with-param name="CODIGOPREDIO" query-param="CODIGOPREDIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="FECHA_EXP" query-param="FECHA_EXP"/>
+			<with-param name="DESTINO" query-param="DESTINO"/>
+			<with-param name="REC_VALORIZACION" query-param="REC_VALORIZACION"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpcertificadopsNumConsecPorCiaCodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMCER, CODIGOPREDIO, NOMBRE, NIT, DIRECCION,(TO_CHAR(FECHA_EXP,'DD/MM/YYYY HH24:MI:SS')) FECHA_EXP, DESTINO, REC_VALORIZACION, NUMERO_ORDEN  FROM IP_CERTIFICADOPS WHERE COMPANIA = :COMPANIA AND CODIGOPREDIO = :CODIGO ORDER BY NUMCER) WHERE (CASE WHEN NUMCER IS NULL THEN ' ' ELSE UPPER(NUMCER) END)  LIKE UPPER(:NUMCER || '%')  AND (CASE WHEN CODIGOPREDIO IS NULL THEN ' ' ELSE UPPER(CODIGOPREDIO) END)  LIKE UPPER( '%' || :CODIGOPREDIO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN DIRECCION IS NULL THEN ' ' ELSE UPPER(DIRECCION) END)  LIKE UPPER( '%' || :DIRECCION || '%')  AND (CASE WHEN FECHA_EXP IS NULL THEN ' ' ELSE UPPER(FECHA_EXP) END)  LIKE UPPER( '%' || :FECHA_EXP || '%')  AND (CASE WHEN DESTINO IS NULL THEN ' ' ELSE UPPER(DESTINO) END)  LIKE UPPER( '%' || :DESTINO || '%')  AND (CASE WHEN REC_VALORIZACION IS NULL THEN ' ' ELSE UPPER(REC_VALORIZACION) END)  LIKE UPPER( '%' || :REC_VALORIZACION || '%')  AND (CASE WHEN NUMERO_ORDEN IS NULL THEN ' ' ELSE UPPER(NUMERO_ORDEN) END)  LIKE UPPER( '%' || :NUMERO_ORDEN || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMCER" sqlType="STRING"/>
+		<param name="CODIGOPREDIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DIRECCION" sqlType="STRING"/>
+		<param name="FECHA_EXP" sqlType="STRING"/>
+		<param name="DESTINO" sqlType="STRING"/>
+		<param name="REC_VALORIZACION" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipcertificadops/consecporciacod/num">
+		<call-query href="getIpcertificadopsNumConsecPorCiaCodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMCER" query-param="NUMCER"/>
+			<with-param name="CODIGOPREDIO" query-param="CODIGOPREDIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="FECHA_EXP" query-param="FECHA_EXP"/>
+			<with-param name="DESTINO" query-param="DESTINO"/>
+			<with-param name="REC_VALORIZACION" query-param="REC_VALORIZACION"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpcertificadopsCantAnoActualPorCodpredQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(CODIGOPREDIO) AS CANT  FROM IP_CERTIFICADOPS WHERE COMPANIA = :COMPANIA AND CODIGOPREDIO = :CODIGO AND ANOAVALUO = EXTRACT (YEAR FROM SYSDATE)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CANT":"$CANT(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipcertificadops/cantanoactualporcodpred">
+		<call-query href="getIpcertificadopsCantAnoActualPorCodpredQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertIpcertificadopsCertPazYSalvo" keyColumns="COMPANIA,NUMCER" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_CERTIFICADOPS (COMPANIA, NUMCER, DIRECCION, UBICACION, AREA_HA, AREA_M2, AVALUO, ANOAVALUO, NOMBRE, NIT, NUMERO_ORDEN, VALOR, SUCURSAL, CREATED_BY, DATE_CREATED, REC_VALORIZACION, DESTINO, CODIGOPREDIO, FECHA_EXP, PAG_BAN, PAG_FEC, PAG_VAL, PAGO_ANO) VALUES (:COMPANIA, :NUMCER, :DIRECCION, :UBICACION, :AREA_HA, :AREA_M2, :AVALUO, :ANOAVALUO, :NOMBRE, :NIT, :NUMERO_ORDEN, :VALOR, :SUCURSAL, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :REC_VALORIZACION, :DESTINO, :CODIGOPREDIO, TO_DATE(:FECHA_EXP,'DD/MM/YYYY HH24:MI:SS'), :PAG_BAN, TO_DATE(:PAG_FEC,'DD/MM/YYYY HH24:MI:SS'), :PAG_VAL, :PAGO_ANO)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_NUMCER":"$NUMCER"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMCER" sqlType="STRING"/>
+		<param defaultValue="" name="DIRECCION" sqlType="STRING"/>
+		<param defaultValue="" name="UBICACION" sqlType="STRING"/>
+		<param defaultValue="0" name="AREA_HA" sqlType="STRING"/>
+		<param defaultValue="0" name="AREA_M2" sqlType="STRING"/>
+		<param defaultValue="0" name="AVALUO" sqlType="STRING"/>
+		<param name="ANOAVALUO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="NIT" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param defaultValue="" name="REC_VALORIZACION" sqlType="STRING"/>
+		<param defaultValue="" name="DESTINO" sqlType="STRING"/>
+		<param name="CODIGOPREDIO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_EXP" sqlType="STRING"/>
+		<param defaultValue="" name="PAG_BAN" sqlType="STRING"/>
+		<param defaultValue="" name="PAG_FEC" sqlType="STRING"/>
+		<param defaultValue="0" name="PAG_VAL" sqlType="STRING"/>
+		<param name="PAGO_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="ipcertificadops/certpazysalvo">
+		<call-query href="insertIpcertificadopsCertPazYSalvo">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMCER" query-param="NUMCER"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="UBICACION" query-param="UBICACION"/>
+			<with-param name="AREA_HA" query-param="AREA_HA"/>
+			<with-param name="AREA_M2" query-param="AREA_M2"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="ANOAVALUO" query-param="ANOAVALUO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="REC_VALORIZACION" query-param="REC_VALORIZACION"/>
+			<with-param name="DESTINO" query-param="DESTINO"/>
+			<with-param name="CODIGOPREDIO" query-param="CODIGOPREDIO"/>
+			<with-param name="FECHA_EXP" query-param="FECHA_EXP"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+			<with-param name="PAG_FEC" query-param="PAG_FEC"/>
+			<with-param name="PAG_VAL" query-param="PAG_VAL"/>
+			<with-param name="PAGO_ANO" query-param="PAGO_ANO"/>
+
+		</call-query>
+	</resource>
+
+</data>

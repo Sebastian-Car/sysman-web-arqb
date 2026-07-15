@@ -1,0 +1,97 @@
+﻿<data name="proyeccionestramite" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getProyeccionestramitePaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT PT.COMPANIA, PT.TIPO_TRAMITE, PT.PROCESO, PT.TRAMITE, PT.NODO, (CONCAT( '(' ,CONCAT( PT.NODO ,CONCAT(') ' ,N.NOMBRE )))) NODO_NOM, TO_CHAR(PT.ESTIMADO_FECHA,'DD/MM/YYYY') ESTIMADO_FECHA, PT.ESTIMADO_DIAS, TO_CHAR(PT.REAL_FECHA,'DD/MM/YYYY') REAL_FECHA, PT.REAL_DIAS FROM PROYECCIONES_TRAMITE PT INNER JOIN NODOS N ON PT.COMPANIA = N.COMPANIA AND PT.PROCESO = N.CODIGO_PROCESO AND PT.NODO = N.CODIGO WHERE PT.COMPANIA =:COMPANIA AND PT.TIPO_TRAMITE =:TIPO_TRAMITE AND PT.PROCESO =:PROCESO AND PT.TRAMITE =:TRAMITE ORDER BY TRUNC(PT.ESTIMADO_FECHA)) INI WHERE (CASE WHEN NODO_NOM IS NULL THEN ' ' ELSE UPPER(NODO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_NOM), '%')) AND (CASE WHEN ESTIMADO_FECHA IS NULL THEN ' ' ELSE UPPER(ESTIMADO_FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTIMADO_FECHA), '%')) AND (CASE WHEN ESTIMADO_DIAS IS NULL THEN ' ' ELSE UPPER(ESTIMADO_DIAS) END) LIKE UPPER(CONCAT(:ESTIMADO_DIAS, '%')) AND (CASE WHEN REAL_FECHA IS NULL THEN ' ' ELSE UPPER(REAL_FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:REAL_FECHA), '%')) AND (CASE WHEN REAL_DIAS IS NULL THEN ' ' ELSE UPPER(REAL_DIAS) END) LIKE UPPER(CONCAT(:REAL_DIAS, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPO_TRAMITE":"$TIPO_TRAMITE","PROCESO":"$PROCESO","TRAMITE":"$TRAMITE(type:long)","NODO":"$NODO","NODO_NOM":"$NODO_NOM","ESTIMADO_FECHA":"$ESTIMADO_FECHA","ESTIMADO_DIAS":"$ESTIMADO_DIAS","REAL_FECHA":"$REAL_FECHA","REAL_DIAS":"$REAL_DIAS"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="TRAMITE" sqlType="STRING"/>
+		<param name="NODO_NOM" sqlType="STRING"/>
+		<param name="ESTIMADO_FECHA" sqlType="STRING"/>
+		<param name="ESTIMADO_DIAS" sqlType="STRING"/>
+		<param name="REAL_FECHA" sqlType="STRING"/>
+		<param name="REAL_DIAS" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="proyeccionestramite">
+		<call-query href="getProyeccionestramitePaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="TRAMITE" query-param="TRAMITE"/>
+			<with-param name="NODO_NOM" query-param="NODO_NOM"/>
+			<with-param name="ESTIMADO_FECHA" query-param="ESTIMADO_FECHA"/>
+			<with-param name="ESTIMADO_DIAS" query-param="ESTIMADO_DIAS"/>
+			<with-param name="REAL_FECHA" query-param="REAL_FECHA"/>
+			<with-param name="REAL_DIAS" query-param="REAL_DIAS"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProyeccionestramiteNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT PT.COMPANIA, PT.TIPO_TRAMITE, PT.PROCESO, PT.TRAMITE, PT.NODO, (CONCAT( '(' ,CONCAT( PT.NODO ,CONCAT(') ' ,N.NOMBRE )))) NODO_NOM, TO_CHAR(PT.ESTIMADO_FECHA,'DD/MM/YYYY') ESTIMADO_FECHA, PT.ESTIMADO_DIAS, TO_CHAR(PT.REAL_FECHA,'DD/MM/YYYY') REAL_FECHA, PT.REAL_DIAS FROM PROYECCIONES_TRAMITE PT INNER JOIN NODOS N ON PT.COMPANIA = N.COMPANIA AND PT.PROCESO = N.CODIGO_PROCESO AND PT.NODO = N.CODIGO WHERE PT.COMPANIA =:COMPANIA AND PT.TIPO_TRAMITE =:TIPO_TRAMITE AND PT.PROCESO =:PROCESO AND PT.TRAMITE =:TRAMITE ORDER BY TRUNC(PT.ESTIMADO_FECHA)) INI WHERE (CASE WHEN NODO_NOM IS NULL THEN ' ' ELSE UPPER(NODO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_NOM), '%')) AND (CASE WHEN ESTIMADO_FECHA IS NULL THEN ' ' ELSE UPPER(ESTIMADO_FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTIMADO_FECHA), '%')) AND (CASE WHEN ESTIMADO_DIAS IS NULL THEN ' ' ELSE UPPER(ESTIMADO_DIAS) END) LIKE UPPER(CONCAT(:ESTIMADO_DIAS, '%')) AND (CASE WHEN REAL_FECHA IS NULL THEN ' ' ELSE UPPER(REAL_FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:REAL_FECHA), '%')) AND (CASE WHEN REAL_DIAS IS NULL THEN ' ' ELSE UPPER(REAL_DIAS) END) LIKE UPPER(CONCAT(:REAL_DIAS, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="TRAMITE" sqlType="STRING"/>
+		<param name="NODO_NOM" sqlType="STRING"/>
+		<param name="ESTIMADO_FECHA" sqlType="STRING"/>
+		<param name="ESTIMADO_DIAS" sqlType="STRING"/>
+		<param name="REAL_FECHA" sqlType="STRING"/>
+		<param name="REAL_DIAS" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="proyeccionestramite/numero">
+		<call-query href="getProyeccionestramiteNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="TRAMITE" query-param="TRAMITE"/>
+			<with-param name="NODO_NOM" query-param="NODO_NOM"/>
+			<with-param name="ESTIMADO_FECHA" query-param="ESTIMADO_FECHA"/>
+			<with-param name="ESTIMADO_DIAS" query-param="ESTIMADO_DIAS"/>
+			<with-param name="REAL_FECHA" query-param="REAL_FECHA"/>
+			<with-param name="REAL_DIAS" query-param="REAL_DIAS"/>
+
+		</call-query>
+	</resource>
+	<query id="updateProyeccionestramite" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PROYECCIONES_TRAMITE SET ESTIMADO_DIAS=:ESTIMADO_DIAS, ESTIMADO_FECHA=TO_DATE(:ESTIMADO_FECHA,'DD/MM/YYYY HH24:MI:SS'), DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PROYECCIONES_TRAMITE.COMPANIA= :KEY_COMPANIA AND PROYECCIONES_TRAMITE.TIPO_TRAMITE= :KEY_TIPO_TRAMITE AND PROYECCIONES_TRAMITE.PROCESO= :KEY_PROCESO AND PROYECCIONES_TRAMITE.TRAMITE= :KEY_TRAMITE AND PROYECCIONES_TRAMITE.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ESTIMADO_DIAS" sqlType="STRING"/>
+		<param name="ESTIMADO_FECHA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="KEY_PROCESO" sqlType="STRING"/>
+		<param name="KEY_TRAMITE" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="proyeccionestramite">
+		<call-query href="updateProyeccionestramite">
+			<with-param name="ESTIMADO_DIAS" query-param="ESTIMADO_DIAS"/>
+			<with-param name="ESTIMADO_FECHA" query-param="ESTIMADO_FECHA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPO_TRAMITE" query-param="KEY_TIPO_TRAMITE"/>
+			<with-param name="KEY_PROCESO" query-param="KEY_PROCESO"/>
+			<with-param name="KEY_TRAMITE" query-param="KEY_TRAMITE"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+
+</data>

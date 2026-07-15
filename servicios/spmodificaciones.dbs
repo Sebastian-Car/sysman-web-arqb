@@ -1,0 +1,206 @@
+﻿<data name="spmodificaciones" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertSpmodificaciones" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_MODIFICACIONES (COMPANIA, CODIGO, FECHA, HORA, ANO, PERIODO, CICLO, CODIGORUTA, USO, ESTRATO, MODIFICACION, AFORADOR, OPERADOR, VALORANTERIOR, NUEVOVALOR, OBSERVACIONES, TIPO, CREATED_BY, DATE_CREATED) VALUES (:COMPANIA, :CODIGO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:HORA,'DD/MM/YYYY HH24:MI:SS'), :ANO, :PERIODO, :CICLO, :CODIGORUTA, :USO, :ESTRATO, :MODIFICACION, :AFORADOR, :OPERADOR, :VALORANTERIOR, :NUEVOVALOR, :OBSERVACIONES, :TIPO, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO","KEY_FECHA":"$FECHA","KEY_HORA":"$HORA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="HORA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="USO" sqlType="STRING"/>
+		<param name="ESTRATO" sqlType="STRING"/>
+		<param defaultValue="" name="MODIFICACION" sqlType="STRING"/>
+		<param defaultValue="" name="AFORADOR" sqlType="STRING"/>
+		<param defaultValue="" name="OPERADOR" sqlType="STRING"/>
+		<param defaultValue="" name="VALORANTERIOR" sqlType="STRING"/>
+		<param defaultValue="" name="NUEVOVALOR" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACIONES" sqlType="STRING"/>
+		<param defaultValue="0" name="TIPO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="spmodificaciones">
+		<call-query href="insertSpmodificaciones">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA" query-param="HORA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="USO" query-param="USO"/>
+			<with-param name="ESTRATO" query-param="ESTRATO"/>
+			<with-param name="MODIFICACION" query-param="MODIFICACION"/>
+			<with-param name="AFORADOR" query-param="AFORADOR"/>
+			<with-param name="OPERADOR" query-param="OPERADOR"/>
+			<with-param name="VALORANTERIOR" query-param="VALORANTERIOR"/>
+			<with-param name="NUEVOVALOR" query-param="NUEVOVALOR"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSpmodificaciones" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SP_MODIFICACIONES WHERE SP_MODIFICACIONES.COMPANIA= :KEY_COMPANIA AND SP_MODIFICACIONES.CODIGO= :KEY_CODIGO AND SP_MODIFICACIONES.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS')  AND SP_MODIFICACIONES.HORA= TO_DATE(:KEY_HORA,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+		<param name="KEY_HORA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="spmodificaciones">
+		<call-query href="deleteSpmodificaciones">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+			<with-param name="KEY_HORA" query-param="KEY_HORA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmodificacionesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT SP_MODIFICACIONES.COMPANIA, SP_MODIFICACIONES.CODIGO, TO_CHAR(SP_MODIFICACIONES.FECHA,'DD/MM/YYYY HH24:MI:SS') FECHA, TO_CHAR(SP_MODIFICACIONES.HORA,'DD/MM/YYYY HH24:MI:SS') HORA, TO_CHAR(SP_MODIFICACIONES.FECHA,'DD/MM/YYYY') FECHAGRILLA, SP_MODIFICACIONES.CODIGORUTA, CONCAT(SP_USUARIO.PRIMERAPELLIDO,CONCAT(' ',CONCAT(SP_USUARIO.SEGUNDOAPELLIDO,CONCAT(' ',SP_USUARIO.NOMBRES) ) ) ) NOMBRE, SP_MODIFICACIONES.VALORANTERIOR, SP_MODIFICACIONES.NUEVOVALOR FROM SP_MODIFICACIONES INNER JOIN SP_USUARIO ON SP_MODIFICACIONES.COMPANIA = SP_USUARIO.COMPANIA AND SP_MODIFICACIONES.CICLO = SP_USUARIO.CICLO AND SP_MODIFICACIONES.CODIGORUTA = SP_USUARIO.CODIGORUTA WHERE SP_USUARIO.COMPANIA =:COMPANIA AND SP_MODIFICACIONES.TIPO =:TIPO AND SP_MODIFICACIONES.CICLO =:CICLO ORDER BY SP_MODIFICACIONES.FECHA DESC) INI WHERE (CASE WHEN FECHAGRILLA IS NULL THEN ' ' ELSE UPPER(FECHAGRILLA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHAGRILLA), '%')) AND (CASE WHEN CODIGORUTA IS NULL THEN ' ' ELSE UPPER(CODIGORUTA) END) LIKE UPPER(CONCAT(:CODIGORUTA, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN VALORANTERIOR IS NULL THEN ' ' ELSE UPPER(VALORANTERIOR) END) LIKE UPPER(CONCAT(:VALORANTERIOR, '%')) AND (CASE WHEN NUEVOVALOR IS NULL THEN ' ' ELSE UPPER(NUEVOVALOR) END) LIKE UPPER(CONCAT(:NUEVOVALOR, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","FECHA":"$FECHA","HORA":"$HORA","FECHAGRILLA":"$FECHAGRILLA","CODIGORUTA":"$CODIGORUTA","NOMBRE":"$NOMBRE","VALORANTERIOR":"$VALORANTERIOR","NUEVOVALOR":"$NUEVOVALOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="FECHAGRILLA" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALORANTERIOR" sqlType="STRING"/>
+		<param name="NUEVOVALOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spmodificaciones">
+		<call-query href="getSpmodificacionesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="FECHAGRILLA" query-param="FECHAGRILLA"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALORANTERIOR" query-param="VALORANTERIOR"/>
+			<with-param name="NUEVOVALOR" query-param="NUEVOVALOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmodificacionesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT SP_MODIFICACIONES.COMPANIA, SP_MODIFICACIONES.CODIGO, TO_CHAR(SP_MODIFICACIONES.FECHA,'DD/MM/YYYY HH24:MI:SS') FECHA, TO_CHAR(SP_MODIFICACIONES.HORA,'DD/MM/YYYY HH24:MI:SS') HORA, TO_CHAR(SP_MODIFICACIONES.FECHA,'DD/MM/YYYY') FECHAGRILLA, SP_MODIFICACIONES.CODIGORUTA, CONCAT(SP_USUARIO.PRIMERAPELLIDO,CONCAT(' ',CONCAT(SP_USUARIO.SEGUNDOAPELLIDO,CONCAT(' ',SP_USUARIO.NOMBRES) ) ) ) NOMBRE, SP_MODIFICACIONES.VALORANTERIOR, SP_MODIFICACIONES.NUEVOVALOR FROM SP_MODIFICACIONES INNER JOIN SP_USUARIO ON SP_MODIFICACIONES.COMPANIA = SP_USUARIO.COMPANIA AND SP_MODIFICACIONES.CICLO = SP_USUARIO.CICLO AND SP_MODIFICACIONES.CODIGORUTA = SP_USUARIO.CODIGORUTA WHERE SP_USUARIO.COMPANIA =:COMPANIA AND SP_MODIFICACIONES.TIPO =:TIPO AND SP_MODIFICACIONES.CICLO =:CICLO ORDER BY SP_MODIFICACIONES.FECHA DESC) INI WHERE (CASE WHEN FECHAGRILLA IS NULL THEN ' ' ELSE UPPER(FECHAGRILLA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHAGRILLA), '%')) AND (CASE WHEN CODIGORUTA IS NULL THEN ' ' ELSE UPPER(CODIGORUTA) END) LIKE UPPER(CONCAT(:CODIGORUTA, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN VALORANTERIOR IS NULL THEN ' ' ELSE UPPER(VALORANTERIOR) END) LIKE UPPER(CONCAT(:VALORANTERIOR, '%')) AND (CASE WHEN NUEVOVALOR IS NULL THEN ' ' ELSE UPPER(NUEVOVALOR) END) LIKE UPPER(CONCAT(:NUEVOVALOR, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="FECHAGRILLA" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALORANTERIOR" sqlType="STRING"/>
+		<param name="NUEVOVALOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmodificaciones/numero">
+		<call-query href="getSpmodificacionesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="FECHAGRILLA" query-param="FECHAGRILLA"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALORANTERIOR" query-param="VALORANTERIOR"/>
+			<with-param name="NUEVOVALOR" query-param="NUEVOVALOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmodificacionesRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT SP_MODIFICACIONES.COMPANIA, SP_MODIFICACIONES.CODIGO,(TO_CHAR(SP_MODIFICACIONES.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,(TO_CHAR(SP_MODIFICACIONES.HORA,'DD/MM/YYYY HH24:MI:SS')) HORA, SP_MODIFICACIONES.ANO, SP_MODIFICACIONES.PERIODO, SP_MODIFICACIONES.CICLO, SP_MODIFICACIONES.CODIGORUTA, NVL(SP_USUARIO.TOTFACTURAPERACTUAL,0) TOTFACTURAPERACTUAL, CONCAT(SP_USUARIO.PRIMERAPELLIDO,CONCAT(' ',CONCAT(SP_USUARIO.SEGUNDOAPELLIDO,CONCAT(' ',SP_USUARIO.NOMBRES) ) ) ) NOMBRE, SP_MODIFICACIONES.USO, SP_MODIFICACIONES.ESTRATO, SP_MODIFICACIONES.MODIFICACION, SP_MODIFICACIONES.AFORADOR, SP_MODIFICACIONES.OPERADOR, SP_MODIFICACIONES.VALORANTERIOR, SP_MODIFICACIONES.NUEVOVALOR, SP_MODIFICACIONES.OBSERVACIONES, SP_MODIFICACIONES.TIPO, SP_MODIFICACIONES.CREATED_BY,(TO_CHAR(SP_MODIFICACIONES.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, SP_MODIFICACIONES.MODIFIED_BY,(TO_CHAR(SP_MODIFICACIONES.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM SP_MODIFICACIONES INNER JOIN SP_USUARIO ON SP_MODIFICACIONES.COMPANIA = SP_USUARIO.COMPANIA AND SP_MODIFICACIONES.CODIGORUTA = SP_USUARIO.CODIGORUTA AND SP_MODIFICACIONES.CICLO = SP_USUARIO.CICLO WHERE SP_MODIFICACIONES.COMPANIA= :KEY_COMPANIA AND SP_MODIFICACIONES.CODIGO= :KEY_CODIGO AND SP_MODIFICACIONES.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS') AND SP_MODIFICACIONES.HORA= TO_DATE(:KEY_HORA,'DD/MM/YYYY HH24:MI:SS') </sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","FECHA":"$FECHA","HORA":"$HORA","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO","CICLO":"$CICLO(type:integer)","CODIGORUTA":"$CODIGORUTA","TOTFACTURAPERACTUAL":"$TOTFACTURAPERACTUAL(type:integer)","NOMBRE":"$NOMBRE","USO":"$USO","ESTRATO":"$ESTRATO","MODIFICACION":"$MODIFICACION","AFORADOR":"$AFORADOR","OPERADOR":"$OPERADOR","VALORANTERIOR":"$VALORANTERIOR","NUEVOVALOR":"$NUEVOVALOR","OBSERVACIONES":"$OBSERVACIONES","TIPO":"$TIPO","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+		<param name="KEY_HORA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmodificaciones/data">
+		<call-query href="getSpmodificacionesRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+			<with-param name="KEY_HORA" query-param="KEY_HORA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpmodificaciones" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_MODIFICACIONES SET CODIGO=:CODIGO, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), HORA=TO_DATE(:HORA,'DD/MM/YYYY HH24:MI:SS'), ANO=:ANO, PERIODO=:PERIODO, CICLO=:CICLO, CODIGORUTA=:CODIGORUTA, USO=:USO, ESTRATO=:ESTRATO, MODIFICACION=:MODIFICACION, AFORADOR=:AFORADOR, OPERADOR=:OPERADOR, VALORANTERIOR=:VALORANTERIOR, NUEVOVALOR=:NUEVOVALOR, OBSERVACIONES=:OBSERVACIONES, TIPO=:TIPO, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE SP_MODIFICACIONES.COMPANIA= :KEY_COMPANIA AND SP_MODIFICACIONES.CODIGO= :KEY_CODIGO AND SP_MODIFICACIONES.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS')  AND SP_MODIFICACIONES.HORA= TO_DATE(:KEY_HORA,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="HORA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="USO" sqlType="STRING"/>
+		<param name="ESTRATO" sqlType="STRING"/>
+		<param name="MODIFICACION" sqlType="STRING"/>
+		<param name="AFORADOR" sqlType="STRING"/>
+		<param name="OPERADOR" sqlType="STRING"/>
+		<param name="VALORANTERIOR" sqlType="STRING"/>
+		<param name="NUEVOVALOR" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+		<param name="KEY_HORA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spmodificaciones">
+		<call-query href="updateSpmodificaciones">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA" query-param="HORA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="USO" query-param="USO"/>
+			<with-param name="ESTRATO" query-param="ESTRATO"/>
+			<with-param name="MODIFICACION" query-param="MODIFICACION"/>
+			<with-param name="AFORADOR" query-param="AFORADOR"/>
+			<with-param name="OPERADOR" query-param="OPERADOR"/>
+			<with-param name="VALORANTERIOR" query-param="VALORANTERIOR"/>
+			<with-param name="NUEVOVALOR" query-param="NUEVOVALOR"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+			<with-param name="KEY_HORA" query-param="KEY_HORA"/>
+
+		</call-query>
+	</resource>
+
+</data>

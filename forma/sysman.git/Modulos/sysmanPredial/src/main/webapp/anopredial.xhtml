@@ -1,0 +1,201 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TT_FR724}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<section class="radius">
+			<f:event type="preRenderView"
+				listener="#{anopredialsControlador.cargarForma}" />
+			<div id="FR724" style="height: 590px;">
+				<h:form style="height: 100%;" id="FRFR724">
+					<p:growl id="alert" showDetail="true" sticky="false"
+						widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+					<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}" id="dlg"
+						widgetVar="dlg" resizable="false" modal="true"
+						rendered="#{anopredialsControlador.permisos[0]}"
+						onHide="restaurarCampos(['CP22295','CP22307'])">
+						<h:panelGrid columns="2" cellpadding="2">
+							<h:outputLabel value="#{idm.TG_ANIO3}:" id="LCP22307" />
+							<p:inputText id="CP22307" widgetVar="CP22307"
+								styleClass="inputTab"
+								value="#{anopredialsControlador.registro.campos['NUMERO']}"
+								label="LCP22307" style=" width: 95%; float: left;" maxlength="4">
+								<pe:keyFilter regEx="/[\d]/" />
+							</p:inputText>
+							<h:outputLabel value="#{idm.TC_CP22295}:" id="LCP22295" />
+							<p:inputText id="CP22295" widgetVar="CP22295"
+								styleClass="inputTab"
+								value="#{anopredialsControlador.registro.campos['MESESAMNISTIA_PREDIAL']}"
+								label="LCP22295" style=" width: 95%; float: left;" maxlength="2">
+								<pe:keyFilter regEx="/[\d]/" />
+							</p:inputText>
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TI_GUARDAR}"
+										style="padding:10px;" update="FRFR724,"
+										actionListener="#{anopredialsControlador.agregarRegistroNuevo}"
+										oncomplete="PF('dlg').hide(); PF('blockGuardar').hide();"
+										onclick="     if (!validarVaciosModal(['CP22295','CP22307'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockGuardar').show();" />
+									<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+										href="#" onclick="PF('dlg').hide();" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<p:confirmDialog global="true" showEffect="fade">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<div id="PL1496" class="
+"
+						style="position: relative; height: 29px;">
+						<p:remoteCommand name="refreshTab" update="TBFR724"
+							oncomplete="PF('blockGuardar').hide();" />
+						<p:dataTable id="TBFR724" var="reg"
+							value="#{anopredialsControlador.listaInicial}" editable="true"
+							widgetVar="TBFR724" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="10" rowIndexVar="rowNun" paginator="true" scrollable="true"
+							scrollWidth="100%" lazy="true">
+							<f:facet name="{Exporters}"
+								rendered="#{anopredialsControlador.permisos[4] }">
+								<h:commandLink rendered="#{anopredialsControlador.permisos[4] }"
+									title="#{idm.TI_VER_EXCEL}">
+									<p:graphicImage name="/images/general/excel.png" width="24" />
+									<p:dataExporter type="xls" target="TBFR724" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+								<h:commandLink rendered="#{anopredialsControlador.permisos[4] }"
+									title="#{idm.TI_VER_PDF}">
+									<p:graphicImage name="/images/general/pdf.png" width="24" />
+									<p:dataExporter type="pdf" target="TBFR724" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+							</f:facet>
+							<p:ajax event="rowEdit" update=":FRFR724:alert,"
+								listener="#{anopredialsControlador.editar}"
+								oncomplete="refreshTab(); mostarEditor();"
+								onstart="PF('blockGuardar').show();" />
+							<p:ajax event="rowEditCancel"
+								listener="#{anopredialsControlador.cancelarEdicion}"
+								oncomplete="  mostarEditor();" />
+							<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+							<f:facet name="header">
+								<div style="position: relative; height: 50px">
+									<h:panelGroup class="acme"
+										rendered="#{anopredialsControlador.permisos[0]  }">
+										<h:outputLink value="javascript:void(0)"
+											onclick="
+		PF('dlg').show();
+		"
+											title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;">
+											<center>
+												<p:graphicImage name="/images/menus/32/add.png" />
+												<div>#{idm.TI_NUEVO}</div>
+											</center>
+										</h:outputLink>
+									</h:panelGroup>
+									<div class="acme">
+										<h:outputLink value="#{request.contextPath}/menu.sysman"
+											title="Volver al menú" style="padding-top: 10px;">
+											<center>
+												<p:graphicImage name="/images/menus/32/close.png" />
+												<div>#{idm.TI_CERRAR}</div>
+											</center>
+										</h:outputLink>
+									</div>
+								</div>	 
+                            #{idm.TT_FR724}
+                            </f:facet>
+							<p:column headerText="#{idm.TG_ANIO3}"
+								filterBy="#{reg.campos['NUMERO']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="300" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['NUMERO']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP22307" styleClass="inputTab"
+											value="#{reg.campos['NUMERO']}" style="width:100%"
+											readonly="true" maxlength="4">
+											<pe:keyFilter regEx="/[\d]/" />
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CP22295}"
+								filterBy="#{reg.campos['MESESAMNISTIA_PREDIAL']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="200"
+								rendered="true" styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['MESESAMNISTIA_PREDIAL']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP22295" styleClass="inputTab"
+											value="#{reg.campos['MESESAMNISTIA_PREDIAL']}"
+											style="width:100%" maxlength="2">
+											<pe:keyFilter regEx="/[\d]/" />
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_PROYECTOS}" exportable="false"
+								width="100px"
+								rendered="#{anopredialsControlador.visibleCmdProyectos}">
+								<p:commandButton id="BT1370" widgetVar="BT1370"
+									update="FRFR724:alert"
+									rendered="#{anopredialsControlador.visibleCmdProyectos}"
+									tabindex="3" value="#{idm.TT_BT1370}"
+									actionListener="#{anopredialsControlador.oprimirCmdProyectos(reg,rowNun)}"
+									style="width:100%;  height:24px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px;   color:#0000FF; border:#000000  solid  1px ;">
+								</p:commandButton>
+							</p:column>
+							<p:column width="30" exportable="false"
+								rendered="#{anopredialsControlador.permisos[2] }">
+								<p:rowEditor />
+							</p:column>
+						</p:dataTable>
+						<p:blockUI block="FRFR724" widgetVar="blockGuardar">
+                        #{idm.TI_GUARDANDO_CAMBIOS}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+						<p:blockUI block="FRFR724" widgetVar="blockCarga"
+							trigger="TBFR724,">
+                        #{idm.TI_CARGANDO}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+					</div>
+				</h:form>
+			</div>
+		</section>
+	</ui:define>
+</ui:composition>

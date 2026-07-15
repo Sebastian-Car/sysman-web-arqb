@@ -1,0 +1,114 @@
+﻿<data name="documentosrequeridos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertDocumentosrequeridos" keyColumns="COMPANIA,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO DOCUMENTOS_REQUERIDOS (COMPANIA, CONSECUTIVO, NOMBRE, PRESENTAR, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CONSECUTIVO, :NOMBRE, :PRESENTAR, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="0" name="PRESENTAR" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="documentosrequeridos">
+		<call-query href="insertDocumentosrequeridos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PRESENTAR" query-param="PRESENTAR"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteDocumentosrequeridos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM DOCUMENTOS_REQUERIDOS WHERE DOCUMENTOS_REQUERIDOS.COMPANIA= :KEY_COMPANIA AND DOCUMENTOS_REQUERIDOS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="documentosrequeridos">
+		<call-query href="deleteDocumentosrequeridos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDocumentosrequeridosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CONSECUTIVO, NOMBRE,(CASE PRESENTAR WHEN 0 THEN 'false' ELSE 'true' END) PRESENTAR FROM DOCUMENTOS_REQUERIDOS WHERE COMPANIA = :COMPANIA ORDER BY CONSECUTIVO) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN PRESENTAR IS NULL THEN ' ' ELSE UPPER(PRESENTAR) END)  LIKE UPPER(:PRESENTAR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO","NOMBRE":"$NOMBRE","PRESENTAR":"$PRESENTAR(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PRESENTAR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="documentosrequeridos">
+		<call-query href="getDocumentosrequeridosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PRESENTAR" query-param="PRESENTAR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDocumentosrequeridosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CONSECUTIVO, NOMBRE,(CASE PRESENTAR WHEN 0 THEN 'false' ELSE 'true' END) PRESENTAR FROM DOCUMENTOS_REQUERIDOS WHERE COMPANIA = :COMPANIA ORDER BY CONSECUTIVO) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN PRESENTAR IS NULL THEN ' ' ELSE UPPER(PRESENTAR) END)  LIKE UPPER(:PRESENTAR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PRESENTAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="documentosrequeridos/numero">
+		<call-query href="getDocumentosrequeridosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PRESENTAR" query-param="PRESENTAR"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDocumentosrequeridos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE DOCUMENTOS_REQUERIDOS SET COMPANIA=:COMPANIA, CONSECUTIVO=:CONSECUTIVO, NOMBRE=:NOMBRE, PRESENTAR=:PRESENTAR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE DOCUMENTOS_REQUERIDOS.COMPANIA= :KEY_COMPANIA AND DOCUMENTOS_REQUERIDOS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PRESENTAR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="documentosrequeridos">
+		<call-query href="updateDocumentosrequeridos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PRESENTAR" query-param="PRESENTAR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+
+</data>

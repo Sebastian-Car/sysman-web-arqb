@@ -1,0 +1,246 @@
+﻿<data name="tiposfe" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTiposfeCodigosPorTipoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT TIPOS_FE.CODIGO, TIPOS_FE.DESCRIPCION FROM TIPOS_FE WHERE TIPOS_FE.ID_TIPOS = :TIPO ORDER BY TIPOS_FE.CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tiposfe/codigosportipo">
+		<call-query href="getTiposfeCodigosPorTipoQuery">
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposfePagCodigosPorTipoGrandeQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT TIPOS_FE.CODIGO, TIPOS_FE.DESCRIPCION , TIPOS_FE.ID FROM TIPOS_FE WHERE TIPOS_FE.ID_TIPOS = :TIPO ORDER BY TIPOS_FE.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END) LIKE UPPER(CONCAT(CONCAT('%',:ID), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION","ID":"$ID(type:long)"}]}}		</result>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tiposfe/codigosportipogrande/pag">
+		<call-query href="getTiposfePagCodigosPorTipoGrandeQuery">
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposfeNumCodigosPorTipoGrandeQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT TIPOS_FE.CODIGO, TIPOS_FE.DESCRIPCION , TIPOS_FE.ID FROM TIPOS_FE WHERE TIPOS_FE.ID_TIPOS = :TIPO ORDER BY TIPOS_FE.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END) LIKE UPPER(CONCAT(CONCAT('%',:ID), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tiposfe/codigosportipogrande/num">
+		<call-query href="getTiposfeNumCodigosPorTipoGrandeQuery">
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="ID" query-param="ID"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposfeIdporcodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ID AS CODIGO  FROM TIPOS_FE WHERE CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:long)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tiposfe/idporcodigo">
+		<call-query href="getTiposfeIdporcodigoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposfeCons_notas_feQuery"  useConfig="sysmandsunist">
+		<sql>SELECT M.COMPANIA, M.ANO, M.TIPO_COMPROBANTE, M.COMPROBANTE, M.VALOR, M.TIPO_NOTA, M.CODIGO_NOTA, M.CMPTE_AFECTADO, M.TIPO_CPTE_AFECT, M.NUMERO_FACTURA, TO_CHAR(M.FECHA_EXPEDICION, 'YYYY-MM-DD') FECHA_EXPEDICION, TO_CHAR(M.FECHA, 'YYYY-MM-DD') FECHA, TT.DESCRIPCION, CASE WHEN M.TIPO_NOTA = 'CNC' OR M.TIPO_NOTA = 'CNF' THEN 'NOTA CREDITO' ELSE 'NOTA DEBITO' END DESC_LARGA, CONCAT(M.TIPO_NOTA, M.CODIGO_NOTA) CODIGOPRODUCTO, M.TERCERO, M.TERCERODETALLE FROM ( SELECT C.COMPANIA, C.ANO, C.TIPO_COMPROBANTE, D.COMPROBANTE, SUM(D.VALOR_CREDITO) + SUM(D.VALOR_DEBITO) VALOR, D.TIPO_NOTA, D.CODIGO_NOTA, D.CMPTE_AFECTADO, D.TIPO_CPTE_AFECT, F.NUMERO_FACTURA, D.FECHA, T.ID IDD, F.FECHA_EXPEDICION, F.TERCERO, D.TERCERO TERCERODETALLE FROM ( ( CARTERA_CUENTA C INNER JOIN DETALLE_COMPROBANTE_CNT D ON ( C.CUENTA = D.CUENTA ) AND ( C.TIPO_COMPROBANTE = D.TIPO_CPTE ) AND ( C.ANO = D.ANO ) AND ( C.COMPANIA = D.COMPANIA ) ) LEFT JOIN SF_FACTURA F ON ( D.CMPTE_AFECTADO = F.NRO_CPTE ) AND ( D.TIPO_CPTE_AFECT = F.TIPO_CPTE ) AND ( D.COMPANIA = F.COMPANIA ) ) LEFT JOIN ( SELECT ID, CODIGO FROM TIPOS_FE WHERE CODIGO IN ( 'CNC', 'CND', 'CNF' ) ) T ON D.TIPO_NOTA = T.CODIGO WHERE D.TIPO_NOTA IS NOT NULL AND D.CODIGO_NOTA IS NOT NULL GROUP BY C.COMPANIA, C.ANO, C.TIPO_COMPROBANTE, D.COMPROBANTE, D.TIPO_NOTA, D.CODIGO_NOTA, D.CMPTE_AFECTADO, D.TIPO_CPTE_AFECT, F.NUMERO_FACTURA, D.FECHA, T.ID, F.FECHA_EXPEDICION,F.TERCERO,D.TERCERO) M, TIPOS_FE TT WHERE TT.ID_TIPOS IS NOT NULL AND M.IDD = TO_NUMBER(TT.ID_TIPOS) AND M.CODIGO_NOTA = TT.CODIGO AND INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE(:COMPROBANTE, ' ', '') ), CONCAT('', CONCAT(M.COMPROBANTE, '') ), 1) = 0 AND TO_DATE(TO_CHAR(M.FECHA, 'dd/MM/yyyy'), 'dd/MM/yyyy') BETWEEN :FECHAINICIAL AND :FECHAFINAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_COMPROBANTE":"$TIPO_COMPROBANTE","COMPROBANTE":"$COMPROBANTE(type:long)","VALOR":"$VALOR(type:double)","TIPO_NOTA":"$TIPO_NOTA","CODIGO_NOTA":"$CODIGO_NOTA","CMPTE_AFECTADO":"$CMPTE_AFECTADO(type:long)","TIPO_CPTE_AFECT":"$TIPO_CPTE_AFECT","NUMERO_FACTURA":"$NUMERO_FACTURA(type:long)","FECHA_EXPEDICION":"$FECHA_EXPEDICION","FECHA":"$FECHA","DESCRIPCION":"$DESCRIPCION","DESC_LARGA":"$DESC_LARGA","CODIGOPRODUCTO":"$CODIGOPRODUCTO","TERCERO":"$TERCERO","TERCERODETALLE":"$TERCERODETALLE"}]}}		</result>
+		<param name="COMPROBANTE" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tiposfe/cons_notas_fe">
+		<call-query href="getTiposfeCons_notas_feQuery">
+			<with-param name="COMPROBANTE" query-param="COMPROBANTE"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposfeGetcodigotiposfeQuery"  useConfig="sysmandsunist">
+		<sql>SELECT TIPOS_FE.CODIGO, TIPOS_FE.DESCRIPCION FROM TIPOS_FE WHERE TIPOS_FE.COMPANIA = :COMPANIA AND TIPOS_FE.ID_TIPOS = :TIPO ORDER BY TIPOS_FE.CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tiposfe/getcodigotiposfe">
+		<call-query href="getTiposfeGetcodigotiposfeQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposfeCons_notas_docsopoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT M.COMPANIA, M.ANO, M.TIPO_COMPROBANTE, M.COMPROBANTE, M.VALOR, M.TIPO_NOTA, M.CODIGO_NOTA, M.PREFIJO, M.CMPTE_AFECTADO, M.TIPO_CPTE_AFECT, M.NUM_DS AS NUMERO_FACTURA,(TO_CHAR(M.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, TT.DESCRIPCION, 'NOTA AJUSTE' AS DESC_LARGA, M.TIPO_MEDIOPAGO, M.TIPO_PAGO, M.TIPO_MONEDA, M.TIPOFACDIAN FROM ( SELECT C.COMPANIA, C.ANO, C.TIPO_COMPROBANTE, D.COMPROBANTE, SUM(D.VALOR_CREDITO) + SUM(D.VALOR_DEBITO) AS VALOR, D.TIPO_NOTA, D.CODIGO_NOTA, D.CMPTE_AFECTADO, D.TIPO_CPTE_AFECT, DS_CNT.CONSECUTIVODIAN AS NUM_DS, D.FECHA, T.ID AS IDD, R.PREFIJO, R.TIPO_MEDIOPAGO, R.TIPO_PAGO, R.TIPO_MONEDA, R.TIPOFACDIAN FROM RESOLUCIONDIAN_CT R INNER JOIN COMPROBANTE_CNT DS_CNT ON R.TIPOCOMPROBANTE = DS_CNT.TIPO AND R.COMPANIA = DS_CNT.COMPANIA INNER JOIN DETALLE_COMPROBANTE_CNT D ON DS_CNT.NUMERO = D.CMPTE_AFECTADO AND DS_CNT.TIPO = D.TIPO_CPTE_AFECT AND DS_CNT.COMPANIA = D.COMPANIA LEFT JOIN (SELECT ID, CODIGO FROM TIPOS_FE WHERE CODIGO IN ('NDS')) T ON D.TIPO_NOTA = T.CODIGO INNER JOIN TIPO_COMPROBANTE ON D.TIPO_CPTE = TIPO_COMPROBANTE.CODIGO AND D.COMPANIA = TIPO_COMPROBANTE.COMPANIA INNER JOIN CARTERA_CUENTA C ON D.CUENTA = C.CUENTA AND D.TIPO_CPTE = C.TIPO_COMPROBANTE AND D.ANO = C.ANO AND D.COMPANIA = C.COMPANIA WHERE D.TIPO_NOTA IS NOT NULL AND D.CODIGO_NOTA IS NOT NULL AND TIPO_COMPROBANTE.NOTAAJUSTE_CUDS NOT IN (0) GROUP BY C.COMPANIA, C.ANO, C.TIPO_COMPROBANTE, D.COMPROBANTE, D.TIPO_NOTA, D.CODIGO_NOTA, D.CMPTE_AFECTADO, D.TIPO_CPTE_AFECT, DS_CNT.CONSECUTIVODIAN, D.FECHA, T.ID, R.PREFIJO, R.TIPO_MEDIOPAGO, R.TIPO_PAGO, R.TIPO_MONEDA, R.TIPOFACDIAN ) M, TIPOS_FE TT WHERE M.CODIGO_NOTA = TT.CODIGO AND TT.ID_TIPOS IS NOT NULL AND M.IDD = TO_NUMBER(TT.ID_TIPOS) AND M.FECHA BETWEEN :FECHAINICIAL AND :FECHAFINAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_COMPROBANTE":"$TIPO_COMPROBANTE","COMPROBANTE":"$COMPROBANTE(type:long)","VALOR":"$VALOR(type:integer)","TIPO_NOTA":"$TIPO_NOTA","CODIGO_NOTA":"$CODIGO_NOTA","PREFIJO":"$PREFIJO","CMPTE_AFECTADO":"$CMPTE_AFECTADO(type:long)","TIPO_CPTE_AFECT":"$TIPO_CPTE_AFECT","NUMERO_FACTURA":"$NUMERO_FACTURA","FECHA":"$FECHA","DESCRIPCION":"$DESCRIPCION","DESC_LARGA":"$DESC_LARGA","TIPO_MEDIOPAGO":"$TIPO_MEDIOPAGO","TIPO_PAGO":"$TIPO_PAGO","TIPO_MONEDA":"$TIPO_MONEDA","TIPOFACDIAN":"$TIPOFACDIAN"}]}}		</result>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tiposfe/cons_notas_docsopo">
+		<call-query href="getTiposfeCons_notas_docsopoQuery">
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposfeCodigoynombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CODIGO, DESCRIPCION AS NOMBRE FROM TIPOS_FE WHERE ID_TIPOS = :TIPO ORDER BY CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tiposfe/codigoynombre">
+		<call-query href="getTiposfeCodigoynombreQuery">
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposfeGetdatodetalladosnotasfeQuery"  useConfig="sysmandsunist">
+		<sql>SELECT D.VALOR_IVA, PC.CLASECUENTA, D.CUENTA, C.COMPANIA, C.ANO, C.TIPO_COMPROBANTE, D.COMPROBANTE, CASE WHEN ( (D.VALOR_CREDITO + D.VALOR_DEBITO)-D.VALOR_IVA ) LIKE '%,%' THEN REPLACE( ((D.VALOR_CREDITO + D.VALOR_DEBITO)-D.VALOR_IVA), ',', '.' ) ELSE REPLACE( ((D.VALOR_CREDITO + D.VALOR_DEBITO)-D.VALOR_IVA), '.', ',' ) END VALOR, D.TIPO_NOTA, D.CODIGO_NOTA, D.CMPTE_AFECTADO, D.TIPO_CPTE_AFECT, F.NUMERO_FACTURA,(TO_CHAR(D.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, T.ID IDD,(TO_CHAR(F.FECHA_EXPEDICION,'DD/MM/YYYY HH24:MI:SS')) FECHA_EXPEDICION,(CASE CS.APLICAIVA WHEN 0 THEN 'false' ELSE 'true' END) APLICAIVA, CS.PORCENTAJEIVA,(CASE CS.APLICARETEFUENTE WHEN 0 THEN 'false' ELSE 'true' END) APLICARETEFUENTE, CS.PORCENTAJERETEFUENTE,(CASE CS.APLICAAUTORENTA WHEN 0 THEN 'false' ELSE 'true' END) APLICAAUTORENTA, CS.PORCENTAJEAUTORENTA,(CASE CS.APLICAIMPOCONSUMO WHEN 0 THEN 'false' ELSE 'true' END) APLICAIMPOCONSUMO, CS.PORCENTAJEINC,(CASE CS.APLICARETEIVA WHEN 0 THEN 'false' ELSE 'true' END) APLICARETEIVA, CS.PORCENTAJERETEIVA FROM ( ( CARTERA_CUENTA C INNER JOIN DETALLE_COMPROBANTE_CNT D ON ( C.CUENTA = D.CUENTA ) AND ( C.TIPO_COMPROBANTE = D.TIPO_CPTE ) AND ( C.ANO = D.ANO ) AND ( C.COMPANIA = D.COMPANIA ) ) INNER JOIN PLAN_CONTABLE PC ON ( PC.CODIGO = D.CUENTA AND PC.ANO = D.ANO AND PC.COMPANIA = D.COMPANIA ) LEFT JOIN SF_FACTURA F ON ( D.CMPTE_AFECTADO = F.NRO_CPTE ) AND ( D.TIPO_CPTE_AFECT = F.TIPO_CPTE ) AND ( D.COMPANIA = F.COMPANIA ) ) LEFT JOIN ( SELECT ID, CODIGO FROM TIPOS_FE WHERE CODIGO IN ( 'CNC', 'CND', 'CNF' ) ) T ON D.TIPO_NOTA = T.CODIGO INNER JOIN SF_DETALLE_FACTURA DF ON F.COMPANIA = DF.COMPANIA AND F.TIPO_FACTURA = DF.TIPO_FACTURA AND F.NUMERO_FACTURA = DF.FACTURA AND F.TIPOCOBRO = DF.TIPOCOBRO INNER JOIN SF_CONCEPTOS CS ON DF.COMPANIA = CS.COMPANIA AND DF.ANO = CS.ANO AND DF.TIPOCOBRO = CS.TIPOCOBRO AND DF.CONCEPTO = CS.CODIGO WHERE D.TIPO_NOTA IS NOT NULL AND D.CODIGO_NOTA IS NOT NULL AND D.FECHA BETWEEN :FECHAINICIAL AND :FECHAFINAL AND D.COMPROBANTE = :COMPROBANTE GROUP BY PC.CLASECUENTA, D.CUENTA, C.COMPANIA, C.ANO, C.TIPO_COMPROBANTE, D.COMPROBANTE, D.TIPO_NOTA, D.CODIGO_NOTA, D.CMPTE_AFECTADO, D.TIPO_CPTE_AFECT, F.NUMERO_FACTURA, D.FECHA, T.ID, F.FECHA_EXPEDICION, (D.VALOR_CREDITO + D.VALOR_DEBITO) - D.VALOR_IVA, CS.APLICAIVA, CS.PORCENTAJEIVA, CS.APLICARETEFUENTE, CS.PORCENTAJERETEFUENTE, CS.APLICAAUTORENTA, CS.PORCENTAJEAUTORENTA, CS.APLICAIMPOCONSUMO, CS.PORCENTAJEINC, CS.APLICARETEIVA, CS.PORCENTAJERETEIVA, D.VALOR_IVA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VALOR_IVA":"$VALOR_IVA","CLASECUENTA":"$CLASECUENTA","CUENTA":"$CUENTA","COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_COMPROBANTE":"$TIPO_COMPROBANTE","COMPROBANTE":"$COMPROBANTE(type:long)","VALOR":"$VALOR","TIPO_NOTA":"$TIPO_NOTA","CODIGO_NOTA":"$CODIGO_NOTA","CMPTE_AFECTADO":"$CMPTE_AFECTADO(type:long)","TIPO_CPTE_AFECT":"$TIPO_CPTE_AFECT","NUMERO_FACTURA":"$NUMERO_FACTURA(type:long)","FECHA":"$FECHA","IDD":"$IDD(type:long)","FECHA_EXPEDICION":"$FECHA_EXPEDICION","APLICAIVA":"$APLICAIVA(type:boolean)","PORCENTAJEIVA":"$PORCENTAJEIVA","APLICARETEFUENTE":"$APLICARETEFUENTE(type:boolean)","PORCENTAJERETEFUENTE":"$PORCENTAJERETEFUENTE","APLICAAUTORENTA":"$APLICAAUTORENTA(type:boolean)","PORCENTAJEAUTORENTA":"$PORCENTAJEAUTORENTA","APLICAIMPOCONSUMO":"$APLICAIMPOCONSUMO(type:boolean)","PORCENTAJEINC":"$PORCENTAJEINC","APLICARETEIVA":"$APLICARETEIVA(type:boolean)","PORCENTAJERETEIVA":"$PORCENTAJERETEIVA"}]}}		</result>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="COMPROBANTE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tiposfe/getdatodetalladosnotasfe">
+		<call-query href="getTiposfeGetdatodetalladosnotasfeQuery">
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="COMPROBANTE" query-param="COMPROBANTE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertTiposfe" keyColumns="ID,COMPANIA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TIPOS_FE (COMPANIA, ID, ID_TIPOS, CODIGO, DESCRIPCION, CREATED_BY, DATE_CREATED) VALUES (:COMPANIA, :ID, :ID_TIPOS, :CODIGO, :DESCRIPCION, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_ID":"$ID(type:long)","KEY_COMPANIA":"$COMPANIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param defaultValue="" name="ID_TIPOS" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="tiposfe">
+		<call-query href="insertTiposfe">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="ID_TIPOS" query-param="ID_TIPOS"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTiposfe" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TIPOS_FE WHERE TIPOS_FE.ID= :KEY_ID</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_ID" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="tiposfe">
+		<call-query href="deleteTiposfe">
+			<with-param name="KEY_ID" query-param="KEY_ID"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposfePaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, ID, ID_TIPOS, CODIGO, DESCRIPCION FROM TIPOS_FE WHERE ID_TIPOS = :TIPO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID":"$ID(type:long)","ID_TIPOS":"$ID_TIPOS","CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tiposfe">
+		<call-query href="getTiposfePaginaQuery">
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposfeNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, ID, ID_TIPOS, CODIGO, DESCRIPCION FROM TIPOS_FE WHERE ID_TIPOS = :TIPO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tiposfe/numero">
+		<call-query href="getTiposfeNumeroQuery">
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTiposfe" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TIPOS_FE SET ID=:ID, ID_TIPOS=:ID_TIPOS, CODIGO=:CODIGO, DESCRIPCION=:DESCRIPCION, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE TIPOS_FE.ID= :KEY_ID AND TIPOS_FE.COMPANIA= :KEY_COMPANIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ID" sqlType="STRING"/>
+		<param name="ID_TIPOS" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_ID" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tiposfe">
+		<call-query href="updateTiposfe">
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="ID_TIPOS" query-param="ID_TIPOS"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_ID" query-param="KEY_ID"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+
+		</call-query>
+	</resource>
+
+</data>

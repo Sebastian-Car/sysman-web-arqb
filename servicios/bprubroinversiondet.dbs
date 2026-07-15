@@ -1,0 +1,531 @@
+﻿<data name="bprubroinversiondet" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getBprubroinversiondetNivelesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NIVEL  FROM BP_RUBRO_INVERSION_DET WHERE COMPANIA = :COMPANIA AND NIVEL IS NOT NULL GROUP BY NIVEL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NIVEL":"$NIVEL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/niveles">
+		<call-query href="getBprubroinversiondetNivelesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetTodosPorDescripcionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT BP_RUBRO_INVERSION_DET.DESCRIPCION  FROM BP_RUBRO_INVERSION_DET WHERE BP_RUBRO_INVERSION_DET.NIVEL =:NIVEL AND BP_RUBRO_INVERSION_DET.COMPANIA = :COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA BETWEEN :ANIO AND :ANIO_FINAL ORDER BY BP_RUBRO_INVERSION_DET.DESCRIPCION</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="NIVEL" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="ANIO_FINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/todospordescripcion">
+		<call-query href="getBprubroinversiondetTodosPorDescripcionQuery">
+			<with-param name="NIVEL" query-param="NIVEL"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="ANIO_FINAL" query-param="ANIO_FINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetTodosPorNivelQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT BP_RUBRO_INVERSION_DET.NIVEL  FROM BP_RUBRO_INVERSION_DET WHERE BP_RUBRO_INVERSION_DET.COMPANIA =:COMPANIA GROUP BY BP_RUBRO_INVERSION_DET.NIVEL, BP_RUBRO_INVERSION_DET.COMPANIA, BP_RUBRO_INVERSION_DET.VIGENCIA ORDER BY BP_RUBRO_INVERSION_DET.NIVEL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NIVEL":"$NIVEL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/todospornivel">
+		<call-query href="getBprubroinversiondetTodosPorNivelQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetPagSubrubrovigenciacodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, VIGENCIA, RUBRO_INVER, RUBRO, NIVEL_NUM, NIVEL, DESCRIPCION, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, AUXILIAR  FROM BP_RUBRO_INVERSION_DET WHERE COMPANIA = :COMPANIA AND VIGENCIA = :VIGENCIA AND RUBRO_INVER=:CODIGO) WHERE (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END)  LIKE UPPER(:RUBRO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","VIGENCIA":"$VIGENCIA(type:integer)","RUBRO_INVER":"$RUBRO_INVER","RUBRO":"$RUBRO","NIVEL_NUM":"$NIVEL_NUM(type:integer)","NIVEL":"$NIVEL","DESCRIPCION":"$DESCRIPCION","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","AUXILIAR":"$AUXILIAR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIGENCIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/subrubrovigenciacod/pag">
+		<call-query href="getBprubroinversiondetPagSubrubrovigenciacodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetNumSubrubrovigenciacodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, VIGENCIA, RUBRO_INVER, RUBRO, NIVEL_NUM, NIVEL, DESCRIPCION, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, AUXILIAR  FROM BP_RUBRO_INVERSION_DET WHERE COMPANIA = :COMPANIA AND VIGENCIA = :VIGENCIA AND RUBRO_INVER=:CODIGO) WHERE (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END)  LIKE UPPER(:RUBRO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIGENCIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/subrubrovigenciacod/num">
+		<call-query href="getBprubroinversiondetNumSubrubrovigenciacodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteBprubroinversiondetBorrarubroinver" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE  FROM BP_RUBRO_INVERSION_DET WHERE COMPANIA    = :COMPANIA   AND VIGENCIA    = :VIGENCIA   AND RUBRO_INVER = :RUBRO_INVER</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIGENCIA" sqlType="STRING"/>
+		<param name="RUBRO_INVER" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="bprubroinversiondet/borrarubroinver">
+		<call-query href="deleteBprubroinversiondetBorrarubroinver">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="RUBRO_INVER" query-param="RUBRO_INVER"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetPagDetallesrubroinversionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, VIGENCIA, RUBRO_INVER, RUBRO, AUXILIAR, NIVEL_NUM, NIVEL, DESCRIPCION  FROM BP_RUBRO_INVERSION_DET WHERE COMPANIA = :COMPANIA AND VIGENCIA = :VIGENCIA AND RUBRO_INVER = :RUBRO_INVER) WHERE (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END)  LIKE UPPER(:RUBRO || '%')  AND (CASE WHEN AUXILIAR IS NULL THEN ' ' ELSE UPPER(AUXILIAR) END)  LIKE UPPER(:AUXILIAR || '%')  AND (CASE WHEN NIVEL IS NULL THEN ' ' ELSE UPPER(NIVEL) END)  LIKE UPPER( '%' || :NIVEL || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","VIGENCIA":"$VIGENCIA(type:integer)","RUBRO_INVER":"$RUBRO_INVER","RUBRO":"$RUBRO","AUXILIAR":"$AUXILIAR","NIVEL_NUM":"$NIVEL_NUM(type:integer)","NIVEL":"$NIVEL","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIGENCIA" sqlType="STRING"/>
+		<param name="RUBRO_INVER" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="NIVEL" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/detallesrubroinversion/pag">
+		<call-query href="getBprubroinversiondetPagDetallesrubroinversionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="RUBRO_INVER" query-param="RUBRO_INVER"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="NIVEL" query-param="NIVEL"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetNumDetallesrubroinversionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, VIGENCIA, RUBRO_INVER, RUBRO, AUXILIAR, NIVEL_NUM, NIVEL, DESCRIPCION  FROM BP_RUBRO_INVERSION_DET WHERE COMPANIA = :COMPANIA AND VIGENCIA = :VIGENCIA AND RUBRO_INVER = :RUBRO_INVER) WHERE (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END)  LIKE UPPER(:RUBRO || '%')  AND (CASE WHEN AUXILIAR IS NULL THEN ' ' ELSE UPPER(AUXILIAR) END)  LIKE UPPER(:AUXILIAR || '%')  AND (CASE WHEN NIVEL IS NULL THEN ' ' ELSE UPPER(NIVEL) END)  LIKE UPPER( '%' || :NIVEL || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIGENCIA" sqlType="STRING"/>
+		<param name="RUBRO_INVER" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="NIVEL" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/detallesrubroinversion/num">
+		<call-query href="getBprubroinversiondetNumDetallesrubroinversionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="RUBRO_INVER" query-param="RUBRO_INVER"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="NIVEL" query-param="NIVEL"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="insertBprubroinversiondet" keyColumns="COMPANIA,VIGENCIA,RUBRO_INVER,RUBRO,AUXILIAR" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO BP_RUBRO_INVERSION_DET (COMPANIA, VIGENCIA, RUBRO_INVER, RUBRO, NIVEL_NUM, NIVEL, DESCRIPCION, CREATED_BY, DATE_CREATED, AUXILIAR) VALUES (:COMPANIA, :VIGENCIA, :RUBRO_INVER, :RUBRO, :NIVEL_NUM, :NIVEL, :DESCRIPCION, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :AUXILIAR)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_VIGENCIA":"$VIGENCIA(type:integer)","KEY_RUBRO_INVER":"$RUBRO_INVER","KEY_RUBRO":"$RUBRO","KEY_AUXILIAR":"$AUXILIAR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="0" name="VIGENCIA" sqlType="STRING"/>
+		<param name="RUBRO_INVER" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param defaultValue="0" name="NIVEL_NUM" sqlType="STRING"/>
+		<param defaultValue="" name="NIVEL" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param defaultValue="99999999999999999999" name="AUXILIAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="bprubroinversiondet">
+		<call-query href="insertBprubroinversiondet">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="RUBRO_INVER" query-param="RUBRO_INVER"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="NIVEL_NUM" query-param="NIVEL_NUM"/>
+			<with-param name="NIVEL" query-param="NIVEL"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteBprubroinversiondet" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM BP_RUBRO_INVERSION_DET WHERE BP_RUBRO_INVERSION_DET.COMPANIA= :KEY_COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA= :KEY_VIGENCIA AND BP_RUBRO_INVERSION_DET.RUBRO_INVER= :KEY_RUBRO_INVER AND BP_RUBRO_INVERSION_DET.RUBRO= :KEY_RUBRO AND BP_RUBRO_INVERSION_DET.AUXILIAR= :KEY_AUXILIAR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_VIGENCIA" sqlType="INTEGER"/>
+		<param name="KEY_RUBRO_INVER" sqlType="STRING"/>
+		<param name="KEY_RUBRO" sqlType="STRING"/>
+		<param name="KEY_AUXILIAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="bprubroinversiondet">
+		<call-query href="deleteBprubroinversiondet">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_VIGENCIA" query-param="KEY_VIGENCIA"/>
+			<with-param name="KEY_RUBRO_INVER" query-param="KEY_RUBRO_INVER"/>
+			<with-param name="KEY_RUBRO" query-param="KEY_RUBRO"/>
+			<with-param name="KEY_AUXILIAR" query-param="KEY_AUXILIAR"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, VIGENCIA, RUBRO_INVER, RUBRO, NIVEL_NUM, NIVEL, DESCRIPCION, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, AUXILIAR  FROM BP_RUBRO_INVERSION_DET WHERE COMPANIA = :COMPANIA AND VIGENCIA = :VIGENCIA AND RUBRO_INVER=:CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","VIGENCIA":"$VIGENCIA(type:integer)","RUBRO_INVER":"$RUBRO_INVER","RUBRO":"$RUBRO","NIVEL_NUM":"$NIVEL_NUM(type:integer)","NIVEL":"$NIVEL","DESCRIPCION":"$DESCRIPCION","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","AUXILIAR":"$AUXILIAR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIGENCIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet">
+		<call-query href="getBprubroinversiondetPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, VIGENCIA, RUBRO_INVER, RUBRO, NIVEL_NUM, NIVEL, DESCRIPCION, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, AUXILIAR  FROM BP_RUBRO_INVERSION_DET WHERE COMPANIA = :COMPANIA AND VIGENCIA = :VIGENCIA AND RUBRO_INVER=:CODIGO) WHERE (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END)  LIKE UPPER(:RUBRO || '%')  AND (CASE WHEN NIVEL IS NULL THEN ' ' ELSE UPPER(NIVEL) END)  LIKE UPPER(:NIVEL || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN AUXILIAR IS NULL THEN ' ' ELSE UPPER(AUXILIAR) END)  LIKE UPPER( '%' || :AUXILIAR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIGENCIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="NIVEL" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/numero">
+		<call-query href="getBprubroinversiondetNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="NIVEL" query-param="NIVEL"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+
+		</call-query>
+	</resource>
+	<query id="updateBprubroinversiondet" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE BP_RUBRO_INVERSION_DET SET NIVEL_NUM=:NIVEL_NUM, NIVEL=:NIVEL, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE BP_RUBRO_INVERSION_DET.COMPANIA= :KEY_COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA= :KEY_VIGENCIA AND BP_RUBRO_INVERSION_DET.RUBRO_INVER= :KEY_RUBRO_INVER AND BP_RUBRO_INVERSION_DET.RUBRO= :KEY_RUBRO AND BP_RUBRO_INVERSION_DET.AUXILIAR= :KEY_AUXILIAR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NIVEL_NUM" sqlType="STRING"/>
+		<param name="NIVEL" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_VIGENCIA" sqlType="STRING"/>
+		<param name="KEY_RUBRO_INVER" sqlType="STRING"/>
+		<param name="KEY_RUBRO" sqlType="STRING"/>
+		<param name="KEY_AUXILIAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="bprubroinversiondet">
+		<call-query href="updateBprubroinversiondet">
+			<with-param name="NIVEL_NUM" query-param="NIVEL_NUM"/>
+			<with-param name="NIVEL" query-param="NIVEL"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_VIGENCIA" query-param="KEY_VIGENCIA"/>
+			<with-param name="KEY_RUBRO_INVER" query-param="KEY_RUBRO_INVER"/>
+			<with-param name="KEY_RUBRO" query-param="KEY_RUBRO"/>
+			<with-param name="KEY_AUXILIAR" query-param="KEY_AUXILIAR"/>
+
+		</call-query>
+	</resource>
+	<query id="updateBprubroinversiondetDetallesrubroinversion" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE BP_RUBRO_INVERSION_DET SET RUBRO=:RUBRO, AUXILIAR=:AUXILIAR, NIVEL=:NIVEL, DESCRIPCION=:DESCRIPCION, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE BP_RUBRO_INVERSION_DET.COMPANIA= :KEY_COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA= :KEY_VIGENCIA AND BP_RUBRO_INVERSION_DET.RUBRO_INVER= :KEY_RUBRO_INVER AND BP_RUBRO_INVERSION_DET.RUBRO= :KEY_RUBRO AND BP_RUBRO_INVERSION_DET.AUXILIAR= :KEY_AUXILIAR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="NIVEL" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_VIGENCIA" sqlType="STRING"/>
+		<param name="KEY_RUBRO_INVER" sqlType="STRING"/>
+		<param name="KEY_RUBRO" sqlType="STRING"/>
+		<param name="KEY_AUXILIAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="bprubroinversiondet/detallesrubroinversion">
+		<call-query href="updateBprubroinversiondetDetallesrubroinversion">
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="NIVEL" query-param="NIVEL"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_VIGENCIA" query-param="KEY_VIGENCIA"/>
+			<with-param name="KEY_RUBRO_INVER" query-param="KEY_RUBRO_INVER"/>
+			<with-param name="KEY_RUBRO" query-param="KEY_RUBRO"/>
+			<with-param name="KEY_AUXILIAR" query-param="KEY_AUXILIAR"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteBprubroinversiondetDetallesrubroinversion" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM BP_RUBRO_INVERSION_DET WHERE COMPANIA = :KEY_COMPANIA AND VIGENCIA   = :KEY_VIGENCIA AND RUBRO_INVER= :KEY_RUBRO_INVER AND RUBRO      = :KEY_RUBRO AND AUXILIAR   = :KEY_AUXILIAR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_VIGENCIA" sqlType="STRING"/>
+		<param name="KEY_RUBRO_INVER" sqlType="STRING"/>
+		<param name="KEY_RUBRO" sqlType="STRING"/>
+		<param name="KEY_AUXILIAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="bprubroinversiondet/detallesrubroinversion">
+		<call-query href="deleteBprubroinversiondetDetallesrubroinversion">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_VIGENCIA" query-param="KEY_VIGENCIA"/>
+			<with-param name="KEY_RUBRO_INVER" query-param="KEY_RUBRO_INVER"/>
+			<with-param name="KEY_RUBRO" query-param="KEY_RUBRO"/>
+			<with-param name="KEY_AUXILIAR" query-param="KEY_AUXILIAR"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetTodospornivelporelcodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DESCRIPCION  FROM BP_RUBRO_INVERSION_DET WHERE COMPANIA=:COMPANIA AND VIGENCIA =:ANIO AND NIVEL =:NIVEL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="NIVEL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/todospornivelporelcodigo">
+		<call-query href="getBprubroinversiondetTodospornivelporelcodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="NIVEL" query-param="NIVEL"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetTodoslosnivelesporanoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NIVEL  FROM BP_RUBRO_INVERSION_DET WHERE COMPANIA = :COMPANIA AND VIGENCIA = :ANIO AND NIVEL IS NOT NULL GROUP BY NIVEL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NIVEL":"$NIVEL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/todoslosnivelesporano">
+		<call-query href="getBprubroinversiondetTodoslosnivelesporanoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetPagTodosPorVigenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  BP_RUBRO_INVERSION_DET.RUBRO, BP_RUBRO_INVERSION_DET.DESCRIPCION, PLAN_PRESUPUESTAL.FUENTE_RECURSO, BP_RUBRO_INVERSION_DET.VIGENCIA  FROM BP_RUBRO_INVERSION_DET INNER JOIN V_PLAN_PRESUPUESTAL PLAN_PRESUPUESTAL ON BP_RUBRO_INVERSION_DET.COMPANIA = PLAN_PRESUPUESTAL.COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA = PLAN_PRESUPUESTAL.ANO AND BP_RUBRO_INVERSION_DET.RUBRO = PLAN_PRESUPUESTAL.CODIGO WHERE BP_RUBRO_INVERSION_DET.COMPANIA = :COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA = :ANO AND PLAN_PRESUPUESTAL.MOVIMIENTO NOT IN (0)) WHERE (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END)  LIKE UPPER(:RUBRO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER(:DESCRIPCION || '%')  AND (CASE WHEN FUENTE_RECURSO IS NULL THEN ' ' ELSE UPPER(FUENTE_RECURSO) END)  LIKE UPPER( '%' || :FUENTE_RECURSO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RUBRO":"$RUBRO","DESCRIPCION":"$DESCRIPCION","FUENTE_RECURSO":"$FUENTE_RECURSO","VIGENCIA":"$VIGENCIA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FUENTE_RECURSO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/todosporvigencia/pag">
+		<call-query href="getBprubroinversiondetPagTodosPorVigenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetNumTodosPorVigenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  BP_RUBRO_INVERSION_DET.RUBRO, BP_RUBRO_INVERSION_DET.DESCRIPCION, PLAN_PRESUPUESTAL.FUENTE_RECURSO, BP_RUBRO_INVERSION_DET.VIGENCIA  FROM BP_RUBRO_INVERSION_DET INNER JOIN V_PLAN_PRESUPUESTAL PLAN_PRESUPUESTAL ON BP_RUBRO_INVERSION_DET.COMPANIA = PLAN_PRESUPUESTAL.COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA = PLAN_PRESUPUESTAL.ANO AND BP_RUBRO_INVERSION_DET.RUBRO = PLAN_PRESUPUESTAL.CODIGO WHERE BP_RUBRO_INVERSION_DET.COMPANIA = :COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA = :ANO AND PLAN_PRESUPUESTAL.MOVIMIENTO NOT IN (0)) WHERE (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END)  LIKE UPPER(:RUBRO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER(:DESCRIPCION || '%')  AND (CASE WHEN FUENTE_RECURSO IS NULL THEN ' ' ELSE UPPER(FUENTE_RECURSO) END)  LIKE UPPER( '%' || :FUENTE_RECURSO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FUENTE_RECURSO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/todosporvigencia/num">
+		<call-query href="getBprubroinversiondetNumTodosPorVigenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetPagTodosporvigenciafullcamposQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT BP_RUBRO_INVERSION_DET.RUBRO, BP_RUBRO_INVERSION_DET.DESCRIPCION, PLAN_PRESUPUESTAL.FUENTE_RECURSO, PLAN_PRESUPUESTAL.CENTRO_COSTO, PLAN_PRESUPUESTAL.REFERENCIA, PLAN_PRESUPUESTAL.CENTRO_COSTO, PLAN_PRESUPUESTAL.AUXILIAR, BP_RUBRO_INVERSION_DET.VIGENCIA FROM BP_RUBRO_INVERSION_DET INNER JOIN V_PLAN_PRESUPUESTAL PLAN_PRESUPUESTAL ON BP_RUBRO_INVERSION_DET.COMPANIA = PLAN_PRESUPUESTAL.COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA = PLAN_PRESUPUESTAL.ANO AND BP_RUBRO_INVERSION_DET.RUBRO = PLAN_PRESUPUESTAL.CODIGO WHERE BP_RUBRO_INVERSION_DET.COMPANIA = :COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA = :ANO AND PLAN_PRESUPUESTAL.MOVIMIENTO NOT IN (0)) INI WHERE (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END) LIKE UPPER(CONCAT(:RUBRO, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(:DESCRIPCION, '%')) AND (CASE WHEN FUENTE_RECURSO IS NULL THEN ' ' ELSE UPPER(FUENTE_RECURSO) END) LIKE UPPER(CONCAT(CONCAT('%',:FUENTE_RECURSO), '%')) AND (CASE WHEN CENTRO_COSTO IS NULL THEN ' ' ELSE UPPER(CENTRO_COSTO) END) LIKE UPPER(CONCAT(CONCAT('%',:CENTRO_COSTO), '%')) AND (CASE WHEN REFERENCIA IS NULL THEN ' ' ELSE UPPER(REFERENCIA) END) LIKE UPPER(CONCAT(CONCAT('%',:REFERENCIA), '%')) AND (CASE WHEN CENTRO_COSTO IS NULL THEN ' ' ELSE UPPER(CENTRO_COSTO) END) LIKE UPPER(CONCAT(CONCAT('%',:CENTRO_COSTO), '%')) AND (CASE WHEN AUXILIAR IS NULL THEN ' ' ELSE UPPER(AUXILIAR) END) LIKE UPPER(CONCAT(:AUXILIAR, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RUBRO":"$RUBRO","DESCRIPCION":"$DESCRIPCION","FUENTE_RECURSO":"$FUENTE_RECURSO","CENTRO_COSTO":"$CENTRO_COSTO","REFERENCIA":"$REFERENCIA","CENTRO_COSTO":"$CENTRO_COSTO","AUXILIAR":"$AUXILIAR","VIGENCIA":"$VIGENCIA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FUENTE_RECURSO" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/todosporvigenciafullcampos/pag">
+		<call-query href="getBprubroinversiondetPagTodosporvigenciafullcamposQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetNumTodosporvigenciafullcamposQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT BP_RUBRO_INVERSION_DET.RUBRO, BP_RUBRO_INVERSION_DET.DESCRIPCION, PLAN_PRESUPUESTAL.FUENTE_RECURSO, PLAN_PRESUPUESTAL.CENTRO_COSTO, PLAN_PRESUPUESTAL.REFERENCIA, PLAN_PRESUPUESTAL.CENTRO_COSTO, PLAN_PRESUPUESTAL.AUXILIAR, BP_RUBRO_INVERSION_DET.VIGENCIA FROM BP_RUBRO_INVERSION_DET INNER JOIN V_PLAN_PRESUPUESTAL PLAN_PRESUPUESTAL ON BP_RUBRO_INVERSION_DET.COMPANIA = PLAN_PRESUPUESTAL.COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA = PLAN_PRESUPUESTAL.ANO AND BP_RUBRO_INVERSION_DET.RUBRO = PLAN_PRESUPUESTAL.CODIGO WHERE BP_RUBRO_INVERSION_DET.COMPANIA = :COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA = :ANO AND PLAN_PRESUPUESTAL.MOVIMIENTO NOT IN (0)) INI WHERE (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END) LIKE UPPER(CONCAT(:RUBRO, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(:DESCRIPCION, '%')) AND (CASE WHEN FUENTE_RECURSO IS NULL THEN ' ' ELSE UPPER(FUENTE_RECURSO) END) LIKE UPPER(CONCAT(CONCAT('%',:FUENTE_RECURSO), '%')) AND (CASE WHEN CENTRO_COSTO IS NULL THEN ' ' ELSE UPPER(CENTRO_COSTO) END) LIKE UPPER(CONCAT(CONCAT('%',:CENTRO_COSTO), '%')) AND (CASE WHEN REFERENCIA IS NULL THEN ' ' ELSE UPPER(REFERENCIA) END) LIKE UPPER(CONCAT(CONCAT('%',:REFERENCIA), '%')) AND (CASE WHEN CENTRO_COSTO IS NULL THEN ' ' ELSE UPPER(CENTRO_COSTO) END) LIKE UPPER(CONCAT(CONCAT('%',:CENTRO_COSTO), '%')) AND (CASE WHEN AUXILIAR IS NULL THEN ' ' ELSE UPPER(AUXILIAR) END) LIKE UPPER(CONCAT(:AUXILIAR, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FUENTE_RECURSO" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/todosporvigenciafullcampos/num">
+		<call-query href="getBprubroinversiondetNumTodosporvigenciafullcamposQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetPagTodosporvigenciamascamposQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT BP_RUBRO_INVERSION_DET.RUBRO, BP_RUBRO_INVERSION_DET.DESCRIPCION, PLAN_PRESUPUESTAL.FUENTE_RECURSO, PLAN_PRESUPUESTAL.CENTRO_COSTO, PLAN_PRESUPUESTAL.REFERENCIA, PLAN_PRESUPUESTAL.AUXILIAR, BP_RUBRO_INVERSION_DET.VIGENCIA FROM BP_RUBRO_INVERSION_DET INNER JOIN V_PLAN_PRESUPUESTAL PLAN_PRESUPUESTAL ON BP_RUBRO_INVERSION_DET.COMPANIA = PLAN_PRESUPUESTAL.COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA = PLAN_PRESUPUESTAL.ANO AND BP_RUBRO_INVERSION_DET.RUBRO = PLAN_PRESUPUESTAL.CODIGO WHERE BP_RUBRO_INVERSION_DET.COMPANIA = :COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA = :ANO AND PLAN_PRESUPUESTAL.MOVIMIENTO NOT IN (0)) INI WHERE (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END) LIKE UPPER(CONCAT(:RUBRO, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(:DESCRIPCION, '%')) AND (CASE WHEN FUENTE_RECURSO IS NULL THEN ' ' ELSE UPPER(FUENTE_RECURSO) END) LIKE UPPER(CONCAT(CONCAT('%',:FUENTE_RECURSO), '%')) AND (CASE WHEN CENTRO_COSTO IS NULL THEN ' ' ELSE UPPER(CENTRO_COSTO) END) LIKE UPPER(CONCAT(CONCAT('%',:CENTRO_COSTO), '%')) AND (CASE WHEN REFERENCIA IS NULL THEN ' ' ELSE UPPER(REFERENCIA) END) LIKE UPPER(CONCAT(CONCAT('%',:REFERENCIA), '%')) AND (CASE WHEN AUXILIAR IS NULL THEN ' ' ELSE UPPER(AUXILIAR) END) LIKE UPPER(CONCAT(CONCAT('%',:AUXILIAR), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RUBRO":"$RUBRO","DESCRIPCION":"$DESCRIPCION","FUENTE_RECURSO":"$FUENTE_RECURSO","CENTRO_COSTO":"$CENTRO_COSTO","REFERENCIA":"$REFERENCIA","AUXILIAR":"$AUXILIAR","VIGENCIA":"$VIGENCIA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FUENTE_RECURSO" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/todosporvigenciamascampos/pag">
+		<call-query href="getBprubroinversiondetPagTodosporvigenciamascamposQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBprubroinversiondetNumTodosporvigenciamascamposQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT BP_RUBRO_INVERSION_DET.RUBRO, BP_RUBRO_INVERSION_DET.DESCRIPCION, PLAN_PRESUPUESTAL.FUENTE_RECURSO, PLAN_PRESUPUESTAL.CENTRO_COSTO, PLAN_PRESUPUESTAL.REFERENCIA, PLAN_PRESUPUESTAL.AUXILIAR, BP_RUBRO_INVERSION_DET.VIGENCIA FROM BP_RUBRO_INVERSION_DET INNER JOIN V_PLAN_PRESUPUESTAL PLAN_PRESUPUESTAL ON BP_RUBRO_INVERSION_DET.COMPANIA = PLAN_PRESUPUESTAL.COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA = PLAN_PRESUPUESTAL.ANO AND BP_RUBRO_INVERSION_DET.RUBRO = PLAN_PRESUPUESTAL.CODIGO WHERE BP_RUBRO_INVERSION_DET.COMPANIA = :COMPANIA AND BP_RUBRO_INVERSION_DET.VIGENCIA = :ANO AND PLAN_PRESUPUESTAL.MOVIMIENTO NOT IN (0)) INI WHERE (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END) LIKE UPPER(CONCAT(:RUBRO, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(:DESCRIPCION, '%')) AND (CASE WHEN FUENTE_RECURSO IS NULL THEN ' ' ELSE UPPER(FUENTE_RECURSO) END) LIKE UPPER(CONCAT(CONCAT('%',:FUENTE_RECURSO), '%')) AND (CASE WHEN CENTRO_COSTO IS NULL THEN ' ' ELSE UPPER(CENTRO_COSTO) END) LIKE UPPER(CONCAT(CONCAT('%',:CENTRO_COSTO), '%')) AND (CASE WHEN REFERENCIA IS NULL THEN ' ' ELSE UPPER(REFERENCIA) END) LIKE UPPER(CONCAT(CONCAT('%',:REFERENCIA), '%')) AND (CASE WHEN AUXILIAR IS NULL THEN ' ' ELSE UPPER(AUXILIAR) END) LIKE UPPER(CONCAT(CONCAT('%',:AUXILIAR), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FUENTE_RECURSO" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bprubroinversiondet/todosporvigenciamascampos/num">
+		<call-query href="getBprubroinversiondetNumTodosporvigenciamascamposQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+
+		</call-query>
+	</resource>
+
+</data>

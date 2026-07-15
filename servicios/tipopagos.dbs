@@ -1,0 +1,168 @@
+﻿<data name="tipopagos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTipopagosTodosPorConMovimientoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TIPOPAGO.CODIGO, TIPOPAGO.NOMBRE  FROM TIPOPAGO WHERE TIPOPAGO.COMPANIA = :COMPANIA AND TIPOPAGO.MOVIMIENTO &lt;&gt; 0 ORDER BY TIPOPAGO.COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipopagos/todosporconmovimiento">
+		<call-query href="getTipopagosTodosPorConMovimientoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipopagosPagTodostipopagosiamoviminetoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, NOMBRE FROM TIPOPAGO WHERE TIPOPAGO.COMPANIA = :COMPANIA AND TIPOPAGO.MOVIMIENTO &lt;&gt; 0 ORDER BY TIPOPAGO.COMPANIA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipopagos/todostipopagosiamovimineto/pag">
+		<call-query href="getTipopagosPagTodostipopagosiamoviminetoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipopagosNumTodostipopagosiamoviminetoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, NOMBRE FROM TIPOPAGO WHERE TIPOPAGO.COMPANIA = :COMPANIA AND TIPOPAGO.MOVIMIENTO &lt;&gt; 0 ORDER BY TIPOPAGO.COMPANIA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipopagos/todostipopagosiamovimineto/num">
+		<call-query href="getTipopagosNumTodostipopagosiamoviminetoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertTipopagos" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TIPOPAGO (COMPANIA, CODIGO, MOVIMIENTO, NOMBRE, CLASEPAGO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :MOVIMIENTO, :NOMBRE, :CLASEPAGO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="0" name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="I" name="CLASEPAGO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="tipopagos">
+		<call-query href="insertTipopagos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CLASEPAGO" query-param="CLASEPAGO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTipopagos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TIPOPAGO WHERE TIPOPAGO.COMPANIA= :KEY_COMPANIA AND TIPOPAGO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="tipopagos">
+		<call-query href="deleteTipopagos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipopagosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CODIGO,(CASE MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO, NOMBRE, CLASEPAGO, CASE WHEN CLASEPAGO = 'I' THEN 'Ingreso' ELSE 'Gasto' END NOMBRE_CLASE  FROM TIPOPAGO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN MOVIMIENTO IS NULL THEN ' ' ELSE UPPER(MOVIMIENTO) END)  LIKE UPPER( '%' || :MOVIMIENTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NOMBRE_CLASE IS NULL THEN ' ' ELSE UPPER(NOMBRE_CLASE) END)  LIKE UPPER( '%' || :NOMBRE_CLASE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","MOVIMIENTO":"$MOVIMIENTO(type:boolean)","NOMBRE":"$NOMBRE","CLASEPAGO":"$CLASEPAGO","NOMBRE_CLASE":"$NOMBRE_CLASE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBRE_CLASE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipopagos">
+		<call-query href="getTipopagosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBRE_CLASE" query-param="NOMBRE_CLASE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipopagosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CODIGO,(CASE MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO, NOMBRE, CLASEPAGO, CASE WHEN CLASEPAGO = 'I' THEN 'Ingreso' ELSE 'Gasto' END NOMBRE_CLASE  FROM TIPOPAGO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN MOVIMIENTO IS NULL THEN ' ' ELSE UPPER(MOVIMIENTO) END)  LIKE UPPER( '%' || :MOVIMIENTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NOMBRE_CLASE IS NULL THEN ' ' ELSE UPPER(NOMBRE_CLASE) END)  LIKE UPPER( '%' || :NOMBRE_CLASE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBRE_CLASE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipopagos/numero">
+		<call-query href="getTipopagosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBRE_CLASE" query-param="NOMBRE_CLASE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTipopagos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TIPOPAGO SET CODIGO=:CODIGO, MOVIMIENTO=:MOVIMIENTO, NOMBRE=:NOMBRE, CLASEPAGO=:CLASEPAGO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TIPOPAGO.COMPANIA= :KEY_COMPANIA AND TIPOPAGO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CLASEPAGO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tipopagos">
+		<call-query href="updateTipopagos">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CLASEPAGO" query-param="CLASEPAGO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

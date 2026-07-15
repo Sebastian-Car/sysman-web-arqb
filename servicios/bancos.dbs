@@ -1,0 +1,344 @@
+﻿<data name="bancos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getBancosTodosPorNombreBancoCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  BANCO.BANCO, BANCO.NOMBREBANCO  FROM BANCO WHERE BANCO.COMPANIA =:COMPANIA ORDER BY BANCO.BANCO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"BANCO":"$BANCO","NOMBREBANCO":"$NOMBREBANCO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bancos/todospornombrebancocompania">
+		<call-query href="getBancosTodosPorNombreBancoCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getBancosPagNombreporcompaniainicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  BANCO, NOMBREBANCO  FROM BANCO WHERE COMPANIA = :COMPANIA ORDER BY BANCO, COMPANIA) WHERE (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END)  LIKE UPPER(:BANCO || '%')  AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END)  LIKE UPPER( '%' || :NOMBREBANCO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"BANCO":"$BANCO","NOMBREBANCO":"$NOMBREBANCO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bancos/nombreporcompaniainicial/pag">
+		<call-query href="getBancosPagNombreporcompaniainicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBancosNumNombreporcompaniainicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  BANCO, NOMBREBANCO  FROM BANCO WHERE COMPANIA = :COMPANIA ORDER BY BANCO, COMPANIA) WHERE (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END)  LIKE UPPER(:BANCO || '%')  AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END)  LIKE UPPER( '%' || :NOMBREBANCO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bancos/nombreporcompaniainicial/num">
+		<call-query href="getBancosNumNombreporcompaniainicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBancosPagNombreporcompaniafinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  BANCO, NOMBREBANCO  FROM BANCO WHERE COMPANIA = :COMPANIA AND BANCO &gt;= :CUENTAINICIAL ORDER BY COMPANIA, BANCO) WHERE (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END)  LIKE UPPER(:BANCO || '%')  AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END)  LIKE UPPER( '%' || :NOMBREBANCO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"BANCO":"$BANCO","NOMBREBANCO":"$NOMBREBANCO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CUENTAINICIAL" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bancos/nombreporcompaniafinal/pag">
+		<call-query href="getBancosPagNombreporcompaniafinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CUENTAINICIAL" query-param="CUENTAINICIAL"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBancosNumNombreporcompaniafinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  BANCO, NOMBREBANCO  FROM BANCO WHERE COMPANIA = :COMPANIA AND BANCO &gt;= :CUENTAINICIAL ORDER BY COMPANIA, BANCO) WHERE (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END)  LIKE UPPER(:BANCO || '%')  AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END)  LIKE UPPER( '%' || :NOMBREBANCO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CUENTAINICIAL" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bancos/nombreporcompaniafinal/num">
+		<call-query href="getBancosNumNombreporcompaniafinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CUENTAINICIAL" query-param="CUENTAINICIAL"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBancosNombrebancoconcatecodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT BANCO, (CONCAT(BANCO , CONCAT('|' , NOMBREBANCO)) ) NOMBREBANCO FROM BANCO WHERE COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"BANCO":"$BANCO","NOMBREBANCO":"$NOMBREBANCO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bancos/nombrebancoconcatecodigo">
+		<call-query href="getBancosNombrebancoconcatecodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getBancosListarBancosInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  BANCO.BANCO, BANCO.NOMBREBANCO  FROM BANCO WHERE BANCO.COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"BANCO":"$BANCO","NOMBREBANCO":"$NOMBREBANCO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bancos/listarbancosinicial">
+		<call-query href="getBancosListarBancosInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getBancosListarBancosFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  BANCO.BANCO, BANCO.NOMBREBANCO  FROM BANCO WHERE BANCO.COMPANIA = :COMPANIA AND BANCO.BANCO &gt;= :BANCO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"BANCO":"$BANCO","NOMBREBANCO":"$NOMBREBANCO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bancos/listarbancosfinal">
+		<call-query href="getBancosListarBancosFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBancosPagFacturacionGeneralQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CUENTABANCOS.BANCO, BANCO.NOMBREBANCO, CUENTABANCOS.IDCONTABLE, CUENTABANCOS.CUENTANUMERO, BANCO.COMPANIA, BANCO.BANCOASOBANCARIA, CUENTABANCOS.ANO  FROM BANCO INNER JOIN CUENTABANCOS ON BANCO.COMPANIA = CUENTABANCOS.COMPANIA AND BANCO.BANCO = CUENTABANCOS.BANCO WHERE BANCO.COMPANIA =:COMPANIA AND CUENTABANCOS.ANO =:ANO ORDER BY CUENTABANCOS.BANCO) WHERE (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END)  LIKE UPPER(:BANCO || '%')  AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END)  LIKE UPPER( '%' || :NOMBREBANCO || '%')  AND (CASE WHEN IDCONTABLE IS NULL THEN ' ' ELSE UPPER(IDCONTABLE) END)  LIKE UPPER(:IDCONTABLE || '%')  AND (CASE WHEN CUENTANUMERO IS NULL THEN ' ' ELSE UPPER(CUENTANUMERO) END)  LIKE UPPER(:CUENTANUMERO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"BANCO":"$BANCO","NOMBREBANCO":"$NOMBREBANCO","IDCONTABLE":"$IDCONTABLE","CUENTANUMERO":"$CUENTANUMERO","COMPANIA":"$COMPANIA","BANCOASOBANCARIA":"$BANCOASOBANCARIA","ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="IDCONTABLE" sqlType="STRING"/>
+		<param name="CUENTANUMERO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bancos/facturaciongeneral/pag">
+		<call-query href="getBancosPagFacturacionGeneralQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="IDCONTABLE" query-param="IDCONTABLE"/>
+			<with-param name="CUENTANUMERO" query-param="CUENTANUMERO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertBancos" keyColumns="COMPANIA,BANCO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO BANCO (COMPANIA, BANCO, NOMBREBANCO, NIT, BANCOMEN, CODIGO_SIA, BANCOASOBANCARIA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :BANCO, :NOMBREBANCO, :NIT, :BANCOMEN, :CODIGO_SIA, :BANCOASOBANCARIA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_BANCO":"$BANCO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param defaultValue="" name="NIT" sqlType="STRING"/>
+		<param defaultValue="" name="BANCOMEN" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGO_SIA" sqlType="STRING"/>
+		<param defaultValue="" name="BANCOASOBANCARIA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="bancos">
+		<call-query href="insertBancos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="BANCOMEN" query-param="BANCOMEN"/>
+			<with-param name="CODIGO_SIA" query-param="CODIGO_SIA"/>
+			<with-param name="BANCOASOBANCARIA" query-param="BANCOASOBANCARIA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteBancos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM BANCO WHERE BANCO.COMPANIA= :KEY_COMPANIA AND BANCO.BANCO= :KEY_BANCO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_BANCO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="bancos">
+		<call-query href="deleteBancos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_BANCO" query-param="KEY_BANCO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBancosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, BANCO, NOMBREBANCO, NIT, BANCOMEN,CODIGO_SIA ,BANCOASOBANCARIA FROM BANCO WHERE COMPANIA = :COMPANIA ORDER BY BANCO) INI WHERE (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END) LIKE UPPER(CONCAT(CONCAT('%',:BANCO), '%')) AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBREBANCO), '%')) AND (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END) LIKE UPPER(CONCAT(CONCAT('%',:NIT), '%')) AND (CASE WHEN BANCOMEN IS NULL THEN ' ' ELSE UPPER(BANCOMEN) END) LIKE UPPER(CONCAT(CONCAT('%',:BANCOMEN), '%')) AND (CASE WHEN CODIGO_SIA IS NULL THEN ' ' ELSE UPPER(CODIGO_SIA) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO_SIA), '%')) AND (CASE WHEN BANCOASOBANCARIA IS NULL THEN ' ' ELSE UPPER(BANCOASOBANCARIA) END) LIKE UPPER(CONCAT(CONCAT('%',:BANCOASOBANCARIA), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","BANCO":"$BANCO","NOMBREBANCO":"$NOMBREBANCO","NIT":"$NIT","BANCOMEN":"$BANCOMEN","CODIGO_SIA":"$CODIGO_SIA","BANCOASOBANCARIA":"$BANCOASOBANCARIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="BANCOMEN" sqlType="STRING"/>
+		<param name="CODIGO_SIA" sqlType="STRING"/>
+		<param name="BANCOASOBANCARIA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bancos">
+		<call-query href="getBancosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="BANCOMEN" query-param="BANCOMEN"/>
+			<with-param name="CODIGO_SIA" query-param="CODIGO_SIA"/>
+			<with-param name="BANCOASOBANCARIA" query-param="BANCOASOBANCARIA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBancosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, BANCO, NOMBREBANCO, NIT, BANCOMEN,CODIGO_SIA ,BANCOASOBANCARIA FROM BANCO WHERE COMPANIA = :COMPANIA ORDER BY BANCO) INI WHERE (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END) LIKE UPPER(CONCAT(CONCAT('%',:BANCO), '%')) AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBREBANCO), '%')) AND (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END) LIKE UPPER(CONCAT(CONCAT('%',:NIT), '%')) AND (CASE WHEN BANCOMEN IS NULL THEN ' ' ELSE UPPER(BANCOMEN) END) LIKE UPPER(CONCAT(CONCAT('%',:BANCOMEN), '%')) AND (CASE WHEN CODIGO_SIA IS NULL THEN ' ' ELSE UPPER(CODIGO_SIA) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO_SIA), '%')) AND (CASE WHEN BANCOASOBANCARIA IS NULL THEN ' ' ELSE UPPER(BANCOASOBANCARIA) END) LIKE UPPER(CONCAT(CONCAT('%',:BANCOASOBANCARIA), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="BANCOMEN" sqlType="STRING"/>
+		<param name="CODIGO_SIA" sqlType="STRING"/>
+		<param name="BANCOASOBANCARIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bancos/numero">
+		<call-query href="getBancosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="BANCOMEN" query-param="BANCOMEN"/>
+			<with-param name="CODIGO_SIA" query-param="CODIGO_SIA"/>
+			<with-param name="BANCOASOBANCARIA" query-param="BANCOASOBANCARIA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateBancos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE BANCO SET COMPANIA=:COMPANIA, BANCO=:BANCO, NOMBREBANCO=:NOMBREBANCO, NIT=:NIT, BANCOMEN=:BANCOMEN, CODIGO_SIA=:CODIGO_SIA, BANCOASOBANCARIA=:BANCOASOBANCARIA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE BANCO.COMPANIA= :KEY_COMPANIA AND BANCO.BANCO= :KEY_BANCO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="BANCOMEN" sqlType="STRING"/>
+		<param name="CODIGO_SIA" sqlType="STRING"/>
+		<param name="BANCOASOBANCARIA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_BANCO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="bancos">
+		<call-query href="updateBancos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="BANCOMEN" query-param="BANCOMEN"/>
+			<with-param name="CODIGO_SIA" query-param="CODIGO_SIA"/>
+			<with-param name="BANCOASOBANCARIA" query-param="BANCOASOBANCARIA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_BANCO" query-param="KEY_BANCO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBancosNumFacturacionGeneralQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CUENTABANCOS.BANCO, BANCO.NOMBREBANCO, CUENTABANCOS.IDCONTABLE, CUENTABANCOS.CUENTANUMERO, BANCO.COMPANIA, BANCO.BANCOASOBANCARIA, CUENTABANCOS.ANO  FROM BANCO INNER JOIN CUENTABANCOS ON BANCO.COMPANIA = CUENTABANCOS.COMPANIA AND BANCO.BANCO = CUENTABANCOS.BANCO WHERE BANCO.COMPANIA =:COMPANIA AND CUENTABANCOS.ANO =:ANO ORDER BY CUENTABANCOS.BANCO) WHERE (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END)  LIKE UPPER(:BANCO || '%')  AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END)  LIKE UPPER( '%' || :NOMBREBANCO || '%')  AND (CASE WHEN IDCONTABLE IS NULL THEN ' ' ELSE UPPER(IDCONTABLE) END)  LIKE UPPER(:IDCONTABLE || '%')  AND (CASE WHEN CUENTANUMERO IS NULL THEN ' ' ELSE UPPER(CUENTANUMERO) END)  LIKE UPPER(:CUENTANUMERO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="IDCONTABLE" sqlType="STRING"/>
+		<param name="CUENTANUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bancos/facturaciongeneral/num">
+		<call-query href="getBancosNumFacturacionGeneralQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="IDCONTABLE" query-param="IDCONTABLE"/>
+			<with-param name="CUENTANUMERO" query-param="CUENTANUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBancosCuentasPorFacturaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CUENTABANCOS.IDCONTABLE, CASE WHEN CUENTABANCOS.CLASECUENTA = 'A' THEN CONCAT(CONCAT('Cuenta de Ahorros Numero ',CUENTABANCOS.CUENTANUMERO),CONCAT(' de ' ,BANCO.NOMBREBANCO) ) WHEN CUENTABANCOS.CLASECUENTA = 'C' THEN CONCAT(CONCAT('Cuenta Corriente Numero ',CUENTABANCOS.CUENTANUMERO),CONCAT(' de ' ,BANCO.NOMBREBANCO) ) END LEYENDA FROM BANCO INNER JOIN CUENTABANCOS ON BANCO.COMPANIA = CUENTABANCOS.COMPANIA AND BANCO.BANCO = CUENTABANCOS.BANCO WHERE BANCO.COMPANIA =:COMPANIA AND CUENTABANCOS.ANO =:ANO AND CUENTABANCOS.IDCONTABLE =:CUENTA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"IDCONTABLE":"$IDCONTABLE","LEYENDA":"$LEYENDA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bancos/cuentasporfactura">
+		<call-query href="getBancosCuentasPorFacturaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+
+		</call-query>
+	</resource>
+	<query id="getBancosNumerocuentaporfacturaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CUENTABANCOS.IDCONTABLE, CASE WHEN CUENTABANCOS.CLASECUENTA = 'A' THEN CONCAT(CONCAT('Cuenta de Ahorros Numero ',CUENTABANCOS.CUENTANUMERO),CONCAT(' de ' ,BANCO.NOMBREBANCO) ) WHEN CUENTABANCOS.CLASECUENTA = 'C' THEN CONCAT(CONCAT('Cuenta Corriente Numero ',CUENTABANCOS.CUENTANUMERO),CONCAT(' de ' ,BANCO.NOMBREBANCO) ) END LEYENDA FROM BANCO INNER JOIN CUENTABANCOS ON BANCO.COMPANIA = CUENTABANCOS.COMPANIA AND BANCO.BANCO = CUENTABANCOS.BANCO WHERE BANCO.COMPANIA =:COMPANIA AND CUENTABANCOS.ANO =:ANO AND CUENTABANCOS.CUENTANUMERO =:CUENTA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"IDCONTABLE":"$IDCONTABLE","LEYENDA":"$LEYENDA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bancos/numerocuentaporfactura">
+		<call-query href="getBancosNumerocuentaporfacturaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,97 @@
+﻿<data name="logacceso" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertLogaccesoAcceso" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO LOG_ACCESO (ID, CUK, USUARIO, NIT, SUCURSAL, FECHAHORA, COMPANIA, REMOTE_ADDR, HTTP_USER_AGENT, SERVER_PROTOCOL, SERVER_NAME, SERVER_PORT, CREATED_BY, DATE_CREATED) VALUES (S_LOG_ACCESO.NEXTVAL, CONCAT(LPAD(NVL(:NIT,' '),18,' '), TO_CHAR(SYSDATE,'DD/MM/YYYY')) , :USUARIO, :NIT, :SUCURSAL, SYSDATE, :COMPANIA, :REMOTE_ADDR, :HTTP_USER_AGENT, :SERVER_PROTOCOL, :SERVER_NAME, :SERVER_PORT, :USUARIO, SYSDATE)</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NIT" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="" name="REMOTE_ADDR" sqlType="STRING"/>
+		<param defaultValue="" name="HTTP_USER_AGENT" sqlType="STRING"/>
+		<param defaultValue="" name="SERVER_PROTOCOL" sqlType="STRING"/>
+		<param defaultValue="" name="SERVER_NAME" sqlType="STRING"/>
+		<param defaultValue="" name="SERVER_PORT" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="logacceso/acceso">
+		<call-query href="insertLogaccesoAcceso">
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="REMOTE_ADDR" query-param="REMOTE_ADDR"/>
+			<with-param name="HTTP_USER_AGENT" query-param="HTTP_USER_AGENT"/>
+			<with-param name="SERVER_PROTOCOL" query-param="SERVER_PROTOCOL"/>
+			<with-param name="SERVER_NAME" query-param="SERVER_NAME"/>
+			<with-param name="SERVER_PORT" query-param="SERVER_PORT"/>
+
+		</call-query>
+	</resource>
+	<query id="getLogaccesoPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT ID , CUK, USUARIO, NIT, SUCURSAL,(TO_CHAR(FECHAHORA,'DD/MM/YYYY HH24:MI:SS')) FECHAHORA, COMPANIA, REMOTE_ADDR, HTTP_USER_AGENT, SERVER_PROTOCOL, SERVER_NAME, SERVER_PORT FROM LOG_ACCESO) INI WHERE (CASE WHEN CUK IS NULL THEN ' ' ELSE UPPER(CUK) END) LIKE UPPER(CONCAT(CONCAT('%',:CUK), '%')) AND (CASE WHEN USUARIO IS NULL THEN ' ' ELSE UPPER(USUARIO) END) LIKE UPPER(CONCAT(CONCAT('%',:USUARIO), '%')) AND (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END) LIKE UPPER(CONCAT(CONCAT('%',:NIT), '%')) AND (CASE WHEN FECHAHORA IS NULL THEN ' ' ELSE UPPER(FECHAHORA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHAHORA), '%')) AND (CASE WHEN REMOTE_ADDR IS NULL THEN ' ' ELSE UPPER(REMOTE_ADDR) END) LIKE UPPER(CONCAT(CONCAT('%',:REMOTE_ADDR), '%')) AND (CASE WHEN HTTP_USER_AGENT IS NULL THEN ' ' ELSE UPPER(HTTP_USER_AGENT) END) LIKE UPPER(CONCAT(CONCAT('%',:HTTP_USER_AGENT), '%')) AND (CASE WHEN SERVER_PROTOCOL IS NULL THEN ' ' ELSE UPPER(SERVER_PROTOCOL) END) LIKE UPPER(CONCAT(CONCAT('%',:SERVER_PROTOCOL), '%')) AND (CASE WHEN SERVER_NAME IS NULL THEN ' ' ELSE UPPER(SERVER_NAME) END) LIKE UPPER(CONCAT(CONCAT('%',:SERVER_NAME), '%')) AND (CASE WHEN SERVER_PORT IS NULL THEN ' ' ELSE UPPER(SERVER_PORT) END) LIKE UPPER(CONCAT(CONCAT('%',:SERVER_PORT), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","CUK":"$CUK","USUARIO":"$USUARIO","NIT":"$NIT","SUCURSAL":"$SUCURSAL","FECHAHORA":"$FECHAHORA","COMPANIA":"$COMPANIA","REMOTE_ADDR":"$REMOTE_ADDR","HTTP_USER_AGENT":"$HTTP_USER_AGENT","SERVER_PROTOCOL":"$SERVER_PROTOCOL","SERVER_NAME":"$SERVER_NAME","SERVER_PORT":"$SERVER_PORT"}]}}		</result>
+		<param name="CUK" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="FECHAHORA" sqlType="STRING"/>
+		<param name="REMOTE_ADDR" sqlType="STRING"/>
+		<param name="HTTP_USER_AGENT" sqlType="STRING"/>
+		<param name="SERVER_PROTOCOL" sqlType="STRING"/>
+		<param name="SERVER_NAME" sqlType="STRING"/>
+		<param name="SERVER_PORT" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="logacceso">
+		<call-query href="getLogaccesoPaginaQuery">
+			<with-param name="CUK" query-param="CUK"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="FECHAHORA" query-param="FECHAHORA"/>
+			<with-param name="REMOTE_ADDR" query-param="REMOTE_ADDR"/>
+			<with-param name="HTTP_USER_AGENT" query-param="HTTP_USER_AGENT"/>
+			<with-param name="SERVER_PROTOCOL" query-param="SERVER_PROTOCOL"/>
+			<with-param name="SERVER_NAME" query-param="SERVER_NAME"/>
+			<with-param name="SERVER_PORT" query-param="SERVER_PORT"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getLogaccesoNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT ID , CUK, USUARIO, NIT, SUCURSAL,(TO_CHAR(FECHAHORA,'DD/MM/YYYY HH24:MI:SS')) FECHAHORA, COMPANIA, REMOTE_ADDR, HTTP_USER_AGENT, SERVER_PROTOCOL, SERVER_NAME, SERVER_PORT FROM LOG_ACCESO) INI WHERE (CASE WHEN CUK IS NULL THEN ' ' ELSE UPPER(CUK) END) LIKE UPPER(CONCAT(CONCAT('%',:CUK), '%')) AND (CASE WHEN USUARIO IS NULL THEN ' ' ELSE UPPER(USUARIO) END) LIKE UPPER(CONCAT(CONCAT('%',:USUARIO), '%')) AND (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END) LIKE UPPER(CONCAT(CONCAT('%',:NIT), '%')) AND (CASE WHEN FECHAHORA IS NULL THEN ' ' ELSE UPPER(FECHAHORA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHAHORA), '%')) AND (CASE WHEN REMOTE_ADDR IS NULL THEN ' ' ELSE UPPER(REMOTE_ADDR) END) LIKE UPPER(CONCAT(CONCAT('%',:REMOTE_ADDR), '%')) AND (CASE WHEN HTTP_USER_AGENT IS NULL THEN ' ' ELSE UPPER(HTTP_USER_AGENT) END) LIKE UPPER(CONCAT(CONCAT('%',:HTTP_USER_AGENT), '%')) AND (CASE WHEN SERVER_PROTOCOL IS NULL THEN ' ' ELSE UPPER(SERVER_PROTOCOL) END) LIKE UPPER(CONCAT(CONCAT('%',:SERVER_PROTOCOL), '%')) AND (CASE WHEN SERVER_NAME IS NULL THEN ' ' ELSE UPPER(SERVER_NAME) END) LIKE UPPER(CONCAT(CONCAT('%',:SERVER_NAME), '%')) AND (CASE WHEN SERVER_PORT IS NULL THEN ' ' ELSE UPPER(SERVER_PORT) END) LIKE UPPER(CONCAT(CONCAT('%',:SERVER_PORT), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CUK" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="FECHAHORA" sqlType="STRING"/>
+		<param name="REMOTE_ADDR" sqlType="STRING"/>
+		<param name="HTTP_USER_AGENT" sqlType="STRING"/>
+		<param name="SERVER_PROTOCOL" sqlType="STRING"/>
+		<param name="SERVER_NAME" sqlType="STRING"/>
+		<param name="SERVER_PORT" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="logacceso/numero">
+		<call-query href="getLogaccesoNumeroQuery">
+			<with-param name="CUK" query-param="CUK"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="FECHAHORA" query-param="FECHAHORA"/>
+			<with-param name="REMOTE_ADDR" query-param="REMOTE_ADDR"/>
+			<with-param name="HTTP_USER_AGENT" query-param="HTTP_USER_AGENT"/>
+			<with-param name="SERVER_PROTOCOL" query-param="SERVER_PROTOCOL"/>
+			<with-param name="SERVER_NAME" query-param="SERVER_NAME"/>
+			<with-param name="SERVER_PORT" query-param="SERVER_PORT"/>
+
+		</call-query>
+	</resource>
+
+</data>

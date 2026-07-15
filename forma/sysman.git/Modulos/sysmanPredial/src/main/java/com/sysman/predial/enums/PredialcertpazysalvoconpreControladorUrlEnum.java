@@ -1,0 +1,78 @@
+/*
+ * PredialcertpazysalvoconpreControladorUrlEnum
+ *
+ * 1.0
+ *
+ * 09/09/2016
+ *
+ * Copyright Stefanini Sysman
+ */
+package com.sysman.predial.enums;
+
+/**
+ * @author Processors-api
+ *
+ * @version 1.0
+ *
+ * Enumeracion que permite clasificar cada uno de los identificadores geenerados en el refactoring y asociados al codigo legacy obtenido con patrones de busqueda.
+ */
+public enum PredialcertpazysalvoconpreControladorUrlEnum {
+
+    URL4469("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL4469", "393006"),
+
+    URL4470("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL4470", "367149"),
+
+    URL4471("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL4471", "373005"),
+
+    URL4472("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL4472", "367151"),
+
+    URL4473("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL4473", "394005"),
+
+    URL4474("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL4474", "104008"),
+
+    URL4475("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL4475", "373007"),
+
+    URL4476("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL4476", "400006"),
+
+    URL4477("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL4477", "400007"),
+
+    URL4478("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL4478", "371014"),
+
+    URL4479("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL4479", "367155"),
+
+    URL4480("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL44780", "368012"),
+
+    URL4481("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL44781", "386009"),
+
+    URL4482("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL44782", "385012"),
+
+    URL4483("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL44783", "386002"),
+
+    URL4484("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL44784", "373008"),
+
+    URL4485("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL44785", "412001"),
+
+    URL4486("PREDIALCERTPAZYSALVOCONPRECONTROLADORURL44786", "372003"),
+
+    ;
+
+    private final String key;
+    private final String value;
+
+    private PredialcertpazysalvoconpreControladorUrlEnum(String key,
+        String value)
+    {
+        this.key = key;
+        this.value = value;
+    }
+
+    public String getKey()
+    {
+        return key;
+    }
+
+    public String getValue()
+    {
+        return value;
+    }
+}

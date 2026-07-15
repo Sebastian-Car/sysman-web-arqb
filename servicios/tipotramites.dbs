@@ -1,0 +1,186 @@
+﻿<data name="tipotramites" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTipotramitesConsecutivonombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT TIPOTRAMITE ,NOMBRE FROM TIPOTRAMITES WHERE COMPANIA = :COMPANIA AND PROCESOS = :PROCESO AND ACTIVO = -1</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TIPOTRAMITE":"$TIPOTRAMITE","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipotramites/consecutivonombre">
+		<call-query href="getTipotramitesConsecutivonombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipotramitesNumeracionunicaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE NUMERACION_UNICA WHEN 0 THEN 'false' ELSE 'true' END) NUMERACION_UNICA FROM TIPOTRAMITES WHERE COMPANIA=:COMPANIA AND PROCESOS=:PROCESOS AND TIPOTRAMITE=:TIPOTRAMITE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERACION_UNICA":"$NUMERACION_UNICA(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESOS" sqlType="STRING"/>
+		<param name="TIPOTRAMITE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipotramites/numeracionunica">
+		<call-query href="getTipotramitesNumeracionunicaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESOS" query-param="PROCESOS"/>
+			<with-param name="TIPOTRAMITE" query-param="TIPOTRAMITE"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipotramitesGenerartipotramitesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT TIPOTRAMITE CODIGOTRAMITE,NOMBRE NOMBRETRAMITE FROM TIPOTRAMITES WHERE PROCESOS=:PROCESOPQR</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGOTRAMITE":"$CODIGOTRAMITE","NOMBRETRAMITE":"$NOMBRETRAMITE"}]}}		</result>
+		<param name="PROCESOPQR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipotramites/generartipotramites">
+		<call-query href="getTipotramitesGenerartipotramitesQuery">
+			<with-param name="PROCESOPQR" query-param="PROCESOPQR"/>
+
+		</call-query>
+	</resource>
+	<query id="insertTipotramites" keyColumns="COMPANIA,PROCESOS,TIPOTRAMITE" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TIPOTRAMITES (COMPANIA, PROCESOS, TIPOTRAMITE, RUTA, PREFIJO, NUMERACION_UNICA, NOMBRE, ACTIVO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :PROCESOS, :TIPOTRAMITE, :RUTA, :PREFIJO, :NUMERACION_UNICA, :NOMBRE, :ACTIVO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_PROCESOS":"$PROCESOS","KEY_TIPOTRAMITE":"$TIPOTRAMITE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESOS" sqlType="STRING"/>
+		<param name="TIPOTRAMITE" sqlType="STRING"/>
+		<param name="RUTA" sqlType="STRING"/>
+		<param defaultValue="" name="PREFIJO" sqlType="STRING"/>
+		<param defaultValue="0" name="NUMERACION_UNICA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="-1" name="ACTIVO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="tipotramites">
+		<call-query href="insertTipotramites">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESOS" query-param="PROCESOS"/>
+			<with-param name="TIPOTRAMITE" query-param="TIPOTRAMITE"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="NUMERACION_UNICA" query-param="NUMERACION_UNICA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="ACTIVO" query-param="ACTIVO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTipotramites" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TIPOTRAMITES WHERE TIPOTRAMITES.COMPANIA= :KEY_COMPANIA AND TIPOTRAMITES.PROCESOS= :KEY_PROCESOS AND TIPOTRAMITES.TIPOTRAMITE= :KEY_TIPOTRAMITE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_PROCESOS" sqlType="STRING"/>
+		<param name="KEY_TIPOTRAMITE" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="tipotramites">
+		<call-query href="deleteTipotramites">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_PROCESOS" query-param="KEY_PROCESOS"/>
+			<with-param name="KEY_TIPOTRAMITE" query-param="KEY_TIPOTRAMITE"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipotramitesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT TT.COMPANIA, TT.PROCESOS, PR.NOMBRE PROCESO_NOM, TT.TIPOTRAMITE, TT.RUTA, TT.PREFIJO, TT.NOMBRE,(CASE TT.NUMERACION_UNICA WHEN 0 THEN 'false' ELSE 'true' END) NUMERACION_UNICA,(CASE TT.ACTIVO WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO FROM TIPOTRAMITES TT INNER JOIN PROCESOS PR ON TT.COMPANIA = PR.COMPANIA AND TT.PROCESOS = PR.CODIGO WHERE TT.COMPANIA = :COMPANIA ORDER BY PR.NOMBRE ,TT.NOMBRE) INI WHERE (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN RUTA IS NULL THEN ' ' ELSE UPPER(RUTA) END) LIKE UPPER(CONCAT(CONCAT('%',:RUTA), '%')) AND (CASE WHEN PREFIJO IS NULL THEN ' ' ELSE UPPER(PREFIJO) END) LIKE UPPER(CONCAT(CONCAT('%',:PREFIJO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN NUMERACION_UNICA IS NULL THEN ' ' ELSE UPPER(NUMERACION_UNICA) END) LIKE UPPER(CONCAT(CONCAT('%',:NUMERACION_UNICA), '%')) AND (CASE WHEN ACTIVO IS NULL THEN ' ' ELSE UPPER(ACTIVO) END) LIKE UPPER(CONCAT(CONCAT('%',:ACTIVO), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PROCESOS":"$PROCESOS","PROCESO_NOM":"$PROCESO_NOM","TIPOTRAMITE":"$TIPOTRAMITE","RUTA":"$RUTA","PREFIJO":"$PREFIJO","NOMBRE":"$NOMBRE","NUMERACION_UNICA":"$NUMERACION_UNICA(type:boolean)","ACTIVO":"$ACTIVO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="RUTA" sqlType="STRING"/>
+		<param name="PREFIJO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NUMERACION_UNICA" sqlType="STRING"/>
+		<param name="ACTIVO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipotramites">
+		<call-query href="getTipotramitesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NUMERACION_UNICA" query-param="NUMERACION_UNICA"/>
+			<with-param name="ACTIVO" query-param="ACTIVO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipotramitesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT TT.COMPANIA, TT.PROCESOS, PR.NOMBRE PROCESO_NOM, TT.TIPOTRAMITE, TT.RUTA, TT.PREFIJO, TT.NOMBRE,(CASE TT.NUMERACION_UNICA WHEN 0 THEN 'false' ELSE 'true' END) NUMERACION_UNICA,(CASE TT.ACTIVO WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO FROM TIPOTRAMITES TT INNER JOIN PROCESOS PR ON TT.COMPANIA = PR.COMPANIA AND TT.PROCESOS = PR.CODIGO WHERE TT.COMPANIA = :COMPANIA ORDER BY PR.NOMBRE ,TT.NOMBRE) INI WHERE (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN RUTA IS NULL THEN ' ' ELSE UPPER(RUTA) END) LIKE UPPER(CONCAT(CONCAT('%',:RUTA), '%')) AND (CASE WHEN PREFIJO IS NULL THEN ' ' ELSE UPPER(PREFIJO) END) LIKE UPPER(CONCAT(CONCAT('%',:PREFIJO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN NUMERACION_UNICA IS NULL THEN ' ' ELSE UPPER(NUMERACION_UNICA) END) LIKE UPPER(CONCAT(CONCAT('%',:NUMERACION_UNICA), '%')) AND (CASE WHEN ACTIVO IS NULL THEN ' ' ELSE UPPER(ACTIVO) END) LIKE UPPER(CONCAT(CONCAT('%',:ACTIVO), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="RUTA" sqlType="STRING"/>
+		<param name="PREFIJO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NUMERACION_UNICA" sqlType="STRING"/>
+		<param name="ACTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipotramites/numero">
+		<call-query href="getTipotramitesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NUMERACION_UNICA" query-param="NUMERACION_UNICA"/>
+			<with-param name="ACTIVO" query-param="ACTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTipotramites" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TIPOTRAMITES SET PROCESOS=:PROCESOS, TIPOTRAMITE=:TIPOTRAMITE, RUTA=:RUTA, PREFIJO=:PREFIJO, NUMERACION_UNICA=:NUMERACION_UNICA, NOMBRE=:NOMBRE, ACTIVO=:ACTIVO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TIPOTRAMITES.COMPANIA= :KEY_COMPANIA AND TIPOTRAMITES.PROCESOS= :KEY_PROCESOS AND TIPOTRAMITES.TIPOTRAMITE= :KEY_TIPOTRAMITE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="PROCESOS" sqlType="STRING"/>
+		<param name="TIPOTRAMITE" sqlType="STRING"/>
+		<param name="RUTA" sqlType="STRING"/>
+		<param name="PREFIJO" sqlType="STRING"/>
+		<param name="NUMERACION_UNICA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="ACTIVO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_PROCESOS" sqlType="STRING"/>
+		<param name="KEY_TIPOTRAMITE" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tipotramites">
+		<call-query href="updateTipotramites">
+			<with-param name="PROCESOS" query-param="PROCESOS"/>
+			<with-param name="TIPOTRAMITE" query-param="TIPOTRAMITE"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="NUMERACION_UNICA" query-param="NUMERACION_UNICA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="ACTIVO" query-param="ACTIVO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_PROCESOS" query-param="KEY_PROCESOS"/>
+			<with-param name="KEY_TIPOTRAMITE" query-param="KEY_TIPOTRAMITE"/>
+
+		</call-query>
+	</resource>
+
+</data>

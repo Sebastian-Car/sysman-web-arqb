@@ -1,0 +1,132 @@
+﻿<data name="evvaloracion" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertEvvaloracion" keyColumns="COMPANIA,CONSECUTIVO,CLASE_EVALUACION,SECUENCIA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO EV_VALORACION (COMPANIA, CONSECUTIVO, CLASE_EVALUACION, SECUENCIA, DESCRIPCION, PUNTAJE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CONSECUTIVO, :CLASE_EVALUACION, :SECUENCIA, :DESCRIPCION, :PUNTAJE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CONSECUTIVO":"$CONSECUTIVO(type:long)","KEY_CLASE_EVALUACION":"$CLASE_EVALUACION(type:integer)","KEY_SECUENCIA":"$SECUENCIA(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CLASE_EVALUACION" sqlType="STRING"/>
+		<param name="SECUENCIA" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="0" name="PUNTAJE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="evvaloracion">
+		<call-query href="insertEvvaloracion">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CLASE_EVALUACION" query-param="CLASE_EVALUACION"/>
+			<with-param name="SECUENCIA" query-param="SECUENCIA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PUNTAJE" query-param="PUNTAJE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEvvaloracion" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM EV_VALORACION WHERE EV_VALORACION.COMPANIA= :KEY_COMPANIA AND EV_VALORACION.CONSECUTIVO= :KEY_CONSECUTIVO AND EV_VALORACION.CLASE_EVALUACION= :KEY_CLASE_EVALUACION AND EV_VALORACION.SECUENCIA= :KEY_SECUENCIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+		<param name="KEY_CLASE_EVALUACION" sqlType="INTEGER"/>
+		<param name="KEY_SECUENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="evvaloracion">
+		<call-query href="deleteEvvaloracion">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+			<with-param name="KEY_CLASE_EVALUACION" query-param="KEY_CLASE_EVALUACION"/>
+			<with-param name="KEY_SECUENCIA" query-param="KEY_SECUENCIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getEvvaloracionPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CONSECUTIVO, CLASE_EVALUACION, SECUENCIA, DESCRIPCION, PUNTAJE  FROM EV_VALORACION WHERE COMPANIA = :COMPANIA AND CONSECUTIVO = :CONSECUTIVO AND CLASE_EVALUACION =:CLASE_EVALUACION) WHERE (CASE WHEN SECUENCIA IS NULL THEN ' ' ELSE UPPER(SECUENCIA) END)  LIKE UPPER(:SECUENCIA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN PUNTAJE IS NULL THEN ' ' ELSE UPPER(PUNTAJE) END)  LIKE UPPER(:PUNTAJE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO(type:long)","CLASE_EVALUACION":"$CLASE_EVALUACION(type:integer)","SECUENCIA":"$SECUENCIA(type:long)","DESCRIPCION":"$DESCRIPCION","PUNTAJE":"$PUNTAJE(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CLASE_EVALUACION" sqlType="STRING"/>
+		<param name="SECUENCIA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PUNTAJE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="evvaloracion">
+		<call-query href="getEvvaloracionPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CLASE_EVALUACION" query-param="CLASE_EVALUACION"/>
+			<with-param name="SECUENCIA" query-param="SECUENCIA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PUNTAJE" query-param="PUNTAJE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEvvaloracionNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CONSECUTIVO, CLASE_EVALUACION, SECUENCIA, DESCRIPCION, PUNTAJE  FROM EV_VALORACION WHERE COMPANIA = :COMPANIA AND CONSECUTIVO = :CONSECUTIVO AND CLASE_EVALUACION =:CLASE_EVALUACION) WHERE (CASE WHEN SECUENCIA IS NULL THEN ' ' ELSE UPPER(SECUENCIA) END)  LIKE UPPER(:SECUENCIA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN PUNTAJE IS NULL THEN ' ' ELSE UPPER(PUNTAJE) END)  LIKE UPPER(:PUNTAJE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CLASE_EVALUACION" sqlType="STRING"/>
+		<param name="SECUENCIA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PUNTAJE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="evvaloracion/numero">
+		<call-query href="getEvvaloracionNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CLASE_EVALUACION" query-param="CLASE_EVALUACION"/>
+			<with-param name="SECUENCIA" query-param="SECUENCIA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PUNTAJE" query-param="PUNTAJE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEvvaloracion" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE EV_VALORACION SET SECUENCIA=:SECUENCIA, DESCRIPCION=:DESCRIPCION, PUNTAJE=:PUNTAJE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE EV_VALORACION.COMPANIA= :KEY_COMPANIA AND EV_VALORACION.CONSECUTIVO= :KEY_CONSECUTIVO AND EV_VALORACION.CLASE_EVALUACION= :KEY_CLASE_EVALUACION AND EV_VALORACION.SECUENCIA= :KEY_SECUENCIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="SECUENCIA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PUNTAJE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+		<param name="KEY_CLASE_EVALUACION" sqlType="STRING"/>
+		<param name="KEY_SECUENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="evvaloracion">
+		<call-query href="updateEvvaloracion">
+			<with-param name="SECUENCIA" query-param="SECUENCIA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PUNTAJE" query-param="PUNTAJE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+			<with-param name="KEY_CLASE_EVALUACION" query-param="KEY_CLASE_EVALUACION"/>
+			<with-param name="KEY_SECUENCIA" query-param="KEY_SECUENCIA"/>
+
+		</call-query>
+	</resource>
+
+</data>

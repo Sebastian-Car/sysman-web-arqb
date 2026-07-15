@@ -1,0 +1,688 @@
+﻿<data name="esestprevios" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getEsestpreviosListaFactoresDesempateQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ES_ESTPREVIO.COMPANIA, ES_ESTPREVIO.COD_ESTUDIO, ES_ESTPREVIO.C_EVALUACION  FROM ES_ESTPREVIO WHERE ES_ESTPREVIO.COMPANIA = :COMPANIA AND ES_ESTPREVIO.COD_ESTUDIO = :CODIGOESTUDIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","COD_ESTUDIO":"$COD_ESTUDIO","C_EVALUACION":"$C_EVALUACION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="esestprevios/listafactoresdesempate">
+		<call-query href="getEsestpreviosListaFactoresDesempateQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOESTUDIO" query-param="CODIGOESTUDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEsestpreviosActualizarEvaluacion" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ES_ESTPREVIO SET C_EVALUACION = :C_EVALUACION ,   COD_ESTUDIO    = :COD_ESTUDIO,   DATE_MODIFIED  =TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'),   MODIFIED_BY    =:MODIFIED_BY WHERE COMPANIA   = :KEY_COMPANIA AND COD_ESTUDIO  = :KEY_COD_ESTUDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="C_EVALUACION" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="esestprevios/actualizarevaluacion">
+		<call-query href="updateEsestpreviosActualizarEvaluacion">
+			<with-param name="C_EVALUACION" query-param="C_EVALUACION"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_ESTUDIO" query-param="KEY_COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEsestpreviosActualizarperfil" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ES_ESTPREVIO SET PYE_CONTRATISTA=:PYE_CONTRATISTA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ES_ESTPREVIO.COMPANIA= :KEY_COMPANIA AND ES_ESTPREVIO.COD_ESTUDIO= :KEY_COD_ESTUDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="PYE_CONTRATISTA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="esestprevios/actualizarperfil">
+		<call-query href="updateEsestpreviosActualizarperfil">
+			<with-param name="PYE_CONTRATISTA" query-param="PYE_CONTRATISTA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_ESTUDIO" query-param="KEY_COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsestpreviosCodestudioPorTipodiaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ES_ESTPREVIO.COD_ESTUDIO  FROM ES_ESTPREVIO WHERE ES_ESTPREVIO.COMPANIA= :COMPANIA AND ES_ESTPREVIO.TIPO_DIA = :TIPO ORDER BY ES_ESTPREVIO.COD_ESTUDIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COD_ESTUDIO":"$COD_ESTUDIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="esestprevios/codestudioportipodia">
+		<call-query href="getEsestpreviosCodestudioPorTipodiaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsestpreviosPagTodosPorCompaniaTipoDiaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COD_ESTUDIO, NOMBRE_ESTUDIO  FROM ES_ESTPREVIO WHERE COMPANIA = :COMPANIA AND TIPO_DIA = :TIPO_DIA ORDER BY COD_ESTUDIO) WHERE (CASE WHEN COD_ESTUDIO IS NULL THEN ' ' ELSE UPPER(COD_ESTUDIO) END)  LIKE UPPER(:COD_ESTUDIO || '%')  AND (CASE WHEN NOMBRE_ESTUDIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_ESTUDIO) END)  LIKE UPPER( '%' || :NOMBRE_ESTUDIO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COD_ESTUDIO":"$COD_ESTUDIO","NOMBRE_ESTUDIO":"$NOMBRE_ESTUDIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO_DIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="NOMBRE_ESTUDIO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="esestprevios/todosporcompaniatipodia/pag">
+		<call-query href="getEsestpreviosPagTodosPorCompaniaTipoDiaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO_DIA" query-param="TIPO_DIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="NOMBRE_ESTUDIO" query-param="NOMBRE_ESTUDIO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsestpreviosNumTodosPorCompaniaTipoDiaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COD_ESTUDIO, NOMBRE_ESTUDIO  FROM ES_ESTPREVIO WHERE COMPANIA = :COMPANIA AND TIPO_DIA = :TIPO_DIA ORDER BY COD_ESTUDIO) WHERE (CASE WHEN COD_ESTUDIO IS NULL THEN ' ' ELSE UPPER(COD_ESTUDIO) END)  LIKE UPPER(:COD_ESTUDIO || '%')  AND (CASE WHEN NOMBRE_ESTUDIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_ESTUDIO) END)  LIKE UPPER( '%' || :NOMBRE_ESTUDIO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO_DIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="NOMBRE_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="esestprevios/todosporcompaniatipodia/num">
+		<call-query href="getEsestpreviosNumTodosPorCompaniaTipoDiaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO_DIA" query-param="TIPO_DIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="NOMBRE_ESTUDIO" query-param="NOMBRE_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsestpreviosPagTodosPorCompaniaTipoDiaFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COD_ESTUDIO, NOMBRE_ESTUDIO  FROM ES_ESTPREVIO WHERE COD_ESTUDIO &gt;= :ESTUDIO_INI AND COMPANIA = :COMPANIA AND TIPO_DIA =:TIPO_DIA ORDER BY COD_ESTUDIO) WHERE (CASE WHEN COD_ESTUDIO IS NULL THEN ' ' ELSE UPPER(COD_ESTUDIO) END)  LIKE UPPER(:COD_ESTUDIO || '%')  AND (CASE WHEN NOMBRE_ESTUDIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_ESTUDIO) END)  LIKE UPPER( '%' || :NOMBRE_ESTUDIO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COD_ESTUDIO":"$COD_ESTUDIO","NOMBRE_ESTUDIO":"$NOMBRE_ESTUDIO"}]}}		</result>
+		<param name="ESTUDIO_INI" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO_DIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="NOMBRE_ESTUDIO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="esestprevios/todosporcompaniatipodiafinal/pag">
+		<call-query href="getEsestpreviosPagTodosPorCompaniaTipoDiaFinalQuery">
+			<with-param name="ESTUDIO_INI" query-param="ESTUDIO_INI"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO_DIA" query-param="TIPO_DIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="NOMBRE_ESTUDIO" query-param="NOMBRE_ESTUDIO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsestpreviosNumTodosPorCompaniaTipoDiaFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COD_ESTUDIO, NOMBRE_ESTUDIO  FROM ES_ESTPREVIO WHERE COD_ESTUDIO &gt;= :ESTUDIO_INI AND COMPANIA = :COMPANIA AND TIPO_DIA =:TIPO_DIA ORDER BY COD_ESTUDIO) WHERE (CASE WHEN COD_ESTUDIO IS NULL THEN ' ' ELSE UPPER(COD_ESTUDIO) END)  LIKE UPPER(:COD_ESTUDIO || '%')  AND (CASE WHEN NOMBRE_ESTUDIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_ESTUDIO) END)  LIKE UPPER( '%' || :NOMBRE_ESTUDIO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="ESTUDIO_INI" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO_DIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="NOMBRE_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="esestprevios/todosporcompaniatipodiafinal/num">
+		<call-query href="getEsestpreviosNumTodosPorCompaniaTipoDiaFinalQuery">
+			<with-param name="ESTUDIO_INI" query-param="ESTUDIO_INI"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO_DIA" query-param="TIPO_DIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="NOMBRE_ESTUDIO" query-param="NOMBRE_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsestpreviosDatosBasicosCodestudioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT ES_ESTPREVIO.NOMBRE_ESTUDIO, ES_ESTPREVIO.PROPONENTE, ES_ESTPREVIO.TIPO_CONTRATO, ES_ESTPREVIO.ITEMS_CONTRATO,(TO_CHAR(ES_ESTPREVIO.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, ES_ESTPREVIO.OBJETO_CONTRATO, ES_ESTPREVIO.DEF_NECESIDAD, ES_ESTPREVIO.DESC_NECESIDAD, ES_ESTPREVIO.FUND_JURIDICOS, ES_ESTPREVIO.OBL_CONTRATISTA, ES_ESTPREVIO.OBL_ENTIDAD, ES_ESTPREVIO.ASP_TEC_ESTUDIO, ES_ESTPREVIO.TIPO_DIA, ES_ESTPREVIO.SUPERVISION, ES_ESTPREVIO.LOCALIZACION_EJEC, ES_ESTPREVIO.DEPENDENCIA, ES_ESTPREVIO.RESPONSABLE, ES_ESTPREVIO.ADJUDICACION,(TO_CHAR(ES_ESTPREVIO.PLAZOINICIAL,'DD/MM/YYYY HH24:MI:SS')) PLAZOINICIAL,(TO_CHAR(ES_ESTPREVIO.PLAZOFINAL,'DD/MM/YYYY HH24:MI:SS')) PLAZOFINAL, ES_ESTPREVIO.ANALISIS_RIESGO,(CASE ES_ESTPREVIO.ESTADO WHEN 0 THEN 'false' ELSE 'true' END) ESTADO, ES_ESTPREVIO.VERIF_ETAPAS, ES_ESTPREVIO.TIPO_GARANTIA, ES_ESTPREVIO.VALOR_CONTRATO, ES_ESTPREVIO.VIGENCIAINICIO, ES_ESTPREVIO.VIGENCIAFIN, ES_ESTPREVIO.RUBRO, ES_ESTPREVIO.ANULADOPOR,(TO_CHAR(ES_ESTPREVIO.FECHAANULADO,'DD/MM/YYYY HH24:MI:SS')) FECHAANULADO,(TO_CHAR(ES_ESTPREVIO.HORAANULADO,'DD/MM/YYYY HH24:MI:SS')) HORAANULADO, ES_ESTPREVIO.CUANTIACONTR, ES_ESTPREVIO.AN_CONVENIENCIA, ES_ESTPREVIO.AN_OPORTUNIDAD, ES_ESTPREVIO.PYE_CONTRATISTA, ES_ESTPREVIO.POBLACION_BENEF, ES_ESTPREVIO.EMPLEODIRECTO, ES_ESTPREVIO.EMPLEOINDIRECTO, ES_ESTPREVIO.COSTOEST, ES_ESTPREVIO.COSTOIVAEST, ES_ESTPREVIO.COSTOTOTALEST, ES_ESTPREVIO.PRODUCTO_ENTREGAR, ES_ESTPREVIO.RESULTADOS_ESP, ES_ESTPREVIO.CANT_PERSONAS,(CASE ES_ESTPREVIO.IMPRESO WHEN 0 THEN 'false' ELSE 'true' END) IMPRESO, ES_ESTPREVIO.CARGO, ES_ESTPREVIO.SUPERVISADO,(CASE ES_ESTPREVIO.VOBO WHEN 0 THEN 'false' ELSE 'true' END) VOBO,(TO_CHAR(ES_ESTPREVIO.FECHA_VOBO,'DD/MM/YYYY HH24:MI:SS')) FECHA_VOBO,(TO_CHAR(ES_ESTPREVIO.HORA_VOBO,'DD/MM/YYYY HH24:MI:SS')) HORA_VOBO, ES_ESTPREVIO.NUM_CNE,(TO_CHAR(ES_ESTPREVIO.FECHA_CNE,'DD/MM/YYYY HH24:MI:SS')) FECHA_CNE, ES_ESTPREVIO.NOSOLICITUD_CNE,(TO_CHAR(ES_ESTPREVIO.FECHA_SOLICITUD,'DD/MM/YYYY HH24:MI:SS')) FECHA_SOLICITUD, ES_ESTPREVIO.NUM_PROCESO, ES_ESTPREVIO.CODIGOSUM, ES_ESTPREVIO.CARGO_INTERVENTOR, ES_ESTPREVIO.PLAZO_EJECUCION, ES_ESTPREVIO.CAPITAL, ES_ESTPREVIO.ENDEUDAMIENTO, ES_ESTPREVIO.INDICE_LIQUIDEZ, ES_ESTPREVIO.TIPO_EST_PREVIO,(CASE ES_ESTPREVIO.TIPOEST WHEN 0 THEN 'false' ELSE 'true' END) TIPOEST, ES_ESTPREVIO.FORMA_PAGO, ES_ESTPREVIO.FORMA_PAGOS, ES_ESTPREVIO.COD_ESTUDIO, ES_ESTPREVIO.ALCANCE, SECTOR_ASP_GENERAL, SECTOR_ASP_ECONOMICO, SECTOR_ASP_TECNICO, SECTOR_ASP_REGULATORIO, SECTOR_ESTUDIO_OFERTA, SECTOR_ESTUDIO_DEMANDA, SECTOR_ANALISIS_ESTADISTICO, SECTOR_PERSPECTIVA_LEGAL, SECTOR_CONCLUSIONES, ESPECIFICACION_TEC, OBL_GARANTIAS FROM ES_ESTPREVIO WHERE ES_ESTPREVIO.COMPANIA= :COMPANIA AND ES_ESTPREVIO.COD_ESTUDIO = :COD_ESTUDIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE_ESTUDIO":"$NOMBRE_ESTUDIO","PROPONENTE":"$PROPONENTE","TIPO_CONTRATO":"$TIPO_CONTRATO","ITEMS_CONTRATO":"$ITEMS_CONTRATO","FECHA":"$FECHA","OBJETO_CONTRATO":"$OBJETO_CONTRATO","DEF_NECESIDAD":"$DEF_NECESIDAD","DESC_NECESIDAD":"$DESC_NECESIDAD","FUND_JURIDICOS":"$FUND_JURIDICOS","OBL_CONTRATISTA":"$OBL_CONTRATISTA","OBL_ENTIDAD":"$OBL_ENTIDAD","ASP_TEC_ESTUDIO":"$ASP_TEC_ESTUDIO","TIPO_DIA":"$TIPO_DIA","SUPERVISION":"$SUPERVISION","LOCALIZACION_EJEC":"$LOCALIZACION_EJEC","DEPENDENCIA":"$DEPENDENCIA","RESPONSABLE":"$RESPONSABLE","ADJUDICACION":"$ADJUDICACION","PLAZOINICIAL":"$PLAZOINICIAL","PLAZOFINAL":"$PLAZOFINAL","ANALISIS_RIESGO":"$ANALISIS_RIESGO","ESTADO":"$ESTADO(type:boolean)","VERIF_ETAPAS":"$VERIF_ETAPAS","TIPO_GARANTIA":"$TIPO_GARANTIA","VALOR_CONTRATO":"$VALOR_CONTRATO","VIGENCIAINICIO":"$VIGENCIAINICIO","VIGENCIAFIN":"$VIGENCIAFIN","RUBRO":"$RUBRO","ANULADOPOR":"$ANULADOPOR","FECHAANULADO":"$FECHAANULADO","HORAANULADO":"$HORAANULADO","CUANTIACONTR":"$CUANTIACONTR","AN_CONVENIENCIA":"$AN_CONVENIENCIA","AN_OPORTUNIDAD":"$AN_OPORTUNIDAD","PYE_CONTRATISTA":"$PYE_CONTRATISTA","POBLACION_BENEF":"$POBLACION_BENEF","EMPLEODIRECTO":"$EMPLEODIRECTO","EMPLEOINDIRECTO":"$EMPLEOINDIRECTO","COSTOEST":"$COSTOEST","COSTOIVAEST":"$COSTOIVAEST","COSTOTOTALEST":"$COSTOTOTALEST","PRODUCTO_ENTREGAR":"$PRODUCTO_ENTREGAR","RESULTADOS_ESP":"$RESULTADOS_ESP","CANT_PERSONAS":"$CANT_PERSONAS","IMPRESO":"$IMPRESO(type:boolean)","CARGO":"$CARGO","SUPERVISADO":"$SUPERVISADO","VOBO":"$VOBO(type:boolean)","FECHA_VOBO":"$FECHA_VOBO","HORA_VOBO":"$HORA_VOBO","NUM_CNE":"$NUM_CNE","FECHA_CNE":"$FECHA_CNE","NOSOLICITUD_CNE":"$NOSOLICITUD_CNE","FECHA_SOLICITUD":"$FECHA_SOLICITUD","NUM_PROCESO":"$NUM_PROCESO","CODIGOSUM":"$CODIGOSUM","CARGO_INTERVENTOR":"$CARGO_INTERVENTOR","PLAZO_EJECUCION":"$PLAZO_EJECUCION","CAPITAL":"$CAPITAL","ENDEUDAMIENTO":"$ENDEUDAMIENTO","INDICE_LIQUIDEZ":"$INDICE_LIQUIDEZ","TIPO_EST_PREVIO":"$TIPO_EST_PREVIO","TIPOEST":"$TIPOEST(type:boolean)","FORMA_PAGO":"$FORMA_PAGO","FORMA_PAGOS":"$FORMA_PAGOS","COD_ESTUDIO":"$COD_ESTUDIO","ALCANCE":"$ALCANCE","SECTOR_ASP_GENERAL":"$SECTOR_ASP_GENERAL","SECTOR_ASP_ECONOMICO":"$SECTOR_ASP_ECONOMICO","SECTOR_ASP_TECNICO":"$SECTOR_ASP_TECNICO","SECTOR_ASP_REGULATORIO":"$SECTOR_ASP_REGULATORIO","SECTOR_ESTUDIO_OFERTA":"$SECTOR_ESTUDIO_OFERTA","SECTOR_ESTUDIO_DEMANDA":"$SECTOR_ESTUDIO_DEMANDA","SECTOR_ANALISIS_ESTADISTICO":"$SECTOR_ANALISIS_ESTADISTICO","SECTOR_PERSPECTIVA_LEGAL":"$SECTOR_PERSPECTIVA_LEGAL","SECTOR_CONCLUSIONES":"$SECTOR_CONCLUSIONES","ESPECIFICACION_TEC":"$ESPECIFICACION_TEC","OBL_GARANTIAS":"$OBL_GARANTIAS"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="esestprevios/datosbasicoscodestudio">
+		<call-query href="getEsestpreviosDatosBasicosCodestudioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertEsestprevios" keyColumns="COMPANIA,COD_ESTUDIO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ES_ESTPREVIO (ADJUDICACION, ANALISIS_RIESGO, AN_CONVENIENCIA, AN_OPORTUNIDAD, ANULADOPOR, ASP_TEC_ESTUDIO, CANT_PERSONAS, CAPACIDAD_RESIDUAL, CAPITAL, CARGO, CARGO_INTERVENTOR, C_EVALUACION, COD_ESTUDIO, CODIGOSUM, COMPANIA, COSTOEST, COSTOIVAEST, COSTOTOTALEST, CREATED_BY, CUANTIACONTR, DATE_CREATED, DEF_NECESIDAD, DEPENDENCIA, DESC_NECESIDAD, EMPLEODIRECTO, EMPLEOINDIRECTO, ENDEUDAMIENTO, ESPECIFICACION_TEC, ESTADO, FECHA, FECHAANULADO, FECHA_CNE, FECHA_SOLICITUD, FECHA_VOBO, FORMA_PAGO, FORMA_PAGOS, FUND_JURIDICOS, HORAANULADO, HORA_VOBO, IMPRESO, INDICE_LIQUIDEZ, ITEMS_CONTRATO, LOCALIZACION_EJEC, NOMBRE_ESTUDIO, NOSOLICITUD_CNE, NUM_CNE, NUM_PROCESO, OBJETO_CONTRATO, OBL_CONTRATISTA, OBL_ENTIDAD, OBL_GARANTIAS, PLAZO_EJECUCION, PLAZOFINAL, PLAZOINICIAL, POBLACION_BENEF, PRODUCTO_ENTREGAR, PROPONENTE, PYE_CONTRATISTA, RAZON_INTERES, RENT_ACTIVOS, RENT_PATRIMONIO, RESPONSABLE, RESULTADOS_ESP, RUBRO, SECTOR_ANALISIS_ESTADISTICO, SECTOR_ASP_ECONOMICO, SECTOR_ASP_GENERAL, SECTOR_ASP_REGULATORIO, SECTOR_ASP_TECNICO, SECTOR_CONCLUSIONES, SECTOR_ESTUDIO_DEMANDA, SECTOR_ESTUDIO_OFERTA, SECTOR_PERSPECTIVA_LEGAL, SUCURSAL_RESPONSABLE, SUCURSAL_SUPERVISADO, SUCURSAL_SUPERVISION, SUPERVISADO, SUPERVISION, TIPO_CONTRATO, TIPO_DIA, TIPOEST, TIPO_EST_PREVIO, TIPO_GARANTIA, VALOR_CONTRATO, VARIABLES_PPTO, VERIF_ETAPAS, VIGENCIAFIN, VIGENCIAINICIO, VOBO, OTROSINDICADORES, APLICA_BYS, APLICA_PUBLICIDAD, ALCANCE) VALUES (:ADJUDICACION, :ANALISIS_RIESGO, :AN_CONVENIENCIA, :AN_OPORTUNIDAD, :ANULADOPOR, :ASP_TEC_ESTUDIO, :CANT_PERSONAS, :CAPACIDAD_RESIDUAL, :CAPITAL, :CARGO, :CARGO_INTERVENTOR, :C_EVALUACION, :COD_ESTUDIO, :CODIGOSUM, :COMPANIA, :COSTOEST, :COSTOIVAEST, :COSTOTOTALEST, :CREATED_BY, :CUANTIACONTR, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :DEF_NECESIDAD, :DEPENDENCIA, :DESC_NECESIDAD, :EMPLEODIRECTO, :EMPLEOINDIRECTO, :ENDEUDAMIENTO, :ESPECIFICACION_TEC, :ESTADO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHAANULADO,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHA_CNE,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHA_SOLICITUD,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHA_VOBO,'DD/MM/YYYY HH24:MI:SS'), :FORMA_PAGO, :FORMA_PAGOS, :FUND_JURIDICOS, TO_DATE(:HORAANULADO,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:HORA_VOBO,'DD/MM/YYYY HH24:MI:SS'), :IMPRESO, :INDICE_LIQUIDEZ, :ITEMS_CONTRATO, :LOCALIZACION_EJEC, :NOMBRE_ESTUDIO, :NOSOLICITUD_CNE, :NUM_CNE, :NUM_PROCESO, :OBJETO_CONTRATO, :OBL_CONTRATISTA, :OBL_ENTIDAD, :OBL_GARANTIAS, :PLAZO_EJECUCION, TO_DATE(:PLAZOFINAL,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:PLAZOINICIAL,'DD/MM/YYYY HH24:MI:SS'), :POBLACION_BENEF, :PRODUCTO_ENTREGAR, :PROPONENTE, :PYE_CONTRATISTA, :RAZON_INTERES, :RENT_ACTIVOS, :RENT_PATRIMONIO, :RESPONSABLE, :RESULTADOS_ESP, :RUBRO, :SECTOR_ANALISIS_ESTADISTICO, :SECTOR_ASP_ECONOMICO, :SECTOR_ASP_GENERAL, :SECTOR_ASP_REGULATORIO, :SECTOR_ASP_TECNICO, :SECTOR_CONCLUSIONES, :SECTOR_ESTUDIO_DEMANDA, :SECTOR_ESTUDIO_OFERTA, :SECTOR_PERSPECTIVA_LEGAL, :SUCURSAL_RESPONSABLE, :SUCURSAL_SUPERVISADO, :SUCURSAL_SUPERVISION, :SUPERVISADO, :SUPERVISION, :TIPO_CONTRATO, :TIPO_DIA, :TIPOEST, :TIPO_EST_PREVIO, :TIPO_GARANTIA, :VALOR_CONTRATO, :VARIABLES_PPTO, :VERIF_ETAPAS, :VIGENCIAFIN, :VIGENCIAINICIO, :VOBO, :OTROSINDICADORES, :APLICA_BYS, :APLICA_PUBLICIDAD, :ALCANCE)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_COD_ESTUDIO":"$COD_ESTUDIO"}]}}		</result>
+		<param defaultValue="" name="ADJUDICACION" sqlType="STRING"/>
+		<param defaultValue="" name="ANALISIS_RIESGO" sqlType="STRING"/>
+		<param defaultValue="" name="AN_CONVENIENCIA" sqlType="STRING"/>
+		<param defaultValue="" name="AN_OPORTUNIDAD" sqlType="STRING"/>
+		<param defaultValue="" name="ANULADOPOR" sqlType="STRING"/>
+		<param defaultValue="" name="ASP_TEC_ESTUDIO" sqlType="STRING"/>
+		<param defaultValue="0" name="CANT_PERSONAS" sqlType="STRING"/>
+		<param defaultValue="" name="CAPACIDAD_RESIDUAL" sqlType="STRING"/>
+		<param defaultValue="" name="CAPITAL" sqlType="STRING"/>
+		<param defaultValue="" name="CARGO" sqlType="STRING"/>
+		<param defaultValue="" name="CARGO_INTERVENTOR" sqlType="STRING"/>
+		<param defaultValue="" name="C_EVALUACION" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param defaultValue="0" name="CODIGOSUM" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="0" name="COSTOEST" sqlType="STRING"/>
+		<param defaultValue="0" name="COSTOIVAEST" sqlType="STRING"/>
+		<param defaultValue="0" name="COSTOTOTALEST" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param defaultValue="" name="CUANTIACONTR" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param defaultValue="EMPTY_CLOB()" name="DEF_NECESIDAD" sqlType="STRING"/>
+		<param defaultValue="" name="DEPENDENCIA" sqlType="STRING"/>
+		<param defaultValue="" name="DESC_NECESIDAD" sqlType="STRING"/>
+		<param defaultValue="0" name="EMPLEODIRECTO" sqlType="STRING"/>
+		<param defaultValue="0" name="EMPLEOINDIRECTO" sqlType="STRING"/>
+		<param defaultValue="" name="ENDEUDAMIENTO" sqlType="STRING"/>
+		<param defaultValue="EMPTY_CLOB()" name="ESPECIFICACION_TEC" sqlType="STRING"/>
+		<param defaultValue="0" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAANULADO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_CNE" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_SOLICITUD" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_VOBO" sqlType="STRING"/>
+		<param defaultValue="" name="FORMA_PAGO" sqlType="STRING"/>
+		<param defaultValue="" name="FORMA_PAGOS" sqlType="STRING"/>
+		<param defaultValue="EMPTY_CLOB()" name="FUND_JURIDICOS" sqlType="STRING"/>
+		<param defaultValue="" name="HORAANULADO" sqlType="STRING"/>
+		<param defaultValue="" name="HORA_VOBO" sqlType="STRING"/>
+		<param defaultValue="0" name="IMPRESO" sqlType="STRING"/>
+		<param defaultValue="" name="INDICE_LIQUIDEZ" sqlType="STRING"/>
+		<param defaultValue="" name="ITEMS_CONTRATO" sqlType="STRING"/>
+		<param defaultValue="" name="LOCALIZACION_EJEC" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE_ESTUDIO" sqlType="STRING"/>
+		<param name="NOSOLICITUD_CNE" sqlType="STRING"/>
+		<param defaultValue="" name="NUM_CNE" sqlType="STRING"/>
+		<param defaultValue="0" name="NUM_PROCESO" sqlType="STRING"/>
+		<param defaultValue="EMPTY_CLOB()" name="OBJETO_CONTRATO" sqlType="STRING"/>
+		<param defaultValue="" name="OBL_CONTRATISTA" sqlType="STRING"/>
+		<param defaultValue="" name="OBL_ENTIDAD" sqlType="STRING"/>
+		<param defaultValue="" name="OBL_GARANTIAS" sqlType="STRING"/>
+		<param defaultValue="" name="PLAZO_EJECUCION" sqlType="STRING"/>
+		<param defaultValue="" name="PLAZOFINAL" sqlType="STRING"/>
+		<param defaultValue="" name="PLAZOINICIAL" sqlType="STRING"/>
+		<param defaultValue="" name="POBLACION_BENEF" sqlType="STRING"/>
+		<param defaultValue="" name="PRODUCTO_ENTREGAR" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="PROPONENTE" sqlType="STRING"/>
+		<param defaultValue="" name="PYE_CONTRATISTA" sqlType="STRING"/>
+		<param defaultValue="" name="RAZON_INTERES" sqlType="STRING"/>
+		<param defaultValue="" name="RENT_ACTIVOS" sqlType="STRING"/>
+		<param defaultValue="" name="RENT_PATRIMONIO" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="RESPONSABLE" sqlType="STRING"/>
+		<param defaultValue="" name="RESULTADOS_ESP" sqlType="STRING"/>
+		<param defaultValue="" name="RUBRO" sqlType="STRING"/>
+		<param defaultValue="" name="SECTOR_ANALISIS_ESTADISTICO" sqlType="STRING"/>
+		<param defaultValue="" name="SECTOR_ASP_ECONOMICO" sqlType="STRING"/>
+		<param defaultValue="" name="SECTOR_ASP_GENERAL" sqlType="STRING"/>
+		<param defaultValue="" name="SECTOR_ASP_REGULATORIO" sqlType="STRING"/>
+		<param defaultValue="" name="SECTOR_ASP_TECNICO" sqlType="STRING"/>
+		<param defaultValue="" name="SECTOR_CONCLUSIONES" sqlType="STRING"/>
+		<param defaultValue="" name="SECTOR_ESTUDIO_DEMANDA" sqlType="STRING"/>
+		<param defaultValue="" name="SECTOR_ESTUDIO_OFERTA" sqlType="STRING"/>
+		<param defaultValue="" name="SECTOR_PERSPECTIVA_LEGAL" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL_RESPONSABLE" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL_SUPERVISADO" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL_SUPERVISION" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="SUPERVISADO" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="SUPERVISION" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_CONTRATO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_DIA" sqlType="STRING"/>
+		<param defaultValue="0" name="TIPOEST" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_EST_PREVIO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_GARANTIA" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_CONTRATO" sqlType="STRING"/>
+		<param defaultValue="" name="VARIABLES_PPTO" sqlType="STRING"/>
+		<param defaultValue="" name="VERIF_ETAPAS" sqlType="STRING"/>
+		<param defaultValue="0" name="VIGENCIAFIN" sqlType="STRING"/>
+		<param defaultValue="0" name="VIGENCIAINICIO" sqlType="STRING"/>
+		<param defaultValue="0" name="VOBO" sqlType="STRING"/>
+		<param defaultValue="" name="OTROSINDICADORES" sqlType="STRING"/>
+		<param defaultValue="0" name="APLICA_BYS" sqlType="STRING"/>
+		<param defaultValue="0" name="APLICA_PUBLICIDAD" sqlType="STRING"/>
+		<param defaultValue="" name="ALCANCE" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="esestprevios">
+		<call-query href="insertEsestprevios">
+			<with-param name="ADJUDICACION" query-param="ADJUDICACION"/>
+			<with-param name="ANALISIS_RIESGO" query-param="ANALISIS_RIESGO"/>
+			<with-param name="AN_CONVENIENCIA" query-param="AN_CONVENIENCIA"/>
+			<with-param name="AN_OPORTUNIDAD" query-param="AN_OPORTUNIDAD"/>
+			<with-param name="ANULADOPOR" query-param="ANULADOPOR"/>
+			<with-param name="ASP_TEC_ESTUDIO" query-param="ASP_TEC_ESTUDIO"/>
+			<with-param name="CANT_PERSONAS" query-param="CANT_PERSONAS"/>
+			<with-param name="CAPACIDAD_RESIDUAL" query-param="CAPACIDAD_RESIDUAL"/>
+			<with-param name="CAPITAL" query-param="CAPITAL"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="CARGO_INTERVENTOR" query-param="CARGO_INTERVENTOR"/>
+			<with-param name="C_EVALUACION" query-param="C_EVALUACION"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="CODIGOSUM" query-param="CODIGOSUM"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COSTOEST" query-param="COSTOEST"/>
+			<with-param name="COSTOIVAEST" query-param="COSTOIVAEST"/>
+			<with-param name="COSTOTOTALEST" query-param="COSTOTOTALEST"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="CUANTIACONTR" query-param="CUANTIACONTR"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="DEF_NECESIDAD" query-param="DEF_NECESIDAD"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="DESC_NECESIDAD" query-param="DESC_NECESIDAD"/>
+			<with-param name="EMPLEODIRECTO" query-param="EMPLEODIRECTO"/>
+			<with-param name="EMPLEOINDIRECTO" query-param="EMPLEOINDIRECTO"/>
+			<with-param name="ENDEUDAMIENTO" query-param="ENDEUDAMIENTO"/>
+			<with-param name="ESPECIFICACION_TEC" query-param="ESPECIFICACION_TEC"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FECHAANULADO" query-param="FECHAANULADO"/>
+			<with-param name="FECHA_CNE" query-param="FECHA_CNE"/>
+			<with-param name="FECHA_SOLICITUD" query-param="FECHA_SOLICITUD"/>
+			<with-param name="FECHA_VOBO" query-param="FECHA_VOBO"/>
+			<with-param name="FORMA_PAGO" query-param="FORMA_PAGO"/>
+			<with-param name="FORMA_PAGOS" query-param="FORMA_PAGOS"/>
+			<with-param name="FUND_JURIDICOS" query-param="FUND_JURIDICOS"/>
+			<with-param name="HORAANULADO" query-param="HORAANULADO"/>
+			<with-param name="HORA_VOBO" query-param="HORA_VOBO"/>
+			<with-param name="IMPRESO" query-param="IMPRESO"/>
+			<with-param name="INDICE_LIQUIDEZ" query-param="INDICE_LIQUIDEZ"/>
+			<with-param name="ITEMS_CONTRATO" query-param="ITEMS_CONTRATO"/>
+			<with-param name="LOCALIZACION_EJEC" query-param="LOCALIZACION_EJEC"/>
+			<with-param name="NOMBRE_ESTUDIO" query-param="NOMBRE_ESTUDIO"/>
+			<with-param name="NOSOLICITUD_CNE" query-param="NOSOLICITUD_CNE"/>
+			<with-param name="NUM_CNE" query-param="NUM_CNE"/>
+			<with-param name="NUM_PROCESO" query-param="NUM_PROCESO"/>
+			<with-param name="OBJETO_CONTRATO" query-param="OBJETO_CONTRATO"/>
+			<with-param name="OBL_CONTRATISTA" query-param="OBL_CONTRATISTA"/>
+			<with-param name="OBL_ENTIDAD" query-param="OBL_ENTIDAD"/>
+			<with-param name="OBL_GARANTIAS" query-param="OBL_GARANTIAS"/>
+			<with-param name="PLAZO_EJECUCION" query-param="PLAZO_EJECUCION"/>
+			<with-param name="PLAZOFINAL" query-param="PLAZOFINAL"/>
+			<with-param name="PLAZOINICIAL" query-param="PLAZOINICIAL"/>
+			<with-param name="POBLACION_BENEF" query-param="POBLACION_BENEF"/>
+			<with-param name="PRODUCTO_ENTREGAR" query-param="PRODUCTO_ENTREGAR"/>
+			<with-param name="PROPONENTE" query-param="PROPONENTE"/>
+			<with-param name="PYE_CONTRATISTA" query-param="PYE_CONTRATISTA"/>
+			<with-param name="RAZON_INTERES" query-param="RAZON_INTERES"/>
+			<with-param name="RENT_ACTIVOS" query-param="RENT_ACTIVOS"/>
+			<with-param name="RENT_PATRIMONIO" query-param="RENT_PATRIMONIO"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="RESULTADOS_ESP" query-param="RESULTADOS_ESP"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="SECTOR_ANALISIS_ESTADISTICO" query-param="SECTOR_ANALISIS_ESTADISTICO"/>
+			<with-param name="SECTOR_ASP_ECONOMICO" query-param="SECTOR_ASP_ECONOMICO"/>
+			<with-param name="SECTOR_ASP_GENERAL" query-param="SECTOR_ASP_GENERAL"/>
+			<with-param name="SECTOR_ASP_REGULATORIO" query-param="SECTOR_ASP_REGULATORIO"/>
+			<with-param name="SECTOR_ASP_TECNICO" query-param="SECTOR_ASP_TECNICO"/>
+			<with-param name="SECTOR_CONCLUSIONES" query-param="SECTOR_CONCLUSIONES"/>
+			<with-param name="SECTOR_ESTUDIO_DEMANDA" query-param="SECTOR_ESTUDIO_DEMANDA"/>
+			<with-param name="SECTOR_ESTUDIO_OFERTA" query-param="SECTOR_ESTUDIO_OFERTA"/>
+			<with-param name="SECTOR_PERSPECTIVA_LEGAL" query-param="SECTOR_PERSPECTIVA_LEGAL"/>
+			<with-param name="SUCURSAL_RESPONSABLE" query-param="SUCURSAL_RESPONSABLE"/>
+			<with-param name="SUCURSAL_SUPERVISADO" query-param="SUCURSAL_SUPERVISADO"/>
+			<with-param name="SUCURSAL_SUPERVISION" query-param="SUCURSAL_SUPERVISION"/>
+			<with-param name="SUPERVISADO" query-param="SUPERVISADO"/>
+			<with-param name="SUPERVISION" query-param="SUPERVISION"/>
+			<with-param name="TIPO_CONTRATO" query-param="TIPO_CONTRATO"/>
+			<with-param name="TIPO_DIA" query-param="TIPO_DIA"/>
+			<with-param name="TIPOEST" query-param="TIPOEST"/>
+			<with-param name="TIPO_EST_PREVIO" query-param="TIPO_EST_PREVIO"/>
+			<with-param name="TIPO_GARANTIA" query-param="TIPO_GARANTIA"/>
+			<with-param name="VALOR_CONTRATO" query-param="VALOR_CONTRATO"/>
+			<with-param name="VARIABLES_PPTO" query-param="VARIABLES_PPTO"/>
+			<with-param name="VERIF_ETAPAS" query-param="VERIF_ETAPAS"/>
+			<with-param name="VIGENCIAFIN" query-param="VIGENCIAFIN"/>
+			<with-param name="VIGENCIAINICIO" query-param="VIGENCIAINICIO"/>
+			<with-param name="VOBO" query-param="VOBO"/>
+			<with-param name="OTROSINDICADORES" query-param="OTROSINDICADORES"/>
+			<with-param name="APLICA_BYS" query-param="APLICA_BYS"/>
+			<with-param name="APLICA_PUBLICIDAD" query-param="APLICA_PUBLICIDAD"/>
+			<with-param name="ALCANCE" query-param="ALCANCE"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEsestprevios" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ES_ESTPREVIO WHERE ES_ESTPREVIO.COMPANIA= :KEY_COMPANIA AND ES_ESTPREVIO.COD_ESTUDIO= :KEY_COD_ESTUDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="esestprevios">
+		<call-query href="deleteEsestprevios">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_ESTUDIO" query-param="KEY_COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsestpreviosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ES_ESTPREVIO.COMPANIA, ES_ESTPREVIO.COD_ESTUDIO, ES_ESTPREVIO.NOMBRE_ESTUDIO, ES_ESTPREVIO.DEPENDENCIA, DEPENDENCIA.NOMBRE NOMBRE_DEPENDENCIA, ES_ESTPREVIO.PROPONENTE, TO_CHAR(ES_ESTPREVIO.FECHA,'DD/MM/YYYY') FECHA, ES_ESTPREVIO.CREATED_BY  FROM ES_ESTPREVIO LEFT JOIN DEPENDENCIA ON ES_ESTPREVIO.COMPANIA = DEPENDENCIA.COMPANIA AND ES_ESTPREVIO.DEPENDENCIA = DEPENDENCIA.CODIGO WHERE ES_ESTPREVIO.TIPO_DIA =:TIPODIA AND ES_ESTPREVIO.COMPANIA =:COMPANIA AND TO_CHAR(FECHA,'YYYY') =:VIGENCIA) WHERE (CASE WHEN COD_ESTUDIO IS NULL THEN ' ' ELSE UPPER(COD_ESTUDIO) END)  LIKE UPPER(:COD_ESTUDIO || '%')  AND (CASE WHEN NOMBRE_ESTUDIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_ESTUDIO) END)  LIKE UPPER( '%' || :NOMBRE_ESTUDIO || '%')  AND (CASE WHEN NOMBRE_DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEPENDENCIA) END)  LIKE UPPER(:NOMBRE_DEPENDENCIA || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","COD_ESTUDIO":"$COD_ESTUDIO","NOMBRE_ESTUDIO":"$NOMBRE_ESTUDIO","DEPENDENCIA":"$DEPENDENCIA","NOMBRE_DEPENDENCIA":"$NOMBRE_DEPENDENCIA","PROPONENTE":"$PROPONENTE","FECHA":"$FECHA","CREATED_BY":"$CREATED_BY"}]}}		</result>
+		<param name="TIPODIA" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIGENCIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="NOMBRE_ESTUDIO" sqlType="STRING"/>
+		<param name="NOMBRE_DEPENDENCIA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="esestprevios">
+		<call-query href="getEsestpreviosPaginaQuery">
+			<with-param name="TIPODIA" query-param="TIPODIA"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="NOMBRE_ESTUDIO" query-param="NOMBRE_ESTUDIO"/>
+			<with-param name="NOMBRE_DEPENDENCIA" query-param="NOMBRE_DEPENDENCIA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsestpreviosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ES_ESTPREVIO.COMPANIA, ES_ESTPREVIO.COD_ESTUDIO, ES_ESTPREVIO.NOMBRE_ESTUDIO, ES_ESTPREVIO.DEPENDENCIA, DEPENDENCIA.NOMBRE NOMBRE_DEPENDENCIA, ES_ESTPREVIO.PROPONENTE, TO_CHAR(ES_ESTPREVIO.FECHA,'DD/MM/YYYY') FECHA, ES_ESTPREVIO.CREATED_BY  FROM ES_ESTPREVIO LEFT JOIN DEPENDENCIA ON ES_ESTPREVIO.COMPANIA = DEPENDENCIA.COMPANIA AND ES_ESTPREVIO.DEPENDENCIA = DEPENDENCIA.CODIGO WHERE ES_ESTPREVIO.TIPO_DIA =:TIPODIA AND ES_ESTPREVIO.COMPANIA =:COMPANIA AND TO_CHAR(FECHA,'YYYY') =:VIGENCIA) WHERE (CASE WHEN COD_ESTUDIO IS NULL THEN ' ' ELSE UPPER(COD_ESTUDIO) END)  LIKE UPPER(:COD_ESTUDIO || '%')  AND (CASE WHEN NOMBRE_ESTUDIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_ESTUDIO) END)  LIKE UPPER( '%' || :NOMBRE_ESTUDIO || '%')  AND (CASE WHEN NOMBRE_DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEPENDENCIA) END)  LIKE UPPER(:NOMBRE_DEPENDENCIA || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="TIPODIA" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIGENCIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="NOMBRE_ESTUDIO" sqlType="STRING"/>
+		<param name="NOMBRE_DEPENDENCIA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="esestprevios/numero">
+		<call-query href="getEsestpreviosNumeroQuery">
+			<with-param name="TIPODIA" query-param="TIPODIA"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="NOMBRE_ESTUDIO" query-param="NOMBRE_ESTUDIO"/>
+			<with-param name="NOMBRE_DEPENDENCIA" query-param="NOMBRE_DEPENDENCIA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsestpreviosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT ES_ESTPREVIO.ADJUDICACION , ES_ESTPREVIO.ANALISIS_RIESGO , ES_ESTPREVIO.AN_CONVENIENCIA , ES_ESTPREVIO.AN_OPORTUNIDAD , ES_ESTPREVIO.ANULADOPOR , ES_ESTPREVIO.ASP_TEC_ESTUDIO , ES_ESTPREVIO.CANT_PERSONAS , ES_ESTPREVIO.CAPACIDAD_RESIDUAL , ES_ESTPREVIO.CAPITAL , ES_ESTPREVIO.CARGO , ES_ESTPREVIO.CARGO_INTERVENTOR , ES_ESTPREVIO.C_EVALUACION , ES_ESTPREVIO.COD_ESTUDIO , ES_ESTPREVIO.CODIGOSUM , ES_ESTPREVIO.COMPANIA , ES_ESTPREVIO.COSTOEST , ES_ESTPREVIO.COSTOIVAEST , ES_ESTPREVIO.COSTOTOTALEST , ES_ESTPREVIO.CREATED_BY , ES_ESTPREVIO.CUANTIACONTR ,(TO_CHAR(ES_ESTPREVIO.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED,(TO_CHAR(ES_ESTPREVIO.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, ES_ESTPREVIO.DEF_NECESIDAD , ES_ESTPREVIO.DEPENDENCIA , ES_ESTPREVIO.DESC_NECESIDAD , ES_ESTPREVIO.EMPLEODIRECTO , ES_ESTPREVIO.EMPLEOINDIRECTO , ES_ESTPREVIO.ENDEUDAMIENTO , ES_ESTPREVIO.ESPECIFICACION_TEC ,(CASE ES_ESTPREVIO.ESTADO WHEN 0 THEN 'false' ELSE 'true' END) ESTADO,(TO_CHAR(ES_ESTPREVIO.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,(TO_CHAR(ES_ESTPREVIO.FECHAANULADO,'DD/MM/YYYY HH24:MI:SS')) FECHAANULADO,(TO_CHAR(ES_ESTPREVIO.FECHA_CNE,'DD/MM/YYYY HH24:MI:SS')) FECHA_CNE,(TO_CHAR(ES_ESTPREVIO.FECHA_SOLICITUD,'DD/MM/YYYY HH24:MI:SS')) FECHA_SOLICITUD,(TO_CHAR(ES_ESTPREVIO.FECHA_VOBO,'DD/MM/YYYY HH24:MI:SS')) FECHA_VOBO, ES_ESTPREVIO.FORMA_PAGO , ES_ESTPREVIO.FORMA_PAGOS , ES_ESTPREVIO.FUND_JURIDICOS ,(TO_CHAR(ES_ESTPREVIO.HORAANULADO,'DD/MM/YYYY HH24:MI:SS')) HORAANULADO,(TO_CHAR(ES_ESTPREVIO.HORA_VOBO,'DD/MM/YYYY HH24:MI:SS')) HORA_VOBO,(CASE ES_ESTPREVIO.IMPRESO WHEN 0 THEN 'false' ELSE 'true' END) IMPRESO, ES_ESTPREVIO.INDICE_LIQUIDEZ , ES_ESTPREVIO.ITEMS_CONTRATO , ES_ESTPREVIO.LOCALIZACION_EJEC , ES_ESTPREVIO.MODIFIED_BY , ES_ESTPREVIO.NOMBRE_ESTUDIO , ES_ESTPREVIO.NOSOLICITUD_CNE , ES_ESTPREVIO.NUM_CNE , TRANSACCION.NUM_PROCESO NUM_PROCESO, ES_ESTPREVIO.OBJETO_CONTRATO , ES_ESTPREVIO.OBL_CONTRATISTA , ES_ESTPREVIO.OBL_ENTIDAD , ES_ESTPREVIO.OBL_GARANTIAS, ES_ESTPREVIO.PLAZO_EJECUCION ,(TO_CHAR(ES_ESTPREVIO.PLAZOFINAL,'DD/MM/YYYY HH24:MI:SS')) PLAZOFINAL,(TO_CHAR(ES_ESTPREVIO.PLAZOINICIAL,'DD/MM/YYYY HH24:MI:SS')) PLAZOINICIAL, ES_ESTPREVIO.POBLACION_BENEF , ES_ESTPREVIO.PRODUCTO_ENTREGAR , ES_ESTPREVIO.PROPONENTE , ES_ESTPREVIO.PYE_CONTRATISTA , ES_ESTPREVIO.RAZON_INTERES , ES_ESTPREVIO.RENT_ACTIVOS , ES_ESTPREVIO.RENT_PATRIMONIO , ES_ESTPREVIO.RESPONSABLE , ES_ESTPREVIO.RESULTADOS_ESP , ES_ESTPREVIO.RUBRO , ES_ESTPREVIO.SECTOR_ANALISIS_ESTADISTICO , ES_ESTPREVIO.SECTOR_ASP_ECONOMICO , ES_ESTPREVIO.SECTOR_ASP_GENERAL , ES_ESTPREVIO.SECTOR_ASP_REGULATORIO , ES_ESTPREVIO.SECTOR_ASP_TECNICO , ES_ESTPREVIO.SECTOR_CONCLUSIONES , ES_ESTPREVIO.SECTOR_ESTUDIO_DEMANDA , ES_ESTPREVIO.SECTOR_ESTUDIO_OFERTA , ES_ESTPREVIO.SECTOR_PERSPECTIVA_LEGAL , ES_ESTPREVIO.SUCURSAL_RESPONSABLE , ES_ESTPREVIO.SUCURSAL_SUPERVISADO , ES_ESTPREVIO.SUCURSAL_SUPERVISION , ES_ESTPREVIO.SUPERVISADO , ES_ESTPREVIO.SUPERVISION , ES_ESTPREVIO.TIPO_CONTRATO , ES_ESTPREVIO.TIPO_DIA ,(CASE ES_ESTPREVIO.TIPOEST WHEN 0 THEN 'false' ELSE 'true' END) TIPOEST, ES_ESTPREVIO.TIPO_EST_PREVIO , ES_ESTPREVIO.TIPO_GARANTIA , ES_ESTPREVIO.VALOR_CONTRATO , ES_ESTPREVIO.VARIABLES_PPTO , ES_ESTPREVIO.VERIF_ETAPAS , ES_ESTPREVIO.VIGENCIAFIN , ES_ESTPREVIO.VIGENCIAINICIO ,(CASE ES_ESTPREVIO.VOBO WHEN 0 THEN 'false' ELSE 'true' END) VOBO, ES_ESTPREVIO.OTROSINDICADORES,(CASE ES_ESTPREVIO.APLICA_BYS WHEN 0 THEN 'false' ELSE 'true' END) APLICA_BYS,(CASE ES_ESTPREVIO.APLICA_PUBLICIDAD WHEN 0 THEN 'false' ELSE 'true' END) APLICA_PUBLICIDAD, ES_ESTPREVIO.ALCANCE FROM ES_ESTPREVIO LEFT JOIN TRANSACCION ON ES_ESTPREVIO.COMPANIA = TRANSACCION.COMPANIA AND ES_ESTPREVIO.COD_ESTUDIO = TRANSACCION.ESTUDIOPREVIO WHERE ES_ESTPREVIO.COMPANIA= :KEY_COMPANIA AND ES_ESTPREVIO.COD_ESTUDIO= :KEY_COD_ESTUDIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ADJUDICACION":"$ADJUDICACION","ANALISIS_RIESGO":"$ANALISIS_RIESGO","AN_CONVENIENCIA":"$AN_CONVENIENCIA","AN_OPORTUNIDAD":"$AN_OPORTUNIDAD","ANULADOPOR":"$ANULADOPOR","ASP_TEC_ESTUDIO":"$ASP_TEC_ESTUDIO","CANT_PERSONAS":"$CANT_PERSONAS","CAPACIDAD_RESIDUAL":"$CAPACIDAD_RESIDUAL","CAPITAL":"$CAPITAL","CARGO":"$CARGO","CARGO_INTERVENTOR":"$CARGO_INTERVENTOR","C_EVALUACION":"$C_EVALUACION","COD_ESTUDIO":"$COD_ESTUDIO","CODIGOSUM":"$CODIGOSUM","COMPANIA":"$COMPANIA","COSTOEST":"$COSTOEST","COSTOIVAEST":"$COSTOIVAEST","COSTOTOTALEST":"$COSTOTOTALEST","CREATED_BY":"$CREATED_BY","CUANTIACONTR":"$CUANTIACONTR","DATE_CREATED":"$DATE_CREATED","DATE_MODIFIED":"$DATE_MODIFIED","DEF_NECESIDAD":"$DEF_NECESIDAD","DEPENDENCIA":"$DEPENDENCIA","DESC_NECESIDAD":"$DESC_NECESIDAD","EMPLEODIRECTO":"$EMPLEODIRECTO","EMPLEOINDIRECTO":"$EMPLEOINDIRECTO","ENDEUDAMIENTO":"$ENDEUDAMIENTO","ESPECIFICACION_TEC":"$ESPECIFICACION_TEC","ESTADO":"$ESTADO(type:boolean)","FECHA":"$FECHA","FECHAANULADO":"$FECHAANULADO","FECHA_CNE":"$FECHA_CNE","FECHA_SOLICITUD":"$FECHA_SOLICITUD","FECHA_VOBO":"$FECHA_VOBO","FORMA_PAGO":"$FORMA_PAGO","FORMA_PAGOS":"$FORMA_PAGOS","FUND_JURIDICOS":"$FUND_JURIDICOS","HORAANULADO":"$HORAANULADO","HORA_VOBO":"$HORA_VOBO","IMPRESO":"$IMPRESO(type:boolean)","INDICE_LIQUIDEZ":"$INDICE_LIQUIDEZ","ITEMS_CONTRATO":"$ITEMS_CONTRATO","LOCALIZACION_EJEC":"$LOCALIZACION_EJEC","MODIFIED_BY":"$MODIFIED_BY","NOMBRE_ESTUDIO":"$NOMBRE_ESTUDIO","NOSOLICITUD_CNE":"$NOSOLICITUD_CNE","NUM_CNE":"$NUM_CNE","NUM_PROCESO":"$NUM_PROCESO","OBJETO_CONTRATO":"$OBJETO_CONTRATO","OBL_CONTRATISTA":"$OBL_CONTRATISTA","OBL_ENTIDAD":"$OBL_ENTIDAD","OBL_GARANTIAS":"$OBL_GARANTIAS","PLAZO_EJECUCION":"$PLAZO_EJECUCION","PLAZOFINAL":"$PLAZOFINAL","PLAZOINICIAL":"$PLAZOINICIAL","POBLACION_BENEF":"$POBLACION_BENEF","PRODUCTO_ENTREGAR":"$PRODUCTO_ENTREGAR","PROPONENTE":"$PROPONENTE","PYE_CONTRATISTA":"$PYE_CONTRATISTA","RAZON_INTERES":"$RAZON_INTERES","RENT_ACTIVOS":"$RENT_ACTIVOS","RENT_PATRIMONIO":"$RENT_PATRIMONIO","RESPONSABLE":"$RESPONSABLE","RESULTADOS_ESP":"$RESULTADOS_ESP","RUBRO":"$RUBRO","SECTOR_ANALISIS_ESTADISTICO":"$SECTOR_ANALISIS_ESTADISTICO","SECTOR_ASP_ECONOMICO":"$SECTOR_ASP_ECONOMICO","SECTOR_ASP_GENERAL":"$SECTOR_ASP_GENERAL","SECTOR_ASP_REGULATORIO":"$SECTOR_ASP_REGULATORIO","SECTOR_ASP_TECNICO":"$SECTOR_ASP_TECNICO","SECTOR_CONCLUSIONES":"$SECTOR_CONCLUSIONES","SECTOR_ESTUDIO_DEMANDA":"$SECTOR_ESTUDIO_DEMANDA","SECTOR_ESTUDIO_OFERTA":"$SECTOR_ESTUDIO_OFERTA","SECTOR_PERSPECTIVA_LEGAL":"$SECTOR_PERSPECTIVA_LEGAL","SUCURSAL_RESPONSABLE":"$SUCURSAL_RESPONSABLE","SUCURSAL_SUPERVISADO":"$SUCURSAL_SUPERVISADO","SUCURSAL_SUPERVISION":"$SUCURSAL_SUPERVISION","SUPERVISADO":"$SUPERVISADO","SUPERVISION":"$SUPERVISION","TIPO_CONTRATO":"$TIPO_CONTRATO","TIPO_DIA":"$TIPO_DIA","TIPOEST":"$TIPOEST(type:boolean)","TIPO_EST_PREVIO":"$TIPO_EST_PREVIO","TIPO_GARANTIA":"$TIPO_GARANTIA","VALOR_CONTRATO":"$VALOR_CONTRATO","VARIABLES_PPTO":"$VARIABLES_PPTO","VERIF_ETAPAS":"$VERIF_ETAPAS","VIGENCIAFIN":"$VIGENCIAFIN","VIGENCIAINICIO":"$VIGENCIAINICIO","VOBO":"$VOBO(type:boolean)","OTROSINDICADORES":"$OTROSINDICADORES","APLICA_BYS":"$APLICA_BYS(type:boolean)","APLICA_PUBLICIDAD":"$APLICA_PUBLICIDAD(type:boolean)","ALCANCE":"$ALCANCE"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="esestprevios/data">
+		<call-query href="getEsestpreviosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_ESTUDIO" query-param="KEY_COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEsestprevios" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ES_ESTPREVIO SET ADJUDICACION=:ADJUDICACION, ANALISIS_RIESGO=:ANALISIS_RIESGO, AN_CONVENIENCIA=:AN_CONVENIENCIA, AN_OPORTUNIDAD=:AN_OPORTUNIDAD, ANULADOPOR=:ANULADOPOR, ASP_TEC_ESTUDIO=:ASP_TEC_ESTUDIO, CANT_PERSONAS=:CANT_PERSONAS, CAPACIDAD_RESIDUAL=:CAPACIDAD_RESIDUAL, CAPITAL=:CAPITAL, CARGO=:CARGO, CARGO_INTERVENTOR=:CARGO_INTERVENTOR, C_EVALUACION=:C_EVALUACION, COD_ESTUDIO=:COD_ESTUDIO, CODIGOSUM=:CODIGOSUM, COSTOEST=:COSTOEST, COSTOIVAEST=:COSTOIVAEST, COSTOTOTALEST=:COSTOTOTALEST, CUANTIACONTR=:CUANTIACONTR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), DEF_NECESIDAD=:DEF_NECESIDAD, DEPENDENCIA=:DEPENDENCIA, DESC_NECESIDAD=:DESC_NECESIDAD, EMPLEODIRECTO=:EMPLEODIRECTO, EMPLEOINDIRECTO=:EMPLEOINDIRECTO, ENDEUDAMIENTO=:ENDEUDAMIENTO, ESPECIFICACION_TEC=:ESPECIFICACION_TEC, ESTADO=:ESTADO, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), FECHAANULADO=TO_DATE(:FECHAANULADO,'DD/MM/YYYY HH24:MI:SS'), FECHA_CNE=TO_DATE(:FECHA_CNE,'DD/MM/YYYY HH24:MI:SS'), FECHA_SOLICITUD=TO_DATE(:FECHA_SOLICITUD,'DD/MM/YYYY HH24:MI:SS'), FECHA_VOBO=TO_DATE(:FECHA_VOBO,'DD/MM/YYYY HH24:MI:SS'), FORMA_PAGO=:FORMA_PAGO, FORMA_PAGOS=:FORMA_PAGOS, FUND_JURIDICOS=:FUND_JURIDICOS, HORAANULADO=TO_DATE(:HORAANULADO,'DD/MM/YYYY HH24:MI:SS'), HORA_VOBO=TO_DATE(:HORA_VOBO,'DD/MM/YYYY HH24:MI:SS'), IMPRESO=:IMPRESO, INDICE_LIQUIDEZ=:INDICE_LIQUIDEZ, ITEMS_CONTRATO=:ITEMS_CONTRATO, LOCALIZACION_EJEC=:LOCALIZACION_EJEC, MODIFIED_BY=:MODIFIED_BY, NOMBRE_ESTUDIO=:NOMBRE_ESTUDIO, NOSOLICITUD_CNE=:NOSOLICITUD_CNE, NUM_CNE=:NUM_CNE, NUM_PROCESO=:NUM_PROCESO, OBJETO_CONTRATO=:OBJETO_CONTRATO, OBL_CONTRATISTA=:OBL_CONTRATISTA, OBL_ENTIDAD=:OBL_ENTIDAD, OBL_GARANTIAS=:OBL_GARANTIAS, PLAZO_EJECUCION=:PLAZO_EJECUCION, PLAZOFINAL=TO_DATE(:PLAZOFINAL,'DD/MM/YYYY HH24:MI:SS'), PLAZOINICIAL=TO_DATE(:PLAZOINICIAL,'DD/MM/YYYY HH24:MI:SS'), POBLACION_BENEF=:POBLACION_BENEF, PRODUCTO_ENTREGAR=:PRODUCTO_ENTREGAR, PROPONENTE=:PROPONENTE, PYE_CONTRATISTA=:PYE_CONTRATISTA, RAZON_INTERES=:RAZON_INTERES, RENT_ACTIVOS=:RENT_ACTIVOS, RENT_PATRIMONIO=:RENT_PATRIMONIO, RESPONSABLE=:RESPONSABLE, RESULTADOS_ESP=:RESULTADOS_ESP, RUBRO=:RUBRO, SECTOR_ANALISIS_ESTADISTICO=:SECTOR_ANALISIS_ESTADISTICO, SECTOR_ASP_ECONOMICO=:SECTOR_ASP_ECONOMICO, SECTOR_ASP_GENERAL=:SECTOR_ASP_GENERAL, SECTOR_ASP_REGULATORIO=:SECTOR_ASP_REGULATORIO, SECTOR_ASP_TECNICO=:SECTOR_ASP_TECNICO, SECTOR_CONCLUSIONES=:SECTOR_CONCLUSIONES, SECTOR_ESTUDIO_DEMANDA=:SECTOR_ESTUDIO_DEMANDA, SECTOR_ESTUDIO_OFERTA=:SECTOR_ESTUDIO_OFERTA, SECTOR_PERSPECTIVA_LEGAL=:SECTOR_PERSPECTIVA_LEGAL, SUCURSAL_RESPONSABLE=:SUCURSAL_RESPONSABLE, SUCURSAL_SUPERVISADO=:SUCURSAL_SUPERVISADO, SUCURSAL_SUPERVISION=:SUCURSAL_SUPERVISION, SUPERVISADO=:SUPERVISADO, SUPERVISION=:SUPERVISION, TIPO_CONTRATO=:TIPO_CONTRATO, TIPO_DIA=:TIPO_DIA, TIPOEST=:TIPOEST, TIPO_EST_PREVIO=:TIPO_EST_PREVIO, TIPO_GARANTIA=:TIPO_GARANTIA, VALOR_CONTRATO=:VALOR_CONTRATO, VARIABLES_PPTO=:VARIABLES_PPTO, VERIF_ETAPAS=:VERIF_ETAPAS, VIGENCIAFIN=:VIGENCIAFIN, VIGENCIAINICIO=:VIGENCIAINICIO, VOBO=:VOBO, OTROSINDICADORES=:OTROSINDICADORES, APLICA_BYS=:APLICA_BYS, APLICA_PUBLICIDAD=:APLICA_PUBLICIDAD, ALCANCE=:ALCANCE WHERE ES_ESTPREVIO.COMPANIA= :KEY_COMPANIA AND ES_ESTPREVIO.COD_ESTUDIO= :KEY_COD_ESTUDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ADJUDICACION" sqlType="STRING"/>
+		<param name="ANALISIS_RIESGO" sqlType="STRING"/>
+		<param name="AN_CONVENIENCIA" sqlType="STRING"/>
+		<param name="AN_OPORTUNIDAD" sqlType="STRING"/>
+		<param name="ANULADOPOR" sqlType="STRING"/>
+		<param name="ASP_TEC_ESTUDIO" sqlType="STRING"/>
+		<param name="CANT_PERSONAS" sqlType="STRING"/>
+		<param name="CAPACIDAD_RESIDUAL" sqlType="STRING"/>
+		<param name="CAPITAL" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="CARGO_INTERVENTOR" sqlType="STRING"/>
+		<param name="C_EVALUACION" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="CODIGOSUM" sqlType="STRING"/>
+		<param name="COSTOEST" sqlType="STRING"/>
+		<param name="COSTOIVAEST" sqlType="STRING"/>
+		<param name="COSTOTOTALEST" sqlType="STRING"/>
+		<param name="CUANTIACONTR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="DEF_NECESIDAD" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="DESC_NECESIDAD" sqlType="STRING"/>
+		<param name="EMPLEODIRECTO" sqlType="STRING"/>
+		<param name="EMPLEOINDIRECTO" sqlType="STRING"/>
+		<param name="ENDEUDAMIENTO" sqlType="STRING"/>
+		<param name="ESPECIFICACION_TEC" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="FECHAANULADO" sqlType="STRING"/>
+		<param name="FECHA_CNE" sqlType="STRING"/>
+		<param name="FECHA_SOLICITUD" sqlType="STRING"/>
+		<param name="FECHA_VOBO" sqlType="STRING"/>
+		<param name="FORMA_PAGO" sqlType="STRING"/>
+		<param name="FORMA_PAGOS" sqlType="STRING"/>
+		<param name="FUND_JURIDICOS" sqlType="STRING"/>
+		<param name="HORAANULADO" sqlType="STRING"/>
+		<param name="HORA_VOBO" sqlType="STRING"/>
+		<param name="IMPRESO" sqlType="STRING"/>
+		<param name="INDICE_LIQUIDEZ" sqlType="STRING"/>
+		<param name="ITEMS_CONTRATO" sqlType="STRING"/>
+		<param name="LOCALIZACION_EJEC" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="NOMBRE_ESTUDIO" sqlType="STRING"/>
+		<param name="NOSOLICITUD_CNE" sqlType="STRING"/>
+		<param name="NUM_CNE" sqlType="STRING"/>
+		<param name="NUM_PROCESO" sqlType="STRING"/>
+		<param name="OBJETO_CONTRATO" sqlType="STRING"/>
+		<param name="OBL_CONTRATISTA" sqlType="STRING"/>
+		<param name="OBL_ENTIDAD" sqlType="STRING"/>
+		<param name="OBL_GARANTIAS" sqlType="STRING"/>
+		<param name="PLAZO_EJECUCION" sqlType="STRING"/>
+		<param name="PLAZOFINAL" sqlType="STRING"/>
+		<param name="PLAZOINICIAL" sqlType="STRING"/>
+		<param name="POBLACION_BENEF" sqlType="STRING"/>
+		<param name="PRODUCTO_ENTREGAR" sqlType="STRING"/>
+		<param name="PROPONENTE" sqlType="STRING"/>
+		<param name="PYE_CONTRATISTA" sqlType="STRING"/>
+		<param name="RAZON_INTERES" sqlType="STRING"/>
+		<param name="RENT_ACTIVOS" sqlType="STRING"/>
+		<param name="RENT_PATRIMONIO" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="RESULTADOS_ESP" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="SECTOR_ANALISIS_ESTADISTICO" sqlType="STRING"/>
+		<param name="SECTOR_ASP_ECONOMICO" sqlType="STRING"/>
+		<param name="SECTOR_ASP_GENERAL" sqlType="STRING"/>
+		<param name="SECTOR_ASP_REGULATORIO" sqlType="STRING"/>
+		<param name="SECTOR_ASP_TECNICO" sqlType="STRING"/>
+		<param name="SECTOR_CONCLUSIONES" sqlType="STRING"/>
+		<param name="SECTOR_ESTUDIO_DEMANDA" sqlType="STRING"/>
+		<param name="SECTOR_ESTUDIO_OFERTA" sqlType="STRING"/>
+		<param name="SECTOR_PERSPECTIVA_LEGAL" sqlType="STRING"/>
+		<param name="SUCURSAL_RESPONSABLE" sqlType="STRING"/>
+		<param name="SUCURSAL_SUPERVISADO" sqlType="STRING"/>
+		<param name="SUCURSAL_SUPERVISION" sqlType="STRING"/>
+		<param name="SUPERVISADO" sqlType="STRING"/>
+		<param name="SUPERVISION" sqlType="STRING"/>
+		<param name="TIPO_CONTRATO" sqlType="STRING"/>
+		<param name="TIPO_DIA" sqlType="STRING"/>
+		<param name="TIPOEST" sqlType="STRING"/>
+		<param name="TIPO_EST_PREVIO" sqlType="STRING"/>
+		<param name="TIPO_GARANTIA" sqlType="STRING"/>
+		<param name="VALOR_CONTRATO" sqlType="STRING"/>
+		<param name="VARIABLES_PPTO" sqlType="STRING"/>
+		<param name="VERIF_ETAPAS" sqlType="STRING"/>
+		<param name="VIGENCIAFIN" sqlType="STRING"/>
+		<param name="VIGENCIAINICIO" sqlType="STRING"/>
+		<param name="VOBO" sqlType="STRING"/>
+		<param name="OTROSINDICADORES" sqlType="STRING"/>
+		<param name="APLICA_BYS" sqlType="STRING"/>
+		<param name="APLICA_PUBLICIDAD" sqlType="STRING"/>
+		<param name="ALCANCE" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="esestprevios">
+		<call-query href="updateEsestprevios">
+			<with-param name="ADJUDICACION" query-param="ADJUDICACION"/>
+			<with-param name="ANALISIS_RIESGO" query-param="ANALISIS_RIESGO"/>
+			<with-param name="AN_CONVENIENCIA" query-param="AN_CONVENIENCIA"/>
+			<with-param name="AN_OPORTUNIDAD" query-param="AN_OPORTUNIDAD"/>
+			<with-param name="ANULADOPOR" query-param="ANULADOPOR"/>
+			<with-param name="ASP_TEC_ESTUDIO" query-param="ASP_TEC_ESTUDIO"/>
+			<with-param name="CANT_PERSONAS" query-param="CANT_PERSONAS"/>
+			<with-param name="CAPACIDAD_RESIDUAL" query-param="CAPACIDAD_RESIDUAL"/>
+			<with-param name="CAPITAL" query-param="CAPITAL"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="CARGO_INTERVENTOR" query-param="CARGO_INTERVENTOR"/>
+			<with-param name="C_EVALUACION" query-param="C_EVALUACION"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="CODIGOSUM" query-param="CODIGOSUM"/>
+			<with-param name="COSTOEST" query-param="COSTOEST"/>
+			<with-param name="COSTOIVAEST" query-param="COSTOIVAEST"/>
+			<with-param name="COSTOTOTALEST" query-param="COSTOTOTALEST"/>
+			<with-param name="CUANTIACONTR" query-param="CUANTIACONTR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="DEF_NECESIDAD" query-param="DEF_NECESIDAD"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="DESC_NECESIDAD" query-param="DESC_NECESIDAD"/>
+			<with-param name="EMPLEODIRECTO" query-param="EMPLEODIRECTO"/>
+			<with-param name="EMPLEOINDIRECTO" query-param="EMPLEOINDIRECTO"/>
+			<with-param name="ENDEUDAMIENTO" query-param="ENDEUDAMIENTO"/>
+			<with-param name="ESPECIFICACION_TEC" query-param="ESPECIFICACION_TEC"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FECHAANULADO" query-param="FECHAANULADO"/>
+			<with-param name="FECHA_CNE" query-param="FECHA_CNE"/>
+			<with-param name="FECHA_SOLICITUD" query-param="FECHA_SOLICITUD"/>
+			<with-param name="FECHA_VOBO" query-param="FECHA_VOBO"/>
+			<with-param name="FORMA_PAGO" query-param="FORMA_PAGO"/>
+			<with-param name="FORMA_PAGOS" query-param="FORMA_PAGOS"/>
+			<with-param name="FUND_JURIDICOS" query-param="FUND_JURIDICOS"/>
+			<with-param name="HORAANULADO" query-param="HORAANULADO"/>
+			<with-param name="HORA_VOBO" query-param="HORA_VOBO"/>
+			<with-param name="IMPRESO" query-param="IMPRESO"/>
+			<with-param name="INDICE_LIQUIDEZ" query-param="INDICE_LIQUIDEZ"/>
+			<with-param name="ITEMS_CONTRATO" query-param="ITEMS_CONTRATO"/>
+			<with-param name="LOCALIZACION_EJEC" query-param="LOCALIZACION_EJEC"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="NOMBRE_ESTUDIO" query-param="NOMBRE_ESTUDIO"/>
+			<with-param name="NOSOLICITUD_CNE" query-param="NOSOLICITUD_CNE"/>
+			<with-param name="NUM_CNE" query-param="NUM_CNE"/>
+			<with-param name="NUM_PROCESO" query-param="NUM_PROCESO"/>
+			<with-param name="OBJETO_CONTRATO" query-param="OBJETO_CONTRATO"/>
+			<with-param name="OBL_CONTRATISTA" query-param="OBL_CONTRATISTA"/>
+			<with-param name="OBL_ENTIDAD" query-param="OBL_ENTIDAD"/>
+			<with-param name="OBL_GARANTIAS" query-param="OBL_GARANTIAS"/>
+			<with-param name="PLAZO_EJECUCION" query-param="PLAZO_EJECUCION"/>
+			<with-param name="PLAZOFINAL" query-param="PLAZOFINAL"/>
+			<with-param name="PLAZOINICIAL" query-param="PLAZOINICIAL"/>
+			<with-param name="POBLACION_BENEF" query-param="POBLACION_BENEF"/>
+			<with-param name="PRODUCTO_ENTREGAR" query-param="PRODUCTO_ENTREGAR"/>
+			<with-param name="PROPONENTE" query-param="PROPONENTE"/>
+			<with-param name="PYE_CONTRATISTA" query-param="PYE_CONTRATISTA"/>
+			<with-param name="RAZON_INTERES" query-param="RAZON_INTERES"/>
+			<with-param name="RENT_ACTIVOS" query-param="RENT_ACTIVOS"/>
+			<with-param name="RENT_PATRIMONIO" query-param="RENT_PATRIMONIO"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="RESULTADOS_ESP" query-param="RESULTADOS_ESP"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="SECTOR_ANALISIS_ESTADISTICO" query-param="SECTOR_ANALISIS_ESTADISTICO"/>
+			<with-param name="SECTOR_ASP_ECONOMICO" query-param="SECTOR_ASP_ECONOMICO"/>
+			<with-param name="SECTOR_ASP_GENERAL" query-param="SECTOR_ASP_GENERAL"/>
+			<with-param name="SECTOR_ASP_REGULATORIO" query-param="SECTOR_ASP_REGULATORIO"/>
+			<with-param name="SECTOR_ASP_TECNICO" query-param="SECTOR_ASP_TECNICO"/>
+			<with-param name="SECTOR_CONCLUSIONES" query-param="SECTOR_CONCLUSIONES"/>
+			<with-param name="SECTOR_ESTUDIO_DEMANDA" query-param="SECTOR_ESTUDIO_DEMANDA"/>
+			<with-param name="SECTOR_ESTUDIO_OFERTA" query-param="SECTOR_ESTUDIO_OFERTA"/>
+			<with-param name="SECTOR_PERSPECTIVA_LEGAL" query-param="SECTOR_PERSPECTIVA_LEGAL"/>
+			<with-param name="SUCURSAL_RESPONSABLE" query-param="SUCURSAL_RESPONSABLE"/>
+			<with-param name="SUCURSAL_SUPERVISADO" query-param="SUCURSAL_SUPERVISADO"/>
+			<with-param name="SUCURSAL_SUPERVISION" query-param="SUCURSAL_SUPERVISION"/>
+			<with-param name="SUPERVISADO" query-param="SUPERVISADO"/>
+			<with-param name="SUPERVISION" query-param="SUPERVISION"/>
+			<with-param name="TIPO_CONTRATO" query-param="TIPO_CONTRATO"/>
+			<with-param name="TIPO_DIA" query-param="TIPO_DIA"/>
+			<with-param name="TIPOEST" query-param="TIPOEST"/>
+			<with-param name="TIPO_EST_PREVIO" query-param="TIPO_EST_PREVIO"/>
+			<with-param name="TIPO_GARANTIA" query-param="TIPO_GARANTIA"/>
+			<with-param name="VALOR_CONTRATO" query-param="VALOR_CONTRATO"/>
+			<with-param name="VARIABLES_PPTO" query-param="VARIABLES_PPTO"/>
+			<with-param name="VERIF_ETAPAS" query-param="VERIF_ETAPAS"/>
+			<with-param name="VIGENCIAFIN" query-param="VIGENCIAFIN"/>
+			<with-param name="VIGENCIAINICIO" query-param="VIGENCIAINICIO"/>
+			<with-param name="VOBO" query-param="VOBO"/>
+			<with-param name="OTROSINDICADORES" query-param="OTROSINDICADORES"/>
+			<with-param name="APLICA_BYS" query-param="APLICA_BYS"/>
+			<with-param name="APLICA_PUBLICIDAD" query-param="APLICA_PUBLICIDAD"/>
+			<with-param name="ALCANCE" query-param="ALCANCE"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_ESTUDIO" query-param="KEY_COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsestpreviosRubrosYAniosPorEstudioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ES_RUBROS_EST_DIS.CODIGO_CUENTA AS RUBRO_CDP , ES_RUBROS_EST_DIS.ANO AS ANIOESTPREV  FROM ES_ESTPREVIO LEFT JOIN ES_RUBROS_EST_DIS ON ES_ESTPREVIO.COMPANIA = ES_RUBROS_EST_DIS.COMPANIA AND ES_ESTPREVIO.COD_ESTUDIO = ES_RUBROS_EST_DIS.COD_ESTUDIO WHERE ES_ESTPREVIO.COMPANIA = :COMPANIA AND ES_ESTPREVIO.COD_ESTUDIO = :COD_ESTUDIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RUBRO_CDP":"$RUBRO_CDP","ANIOESTPREV":"$ANIOESTPREV(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="esestprevios/rubrosyaniosporestudio">
+		<call-query href="getEsestpreviosRubrosYAniosPorEstudioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsestpreviosPerfilDelCodigoestudioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PYE_CONTRATISTA  FROM ES_ESTPREVIO WHERE COMPANIA = :COMPANIA AND COD_ESTUDIO = :COD_ESTUDIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PYE_CONTRATISTA":"$PYE_CONTRATISTA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="esestprevios/perfildelcodigoestudio">
+		<call-query href="getEsestpreviosPerfilDelCodigoestudioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+
+</data>

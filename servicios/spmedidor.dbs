@@ -1,0 +1,950 @@
+﻿<data name="spmedidor" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSpmedidorPorCicloYCodigorutaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, CONSECUTIVO, CODIGO, MARCA, DIGITOS, TO_CHAR(FECHACOMPRA,'DD/MM/YYYY') FECHACOMPRA, ELEMCAMBIO, NUMFACTURA, LECTURAINICIAL, ANO, PERIODO, LECTMEDANT, LECTURAFINALVIEJO, TO_CHAR(FECHAINST,'DD/MM/YYYY') FECHAINST, NOORDENINST, CLASIFICACION, CASE CLASIFICACION WHEN 'P' THEN 'PRINCIPAL' ELSE 'TEMPORAL' END CLASIFICACIONLABEL  FROM SP_MEDIDOR WHERE COMPANIA = :COMPANIA AND CICLO = :CICLO AND CODIGORUTA = :CODIGORUTA ORDER BY CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO","CODIGO":"$CODIGO","MARCA":"$MARCA","DIGITOS":"$DIGITOS(type:integer)","FECHACOMPRA":"$FECHACOMPRA","ELEMCAMBIO":"$ELEMCAMBIO","NUMFACTURA":"$NUMFACTURA","LECTURAINICIAL":"$LECTURAINICIAL","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO","LECTMEDANT":"$LECTMEDANT","LECTURAFINALVIEJO":"$LECTURAFINALVIEJO","FECHAINST":"$FECHAINST","NOORDENINST":"$NOORDENINST","CLASIFICACION":"$CLASIFICACION","CLASIFICACIONLABEL":"$CLASIFICACIONLABEL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/porcicloycodigoruta">
+		<call-query href="getSpmedidorPorCicloYCodigorutaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorTodosPorGeiverticeInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT SP_MEDIDOR.GEO_VERTICE  FROM SP_MEDIDOR WHERE SP_MEDIDOR.COMPANIA = :COMPANIA ORDER BY SP_MEDIDOR.GEO_VERTICE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"GEO_VERTICE":"$GEO_VERTICE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/todosporgeiverticeinicial">
+		<call-query href="getSpmedidorTodosPorGeiverticeInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorTodosPorGeoverticeFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT SP_MEDIDOR.GEO_VERTICE  FROM SP_MEDIDOR WHERE SP_MEDIDOR.COMPANIA = :COMPANIA AND SP_MEDIDOR.GEO_VERTICE &gt;= :VERTICEINICIAL ORDER BY SP_MEDIDOR.GEO_VERTICE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"GEO_VERTICE":"$GEO_VERTICE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VERTICEINICIAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/todosporgeoverticefinal">
+		<call-query href="getSpmedidorTodosPorGeoverticeFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VERTICEINICIAL" query-param="VERTICEINICIAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorPagListarMedidorQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CONSECUTIVO, CODIGO, MARCA,(TO_CHAR(FECHACOMPRA,'DD/MM/YYYY HH24:MI:SS')) FECHACOMPRA, DIGITOS, LECTURAINICIAL, ANO, PERIODO, ESTADO, (CASE ESTADO WHEN 'B' THEN 'Medidor en buen estado' WHEN 'M' THEN 'Medidor dañado' END) NOMBREESTADO, CICLO, CODIGORUTA, LECTMEDANT, LECTACTUAL, NUMFACTURA, ELEMCAMBIO,(TO_CHAR(FECHAINST,'DD/MM/YYYY HH24:MI:SS')) FECHAINST, NOORDENINST, TIPO,(TO_CHAR(FECHA_REG,'DD/MM/YYYY HH24:MI:SS')) FECHA_REG, GEO_VERTICE, GEO_LONGITUD, GEO_LATITUD, GEO_ALTITUD, LECTURAFINALVIEJO, DIAMETRO, LECTURAPROMEDIO, PROMEDIO, LONGITUD, MEDIDORNUEVO, CLASIFICACION, NUMCERTIFICACION, POSICION, RADIO, CLASE, LOCALIZACION, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM SP_MEDIDOR WHERE COMPANIA = :COMPANIA ORDER BY COMPANIA, CONSECUTIVO) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN MARCA IS NULL THEN ' ' ELSE UPPER(MARCA) END)  LIKE UPPER( '%' || :MARCA || '%')  AND (CASE WHEN FECHACOMPRA IS NULL THEN ' ' ELSE UPPER(FECHACOMPRA) END)  LIKE UPPER( '%' || :FECHACOMPRA || '%')  AND (CASE WHEN DIGITOS IS NULL THEN ' ' ELSE UPPER(DIGITOS) END)  LIKE UPPER( '%' || :DIGITOS || '%')  AND (CASE WHEN LECTURAINICIAL IS NULL THEN ' ' ELSE UPPER(LECTURAINICIAL) END)  LIKE UPPER( '%' || :LECTURAINICIAL || '%')  AND (CASE WHEN NOMBREESTADO IS NULL THEN ' ' ELSE UPPER(NOMBREESTADO) END)  LIKE UPPER( '%' || :NOMBREESTADO || '%')  AND (CASE WHEN CODIGORUTA IS NULL THEN ' ' ELSE UPPER(CODIGORUTA) END)  LIKE UPPER( '%' || :CODIGORUTA || '%')  AND (CASE WHEN LECTMEDANT IS NULL THEN ' ' ELSE UPPER(LECTMEDANT) END)  LIKE UPPER( '%' || :LECTMEDANT || '%')  AND (CASE WHEN LECTACTUAL IS NULL THEN ' ' ELSE UPPER(LECTACTUAL) END)  LIKE UPPER( '%' || :LECTACTUAL || '%')  AND (CASE WHEN NUMFACTURA IS NULL THEN ' ' ELSE UPPER(NUMFACTURA) END)  LIKE UPPER( '%' || :NUMFACTURA || '%')  AND (CASE WHEN ELEMCAMBIO IS NULL THEN ' ' ELSE UPPER(ELEMCAMBIO) END)  LIKE UPPER( '%' || :ELEMCAMBIO || '%')  AND (CASE WHEN FECHAINST IS NULL THEN ' ' ELSE UPPER(FECHAINST) END)  LIKE UPPER( '%' || :FECHAINST || '%')  AND (CASE WHEN NOORDENINST IS NULL THEN ' ' ELSE UPPER(NOORDENINST) END)  LIKE UPPER( '%' || :NOORDENINST || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER( '%' || :TIPO || '%')  AND (CASE WHEN GEO_VERTICE IS NULL THEN ' ' ELSE UPPER(GEO_VERTICE) END)  LIKE UPPER( '%' || :GEO_VERTICE || '%')  AND (CASE WHEN GEO_LONGITUD IS NULL THEN ' ' ELSE UPPER(GEO_LONGITUD) END)  LIKE UPPER( '%' || :GEO_LONGITUD || '%')  AND (CASE WHEN GEO_LATITUD IS NULL THEN ' ' ELSE UPPER(GEO_LATITUD) END)  LIKE UPPER( '%' || :GEO_LATITUD || '%')  AND (CASE WHEN GEO_ALTITUD IS NULL THEN ' ' ELSE UPPER(GEO_ALTITUD) END)  LIKE UPPER( '%' || :GEO_ALTITUD || '%')  AND (CASE WHEN LECTURAFINALVIEJO IS NULL THEN ' ' ELSE UPPER(LECTURAFINALVIEJO) END)  LIKE UPPER( '%' || :LECTURAFINALVIEJO || '%')  AND (CASE WHEN DIAMETRO IS NULL THEN ' ' ELSE UPPER(DIAMETRO) END)  LIKE UPPER( '%' || :DIAMETRO || '%')  AND (CASE WHEN PROMEDIO IS NULL THEN ' ' ELSE UPPER(PROMEDIO) END)  LIKE UPPER( '%' || :PROMEDIO || '%')  AND (CASE WHEN LONGITUD IS NULL THEN ' ' ELSE UPPER(LONGITUD) END)  LIKE UPPER( '%' || :LONGITUD || '%')  AND (CASE WHEN MEDIDORNUEVO IS NULL THEN ' ' ELSE UPPER(MEDIDORNUEVO) END)  LIKE UPPER( '%' || :MEDIDORNUEVO || '%')  AND (CASE WHEN CLASIFICACION IS NULL THEN ' ' ELSE UPPER(CLASIFICACION) END)  LIKE UPPER( '%' || :CLASIFICACION || '%')  AND (CASE WHEN NUMCERTIFICACION IS NULL THEN ' ' ELSE UPPER(NUMCERTIFICACION) END)  LIKE UPPER( '%' || :NUMCERTIFICACION || '%')  AND (CASE WHEN RADIO IS NULL THEN ' ' ELSE UPPER(RADIO) END)  LIKE UPPER( '%' || :RADIO || '%')  AND (CASE WHEN CLASE IS NULL THEN ' ' ELSE UPPER(CLASE) END)  LIKE UPPER( '%' || :CLASE || '%')  AND (CASE WHEN LOCALIZACION IS NULL THEN ' ' ELSE UPPER(LOCALIZACION) END)  LIKE UPPER( '%' || :LOCALIZACION || '%')  AND (CASE WHEN CREATED_BY IS NULL THEN ' ' ELSE UPPER(CREATED_BY) END)  LIKE UPPER( '%' || :CREATED_BY || '%')  AND (CASE WHEN DATE_CREATED IS NULL THEN ' ' ELSE UPPER(DATE_CREATED) END)  LIKE UPPER( '%' || :DATE_CREATED || '%')  AND (CASE WHEN MODIFIED_BY IS NULL THEN ' ' ELSE UPPER(MODIFIED_BY) END)  LIKE UPPER( '%' || :MODIFIED_BY || '%')  AND (CASE WHEN DATE_MODIFIED IS NULL THEN ' ' ELSE UPPER(DATE_MODIFIED) END)  LIKE UPPER( '%' || :DATE_MODIFIED || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO","CODIGO":"$CODIGO","MARCA":"$MARCA","FECHACOMPRA":"$FECHACOMPRA","DIGITOS":"$DIGITOS(type:integer)","LECTURAINICIAL":"$LECTURAINICIAL","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO","ESTADO":"$ESTADO","NOMBREESTADO":"$NOMBREESTADO","CICLO":"$CICLO(type:integer)","CODIGORUTA":"$CODIGORUTA","LECTMEDANT":"$LECTMEDANT","LECTACTUAL":"$LECTACTUAL","NUMFACTURA":"$NUMFACTURA","ELEMCAMBIO":"$ELEMCAMBIO","FECHAINST":"$FECHAINST","NOORDENINST":"$NOORDENINST","TIPO":"$TIPO","FECHA_REG":"$FECHA_REG","GEO_VERTICE":"$GEO_VERTICE","GEO_LONGITUD":"$GEO_LONGITUD","GEO_LATITUD":"$GEO_LATITUD","GEO_ALTITUD":"$GEO_ALTITUD","LECTURAFINALVIEJO":"$LECTURAFINALVIEJO","DIAMETRO":"$DIAMETRO","LECTURAPROMEDIO":"$LECTURAPROMEDIO","PROMEDIO":"$PROMEDIO","LONGITUD":"$LONGITUD","MEDIDORNUEVO":"$MEDIDORNUEVO","CLASIFICACION":"$CLASIFICACION","NUMCERTIFICACION":"$NUMCERTIFICACION","POSICION":"$POSICION","RADIO":"$RADIO","CLASE":"$CLASE(type:integer)","LOCALIZACION":"$LOCALIZACION(type:integer)","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="MARCA" sqlType="STRING"/>
+		<param name="FECHACOMPRA" sqlType="STRING"/>
+		<param name="DIGITOS" sqlType="STRING"/>
+		<param name="LECTURAINICIAL" sqlType="STRING"/>
+		<param name="NOMBREESTADO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="LECTMEDANT" sqlType="STRING"/>
+		<param name="LECTACTUAL" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+		<param name="ELEMCAMBIO" sqlType="STRING"/>
+		<param name="FECHAINST" sqlType="STRING"/>
+		<param name="NOORDENINST" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="GEO_VERTICE" sqlType="STRING"/>
+		<param name="GEO_LONGITUD" sqlType="STRING"/>
+		<param name="GEO_LATITUD" sqlType="STRING"/>
+		<param name="GEO_ALTITUD" sqlType="STRING"/>
+		<param name="LECTURAFINALVIEJO" sqlType="STRING"/>
+		<param name="DIAMETRO" sqlType="STRING"/>
+		<param name="PROMEDIO" sqlType="STRING"/>
+		<param name="LONGITUD" sqlType="STRING"/>
+		<param name="MEDIDORNUEVO" sqlType="STRING"/>
+		<param name="CLASIFICACION" sqlType="STRING"/>
+		<param name="NUMCERTIFICACION" sqlType="STRING"/>
+		<param name="RADIO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="LOCALIZACION" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/listarmedidor/pag">
+		<call-query href="getSpmedidorPagListarMedidorQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MARCA" query-param="MARCA"/>
+			<with-param name="FECHACOMPRA" query-param="FECHACOMPRA"/>
+			<with-param name="DIGITOS" query-param="DIGITOS"/>
+			<with-param name="LECTURAINICIAL" query-param="LECTURAINICIAL"/>
+			<with-param name="NOMBREESTADO" query-param="NOMBREESTADO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="LECTMEDANT" query-param="LECTMEDANT"/>
+			<with-param name="LECTACTUAL" query-param="LECTACTUAL"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="ELEMCAMBIO" query-param="ELEMCAMBIO"/>
+			<with-param name="FECHAINST" query-param="FECHAINST"/>
+			<with-param name="NOORDENINST" query-param="NOORDENINST"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="GEO_VERTICE" query-param="GEO_VERTICE"/>
+			<with-param name="GEO_LONGITUD" query-param="GEO_LONGITUD"/>
+			<with-param name="GEO_LATITUD" query-param="GEO_LATITUD"/>
+			<with-param name="GEO_ALTITUD" query-param="GEO_ALTITUD"/>
+			<with-param name="LECTURAFINALVIEJO" query-param="LECTURAFINALVIEJO"/>
+			<with-param name="DIAMETRO" query-param="DIAMETRO"/>
+			<with-param name="PROMEDIO" query-param="PROMEDIO"/>
+			<with-param name="LONGITUD" query-param="LONGITUD"/>
+			<with-param name="MEDIDORNUEVO" query-param="MEDIDORNUEVO"/>
+			<with-param name="CLASIFICACION" query-param="CLASIFICACION"/>
+			<with-param name="NUMCERTIFICACION" query-param="NUMCERTIFICACION"/>
+			<with-param name="RADIO" query-param="RADIO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="LOCALIZACION" query-param="LOCALIZACION"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorNumListarMedidorQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CONSECUTIVO, CODIGO, MARCA,(TO_CHAR(FECHACOMPRA,'DD/MM/YYYY HH24:MI:SS')) FECHACOMPRA, DIGITOS, LECTURAINICIAL, ANO, PERIODO, ESTADO, (CASE ESTADO WHEN 'B' THEN 'Medidor en buen estado' WHEN 'M' THEN 'Medidor dañado' END) NOMBREESTADO, CICLO, CODIGORUTA, LECTMEDANT, LECTACTUAL, NUMFACTURA, ELEMCAMBIO,(TO_CHAR(FECHAINST,'DD/MM/YYYY HH24:MI:SS')) FECHAINST, NOORDENINST, TIPO,(TO_CHAR(FECHA_REG,'DD/MM/YYYY HH24:MI:SS')) FECHA_REG, GEO_VERTICE, GEO_LONGITUD, GEO_LATITUD, GEO_ALTITUD, LECTURAFINALVIEJO, DIAMETRO, LECTURAPROMEDIO, PROMEDIO, LONGITUD, MEDIDORNUEVO, CLASIFICACION, NUMCERTIFICACION, POSICION, RADIO, CLASE, LOCALIZACION, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM SP_MEDIDOR WHERE COMPANIA = :COMPANIA ORDER BY COMPANIA, CONSECUTIVO) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN MARCA IS NULL THEN ' ' ELSE UPPER(MARCA) END)  LIKE UPPER( '%' || :MARCA || '%')  AND (CASE WHEN FECHACOMPRA IS NULL THEN ' ' ELSE UPPER(FECHACOMPRA) END)  LIKE UPPER( '%' || :FECHACOMPRA || '%')  AND (CASE WHEN DIGITOS IS NULL THEN ' ' ELSE UPPER(DIGITOS) END)  LIKE UPPER( '%' || :DIGITOS || '%')  AND (CASE WHEN LECTURAINICIAL IS NULL THEN ' ' ELSE UPPER(LECTURAINICIAL) END)  LIKE UPPER( '%' || :LECTURAINICIAL || '%')  AND (CASE WHEN NOMBREESTADO IS NULL THEN ' ' ELSE UPPER(NOMBREESTADO) END)  LIKE UPPER( '%' || :NOMBREESTADO || '%')  AND (CASE WHEN CODIGORUTA IS NULL THEN ' ' ELSE UPPER(CODIGORUTA) END)  LIKE UPPER( '%' || :CODIGORUTA || '%')  AND (CASE WHEN LECTMEDANT IS NULL THEN ' ' ELSE UPPER(LECTMEDANT) END)  LIKE UPPER( '%' || :LECTMEDANT || '%')  AND (CASE WHEN LECTACTUAL IS NULL THEN ' ' ELSE UPPER(LECTACTUAL) END)  LIKE UPPER( '%' || :LECTACTUAL || '%')  AND (CASE WHEN NUMFACTURA IS NULL THEN ' ' ELSE UPPER(NUMFACTURA) END)  LIKE UPPER( '%' || :NUMFACTURA || '%')  AND (CASE WHEN ELEMCAMBIO IS NULL THEN ' ' ELSE UPPER(ELEMCAMBIO) END)  LIKE UPPER( '%' || :ELEMCAMBIO || '%')  AND (CASE WHEN FECHAINST IS NULL THEN ' ' ELSE UPPER(FECHAINST) END)  LIKE UPPER( '%' || :FECHAINST || '%')  AND (CASE WHEN NOORDENINST IS NULL THEN ' ' ELSE UPPER(NOORDENINST) END)  LIKE UPPER( '%' || :NOORDENINST || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER( '%' || :TIPO || '%')  AND (CASE WHEN GEO_VERTICE IS NULL THEN ' ' ELSE UPPER(GEO_VERTICE) END)  LIKE UPPER( '%' || :GEO_VERTICE || '%')  AND (CASE WHEN GEO_LONGITUD IS NULL THEN ' ' ELSE UPPER(GEO_LONGITUD) END)  LIKE UPPER( '%' || :GEO_LONGITUD || '%')  AND (CASE WHEN GEO_LATITUD IS NULL THEN ' ' ELSE UPPER(GEO_LATITUD) END)  LIKE UPPER( '%' || :GEO_LATITUD || '%')  AND (CASE WHEN GEO_ALTITUD IS NULL THEN ' ' ELSE UPPER(GEO_ALTITUD) END)  LIKE UPPER( '%' || :GEO_ALTITUD || '%')  AND (CASE WHEN LECTURAFINALVIEJO IS NULL THEN ' ' ELSE UPPER(LECTURAFINALVIEJO) END)  LIKE UPPER( '%' || :LECTURAFINALVIEJO || '%')  AND (CASE WHEN DIAMETRO IS NULL THEN ' ' ELSE UPPER(DIAMETRO) END)  LIKE UPPER( '%' || :DIAMETRO || '%')  AND (CASE WHEN PROMEDIO IS NULL THEN ' ' ELSE UPPER(PROMEDIO) END)  LIKE UPPER( '%' || :PROMEDIO || '%')  AND (CASE WHEN LONGITUD IS NULL THEN ' ' ELSE UPPER(LONGITUD) END)  LIKE UPPER( '%' || :LONGITUD || '%')  AND (CASE WHEN MEDIDORNUEVO IS NULL THEN ' ' ELSE UPPER(MEDIDORNUEVO) END)  LIKE UPPER( '%' || :MEDIDORNUEVO || '%')  AND (CASE WHEN CLASIFICACION IS NULL THEN ' ' ELSE UPPER(CLASIFICACION) END)  LIKE UPPER( '%' || :CLASIFICACION || '%')  AND (CASE WHEN NUMCERTIFICACION IS NULL THEN ' ' ELSE UPPER(NUMCERTIFICACION) END)  LIKE UPPER( '%' || :NUMCERTIFICACION || '%')  AND (CASE WHEN RADIO IS NULL THEN ' ' ELSE UPPER(RADIO) END)  LIKE UPPER( '%' || :RADIO || '%')  AND (CASE WHEN CLASE IS NULL THEN ' ' ELSE UPPER(CLASE) END)  LIKE UPPER( '%' || :CLASE || '%')  AND (CASE WHEN LOCALIZACION IS NULL THEN ' ' ELSE UPPER(LOCALIZACION) END)  LIKE UPPER( '%' || :LOCALIZACION || '%')  AND (CASE WHEN CREATED_BY IS NULL THEN ' ' ELSE UPPER(CREATED_BY) END)  LIKE UPPER( '%' || :CREATED_BY || '%')  AND (CASE WHEN DATE_CREATED IS NULL THEN ' ' ELSE UPPER(DATE_CREATED) END)  LIKE UPPER( '%' || :DATE_CREATED || '%')  AND (CASE WHEN MODIFIED_BY IS NULL THEN ' ' ELSE UPPER(MODIFIED_BY) END)  LIKE UPPER( '%' || :MODIFIED_BY || '%')  AND (CASE WHEN DATE_MODIFIED IS NULL THEN ' ' ELSE UPPER(DATE_MODIFIED) END)  LIKE UPPER( '%' || :DATE_MODIFIED || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="MARCA" sqlType="STRING"/>
+		<param name="FECHACOMPRA" sqlType="STRING"/>
+		<param name="DIGITOS" sqlType="STRING"/>
+		<param name="LECTURAINICIAL" sqlType="STRING"/>
+		<param name="NOMBREESTADO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="LECTMEDANT" sqlType="STRING"/>
+		<param name="LECTACTUAL" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+		<param name="ELEMCAMBIO" sqlType="STRING"/>
+		<param name="FECHAINST" sqlType="STRING"/>
+		<param name="NOORDENINST" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="GEO_VERTICE" sqlType="STRING"/>
+		<param name="GEO_LONGITUD" sqlType="STRING"/>
+		<param name="GEO_LATITUD" sqlType="STRING"/>
+		<param name="GEO_ALTITUD" sqlType="STRING"/>
+		<param name="LECTURAFINALVIEJO" sqlType="STRING"/>
+		<param name="DIAMETRO" sqlType="STRING"/>
+		<param name="PROMEDIO" sqlType="STRING"/>
+		<param name="LONGITUD" sqlType="STRING"/>
+		<param name="MEDIDORNUEVO" sqlType="STRING"/>
+		<param name="CLASIFICACION" sqlType="STRING"/>
+		<param name="NUMCERTIFICACION" sqlType="STRING"/>
+		<param name="RADIO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="LOCALIZACION" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/listarmedidor/num">
+		<call-query href="getSpmedidorNumListarMedidorQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MARCA" query-param="MARCA"/>
+			<with-param name="FECHACOMPRA" query-param="FECHACOMPRA"/>
+			<with-param name="DIGITOS" query-param="DIGITOS"/>
+			<with-param name="LECTURAINICIAL" query-param="LECTURAINICIAL"/>
+			<with-param name="NOMBREESTADO" query-param="NOMBREESTADO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="LECTMEDANT" query-param="LECTMEDANT"/>
+			<with-param name="LECTACTUAL" query-param="LECTACTUAL"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="ELEMCAMBIO" query-param="ELEMCAMBIO"/>
+			<with-param name="FECHAINST" query-param="FECHAINST"/>
+			<with-param name="NOORDENINST" query-param="NOORDENINST"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="GEO_VERTICE" query-param="GEO_VERTICE"/>
+			<with-param name="GEO_LONGITUD" query-param="GEO_LONGITUD"/>
+			<with-param name="GEO_LATITUD" query-param="GEO_LATITUD"/>
+			<with-param name="GEO_ALTITUD" query-param="GEO_ALTITUD"/>
+			<with-param name="LECTURAFINALVIEJO" query-param="LECTURAFINALVIEJO"/>
+			<with-param name="DIAMETRO" query-param="DIAMETRO"/>
+			<with-param name="PROMEDIO" query-param="PROMEDIO"/>
+			<with-param name="LONGITUD" query-param="LONGITUD"/>
+			<with-param name="MEDIDORNUEVO" query-param="MEDIDORNUEVO"/>
+			<with-param name="CLASIFICACION" query-param="CLASIFICACION"/>
+			<with-param name="NUMCERTIFICACION" query-param="NUMCERTIFICACION"/>
+			<with-param name="RADIO" query-param="RADIO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="LOCALIZACION" query-param="LOCALIZACION"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSpmedidorInsertarMedidors" keyColumns="COMPANIA,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_MEDIDOR (COMPANIA, CONSECUTIVO, CODIGO, MARCA, FECHACOMPRA, DIGITOS, LECTURAINICIAL, ANO, PERIODO, ESTADO, CICLO, CODIGORUTA, LECTMEDANT, LECTACTUAL, NUMFACTURA, ELEMCAMBIO, FECHAINST, NOORDENINST, TIPO, FECHA_REG, GEO_VERTICE, GEO_LONGITUD, GEO_LATITUD, GEO_ALTITUD, LECTURAFINALVIEJO, DIAMETRO, LECTURAPROMEDIO, PROMEDIO, LONGITUD, MEDIDORNUEVO, CLASIFICACION, NUMCERTIFICACION, POSICION, RADIO, CLASE, LOCALIZACION, CREATED_BY, DATE_CREATED) VALUES (:COMPANIA, :CONSECUTIVO, :CODIGO, :MARCA, TO_DATE(:FECHACOMPRA,'DD/MM/YYYY HH24:MI:SS'), :DIGITOS, :LECTURAINICIAL, :ANO, :PERIODO, :ESTADO, :CICLO, :CODIGORUTA, :LECTMEDANT, :LECTACTUAL, :NUMFACTURA, :ELEMCAMBIO, TO_DATE(:FECHAINST,'DD/MM/YYYY HH24:MI:SS'), :NOORDENINST, :TIPO, TO_DATE(:FECHA_REG,'DD/MM/YYYY HH24:MI:SS'), :GEO_VERTICE, :GEO_LONGITUD, :GEO_LATITUD, :GEO_ALTITUD, :LECTURAFINALVIEJO, :DIAMETRO, :LECTURAPROMEDIO, :PROMEDIO, :LONGITUD, :MEDIDORNUEVO, :CLASIFICACION, :NUMCERTIFICACION, :POSICION, :RADIO, :CLASE, :LOCALIZACION, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="MARCA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHACOMPRA" sqlType="STRING"/>
+		<param name="DIGITOS" sqlType="STRING"/>
+		<param defaultValue="0" name="LECTURAINICIAL" sqlType="STRING"/>
+		<param defaultValue="" name="ANO" sqlType="STRING"/>
+		<param defaultValue="" name="PERIODO" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="CICLO" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGORUTA" sqlType="STRING"/>
+		<param defaultValue="0" name="LECTMEDANT" sqlType="STRING"/>
+		<param defaultValue="0" name="LECTACTUAL" sqlType="STRING"/>
+		<param defaultValue="" name="NUMFACTURA" sqlType="STRING"/>
+		<param defaultValue="" name="ELEMCAMBIO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAINST" sqlType="STRING"/>
+		<param defaultValue="" name="NOORDENINST" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_REG" sqlType="STRING"/>
+		<param defaultValue="0" name="GEO_VERTICE" sqlType="STRING"/>
+		<param defaultValue="0" name="GEO_LONGITUD" sqlType="STRING"/>
+		<param defaultValue="0" name="GEO_LATITUD" sqlType="STRING"/>
+		<param defaultValue="0" name="GEO_ALTITUD" sqlType="STRING"/>
+		<param defaultValue="0" name="LECTURAFINALVIEJO" sqlType="STRING"/>
+		<param defaultValue="" name="DIAMETRO" sqlType="STRING"/>
+		<param defaultValue="0" name="LECTURAPROMEDIO" sqlType="STRING"/>
+		<param defaultValue="0" name="PROMEDIO" sqlType="STRING"/>
+		<param defaultValue="0" name="LONGITUD" sqlType="STRING"/>
+		<param defaultValue="" name="MEDIDORNUEVO" sqlType="STRING"/>
+		<param defaultValue="" name="CLASIFICACION" sqlType="STRING"/>
+		<param defaultValue="" name="NUMCERTIFICACION" sqlType="STRING"/>
+		<param defaultValue="" name="POSICION" sqlType="STRING"/>
+		<param defaultValue="0" name="RADIO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="LOCALIZACION" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="spmedidor/insertarmedidors">
+		<call-query href="insertSpmedidorInsertarMedidors">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MARCA" query-param="MARCA"/>
+			<with-param name="FECHACOMPRA" query-param="FECHACOMPRA"/>
+			<with-param name="DIGITOS" query-param="DIGITOS"/>
+			<with-param name="LECTURAINICIAL" query-param="LECTURAINICIAL"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="LECTMEDANT" query-param="LECTMEDANT"/>
+			<with-param name="LECTACTUAL" query-param="LECTACTUAL"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="ELEMCAMBIO" query-param="ELEMCAMBIO"/>
+			<with-param name="FECHAINST" query-param="FECHAINST"/>
+			<with-param name="NOORDENINST" query-param="NOORDENINST"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="FECHA_REG" query-param="FECHA_REG"/>
+			<with-param name="GEO_VERTICE" query-param="GEO_VERTICE"/>
+			<with-param name="GEO_LONGITUD" query-param="GEO_LONGITUD"/>
+			<with-param name="GEO_LATITUD" query-param="GEO_LATITUD"/>
+			<with-param name="GEO_ALTITUD" query-param="GEO_ALTITUD"/>
+			<with-param name="LECTURAFINALVIEJO" query-param="LECTURAFINALVIEJO"/>
+			<with-param name="DIAMETRO" query-param="DIAMETRO"/>
+			<with-param name="LECTURAPROMEDIO" query-param="LECTURAPROMEDIO"/>
+			<with-param name="PROMEDIO" query-param="PROMEDIO"/>
+			<with-param name="LONGITUD" query-param="LONGITUD"/>
+			<with-param name="MEDIDORNUEVO" query-param="MEDIDORNUEVO"/>
+			<with-param name="CLASIFICACION" query-param="CLASIFICACION"/>
+			<with-param name="NUMCERTIFICACION" query-param="NUMCERTIFICACION"/>
+			<with-param name="POSICION" query-param="POSICION"/>
+			<with-param name="RADIO" query-param="RADIO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="LOCALIZACION" query-param="LOCALIZACION"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpmedidorActualizarMedidors" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_MEDIDOR SET CODIGO=:CODIGO, MARCA=:MARCA, FECHACOMPRA=TO_DATE(:FECHACOMPRA,'DD/MM/YYYY HH24:MI:SS'), DIGITOS=:DIGITOS, LECTURAINICIAL=:LECTURAINICIAL, ANO=:ANO, PERIODO=:PERIODO, ESTADO=:ESTADO, CICLO=:CICLO, CODIGORUTA=:CODIGORUTA, LECTMEDANT=:LECTMEDANT, LECTACTUAL=:LECTACTUAL, NUMFACTURA=:NUMFACTURA, ELEMCAMBIO=:ELEMCAMBIO, FECHAINST=TO_DATE(:FECHAINST,'DD/MM/YYYY HH24:MI:SS'), NOORDENINST=:NOORDENINST, TIPO=:TIPO, FECHA_REG=TO_DATE(:FECHA_REG,'DD/MM/YYYY HH24:MI:SS'), GEO_VERTICE=:GEO_VERTICE, GEO_LONGITUD=:GEO_LONGITUD, GEO_LATITUD=:GEO_LATITUD, GEO_ALTITUD=:GEO_ALTITUD, LECTURAFINALVIEJO=:LECTURAFINALVIEJO, DIAMETRO=:DIAMETRO, LECTURAPROMEDIO=:LECTURAPROMEDIO, PROMEDIO=:PROMEDIO, LONGITUD=:LONGITUD, MEDIDORNUEVO=:MEDIDORNUEVO, CLASIFICACION=:CLASIFICACION, NUMCERTIFICACION=:NUMCERTIFICACION, POSICION=:POSICION, RADIO=:RADIO, CLASE=:CLASE, LOCALIZACION=:LOCALIZACION, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE SP_MEDIDOR.COMPANIA= :KEY_COMPANIA AND SP_MEDIDOR.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="MARCA" sqlType="STRING"/>
+		<param name="FECHACOMPRA" sqlType="STRING"/>
+		<param name="DIGITOS" sqlType="STRING"/>
+		<param name="LECTURAINICIAL" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="LECTMEDANT" sqlType="STRING"/>
+		<param name="LECTACTUAL" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+		<param name="ELEMCAMBIO" sqlType="STRING"/>
+		<param name="FECHAINST" sqlType="STRING"/>
+		<param name="NOORDENINST" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="FECHA_REG" sqlType="STRING"/>
+		<param name="GEO_VERTICE" sqlType="STRING"/>
+		<param name="GEO_LONGITUD" sqlType="STRING"/>
+		<param name="GEO_LATITUD" sqlType="STRING"/>
+		<param name="GEO_ALTITUD" sqlType="STRING"/>
+		<param name="LECTURAFINALVIEJO" sqlType="STRING"/>
+		<param name="DIAMETRO" sqlType="STRING"/>
+		<param name="LECTURAPROMEDIO" sqlType="STRING"/>
+		<param name="PROMEDIO" sqlType="STRING"/>
+		<param name="LONGITUD" sqlType="STRING"/>
+		<param name="MEDIDORNUEVO" sqlType="STRING"/>
+		<param name="CLASIFICACION" sqlType="STRING"/>
+		<param name="NUMCERTIFICACION" sqlType="STRING"/>
+		<param name="POSICION" sqlType="STRING"/>
+		<param name="RADIO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="LOCALIZACION" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spmedidor/actualizarmedidors">
+		<call-query href="updateSpmedidorActualizarMedidors">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MARCA" query-param="MARCA"/>
+			<with-param name="FECHACOMPRA" query-param="FECHACOMPRA"/>
+			<with-param name="DIGITOS" query-param="DIGITOS"/>
+			<with-param name="LECTURAINICIAL" query-param="LECTURAINICIAL"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="LECTMEDANT" query-param="LECTMEDANT"/>
+			<with-param name="LECTACTUAL" query-param="LECTACTUAL"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="ELEMCAMBIO" query-param="ELEMCAMBIO"/>
+			<with-param name="FECHAINST" query-param="FECHAINST"/>
+			<with-param name="NOORDENINST" query-param="NOORDENINST"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="FECHA_REG" query-param="FECHA_REG"/>
+			<with-param name="GEO_VERTICE" query-param="GEO_VERTICE"/>
+			<with-param name="GEO_LONGITUD" query-param="GEO_LONGITUD"/>
+			<with-param name="GEO_LATITUD" query-param="GEO_LATITUD"/>
+			<with-param name="GEO_ALTITUD" query-param="GEO_ALTITUD"/>
+			<with-param name="LECTURAFINALVIEJO" query-param="LECTURAFINALVIEJO"/>
+			<with-param name="DIAMETRO" query-param="DIAMETRO"/>
+			<with-param name="LECTURAPROMEDIO" query-param="LECTURAPROMEDIO"/>
+			<with-param name="PROMEDIO" query-param="PROMEDIO"/>
+			<with-param name="LONGITUD" query-param="LONGITUD"/>
+			<with-param name="MEDIDORNUEVO" query-param="MEDIDORNUEVO"/>
+			<with-param name="CLASIFICACION" query-param="CLASIFICACION"/>
+			<with-param name="NUMCERTIFICACION" query-param="NUMCERTIFICACION"/>
+			<with-param name="POSICION" query-param="POSICION"/>
+			<with-param name="RADIO" query-param="RADIO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="LOCALIZACION" query-param="LOCALIZACION"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorMarcasOrdenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO, MARCA  FROM SP_MEDIDOR ORDER BY CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","MARCA":"$MARCA"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="spmedidor/marcasorden">
+		<call-query href="getSpmedidorMarcasOrdenQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getSpmedidorConsultarCantidadDeMedidoresQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(CODIGO) CODIGO  FROM SP_MEDIDOR WHERE COMPANIA= :COMPANIA AND CODIGO= :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/consultarcantidaddemedidores">
+		<call-query href="getSpmedidorConsultarCantidadDeMedidoresQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSpmedidor" keyColumns="COMPANIA,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_MEDIDOR (COMPANIA, ANO, CICLO, CLASE, CLASIFICACION, CODIGO, CODIGORUTA, CONSECUTIVO, CREATED_BY, DATE_CREATED, DIAMETRO, DIGITOS, ELEMCAMBIO, ESTADO, FECHACOMPRA, FECHAINST, FECHA_REG, GEO_ALTITUD, GEO_LATITUD, GEO_LONGITUD, GEO_VERTICE, LECTACTUAL, LECTMEDANT, LECTURAFINALVIEJO, LECTURAINICIAL, LECTURAPROMEDIO, LOCALIZACION, LONGITUD, MARCA, MEDIDORNUEVO, NOORDENINST, NUMCERTIFICACION, NUMFACTURA, PERIODO, POSICION, PROMEDIO, RADIO, TIPO) VALUES (:COMPANIA, :ANO, :CICLO, :CLASE, :CLASIFICACION, :CODIGO, :CODIGORUTA, :CONSECUTIVO, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :DIAMETRO, :DIGITOS, :ELEMCAMBIO, :ESTADO, TO_DATE(:FECHACOMPRA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHAINST,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHA_REG,'DD/MM/YYYY HH24:MI:SS'), :GEO_ALTITUD, :GEO_LATITUD, :GEO_LONGITUD, :GEO_VERTICE, :LECTACTUAL, :LECTMEDANT, :LECTURAFINALVIEJO, :LECTURAINICIAL, :LECTURAPROMEDIO, :LOCALIZACION, :LONGITUD, :MARCA, :MEDIDORNUEVO, :NOORDENINST, :NUMCERTIFICACION, :NUMFACTURA, :PERIODO, :POSICION, :PROMEDIO, :RADIO, :TIPO)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="" name="ANO" sqlType="STRING"/>
+		<param defaultValue="" name="CICLO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param defaultValue="" name="CLASIFICACION" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGORUTA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param defaultValue="" name="DIAMETRO" sqlType="STRING"/>
+		<param name="DIGITOS" sqlType="STRING"/>
+		<param defaultValue="" name="ELEMCAMBIO" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHACOMPRA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAINST" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_REG" sqlType="STRING"/>
+		<param defaultValue="0" name="GEO_ALTITUD" sqlType="STRING"/>
+		<param defaultValue="0" name="GEO_LATITUD" sqlType="STRING"/>
+		<param defaultValue="0" name="GEO_LONGITUD" sqlType="STRING"/>
+		<param defaultValue="0" name="GEO_VERTICE" sqlType="STRING"/>
+		<param defaultValue="0" name="LECTACTUAL" sqlType="STRING"/>
+		<param defaultValue="0" name="LECTMEDANT" sqlType="STRING"/>
+		<param defaultValue="0" name="LECTURAFINALVIEJO" sqlType="STRING"/>
+		<param defaultValue="0" name="LECTURAINICIAL" sqlType="STRING"/>
+		<param defaultValue="0" name="LECTURAPROMEDIO" sqlType="STRING"/>
+		<param name="LOCALIZACION" sqlType="STRING"/>
+		<param defaultValue="0" name="LONGITUD" sqlType="STRING"/>
+		<param defaultValue="" name="MARCA" sqlType="STRING"/>
+		<param defaultValue="" name="MEDIDORNUEVO" sqlType="STRING"/>
+		<param defaultValue="" name="NOORDENINST" sqlType="STRING"/>
+		<param defaultValue="" name="NUMCERTIFICACION" sqlType="STRING"/>
+		<param defaultValue="" name="NUMFACTURA" sqlType="STRING"/>
+		<param defaultValue="" name="PERIODO" sqlType="STRING"/>
+		<param defaultValue="" name="POSICION" sqlType="STRING"/>
+		<param defaultValue="0" name="PROMEDIO" sqlType="STRING"/>
+		<param defaultValue="0" name="RADIO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="spmedidor">
+		<call-query href="insertSpmedidor">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CLASIFICACION" query-param="CLASIFICACION"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="DIAMETRO" query-param="DIAMETRO"/>
+			<with-param name="DIGITOS" query-param="DIGITOS"/>
+			<with-param name="ELEMCAMBIO" query-param="ELEMCAMBIO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHACOMPRA" query-param="FECHACOMPRA"/>
+			<with-param name="FECHAINST" query-param="FECHAINST"/>
+			<with-param name="FECHA_REG" query-param="FECHA_REG"/>
+			<with-param name="GEO_ALTITUD" query-param="GEO_ALTITUD"/>
+			<with-param name="GEO_LATITUD" query-param="GEO_LATITUD"/>
+			<with-param name="GEO_LONGITUD" query-param="GEO_LONGITUD"/>
+			<with-param name="GEO_VERTICE" query-param="GEO_VERTICE"/>
+			<with-param name="LECTACTUAL" query-param="LECTACTUAL"/>
+			<with-param name="LECTMEDANT" query-param="LECTMEDANT"/>
+			<with-param name="LECTURAFINALVIEJO" query-param="LECTURAFINALVIEJO"/>
+			<with-param name="LECTURAINICIAL" query-param="LECTURAINICIAL"/>
+			<with-param name="LECTURAPROMEDIO" query-param="LECTURAPROMEDIO"/>
+			<with-param name="LOCALIZACION" query-param="LOCALIZACION"/>
+			<with-param name="LONGITUD" query-param="LONGITUD"/>
+			<with-param name="MARCA" query-param="MARCA"/>
+			<with-param name="MEDIDORNUEVO" query-param="MEDIDORNUEVO"/>
+			<with-param name="NOORDENINST" query-param="NOORDENINST"/>
+			<with-param name="NUMCERTIFICACION" query-param="NUMCERTIFICACION"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="POSICION" query-param="POSICION"/>
+			<with-param name="PROMEDIO" query-param="PROMEDIO"/>
+			<with-param name="RADIO" query-param="RADIO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSpmedidor" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SP_MEDIDOR WHERE SP_MEDIDOR.COMPANIA= :KEY_COMPANIA AND SP_MEDIDOR.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="spmedidor">
+		<call-query href="deleteSpmedidor">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_MEDIDOR.COMPANIA, SP_MEDIDOR.ANO, SP_MEDIDOR.CICLO, SP_MEDIDOR.CLASE, SP_MEDIDOR.CLASIFICACION, SP_MEDIDOR.CODIGO, SP_MEDIDOR.CODIGORUTA, SP_MEDIDOR.CONSECUTIVO, SP_MEDIDOR.CREATED_BY,(TO_CHAR(SP_MEDIDOR.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED,(TO_CHAR(SP_MEDIDOR.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, SP_MEDIDOR.DIAMETRO, SP_MEDIDOR.DIGITOS, SP_MEDIDOR.ELEMCAMBIO, CASE SP_MEDIDOR.ESTADO WHEN 'B' THEN 'Medidor en buen estado' WHEN 'M' THEN 'Medidor dañado' ELSE ' ' END ESTADOLABEL, SP_MEDIDOR.ESTADO,(TO_CHAR(SP_MEDIDOR.FECHACOMPRA,'DD/MM/YYYY HH24:MI:SS')) FECHACOMPRA,(TO_CHAR(SP_MEDIDOR.FECHAINST,'DD/MM/YYYY HH24:MI:SS')) FECHAINST,(TO_CHAR(SP_MEDIDOR.FECHA_REG,'DD/MM/YYYY HH24:MI:SS')) FECHA_REG, SP_MEDIDOR.GEO_ALTITUD, SP_MEDIDOR.GEO_LATITUD, SP_MEDIDOR.GEO_LONGITUD, SP_MEDIDOR.GEO_VERTICE, SP_MEDIDOR.LECTACTUAL, NVL(SP_MEDIDOR.LECTMEDANT,0) LECTMEDANT, SP_MEDIDOR.LECTURAFINALVIEJO, SP_MEDIDOR.LECTURAINICIAL, SP_MEDIDOR.LECTURAPROMEDIO, SP_MEDIDOR.LOCALIZACION, SP_MEDIDOR.LONGITUD, SP_MEDIDOR.MARCA, SP_MEDIDOR.MEDIDORNUEVO, SP_MEDIDOR.MODIFIED_BY, SP_MEDIDOR.NOORDENINST, SP_MEDIDOR.NUMCERTIFICACION, SP_MEDIDOR.NUMFACTURA, SP_MEDIDOR.PERIODO, SP_MEDIDOR.POSICION, SP_MEDIDOR.PROMEDIO, SP_MEDIDOR.RADIO, CASE SP_MEDIDOR.TIPO WHEN 'V' THEN 'Volumétrico' WHEN 'T' THEN 'Turbina' ELSE ' ' END TIPOLABEL, SP_MEDIDOR.TIPO, SP_USUARIO.CODIGOINTERNO  FROM SP_MEDIDOR LEFT JOIN SP_USUARIO ON SP_MEDIDOR.COMPANIA = SP_USUARIO.COMPANIA AND SP_MEDIDOR.CICLO = SP_USUARIO.CICLO AND SP_MEDIDOR.CODIGORUTA = SP_USUARIO.CODIGORUTA WHERE SP_MEDIDOR.COMPANIA = :COMPANIA AND SP_MEDIDOR.CICLO = TO_NUMBER(:CICLO) AND NVL(SP_MEDIDOR.CODIGORUTA,'-1') = :CODIGOINICIAL ORDER BY SP_MEDIDOR.CONSECUTIVO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN CODIGORUTA IS NULL THEN ' ' ELSE UPPER(CODIGORUTA) END)  LIKE UPPER( '%' || :CODIGORUTA || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%')  AND (CASE WHEN DIAMETRO IS NULL THEN ' ' ELSE UPPER(DIAMETRO) END)  LIKE UPPER( '%' || :DIAMETRO || '%')  AND (CASE WHEN DIGITOS IS NULL THEN ' ' ELSE UPPER(DIGITOS) END)  LIKE UPPER( '%' || :DIGITOS || '%')  AND (CASE WHEN ELEMCAMBIO IS NULL THEN ' ' ELSE UPPER(ELEMCAMBIO) END)  LIKE UPPER( '%' || :ELEMCAMBIO || '%')  AND (CASE WHEN ESTADOLABEL IS NULL THEN ' ' ELSE UPPER(ESTADOLABEL) END)  LIKE UPPER(:ESTADOLABEL || '%')  AND (CASE WHEN FECHACOMPRA IS NULL THEN ' ' ELSE UPPER(FECHACOMPRA) END)  LIKE UPPER( '%' || :FECHACOMPRA || '%')  AND (CASE WHEN FECHAINST IS NULL THEN ' ' ELSE UPPER(FECHAINST) END)  LIKE UPPER( '%' || :FECHAINST || '%')  AND (CASE WHEN FECHA_REG IS NULL THEN ' ' ELSE UPPER(FECHA_REG) END)  LIKE UPPER( '%' || :FECHA_REG || '%')  AND (CASE WHEN GEO_ALTITUD IS NULL THEN ' ' ELSE UPPER(GEO_ALTITUD) END)  LIKE UPPER( '%' || :GEO_ALTITUD || '%')  AND (CASE WHEN GEO_LATITUD IS NULL THEN ' ' ELSE UPPER(GEO_LATITUD) END)  LIKE UPPER( '%' || :GEO_LATITUD || '%')  AND (CASE WHEN GEO_LONGITUD IS NULL THEN ' ' ELSE UPPER(GEO_LONGITUD) END)  LIKE UPPER(:GEO_LONGITUD || '%')  AND (CASE WHEN GEO_VERTICE IS NULL THEN ' ' ELSE UPPER(GEO_VERTICE) END)  LIKE UPPER(:GEO_VERTICE || '%')  AND (CASE WHEN LECTACTUAL IS NULL THEN ' ' ELSE UPPER(LECTACTUAL) END)  LIKE UPPER( '%' || :LECTACTUAL || '%')  AND (CASE WHEN LECTURAFINALVIEJO IS NULL THEN ' ' ELSE UPPER(LECTURAFINALVIEJO) END)  LIKE UPPER( '%' || :LECTURAFINALVIEJO || '%')  AND (CASE WHEN LECTURAINICIAL IS NULL THEN ' ' ELSE UPPER(LECTURAINICIAL) END)  LIKE UPPER( '%' || :LECTURAINICIAL || '%')  AND (CASE WHEN LECTURAPROMEDIO IS NULL THEN ' ' ELSE UPPER(LECTURAPROMEDIO) END)  LIKE UPPER( '%' || :LECTURAPROMEDIO || '%')  AND (CASE WHEN MARCA IS NULL THEN ' ' ELSE UPPER(MARCA) END)  LIKE UPPER(:MARCA || '%')  AND (CASE WHEN MEDIDORNUEVO IS NULL THEN ' ' ELSE UPPER(MEDIDORNUEVO) END)  LIKE UPPER(:MEDIDORNUEVO || '%')  AND (CASE WHEN NUMFACTURA IS NULL THEN ' ' ELSE UPPER(NUMFACTURA) END)  LIKE UPPER(:NUMFACTURA || '%')  AND (CASE WHEN PROMEDIO IS NULL THEN ' ' ELSE UPPER(PROMEDIO) END)  LIKE UPPER(:PROMEDIO || '%')  AND (CASE WHEN TIPOLABEL IS NULL THEN ' ' ELSE UPPER(TIPOLABEL) END)  LIKE UPPER(:TIPOLABEL || '%')  AND (CASE WHEN CODIGOINTERNO IS NULL THEN ' ' ELSE UPPER(CODIGOINTERNO) END)  LIKE UPPER( '%' || :CODIGOINTERNO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","CICLO":"$CICLO(type:integer)","CLASE":"$CLASE(type:integer)","CLASIFICACION":"$CLASIFICACION","CODIGO":"$CODIGO","CODIGORUTA":"$CODIGORUTA","CONSECUTIVO":"$CONSECUTIVO","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","DATE_MODIFIED":"$DATE_MODIFIED","DIAMETRO":"$DIAMETRO","DIGITOS":"$DIGITOS(type:integer)","ELEMCAMBIO":"$ELEMCAMBIO","ESTADOLABEL":"$ESTADOLABEL","ESTADO":"$ESTADO","FECHACOMPRA":"$FECHACOMPRA","FECHAINST":"$FECHAINST","FECHA_REG":"$FECHA_REG","GEO_ALTITUD":"$GEO_ALTITUD","GEO_LATITUD":"$GEO_LATITUD","GEO_LONGITUD":"$GEO_LONGITUD","GEO_VERTICE":"$GEO_VERTICE","LECTACTUAL":"$LECTACTUAL","LECTMEDANT":"$LECTMEDANT(type:integer)","LECTURAFINALVIEJO":"$LECTURAFINALVIEJO","LECTURAINICIAL":"$LECTURAINICIAL","LECTURAPROMEDIO":"$LECTURAPROMEDIO","LOCALIZACION":"$LOCALIZACION(type:integer)","LONGITUD":"$LONGITUD","MARCA":"$MARCA","MEDIDORNUEVO":"$MEDIDORNUEVO","MODIFIED_BY":"$MODIFIED_BY","NOORDENINST":"$NOORDENINST","NUMCERTIFICACION":"$NUMCERTIFICACION","NUMFACTURA":"$NUMFACTURA","PERIODO":"$PERIODO","POSICION":"$POSICION","PROMEDIO":"$PROMEDIO","RADIO":"$RADIO","TIPOLABEL":"$TIPOLABEL","TIPO":"$TIPO","CODIGOINTERNO":"$CODIGOINTERNO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="DIAMETRO" sqlType="STRING"/>
+		<param name="DIGITOS" sqlType="STRING"/>
+		<param name="ELEMCAMBIO" sqlType="STRING"/>
+		<param name="ESTADOLABEL" sqlType="STRING"/>
+		<param name="FECHACOMPRA" sqlType="STRING"/>
+		<param name="FECHAINST" sqlType="STRING"/>
+		<param name="FECHA_REG" sqlType="STRING"/>
+		<param name="GEO_ALTITUD" sqlType="STRING"/>
+		<param name="GEO_LATITUD" sqlType="STRING"/>
+		<param name="GEO_LONGITUD" sqlType="STRING"/>
+		<param name="GEO_VERTICE" sqlType="STRING"/>
+		<param name="LECTACTUAL" sqlType="STRING"/>
+		<param name="LECTURAFINALVIEJO" sqlType="STRING"/>
+		<param name="LECTURAINICIAL" sqlType="STRING"/>
+		<param name="LECTURAPROMEDIO" sqlType="STRING"/>
+		<param name="MARCA" sqlType="STRING"/>
+		<param name="MEDIDORNUEVO" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+		<param name="PROMEDIO" sqlType="STRING"/>
+		<param name="TIPOLABEL" sqlType="STRING"/>
+		<param name="CODIGOINTERNO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spmedidor">
+		<call-query href="getSpmedidorPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="DIAMETRO" query-param="DIAMETRO"/>
+			<with-param name="DIGITOS" query-param="DIGITOS"/>
+			<with-param name="ELEMCAMBIO" query-param="ELEMCAMBIO"/>
+			<with-param name="ESTADOLABEL" query-param="ESTADOLABEL"/>
+			<with-param name="FECHACOMPRA" query-param="FECHACOMPRA"/>
+			<with-param name="FECHAINST" query-param="FECHAINST"/>
+			<with-param name="FECHA_REG" query-param="FECHA_REG"/>
+			<with-param name="GEO_ALTITUD" query-param="GEO_ALTITUD"/>
+			<with-param name="GEO_LATITUD" query-param="GEO_LATITUD"/>
+			<with-param name="GEO_LONGITUD" query-param="GEO_LONGITUD"/>
+			<with-param name="GEO_VERTICE" query-param="GEO_VERTICE"/>
+			<with-param name="LECTACTUAL" query-param="LECTACTUAL"/>
+			<with-param name="LECTURAFINALVIEJO" query-param="LECTURAFINALVIEJO"/>
+			<with-param name="LECTURAINICIAL" query-param="LECTURAINICIAL"/>
+			<with-param name="LECTURAPROMEDIO" query-param="LECTURAPROMEDIO"/>
+			<with-param name="MARCA" query-param="MARCA"/>
+			<with-param name="MEDIDORNUEVO" query-param="MEDIDORNUEVO"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="PROMEDIO" query-param="PROMEDIO"/>
+			<with-param name="TIPOLABEL" query-param="TIPOLABEL"/>
+			<with-param name="CODIGOINTERNO" query-param="CODIGOINTERNO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_MEDIDOR.COMPANIA, SP_MEDIDOR.ANO, SP_MEDIDOR.CICLO, SP_MEDIDOR.CLASE, SP_MEDIDOR.CLASIFICACION, SP_MEDIDOR.CODIGO, SP_MEDIDOR.CODIGORUTA, SP_MEDIDOR.CONSECUTIVO, SP_MEDIDOR.CREATED_BY,(TO_CHAR(SP_MEDIDOR.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED,(TO_CHAR(SP_MEDIDOR.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, SP_MEDIDOR.DIAMETRO, SP_MEDIDOR.DIGITOS, SP_MEDIDOR.ELEMCAMBIO, CASE SP_MEDIDOR.ESTADO WHEN 'B' THEN 'Medidor en buen estado' WHEN 'M' THEN 'Medidor dañado' ELSE ' ' END ESTADOLABEL, SP_MEDIDOR.ESTADO,(TO_CHAR(SP_MEDIDOR.FECHACOMPRA,'DD/MM/YYYY HH24:MI:SS')) FECHACOMPRA,(TO_CHAR(SP_MEDIDOR.FECHAINST,'DD/MM/YYYY HH24:MI:SS')) FECHAINST,(TO_CHAR(SP_MEDIDOR.FECHA_REG,'DD/MM/YYYY HH24:MI:SS')) FECHA_REG, SP_MEDIDOR.GEO_ALTITUD, SP_MEDIDOR.GEO_LATITUD, SP_MEDIDOR.GEO_LONGITUD, SP_MEDIDOR.GEO_VERTICE, SP_MEDIDOR.LECTACTUAL, NVL(SP_MEDIDOR.LECTMEDANT,0) LECTMEDANT, SP_MEDIDOR.LECTURAFINALVIEJO, SP_MEDIDOR.LECTURAINICIAL, SP_MEDIDOR.LECTURAPROMEDIO, SP_MEDIDOR.LOCALIZACION, SP_MEDIDOR.LONGITUD, SP_MEDIDOR.MARCA, SP_MEDIDOR.MEDIDORNUEVO, SP_MEDIDOR.MODIFIED_BY, SP_MEDIDOR.NOORDENINST, SP_MEDIDOR.NUMCERTIFICACION, SP_MEDIDOR.NUMFACTURA, SP_MEDIDOR.PERIODO, SP_MEDIDOR.POSICION, SP_MEDIDOR.PROMEDIO, SP_MEDIDOR.RADIO, CASE SP_MEDIDOR.TIPO WHEN 'V' THEN 'Volumétrico' WHEN 'T' THEN 'Turbina' ELSE ' ' END TIPOLABEL, SP_MEDIDOR.TIPO, SP_USUARIO.CODIGOINTERNO  FROM SP_MEDIDOR LEFT JOIN SP_USUARIO ON SP_MEDIDOR.COMPANIA = SP_USUARIO.COMPANIA AND SP_MEDIDOR.CICLO = SP_USUARIO.CICLO AND SP_MEDIDOR.CODIGORUTA = SP_USUARIO.CODIGORUTA WHERE SP_MEDIDOR.COMPANIA = :COMPANIA AND SP_MEDIDOR.CICLO = TO_NUMBER(:CICLO) AND NVL(SP_MEDIDOR.CODIGORUTA,'-1') = :CODIGOINICIAL ORDER BY SP_MEDIDOR.CONSECUTIVO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN CODIGORUTA IS NULL THEN ' ' ELSE UPPER(CODIGORUTA) END)  LIKE UPPER( '%' || :CODIGORUTA || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%')  AND (CASE WHEN DIAMETRO IS NULL THEN ' ' ELSE UPPER(DIAMETRO) END)  LIKE UPPER( '%' || :DIAMETRO || '%')  AND (CASE WHEN DIGITOS IS NULL THEN ' ' ELSE UPPER(DIGITOS) END)  LIKE UPPER( '%' || :DIGITOS || '%')  AND (CASE WHEN ELEMCAMBIO IS NULL THEN ' ' ELSE UPPER(ELEMCAMBIO) END)  LIKE UPPER( '%' || :ELEMCAMBIO || '%')  AND (CASE WHEN ESTADOLABEL IS NULL THEN ' ' ELSE UPPER(ESTADOLABEL) END)  LIKE UPPER(:ESTADOLABEL || '%')  AND (CASE WHEN FECHACOMPRA IS NULL THEN ' ' ELSE UPPER(FECHACOMPRA) END)  LIKE UPPER( '%' || :FECHACOMPRA || '%')  AND (CASE WHEN FECHAINST IS NULL THEN ' ' ELSE UPPER(FECHAINST) END)  LIKE UPPER( '%' || :FECHAINST || '%')  AND (CASE WHEN FECHA_REG IS NULL THEN ' ' ELSE UPPER(FECHA_REG) END)  LIKE UPPER( '%' || :FECHA_REG || '%')  AND (CASE WHEN GEO_ALTITUD IS NULL THEN ' ' ELSE UPPER(GEO_ALTITUD) END)  LIKE UPPER( '%' || :GEO_ALTITUD || '%')  AND (CASE WHEN GEO_LATITUD IS NULL THEN ' ' ELSE UPPER(GEO_LATITUD) END)  LIKE UPPER( '%' || :GEO_LATITUD || '%')  AND (CASE WHEN GEO_LONGITUD IS NULL THEN ' ' ELSE UPPER(GEO_LONGITUD) END)  LIKE UPPER(:GEO_LONGITUD || '%')  AND (CASE WHEN GEO_VERTICE IS NULL THEN ' ' ELSE UPPER(GEO_VERTICE) END)  LIKE UPPER(:GEO_VERTICE || '%')  AND (CASE WHEN LECTACTUAL IS NULL THEN ' ' ELSE UPPER(LECTACTUAL) END)  LIKE UPPER( '%' || :LECTACTUAL || '%')  AND (CASE WHEN LECTURAFINALVIEJO IS NULL THEN ' ' ELSE UPPER(LECTURAFINALVIEJO) END)  LIKE UPPER( '%' || :LECTURAFINALVIEJO || '%')  AND (CASE WHEN LECTURAINICIAL IS NULL THEN ' ' ELSE UPPER(LECTURAINICIAL) END)  LIKE UPPER( '%' || :LECTURAINICIAL || '%')  AND (CASE WHEN LECTURAPROMEDIO IS NULL THEN ' ' ELSE UPPER(LECTURAPROMEDIO) END)  LIKE UPPER( '%' || :LECTURAPROMEDIO || '%')  AND (CASE WHEN MARCA IS NULL THEN ' ' ELSE UPPER(MARCA) END)  LIKE UPPER(:MARCA || '%')  AND (CASE WHEN MEDIDORNUEVO IS NULL THEN ' ' ELSE UPPER(MEDIDORNUEVO) END)  LIKE UPPER(:MEDIDORNUEVO || '%')  AND (CASE WHEN NUMFACTURA IS NULL THEN ' ' ELSE UPPER(NUMFACTURA) END)  LIKE UPPER(:NUMFACTURA || '%')  AND (CASE WHEN PROMEDIO IS NULL THEN ' ' ELSE UPPER(PROMEDIO) END)  LIKE UPPER(:PROMEDIO || '%')  AND (CASE WHEN TIPOLABEL IS NULL THEN ' ' ELSE UPPER(TIPOLABEL) END)  LIKE UPPER(:TIPOLABEL || '%')  AND (CASE WHEN CODIGOINTERNO IS NULL THEN ' ' ELSE UPPER(CODIGOINTERNO) END)  LIKE UPPER( '%' || :CODIGOINTERNO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="DIAMETRO" sqlType="STRING"/>
+		<param name="DIGITOS" sqlType="STRING"/>
+		<param name="ELEMCAMBIO" sqlType="STRING"/>
+		<param name="ESTADOLABEL" sqlType="STRING"/>
+		<param name="FECHACOMPRA" sqlType="STRING"/>
+		<param name="FECHAINST" sqlType="STRING"/>
+		<param name="FECHA_REG" sqlType="STRING"/>
+		<param name="GEO_ALTITUD" sqlType="STRING"/>
+		<param name="GEO_LATITUD" sqlType="STRING"/>
+		<param name="GEO_LONGITUD" sqlType="STRING"/>
+		<param name="GEO_VERTICE" sqlType="STRING"/>
+		<param name="LECTACTUAL" sqlType="STRING"/>
+		<param name="LECTURAFINALVIEJO" sqlType="STRING"/>
+		<param name="LECTURAINICIAL" sqlType="STRING"/>
+		<param name="LECTURAPROMEDIO" sqlType="STRING"/>
+		<param name="MARCA" sqlType="STRING"/>
+		<param name="MEDIDORNUEVO" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+		<param name="PROMEDIO" sqlType="STRING"/>
+		<param name="TIPOLABEL" sqlType="STRING"/>
+		<param name="CODIGOINTERNO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/numero">
+		<call-query href="getSpmedidorNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="DIAMETRO" query-param="DIAMETRO"/>
+			<with-param name="DIGITOS" query-param="DIGITOS"/>
+			<with-param name="ELEMCAMBIO" query-param="ELEMCAMBIO"/>
+			<with-param name="ESTADOLABEL" query-param="ESTADOLABEL"/>
+			<with-param name="FECHACOMPRA" query-param="FECHACOMPRA"/>
+			<with-param name="FECHAINST" query-param="FECHAINST"/>
+			<with-param name="FECHA_REG" query-param="FECHA_REG"/>
+			<with-param name="GEO_ALTITUD" query-param="GEO_ALTITUD"/>
+			<with-param name="GEO_LATITUD" query-param="GEO_LATITUD"/>
+			<with-param name="GEO_LONGITUD" query-param="GEO_LONGITUD"/>
+			<with-param name="GEO_VERTICE" query-param="GEO_VERTICE"/>
+			<with-param name="LECTACTUAL" query-param="LECTACTUAL"/>
+			<with-param name="LECTURAFINALVIEJO" query-param="LECTURAFINALVIEJO"/>
+			<with-param name="LECTURAINICIAL" query-param="LECTURAINICIAL"/>
+			<with-param name="LECTURAPROMEDIO" query-param="LECTURAPROMEDIO"/>
+			<with-param name="MARCA" query-param="MARCA"/>
+			<with-param name="MEDIDORNUEVO" query-param="MEDIDORNUEVO"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="PROMEDIO" query-param="PROMEDIO"/>
+			<with-param name="TIPOLABEL" query-param="TIPOLABEL"/>
+			<with-param name="CODIGOINTERNO" query-param="CODIGOINTERNO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpmedidor" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_MEDIDOR SET COMPANIA=:COMPANIA, ANO=:ANO, CICLO=:CICLO, CLASE=:CLASE, CLASIFICACION=:CLASIFICACION, CODIGO=:CODIGO, CODIGORUTA=:CODIGORUTA, CONSECUTIVO=:CONSECUTIVO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), DIAMETRO=:DIAMETRO, DIGITOS=:DIGITOS, ELEMCAMBIO=:ELEMCAMBIO, ESTADO=:ESTADO, FECHACOMPRA=TO_DATE(:FECHACOMPRA,'DD/MM/YYYY HH24:MI:SS'), FECHAINST=TO_DATE(:FECHAINST,'DD/MM/YYYY HH24:MI:SS'), FECHA_REG=TO_DATE(:FECHA_REG,'DD/MM/YYYY HH24:MI:SS'), GEO_ALTITUD=:GEO_ALTITUD, GEO_LATITUD=:GEO_LATITUD, GEO_LONGITUD=:GEO_LONGITUD, GEO_VERTICE=:GEO_VERTICE, LECTACTUAL=:LECTACTUAL, LECTMEDANT=:LECTMEDANT, LECTURAFINALVIEJO=:LECTURAFINALVIEJO, LECTURAINICIAL=:LECTURAINICIAL, LECTURAPROMEDIO=:LECTURAPROMEDIO, LOCALIZACION=:LOCALIZACION, LONGITUD=:LONGITUD, MARCA=:MARCA, MEDIDORNUEVO=:MEDIDORNUEVO, MODIFIED_BY=:MODIFIED_BY, NOORDENINST=:NOORDENINST, NUMCERTIFICACION=:NUMCERTIFICACION, NUMFACTURA=:NUMFACTURA, PERIODO=:PERIODO, POSICION=:POSICION, PROMEDIO=:PROMEDIO, RADIO=:RADIO, TIPO=:TIPO WHERE SP_MEDIDOR.COMPANIA= :KEY_COMPANIA AND SP_MEDIDOR.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CLASIFICACION" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="DIAMETRO" sqlType="STRING"/>
+		<param name="DIGITOS" sqlType="STRING"/>
+		<param name="ELEMCAMBIO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="FECHACOMPRA" sqlType="STRING"/>
+		<param name="FECHAINST" sqlType="STRING"/>
+		<param name="FECHA_REG" sqlType="STRING"/>
+		<param name="GEO_ALTITUD" sqlType="STRING"/>
+		<param name="GEO_LATITUD" sqlType="STRING"/>
+		<param name="GEO_LONGITUD" sqlType="STRING"/>
+		<param name="GEO_VERTICE" sqlType="STRING"/>
+		<param name="LECTACTUAL" sqlType="STRING"/>
+		<param name="LECTMEDANT" sqlType="STRING"/>
+		<param name="LECTURAFINALVIEJO" sqlType="STRING"/>
+		<param name="LECTURAINICIAL" sqlType="STRING"/>
+		<param name="LECTURAPROMEDIO" sqlType="STRING"/>
+		<param name="LOCALIZACION" sqlType="STRING"/>
+		<param name="LONGITUD" sqlType="STRING"/>
+		<param name="MARCA" sqlType="STRING"/>
+		<param name="MEDIDORNUEVO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="NOORDENINST" sqlType="STRING"/>
+		<param name="NUMCERTIFICACION" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="POSICION" sqlType="STRING"/>
+		<param name="PROMEDIO" sqlType="STRING"/>
+		<param name="RADIO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spmedidor">
+		<call-query href="updateSpmedidor">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CLASIFICACION" query-param="CLASIFICACION"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="DIAMETRO" query-param="DIAMETRO"/>
+			<with-param name="DIGITOS" query-param="DIGITOS"/>
+			<with-param name="ELEMCAMBIO" query-param="ELEMCAMBIO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHACOMPRA" query-param="FECHACOMPRA"/>
+			<with-param name="FECHAINST" query-param="FECHAINST"/>
+			<with-param name="FECHA_REG" query-param="FECHA_REG"/>
+			<with-param name="GEO_ALTITUD" query-param="GEO_ALTITUD"/>
+			<with-param name="GEO_LATITUD" query-param="GEO_LATITUD"/>
+			<with-param name="GEO_LONGITUD" query-param="GEO_LONGITUD"/>
+			<with-param name="GEO_VERTICE" query-param="GEO_VERTICE"/>
+			<with-param name="LECTACTUAL" query-param="LECTACTUAL"/>
+			<with-param name="LECTMEDANT" query-param="LECTMEDANT"/>
+			<with-param name="LECTURAFINALVIEJO" query-param="LECTURAFINALVIEJO"/>
+			<with-param name="LECTURAINICIAL" query-param="LECTURAINICIAL"/>
+			<with-param name="LECTURAPROMEDIO" query-param="LECTURAPROMEDIO"/>
+			<with-param name="LOCALIZACION" query-param="LOCALIZACION"/>
+			<with-param name="LONGITUD" query-param="LONGITUD"/>
+			<with-param name="MARCA" query-param="MARCA"/>
+			<with-param name="MEDIDORNUEVO" query-param="MEDIDORNUEVO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="NOORDENINST" query-param="NOORDENINST"/>
+			<with-param name="NUMCERTIFICACION" query-param="NUMCERTIFICACION"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="POSICION" query-param="POSICION"/>
+			<with-param name="PROMEDIO" query-param="PROMEDIO"/>
+			<with-param name="RADIO" query-param="RADIO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorExisteQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(1) TOTAL  FROM SP_MEDIDOR WHERE CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/existe">
+		<call-query href="getSpmedidorExisteQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorMedidorPorCodigorutaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_USUARIO.CODIGORUTA, SP_MEDIDOR.CODIGO COD  FROM SP_MEDIDOR INNER JOIN SP_USUARIO ON (SP_MEDIDOR.COMPANIA = SP_USUARIO.COMPANIA AND SP_MEDIDOR.CODIGORUTA = SP_USUARIO.CODIGORUTA AND SP_MEDIDOR.CICLO = SP_USUARIO.CICLO) WHERE SP_USUARIO.COMPANIA = :COMPANIA AND SP_USUARIO.CICLO = :CICLO AND SP_USUARIO.CODIGORUTA = :CODIGORUTA AND SP_MEDIDOR.CODIGO &lt;&gt; :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGORUTA":"$CODIGORUTA","COD":"$COD"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/medidorporcodigoruta">
+		<call-query href="getSpmedidorMedidorPorCodigorutaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorMaximoConsecutivoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NVL(MAX(CONSECUTIVO),0)+1 CONSECUTIVO  FROM SP_MEDIDOR WHERE COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/maximoconsecutivo">
+		<call-query href="getSpmedidorMaximoConsecutivoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorExistePorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO  FROM SP_MEDIDOR WHERE COMPANIA= :COMPANIA AND CODIGO= :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/existeporcompania">
+		<call-query href="getSpmedidorExistePorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpmedidorSinMedidor" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_MEDIDOR SET ESTADO =:ESTADO, CICLO = :CICLO, CODIGORUTA = :CODIGORUTA,MARCA = :MARCA, DATE_MODIFIED= SYSDATE, MODIFIED_BY=:MODIFIED_BY WHERE CODIGO=:CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="MARCA" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spmedidor/sinmedidor">
+		<call-query href="updateSpmedidorSinMedidor">
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="MARCA" query-param="MARCA"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSpmedidorSinMedidor" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_MEDIDOR ( COMPANIA, CLASE, LOCALIZACION, CODIGO, MARCA, ESTADO, CICLO, CODIGORUTA, CONSECUTIVO, DIGITOS, DATE_CREATED,CREATED_BY)   VALUES (:COMPANIA,:CLASE, :LOCALIZACION,:CODIGO, :MARCA, :ESTADO, :CICLO, :CODIGORUTA, :CONSECUTIVO, :DIGITOS, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'),:CREATED_BY)</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="LOCALIZACION" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="MARCA" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="CICLO" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGORUTA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="DIGITOS" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="spmedidor/sinmedidor">
+		<call-query href="insertSpmedidorSinMedidor">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="LOCALIZACION" query-param="LOCALIZACION"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MARCA" query-param="MARCA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="DIGITOS" query-param="DIGITOS"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorPagCodigoMarcaEstadoPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, MARCA, DIGITOS, ESTADO ESTADO_MEDIDOR  FROM SP_MEDIDOR WHERE COMPANIA = :COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN MARCA IS NULL THEN ' ' ELSE UPPER(MARCA) END)  LIKE UPPER( '%' || :MARCA || '%')  AND (CASE WHEN ESTADO_MEDIDOR IS NULL THEN ' ' ELSE UPPER(ESTADO_MEDIDOR) END)  LIKE UPPER( '%' || :ESTADO_MEDIDOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","MARCA":"$MARCA","DIGITOS":"$DIGITOS(type:integer)","ESTADO_MEDIDOR":"$ESTADO_MEDIDOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="MARCA" sqlType="STRING"/>
+		<param name="ESTADO_MEDIDOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/codigomarcaestadoporcompania/pag">
+		<call-query href="getSpmedidorPagCodigoMarcaEstadoPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MARCA" query-param="MARCA"/>
+			<with-param name="ESTADO_MEDIDOR" query-param="ESTADO_MEDIDOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorNumCodigoMarcaEstadoPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, MARCA, DIGITOS, ESTADO ESTADO_MEDIDOR  FROM SP_MEDIDOR WHERE COMPANIA = :COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN MARCA IS NULL THEN ' ' ELSE UPPER(MARCA) END)  LIKE UPPER( '%' || :MARCA || '%')  AND (CASE WHEN ESTADO_MEDIDOR IS NULL THEN ' ' ELSE UPPER(ESTADO_MEDIDOR) END)  LIKE UPPER( '%' || :ESTADO_MEDIDOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="MARCA" sqlType="STRING"/>
+		<param name="ESTADO_MEDIDOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/codigomarcaestadoporcompania/num">
+		<call-query href="getSpmedidorNumCodigoMarcaEstadoPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MARCA" query-param="MARCA"/>
+			<with-param name="ESTADO_MEDIDOR" query-param="ESTADO_MEDIDOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorPagPorcodigorutanullQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, MARCA, CONSECUTIVO  FROM SP_MEDIDOR MEDIDOR WHERE MEDIDOR.COMPANIA = :COMPANIA AND MEDIDOR.CODIGORUTA IS NULL AND MEDIDOR.CLASIFICACION = 'P') WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN MARCA IS NULL THEN ' ' ELSE UPPER(MARCA) END)  LIKE UPPER( '%' || :MARCA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","MARCA":"$MARCA","CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="MARCA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/porcodigorutanull/pag">
+		<call-query href="getSpmedidorPagPorcodigorutanullQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MARCA" query-param="MARCA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmedidorNumPorcodigorutanullQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, MARCA, CONSECUTIVO  FROM SP_MEDIDOR MEDIDOR WHERE MEDIDOR.COMPANIA = :COMPANIA AND MEDIDOR.CODIGORUTA IS NULL AND MEDIDOR.CLASIFICACION = 'P') WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN MARCA IS NULL THEN ' ' ELSE UPPER(MARCA) END)  LIKE UPPER( '%' || :MARCA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="MARCA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmedidor/porcodigorutanull/num">
+		<call-query href="getSpmedidorNumPorcodigorutanullQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MARCA" query-param="MARCA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpmedidorEstadoDaniado" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_MEDIDOR SET ESTADO      = :ESTADO, DATE_MODIFIED= SYSDATE,  MODIFIED_BY=:MODIFIED_BY  WHERE COMPANIA  = :COMPANIA AND CONSECUTIVO = :CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spmedidor/estadodaniado">
+		<call-query href="updateSpmedidorEstadoDaniado">
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+
+</data>

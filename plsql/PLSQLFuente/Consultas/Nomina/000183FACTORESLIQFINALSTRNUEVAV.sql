@@ -1,0 +1,205 @@
+SELECT 
+    PERSONAL_HISTORICO.COMPANIA,
+    PERSONAL_HISTORICO.ID_DE_PROCESO,
+    PERSONAL_HISTORICO.ANO,
+    PERSONAL_HISTORICO.MES,
+    PERSONAL_HISTORICO.PERIODO,
+    PERSONAL_HISTORICO.NOMBRECOMPLETO, 
+    PERSONAL_HISTORICO.NUMERO_DCTO, 
+    PERSONAL_HISTORICO.NOMBRE_DE_CARGO,
+    PERSONAL_HISTORICO.NOMBRE_FORMANOMBRAMIENTO,
+    PERSONAL_HISTORICO.ID_DE_EMPLEADO,
+    CAUSARETIRO.NOMBRE CAUSA_RETIRO,
+    PERSONAL_HISTORICO.NOMBRE_FONDOCESANTIAS,
+    PERSONAL_HISTORICO.NOMBRE_FONDOPENSION,
+    PERSONAL_HISTORICO.NOMBRE_FONDOSALUD,
+    PERSONAL_HISTORICO.NOMBRE_CENTRO_DE_COSTO,
+    SUM(CASE WHEN 
+      HISTORICOS.ID_DE_CONCEPTO = 1
+    THEN 
+      HISTORICOS.VALOR
+    ELSE
+      0
+    END)  SBM, 
+    PERSONAL_HISTORICO.FECHATERCONTRATO,
+    PERSONAL_HISTORICO.FECHA_DE_INGRESO,
+    CASE WHEN (SUM(CASE WHEN 
+                  HISTORICOS.ID_DE_CONCEPTO = 912
+                THEN 
+                  HISTORICOS.VALOR
+                ELSE
+                  0
+                END)) > 0 THEN TRUNC(SUM(CASE WHEN 
+                                            HISTORICOS.ID_DE_CONCEPTO = 912
+                                          THEN 
+                                            HISTORICOS.VALOR
+                                          ELSE
+                                            0
+                                          END)/30) ELSE 0 END   LIC_MES,
+    CASE WHEN (SUM(CASE WHEN 
+                  HISTORICOS.ID_DE_CONCEPTO = 912
+                THEN 
+                  HISTORICOS.VALOR
+                ELSE
+                  0
+                END)) > 0 THEN SUM(CASE WHEN 
+                                            HISTORICOS.ID_DE_CONCEPTO = 912
+                                          THEN 
+                                            HISTORICOS.VALOR
+                                          ELSE
+                                            0
+                                          END) - TRUNC(SUM(CASE WHEN 
+                                            HISTORICOS.ID_DE_CONCEPTO = 912
+                                          THEN 
+                                            HISTORICOS.VALOR
+                                          ELSE
+                                            0
+                                          END)/30)*30 ELSE 0 END   LIC_DIA,                                      
+    SUBSTR(PCK_SYSMAN_UTL.FC_EDAD(PERSONAL_HISTORICO.FECHA_DE_INGRESO + SUM(CASE WHEN 
+      HISTORICOS.ID_DE_CONCEPTO = 912
+    THEN 
+      HISTORICOS.VALOR
+    ELSE
+      0
+    END), PERSONAL_HISTORICO.FECHATERCONTRATO, 1),1,2)  ANO_TSER,
+    SUBSTR(PCK_SYSMAN_UTL.FC_EDAD(PERSONAL_HISTORICO.FECHA_DE_INGRESO + SUM(CASE WHEN 
+      HISTORICOS.ID_DE_CONCEPTO = 912
+    THEN 
+      HISTORICOS.VALOR
+    ELSE
+      0
+    END), PERSONAL_HISTORICO.FECHATERCONTRATO, 1),4,2)  MES_TSERV,
+    SUBSTR(PCK_SYSMAN_UTL.FC_EDAD(PERSONAL_HISTORICO.FECHA_DE_INGRESO + SUM(CASE WHEN 
+      HISTORICOS.ID_DE_CONCEPTO = 912
+    THEN 
+      HISTORICOS.VALOR
+    ELSE
+      0
+    END), PERSONAL_HISTORICO.FECHATERCONTRATO, 1),7,2)  DIA_TSERV,
+    SUM(CASE WHEN 
+      HISTORICOS.ID_DE_CONCEPTO = 973
+    THEN 
+      HISTORICOS.VALOR
+    ELSE
+      0
+    END) DIASDURACIONCONTRATO, 
+    SUM(CASE WHEN 
+      HISTORICOS.ID_DE_CONCEPTO = 910
+    THEN 
+      HISTORICOS.VALOR
+    ELSE
+      0
+    END) DIASC,
+    SUM(CASE WHEN 
+      HISTORICOS.ID_DE_CONCEPTO = 969
+    THEN 
+      HISTORICOS.VALOR
+    ELSE
+      0
+    END) PROMCES,
+    CASE WHEN SUM(CASE WHEN 
+                      HISTORICOS.ID_DE_CONCEPTO = 160
+                    THEN 
+                      HISTORICOS.VALOR
+                    ELSE
+                      0
+                    END) > 0 THEN SUM(CASE WHEN 
+                                        HISTORICOS.ID_DE_CONCEPTO = 985
+                                      THEN 
+                                        HISTORICOS.VALOR
+                                      ELSE
+                                        0
+                                      END) ELSE 0 END C160,
+    SUM(CASE WHEN 
+      HISTORICOS.ID_DE_CONCEPTO = 985
+    THEN 
+      HISTORICOS.VALOR
+    ELSE
+      0
+    END) C985,
+    SUM(CASE WHEN 
+      HISTORICOS.ID_DE_CONCEPTO = 987
+    THEN 
+      HISTORICOS.VALOR
+    ELSE
+      0
+    END) C987,
+    SUM(CASE WHEN 
+      HISTORICOS.ID_DE_CONCEPTO = 988
+    THEN 
+      HISTORICOS.VALOR
+    ELSE
+      0
+    END) C988,
+    SUM(CASE WHEN 
+      HISTORICOS.ID_DE_CONCEPTO = 112
+    THEN 
+      HISTORICOS.VALOR
+    ELSE
+      0
+    END) C112,
+    CASE WHEN SUM(CASE WHEN 
+                    HISTORICOS.ID_DE_CONCEPTO = 159
+                  THEN 
+                    HISTORICOS.VALOR
+                  ELSE
+                    0
+                  END)>0 THEN SUM(CASE WHEN 
+                                      HISTORICOS.ID_DE_CONCEPTO = 986
+                                    THEN 
+                                      HISTORICOS.VALOR
+                                    ELSE
+                                      0
+                                    END) ELSE 0 END  C159,
+    SUM(CASE WHEN 
+      HISTORICOS.ID_DE_CONCEPTO = 986
+    THEN 
+      HISTORICOS.VALOR
+    ELSE
+      0
+    END) C986
+FROM 
+    PERSONAL_HISTORICO 
+        INNER JOIN HISTORICOS 
+        ON 
+            (PERSONAL_HISTORICO.COMPANIA = HISTORICOS.COMPANIA) 
+             AND 
+            (PERSONAL_HISTORICO.ID_DE_PROCESO = HISTORICOS.ID_DE_PROCESO) 
+            AND 
+            (PERSONAL_HISTORICO.ANO = HISTORICOS.ANO) 
+              AND 
+            (PERSONAL_HISTORICO.MES = HISTORICOS.MES) 
+              AND 
+            (PERSONAL_HISTORICO.PERIODO = HISTORICOS.PERIODO)               
+                AND 
+           (PERSONAL_HISTORICO.ID_DE_EMPLEADO = HISTORICOS.ID_DE_EMPLEADO) 
+ INNER JOIN CAUSARETIRO
+    ON PERSONAL_HISTORICO.COMPANIA = CAUSARETIRO.COMPANIA
+    AND PERSONAL_HISTORICO.CAUSA_RETIRO = CAUSARETIRO.CODIGO
+WHERE 
+    PERSONAL_HISTORICO.COMPANIA = s$compania$s
+AND PERSONAL_HISTORICO.ID_DE_PROCESO = s$idProceso$s
+AND PERSONAL_HISTORICO.ANO = s$ano$s
+AND PERSONAL_HISTORICO.MES = s$mes$s
+AND PERSONAL_HISTORICO.PERIODO = s$periodo$s
+AND PERSONAL_HISTORICO.ID_DE_EMPLEADO = s$idEmpleado$s 
+GROUP BY PERSONAL_HISTORICO.COMPANIA,
+    PERSONAL_HISTORICO.ID_DE_PROCESO,
+    PERSONAL_HISTORICO.ANO,
+    PERSONAL_HISTORICO.MES,
+    PERSONAL_HISTORICO.PERIODO,
+    PERSONAL_HISTORICO.NOMBRECOMPLETO, 
+    PERSONAL_HISTORICO.NUMERO_DCTO, 
+    PERSONAL_HISTORICO.NOMBRE_DE_CARGO,
+    PERSONAL_HISTORICO.NOMBRE_FORMANOMBRAMIENTO,
+    PERSONAL_HISTORICO.ID_DE_EMPLEADO,
+   CAUSARETIRO.NOMBRE
+,
+    PERSONAL_HISTORICO.FECHATERCONTRATO,
+    PERSONAL_HISTORICO.FECHA_DE_INGRESO,
+    PERSONAL_HISTORICO.NOMBRE_FONDOCESANTIAS,
+    PERSONAL_HISTORICO.NOMBRE_FONDOPENSION,
+    PERSONAL_HISTORICO.NOMBRE_FONDOSALUD,
+    PERSONAL_HISTORICO.NOMBRE_CENTRO_DE_COSTO
+ORDER BY 
+    PERSONAL_HISTORICO.NOMBRECOMPLETO

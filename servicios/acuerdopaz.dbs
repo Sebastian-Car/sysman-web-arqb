@@ -1,0 +1,164 @@
+﻿<data name="acuerdopaz" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getAcuerdopazPagBpacuerdosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COD_ACUERDO,NOMBRE FROM ACUERDO_PAZ WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN COD_ACUERDO IS NULL THEN ' ' ELSE UPPER(COD_ACUERDO) END) LIKE UPPER(CONCAT(:COD_ACUERDO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COD_ACUERDO":"$COD_ACUERDO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ACUERDO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="acuerdopaz/bpacuerdos/pag">
+		<call-query href="getAcuerdopazPagBpacuerdosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ACUERDO" query-param="COD_ACUERDO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAcuerdopazNumBpacuerdosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COD_ACUERDO,NOMBRE FROM ACUERDO_PAZ WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN COD_ACUERDO IS NULL THEN ' ' ELSE UPPER(COD_ACUERDO) END) LIKE UPPER(CONCAT(:COD_ACUERDO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ACUERDO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="acuerdopaz/bpacuerdos/num">
+		<call-query href="getAcuerdopazNumBpacuerdosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ACUERDO" query-param="COD_ACUERDO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertAcuerdopaz" keyColumns="COMPANIA,COD_ACUERDO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ACUERDO_PAZ (COMPANIA, COD_ACUERDO, SIGLA, NOMBRE, CREATED_BY, DATE_CREATED) VALUES (:COMPANIA, :COD_ACUERDO, :SIGLA, :NOMBRE, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_COD_ACUERDO":"$COD_ACUERDO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ACUERDO" sqlType="STRING"/>
+		<param defaultValue="" name="SIGLA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="acuerdopaz">
+		<call-query href="insertAcuerdopaz">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ACUERDO" query-param="COD_ACUERDO"/>
+			<with-param name="SIGLA" query-param="SIGLA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteAcuerdopaz" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ACUERDO_PAZ WHERE ACUERDO_PAZ.COMPANIA= :KEY_COMPANIA AND ACUERDO_PAZ.COD_ACUERDO= :KEY_COD_ACUERDO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_ACUERDO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="acuerdopaz">
+		<call-query href="deleteAcuerdopaz">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_ACUERDO" query-param="KEY_COD_ACUERDO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAcuerdopazPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA,COD_ACUERDO,SIGLA,NOMBRE FROM ACUERDO_PAZ WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN COD_ACUERDO IS NULL THEN ' ' ELSE UPPER(COD_ACUERDO) END) LIKE UPPER(CONCAT(:COD_ACUERDO, '%')) AND (CASE WHEN SIGLA IS NULL THEN ' ' ELSE UPPER(SIGLA) END) LIKE UPPER(CONCAT(:SIGLA, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","COD_ACUERDO":"$COD_ACUERDO(type:integer)","SIGLA":"$SIGLA","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ACUERDO" sqlType="STRING"/>
+		<param name="SIGLA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="acuerdopaz">
+		<call-query href="getAcuerdopazPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ACUERDO" query-param="COD_ACUERDO"/>
+			<with-param name="SIGLA" query-param="SIGLA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAcuerdopazNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA,COD_ACUERDO,SIGLA,NOMBRE FROM ACUERDO_PAZ WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN COD_ACUERDO IS NULL THEN ' ' ELSE UPPER(COD_ACUERDO) END) LIKE UPPER(CONCAT(:COD_ACUERDO, '%')) AND (CASE WHEN SIGLA IS NULL THEN ' ' ELSE UPPER(SIGLA) END) LIKE UPPER(CONCAT(:SIGLA, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ACUERDO" sqlType="STRING"/>
+		<param name="SIGLA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="acuerdopaz/numero">
+		<call-query href="getAcuerdopazNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ACUERDO" query-param="COD_ACUERDO"/>
+			<with-param name="SIGLA" query-param="SIGLA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getAcuerdopazRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COMPANIA,COD_ACUERDO,SIGLA,NOMBRE,CREATED_BY,MODIFIED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM ACUERDO_PAZ WHERE ACUERDO_PAZ.COMPANIA= :KEY_COMPANIA AND ACUERDO_PAZ.COD_ACUERDO= :KEY_COD_ACUERDO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","COD_ACUERDO":"$COD_ACUERDO(type:integer)","SIGLA":"$SIGLA","NOMBRE":"$NOMBRE","CREATED_BY":"$CREATED_BY","MODIFIED_BY":"$MODIFIED_BY","DATE_CREATED":"$DATE_CREATED","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_ACUERDO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="acuerdopaz/data">
+		<call-query href="getAcuerdopazRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_ACUERDO" query-param="KEY_COD_ACUERDO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateAcuerdopaz" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ACUERDO_PAZ SET COMPANIA=:COMPANIA, COD_ACUERDO=:COD_ACUERDO, SIGLA=:SIGLA, NOMBRE=:NOMBRE, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE ACUERDO_PAZ.COMPANIA= :KEY_COMPANIA AND ACUERDO_PAZ.COD_ACUERDO= :KEY_COD_ACUERDO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ACUERDO" sqlType="STRING"/>
+		<param name="SIGLA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_ACUERDO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="acuerdopaz">
+		<call-query href="updateAcuerdopaz">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ACUERDO" query-param="COD_ACUERDO"/>
+			<with-param name="SIGLA" query-param="SIGLA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_ACUERDO" query-param="KEY_COD_ACUERDO"/>
+
+		</call-query>
+	</resource>
+
+</data>

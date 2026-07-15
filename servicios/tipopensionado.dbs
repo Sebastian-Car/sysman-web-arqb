@@ -1,0 +1,64 @@
+﻿<data name="tipopensionado" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTipopensionadoTodosLosTipopensionadosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TIPO_PENSIONADO.CODIGO, TIPO_PENSIONADO.NOMBRE  FROM TIPO_PENSIONADO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="tipopensionado/todoslostipopensionados">
+		<call-query href="getTipopensionadoTodosLosTipopensionadosQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getTipopensionadoPagTodosPorOrdenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TIPO_PENSIONADO.CODIGO, TIPO_PENSIONADO.NOMBRE  FROM TIPO_PENSIONADO ORDER BY TIPO_PENSIONADO.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipopensionado/todospororden/pag">
+		<call-query href="getTipopensionadoPagTodosPorOrdenQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipopensionadoNumTodosPorOrdenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TIPO_PENSIONADO.CODIGO, TIPO_PENSIONADO.NOMBRE  FROM TIPO_PENSIONADO ORDER BY TIPO_PENSIONADO.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipopensionado/todospororden/num">
+		<call-query href="getTipopensionadoNumTodosPorOrdenQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipopensionadoPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  HISTORIAL_DE_CARGOS.COMPANIA, HISTORIAL_DE_CARGOS.NUMERODOC, HISTORIAL_DE_CARGOS.SUCURSAL, HISTORIAL_DE_CARGOS.TIPOACTO, TIPOACTO.NOMBREACTO, TO_CHAR(HISTORIAL_DE_CARGOS.FECHAACTO, 'DD/MM/YYYY') FECHAACTO_LB,(TO_CHAR(HISTORIAL_DE_CARGOS.FECHAACTO,'DD/MM/YYYY HH24:MI:SS')) FECHAACTO, HISTORIAL_DE_CARGOS.CAUSARETIRO, CAUSARETIRO.NOMBRE CAUSARETIRO_LB, HISTORIAL_DE_CARGOS.CODCARGO, HISTORIAL_DE_CARGOS.SALARIO, HISTORIAL_DE_CARGOS.CODSECRE, HISTORIAL_DE_CARGOS.CODSECCION, HISTORIAL_DE_CARGOS.DOCUMENTO, HISTORIAL_DE_CARGOS.NUM_DOCUMENTO,(TO_CHAR(HISTORIAL_DE_CARGOS.FECHA_DOCUMENTO,'DD/MM/YYYY HH24:MI:SS')) FECHA_DOCUMENTO, TO_CHAR(HISTORIAL_DE_CARGOS.FECHA_DOCUMENTO, 'DD/MM/YYYY') FECHADOCUMENTO_LB  FROM HISTORIAL_DE_CARGOS INNER JOIN TIPOACTO ON HISTORIAL_DE_CARGOS.TIPOACTO = TIPOACTO.TIPOACTO LEFT JOIN CAUSARETIRO ON HISTORIAL_DE_CARGOS.COMPANIA =CAUSARETIRO.COMPANIA AND HISTORIAL_DE_CARGOS.CAUSARETIRO =CAUSARETIRO.CODIGO WHERE HISTORIAL_DE_CARGOS.COMPANIA= :COMPANIA AND NUMERODOC = :NUMERODOCUMENTO AND SUCURSAL = :SUCURSAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NUMERODOC":"$NUMERODOC","SUCURSAL":"$SUCURSAL","TIPOACTO":"$TIPOACTO","NOMBREACTO":"$NOMBREACTO","FECHAACTO_LB":"$FECHAACTO_LB","FECHAACTO":"$FECHAACTO","CAUSARETIRO":"$CAUSARETIRO","CAUSARETIRO_LB":"$CAUSARETIRO_LB","CODCARGO":"$CODCARGO","SALARIO":"$SALARIO","CODSECRE":"$CODSECRE","CODSECCION":"$CODSECCION","DOCUMENTO":"$DOCUMENTO","NUM_DOCUMENTO":"$NUM_DOCUMENTO","FECHA_DOCUMENTO":"$FECHA_DOCUMENTO","FECHADOCUMENTO_LB":"$FECHADOCUMENTO_LB"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERODOCUMENTO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipopensionado">
+		<call-query href="getTipopensionadoPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERODOCUMENTO" query-param="NUMERODOCUMENTO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+
+		</call-query>
+	</resource>
+
+</data>

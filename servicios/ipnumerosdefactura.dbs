@@ -1,0 +1,266 @@
+﻿<data name="ipnumerosdefactura" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getIpnumerosdefacturaMaximoDeSecuenciaPorTipoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  MAX(IP_NUMEROSDEFACTURA.SECUENCIA) AS SECUENCIA1, IP_NUMEROSDEFACTURA.CONSECUTIVO, IP_NUMEROSDEFACTURA.CONSECUTIVOREAL ,(CASE IP_NUMEROSDEFACTURA.ACTIVO WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO, IP_NUMEROSDEFACTURA.TIPO, IP_TIPOSNUMERACION.DIGITOS  FROM IP_NUMEROSDEFACTURA LEFT JOIN IP_TIPOSNUMERACION ON IP_NUMEROSDEFACTURA.TIPO = IP_TIPOSNUMERACION.CODIGO WHERE IP_NUMEROSDEFACTURA.COMPANIA = :COMPANIA AND IP_NUMEROSDEFACTURA.TIPO = :TIPO AND IP_NUMEROSDEFACTURA.ACTIVO NOT IN (0) GROUP BY IP_NUMEROSDEFACTURA.CONSECUTIVO, IP_NUMEROSDEFACTURA.CONSECUTIVOREAL, IP_NUMEROSDEFACTURA.ACTIVO, IP_NUMEROSDEFACTURA.TIPO, IP_TIPOSNUMERACION.DIGITOS ORDER BY MAX(IP_NUMEROSDEFACTURA.SECUENCIA) DESC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SECUENCIA1":"$SECUENCIA1(type:integer)","CONSECUTIVO":"$CONSECUTIVO","CONSECUTIVOREAL":"$CONSECUTIVOREAL","ACTIVO":"$ACTIVO(type:boolean)","TIPO":"$TIPO","DIGITOS":"$DIGITOS(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipnumerosdefactura/maximodesecuenciaportipo">
+		<call-query href="getIpnumerosdefacturaMaximoDeSecuenciaPorTipoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpnumerosdefacturaConsecutivoReal" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_NUMEROSDEFACTURA SET CONSECUTIVOREAL = :CONSECUTIVO , DATE_MODIFIED = SYSDATE , MODIFIED_BY = :MODIFIED_BY WHERE COMPANIA = :COMPANIA AND SECUENCIA = :SECUENCIA AND TIPO = :TIPO AND ACTIVO NOT IN(0)</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SECUENCIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipnumerosdefactura/consecutivoreal">
+		<call-query href="updateIpnumerosdefacturaConsecutivoReal">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SECUENCIA" query-param="SECUENCIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpnumerosdefacturaConsultaconsecutivoccatastralQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NF.CONSECUTIVOREAL, T.DIGITOS  FROM IP_NUMEROSDEFACTURA NF INNER JOIN IP_TIPOSNUMERACION T ON (NF.TIPO = T.CODIGO) WHERE NF.COMPANIA = :COMPANIA AND NF.TIPO = :TIPOCERTIFICADO AND NF.ACTIVO &lt;&gt; 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVOREAL":"$CONSECUTIVOREAL","DIGITOS":"$DIGITOS(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCERTIFICADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipnumerosdefactura/consultaconsecutivoccatastral">
+		<call-query href="getIpnumerosdefacturaConsultaconsecutivoccatastralQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCERTIFICADO" query-param="TIPOCERTIFICADO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpnumerosdefacturaConsecutivorealportipo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_NUMEROSDEFACTURA SET CONSECUTIVOREAL = :NUMCER,   DATE_MODIFIED     = SYSDATE,   MODIFIED_BY       = :MODIFIED_BY WHERE COMPANIA      = :COMPANIA AND TIPO            = :TIPOCERTIFICADO AND ACTIVO         &lt;&gt; 0</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NUMCER" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCERTIFICADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipnumerosdefactura/consecutivorealportipo">
+		<call-query href="updateIpnumerosdefacturaConsecutivorealportipo">
+			<with-param name="NUMCER" query-param="NUMCER"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCERTIFICADO" query-param="TIPOCERTIFICADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpnumerosdefacturaTodosPorCompaniaPrimeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CONSECUTIVOREAL  FROM IP_NUMEROSDEFACTURA WHERE COMPANIA = :COMPANIA AND TIPO IN ('N') AND ACTIVO IN (-1) AND ROWNUM = 1</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVOREAL":"$CONSECUTIVOREAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipnumerosdefactura/todosporcompaniaprimero">
+		<call-query href="getIpnumerosdefacturaTodosPorCompaniaPrimeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpnumerosdefacturaConsecDigitosPorCiaTipoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NF.CONSECUTIVOREAL, T.DIGITOS  FROM IP_NUMEROSDEFACTURA NF INNER JOIN IP_TIPOSNUMERACION T ON (NF.TIPO = T.CODIGO) WHERE NF.COMPANIA = :COMPANIA AND NF.TIPO = :TIPO AND NF.ACTIVO &lt;&gt; 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVOREAL":"$CONSECUTIVOREAL","DIGITOS":"$DIGITOS(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipnumerosdefactura/consecdigitosporciatipo">
+		<call-query href="getIpnumerosdefacturaConsecDigitosPorCiaTipoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpnumerosdefacturaConsecrealPorCiaTipo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_NUMEROSDEFACTURA SET CONSECUTIVOREAL = :NUMERO, MODIFIED_BY = :MODIFIED_BY, DATE_MODIFIED = :DATE_MODIFIED WHERE COMPANIA = :COMPANIA AND TIPO       = :TIPO AND ACTIVO    &lt;&gt; 0</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipnumerosdefactura/consecrealporciatipo">
+		<call-query href="updateIpnumerosdefacturaConsecrealPorCiaTipo">
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpnumerosdefacturaTodosPorCompaniaConsultarActivoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(*) NUMERO  FROM IP_NUMEROSDEFACTURA WHERE COMPANIA = :COMPANIA AND TIPO IN ('N') AND ACTIVO IN (-1)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipnumerosdefactura/todosporcompaniaconsultaractivo">
+		<call-query href="getIpnumerosdefacturaTodosPorCompaniaConsultarActivoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpnumerosdefacturaConsecPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CONSECUTIVOREAL  FROM IP_NUMEROSDEFACTURA WHERE COMPANIA = :COMPANIA AND TIPO = 'N' AND ACTIVO &lt;&gt; 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVOREAL":"$CONSECUTIVOREAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipnumerosdefactura/consecporcompania">
+		<call-query href="getIpnumerosdefacturaConsecPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertIpnumerosdefactura" keyColumns="COMPANIA,SECUENCIA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_NUMEROSDEFACTURA (COMPANIA, SECUENCIA, CONSECUTIVO, USUARIO, FECHA, HORA, CONSECUTIVOREAL, ACTIVO, TIPO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :SECUENCIA, :CONSECUTIVO, :USUARIO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:HORA,'DD/MM/YYYY HH24:MI:SS'), :CONSECUTIVOREAL, :ACTIVO, :TIPO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_SECUENCIA":"$SECUENCIA(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SECUENCIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="HORA" sqlType="STRING"/>
+		<param name="CONSECUTIVOREAL" sqlType="STRING"/>
+		<param defaultValue="0" name="ACTIVO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="ipnumerosdefactura">
+		<call-query href="insertIpnumerosdefactura">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SECUENCIA" query-param="SECUENCIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA" query-param="HORA"/>
+			<with-param name="CONSECUTIVOREAL" query-param="CONSECUTIVOREAL"/>
+			<with-param name="ACTIVO" query-param="ACTIVO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpnumerosdefacturaPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_NUMEROSDEFACTURA.COMPANIA, IP_NUMEROSDEFACTURA.SECUENCIA, IP_NUMEROSDEFACTURA.CONSECUTIVO, IP_NUMEROSDEFACTURA.USUARIO,(TO_CHAR(IP_NUMEROSDEFACTURA.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,(TO_CHAR(IP_NUMEROSDEFACTURA.HORA,'DD/MM/YYYY HH24:MI:SS')) HORA, IP_NUMEROSDEFACTURA.CONSECUTIVOREAL,(CASE IP_NUMEROSDEFACTURA.ACTIVO WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO, IP_NUMEROSDEFACTURA.TIPO, IP_TIPOSNUMERACION.NOMBRE NOMBRETIPO  FROM IP_NUMEROSDEFACTURA INNER JOIN IP_TIPOSNUMERACION ON IP_NUMEROSDEFACTURA.TIPO = IP_TIPOSNUMERACION.CODIGO WHERE IP_NUMEROSDEFACTURA.COMPANIA = :COMPANIA ORDER BY IP_NUMEROSDEFACTURA.SECUENCIA) WHERE (CASE WHEN SECUENCIA IS NULL THEN ' ' ELSE UPPER(SECUENCIA) END)  LIKE UPPER(:SECUENCIA || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN USUARIO IS NULL THEN ' ' ELSE UPPER(USUARIO) END)  LIKE UPPER( '%' || :USUARIO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN HORA IS NULL THEN ' ' ELSE UPPER(HORA) END)  LIKE UPPER(:HORA || '%')  AND (CASE WHEN CONSECUTIVOREAL IS NULL THEN ' ' ELSE UPPER(CONSECUTIVOREAL) END)  LIKE UPPER(:CONSECUTIVOREAL || '%')  AND (CASE WHEN ACTIVO IS NULL THEN ' ' ELSE UPPER(ACTIVO) END)  LIKE UPPER(:ACTIVO || '%')  AND (CASE WHEN NOMBRETIPO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPO) END)  LIKE UPPER( '%' || :NOMBRETIPO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","SECUENCIA":"$SECUENCIA(type:long)","CONSECUTIVO":"$CONSECUTIVO","USUARIO":"$USUARIO","FECHA":"$FECHA","HORA":"$HORA","CONSECUTIVOREAL":"$CONSECUTIVOREAL","ACTIVO":"$ACTIVO(type:boolean)","TIPO":"$TIPO","NOMBRETIPO":"$NOMBRETIPO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SECUENCIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="HORA" sqlType="STRING"/>
+		<param name="CONSECUTIVOREAL" sqlType="STRING"/>
+		<param name="ACTIVO" sqlType="STRING"/>
+		<param name="NOMBRETIPO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ipnumerosdefactura">
+		<call-query href="getIpnumerosdefacturaPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SECUENCIA" query-param="SECUENCIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA" query-param="HORA"/>
+			<with-param name="CONSECUTIVOREAL" query-param="CONSECUTIVOREAL"/>
+			<with-param name="ACTIVO" query-param="ACTIVO"/>
+			<with-param name="NOMBRETIPO" query-param="NOMBRETIPO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpnumerosdefacturaNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_NUMEROSDEFACTURA.COMPANIA, IP_NUMEROSDEFACTURA.SECUENCIA, IP_NUMEROSDEFACTURA.CONSECUTIVO, IP_NUMEROSDEFACTURA.USUARIO,(TO_CHAR(IP_NUMEROSDEFACTURA.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,(TO_CHAR(IP_NUMEROSDEFACTURA.HORA,'DD/MM/YYYY HH24:MI:SS')) HORA, IP_NUMEROSDEFACTURA.CONSECUTIVOREAL,(CASE IP_NUMEROSDEFACTURA.ACTIVO WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO, IP_NUMEROSDEFACTURA.TIPO, IP_TIPOSNUMERACION.NOMBRE NOMBRETIPO  FROM IP_NUMEROSDEFACTURA INNER JOIN IP_TIPOSNUMERACION ON IP_NUMEROSDEFACTURA.TIPO = IP_TIPOSNUMERACION.CODIGO WHERE IP_NUMEROSDEFACTURA.COMPANIA = :COMPANIA ORDER BY IP_NUMEROSDEFACTURA.SECUENCIA) WHERE (CASE WHEN SECUENCIA IS NULL THEN ' ' ELSE UPPER(SECUENCIA) END)  LIKE UPPER(:SECUENCIA || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%')  AND (CASE WHEN USUARIO IS NULL THEN ' ' ELSE UPPER(USUARIO) END)  LIKE UPPER( '%' || :USUARIO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN HORA IS NULL THEN ' ' ELSE UPPER(HORA) END)  LIKE UPPER( '%' || :HORA || '%')  AND (CASE WHEN CONSECUTIVOREAL IS NULL THEN ' ' ELSE UPPER(CONSECUTIVOREAL) END)  LIKE UPPER( '%' || :CONSECUTIVOREAL || '%')  AND (CASE WHEN ACTIVO IS NULL THEN ' ' ELSE UPPER(ACTIVO) END)  LIKE UPPER( '%' || :ACTIVO || '%')  AND (CASE WHEN NOMBRETIPO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPO) END)  LIKE UPPER( '%' || :NOMBRETIPO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SECUENCIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="HORA" sqlType="STRING"/>
+		<param name="CONSECUTIVOREAL" sqlType="STRING"/>
+		<param name="ACTIVO" sqlType="STRING"/>
+		<param name="NOMBRETIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipnumerosdefactura/numero">
+		<call-query href="getIpnumerosdefacturaNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SECUENCIA" query-param="SECUENCIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA" query-param="HORA"/>
+			<with-param name="CONSECUTIVOREAL" query-param="CONSECUTIVOREAL"/>
+			<with-param name="ACTIVO" query-param="ACTIVO"/>
+			<with-param name="NOMBRETIPO" query-param="NOMBRETIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpnumerosdefactura" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_NUMEROSDEFACTURA SET ACTIVO=:ACTIVO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE IP_NUMEROSDEFACTURA.COMPANIA= :KEY_COMPANIA AND IP_NUMEROSDEFACTURA.SECUENCIA= :KEY_SECUENCIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ACTIVO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_SECUENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipnumerosdefactura">
+		<call-query href="updateIpnumerosdefactura">
+			<with-param name="ACTIVO" query-param="ACTIVO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_SECUENCIA" query-param="KEY_SECUENCIA"/>
+
+		</call-query>
+	</resource>
+
+</data>

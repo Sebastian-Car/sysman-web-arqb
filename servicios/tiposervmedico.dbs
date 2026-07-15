@@ -1,0 +1,106 @@
+﻿<data name="tiposervmedico" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertTiposervmedico" keyColumns="COMPANIA,ID_SERV_MEDICO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TIPO_SERV_MEDICO (COMPANIA, ID_SERV_MEDICO, SERVICIO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ID_SERV_MEDICO, :SERVICIO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_SERV_MEDICO":"$ID_SERV_MEDICO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_SERV_MEDICO" sqlType="STRING"/>
+		<param name="SERVICIO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="tiposervmedico">
+		<call-query href="insertTiposervmedico">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_SERV_MEDICO" query-param="ID_SERV_MEDICO"/>
+			<with-param name="SERVICIO" query-param="SERVICIO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTiposervmedico" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TIPO_SERV_MEDICO WHERE TIPO_SERV_MEDICO.COMPANIA= :KEY_COMPANIA AND TIPO_SERV_MEDICO.ID_SERV_MEDICO= :KEY_ID_SERV_MEDICO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_SERV_MEDICO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="tiposervmedico">
+		<call-query href="deleteTiposervmedico">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_SERV_MEDICO" query-param="KEY_ID_SERV_MEDICO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposervmedicoPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TIPO_SERV_MEDICO.COMPANIA, TIPO_SERV_MEDICO.ID_SERV_MEDICO, TIPO_SERV_MEDICO.SERVICIO  FROM TIPO_SERV_MEDICO WHERE TIPO_SERV_MEDICO.COMPANIA =:COMPANIA) WHERE (CASE WHEN ID_SERV_MEDICO IS NULL THEN ' ' ELSE UPPER(ID_SERV_MEDICO) END)  LIKE UPPER(:ID_SERV_MEDICO || '%')  AND (CASE WHEN SERVICIO IS NULL THEN ' ' ELSE UPPER(SERVICIO) END)  LIKE UPPER( '%' || :SERVICIO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_SERV_MEDICO":"$ID_SERV_MEDICO","SERVICIO":"$SERVICIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_SERV_MEDICO" sqlType="STRING"/>
+		<param name="SERVICIO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tiposervmedico">
+		<call-query href="getTiposervmedicoPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_SERV_MEDICO" query-param="ID_SERV_MEDICO"/>
+			<with-param name="SERVICIO" query-param="SERVICIO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTiposervmedicoNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TIPO_SERV_MEDICO.COMPANIA, TIPO_SERV_MEDICO.ID_SERV_MEDICO, TIPO_SERV_MEDICO.SERVICIO  FROM TIPO_SERV_MEDICO WHERE TIPO_SERV_MEDICO.COMPANIA =:COMPANIA) WHERE (CASE WHEN ID_SERV_MEDICO IS NULL THEN ' ' ELSE UPPER(ID_SERV_MEDICO) END)  LIKE UPPER(:ID_SERV_MEDICO || '%')  AND (CASE WHEN SERVICIO IS NULL THEN ' ' ELSE UPPER(SERVICIO) END)  LIKE UPPER( '%' || :SERVICIO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_SERV_MEDICO" sqlType="STRING"/>
+		<param name="SERVICIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tiposervmedico/numero">
+		<call-query href="getTiposervmedicoNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_SERV_MEDICO" query-param="ID_SERV_MEDICO"/>
+			<with-param name="SERVICIO" query-param="SERVICIO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTiposervmedico" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TIPO_SERV_MEDICO SET COMPANIA=:COMPANIA, ID_SERV_MEDICO=:ID_SERV_MEDICO, SERVICIO=:SERVICIO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TIPO_SERV_MEDICO.COMPANIA= :KEY_COMPANIA AND TIPO_SERV_MEDICO.ID_SERV_MEDICO= :KEY_ID_SERV_MEDICO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_SERV_MEDICO" sqlType="STRING"/>
+		<param name="SERVICIO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_SERV_MEDICO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tiposervmedico">
+		<call-query href="updateTiposervmedico">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_SERV_MEDICO" query-param="ID_SERV_MEDICO"/>
+			<with-param name="SERVICIO" query-param="SERVICIO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_SERV_MEDICO" query-param="KEY_ID_SERV_MEDICO"/>
+
+		</call-query>
+	</resource>
+
+</data>

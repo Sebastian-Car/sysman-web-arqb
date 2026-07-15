@@ -1,0 +1,212 @@
+﻿<data name="tercerospagos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTercerospagosTodosPorBancoNitsucursalCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT TERCEROPAGOS.COMPANIA, TERCEROPAGOS.NIT, TERCEROPAGOS.SUCURSAL, TERCEROPAGOS.BANCO, BANCO.NOMBREBANCO, TERCEROPAGOS.CUENTA,(TO_CHAR(TERCEROPAGOS.FECHAAUTORIZACION,'DD/MM/YYYY HH24:MI:SS')) FECHAAUTORIZACION, TO_CHAR(TERCEROPAGOS.FECHAAUTORIZACION,'dd/MM/YYYY') AS LBFECHAAUTORIZACION,(CASE TERCEROPAGOS.ACTIVA WHEN 0 THEN 'false' ELSE 'true' END) ACTIVA, CASE TERCEROPAGOS.TIPOCUENTA WHEN 'A' THEN 'Ahorros' WHEN 'C' THEN 'Corriente' END AS lbTIPOCUENTA, TERCEROPAGOS.TIPOCUENTA, TERCEROPAGOS.NOAUTORIZACION,(TO_CHAR(TERCEROPAGOS.FECHAINSCRIPCION,'DD/MM/YYYY HH24:MI:SS')) FECHAINSCRIPCION, TO_CHAR(TERCEROPAGOS.FECHAINSCRIPCION,'dd/MM/YYYY') AS LBFECHAINSCRIPCION, TERCEROPAGOS.ESTADO_CUENTA, CASE TERCEROPAGOS.ESTADO_CUENTA WHEN 'A' THEN 'Aceptada' WHEN 'R' THEN 'Rechazada' WHEN 'P' THEN 'Pendiente' END AS lbESTADO_CUENTA  FROM TERCEROPAGOS, BANCO WHERE BANCO.BANCO=TERCEROPAGOS.BANCO AND TERCEROPAGOS.NIT=:NIT AND TERCEROPAGOS.SUCURSAL=:SUCURSAL AND TERCEROPAGOS.COMPANIA=:COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NIT":"$NIT","SUCURSAL":"$SUCURSAL","BANCO":"$BANCO","NOMBREBANCO":"$NOMBREBANCO","CUENTA":"$CUENTA","FECHAAUTORIZACION":"$FECHAAUTORIZACION","LBFECHAAUTORIZACION":"$LBFECHAAUTORIZACION","ACTIVA":"$ACTIVA(type:boolean)","LBTIPOCUENTA":"$LBTIPOCUENTA","TIPOCUENTA":"$TIPOCUENTA","NOAUTORIZACION":"$NOAUTORIZACION","FECHAINSCRIPCION":"$FECHAINSCRIPCION","LBFECHAINSCRIPCION":"$LBFECHAINSCRIPCION","ESTADO_CUENTA":"$ESTADO_CUENTA","LBESTADO_CUENTA":"$LBESTADO_CUENTA"}]}}		</result>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tercerospagos/todosporbanconitsucursalcompania">
+		<call-query href="getTercerospagosTodosPorBancoNitsucursalCompaniaQuery">
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTercerospagosPagTodosTerceroSucursalActivosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TERCEROPAGOS.BANCO, TERCEROPAGOS.CUENTA, BANCO.NOMBREBANCO, TO_CHAR(TERCEROPAGOS.FECHAAUTORIZACION, 'DD/MM/YYYY') FECHAAUTORIZACION, TRIM(TERCERO.NOMBRE) NOMBRE, TERCEROPAGOS.COMPANIA, TERCEROPAGOS.NIT, TERCEROPAGOS.SUCURSAL  FROM (TERCEROPAGOS LEFT JOIN BANCO ON TERCEROPAGOS.COMPANIA = BANCO.COMPANIA AND TERCEROPAGOS.BANCO = BANCO.BANCO) LEFT JOIN TERCERO ON TERCEROPAGOS.COMPANIA = TERCERO.COMPANIA AND TERCEROPAGOS.NIT = TERCERO.NIT AND TERCEROPAGOS.SUCURSAL = TERCERO.SUCURSAL WHERE TERCEROPAGOS.COMPANIA = :COMPANIA AND TERCEROPAGOS.NIT = :TERCERO AND TERCEROPAGOS.SUCURSAL = :SUCURSAL AND TERCEROPAGOS.ACTIVA &lt;&gt; 0 ORDER BY TERCEROPAGOS.NIT, TERCEROPAGOS.SUCURSAL, TERCEROPAGOS.FECHAAUTORIZACION DESC) WHERE (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END)  LIKE UPPER(:BANCO || '%')  AND (CASE WHEN CUENTA IS NULL THEN ' ' ELSE UPPER(CUENTA) END)  LIKE UPPER(:CUENTA || '%')  AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END)  LIKE UPPER( '%' || :NOMBREBANCO || '%')  AND (CASE WHEN FECHAAUTORIZACION IS NULL THEN ' ' ELSE UPPER(FECHAAUTORIZACION) END)  LIKE UPPER(:FECHAAUTORIZACION || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"BANCO":"$BANCO","CUENTA":"$CUENTA","NOMBREBANCO":"$NOMBREBANCO","FECHAAUTORIZACION":"$FECHAAUTORIZACION","NOMBRE":"$NOMBRE","COMPANIA":"$COMPANIA","NIT":"$NIT","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="FECHAAUTORIZACION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tercerospagos/todostercerosucursalactivos/pag">
+		<call-query href="getTercerospagosPagTodosTerceroSucursalActivosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="FECHAAUTORIZACION" query-param="FECHAAUTORIZACION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTercerospagosNumTodosTerceroSucursalActivosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TERCEROPAGOS.BANCO, TERCEROPAGOS.CUENTA, BANCO.NOMBREBANCO, TO_CHAR(TERCEROPAGOS.FECHAAUTORIZACION, 'DD/MM/YYYY') FECHAAUTORIZACION, TRIM(TERCERO.NOMBRE) NOMBRE, TERCEROPAGOS.COMPANIA, TERCEROPAGOS.NIT, TERCEROPAGOS.SUCURSAL  FROM (TERCEROPAGOS LEFT JOIN BANCO ON TERCEROPAGOS.COMPANIA = BANCO.COMPANIA AND TERCEROPAGOS.BANCO = BANCO.BANCO) LEFT JOIN TERCERO ON TERCEROPAGOS.COMPANIA = TERCERO.COMPANIA AND TERCEROPAGOS.NIT = TERCERO.NIT AND TERCEROPAGOS.SUCURSAL = TERCERO.SUCURSAL WHERE TERCEROPAGOS.COMPANIA = :COMPANIA AND TERCEROPAGOS.NIT = :TERCERO AND TERCEROPAGOS.SUCURSAL = :SUCURSAL AND TERCEROPAGOS.ACTIVA &lt;&gt; 0 ORDER BY TERCEROPAGOS.NIT, TERCEROPAGOS.SUCURSAL, TERCEROPAGOS.FECHAAUTORIZACION DESC) WHERE (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END)  LIKE UPPER(:BANCO || '%')  AND (CASE WHEN CUENTA IS NULL THEN ' ' ELSE UPPER(CUENTA) END)  LIKE UPPER(:CUENTA || '%')  AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END)  LIKE UPPER( '%' || :NOMBREBANCO || '%')  AND (CASE WHEN FECHAAUTORIZACION IS NULL THEN ' ' ELSE UPPER(FECHAAUTORIZACION) END)  LIKE UPPER(:FECHAAUTORIZACION || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="FECHAAUTORIZACION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tercerospagos/todostercerosucursalactivos/num">
+		<call-query href="getTercerospagosNumTodosTerceroSucursalActivosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="FECHAAUTORIZACION" query-param="FECHAAUTORIZACION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getTercerospagosBancoCuentaPorTerceroSucursalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  BANCO, CUENTA  FROM TERCEROPAGOS WHERE COMPANIA = :COMPANIA AND NIT = :TERCERO AND SUCURSAL = :SUCURSAL ORDER BY COMPANIA, NIT, SUCURSAL, FECHAAUTORIZACION DESC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"BANCO":"$BANCO","CUENTA":"$CUENTA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tercerospagos/bancocuentaportercerosucursal">
+		<call-query href="getTercerospagosBancoCuentaPorTerceroSucursalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="insertTercerospagos" keyColumns="COMPANIA,NIT,SUCURSAL,BANCO,CUENTA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TERCEROPAGOS (COMPANIA, NIT, SUCURSAL, BANCO, CUENTA, TIPOCUENTA, FECHAINSCRIPCION, ESTADO_CUENTA, FECHAAUTORIZACION, NOAUTORIZACION, ACTIVA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :NIT, :SUCURSAL, :BANCO, :CUENTA, :TIPOCUENTA, TO_DATE(:FECHAINSCRIPCION,'DD/MM/YYYY HH24:MI:SS'), :ESTADO_CUENTA, TO_DATE(:FECHAAUTORIZACION,'DD/MM/YYYY HH24:MI:SS'), :NOAUTORIZACION, :ACTIVA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_NIT":"$NIT","KEY_SUCURSAL":"$SUCURSAL","KEY_BANCO":"$BANCO","KEY_CUENTA":"$CUENTA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="TIPOCUENTA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAINSCRIPCION" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADO_CUENTA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAAUTORIZACION" sqlType="STRING"/>
+		<param defaultValue="" name="NOAUTORIZACION" sqlType="STRING"/>
+		<param defaultValue="0" name="ACTIVA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="tercerospagos">
+		<call-query href="insertTercerospagos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+			<with-param name="FECHAINSCRIPCION" query-param="FECHAINSCRIPCION"/>
+			<with-param name="ESTADO_CUENTA" query-param="ESTADO_CUENTA"/>
+			<with-param name="FECHAAUTORIZACION" query-param="FECHAAUTORIZACION"/>
+			<with-param name="NOAUTORIZACION" query-param="NOAUTORIZACION"/>
+			<with-param name="ACTIVA" query-param="ACTIVA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTercerospagos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TERCEROPAGOS WHERE TERCEROPAGOS.COMPANIA= :KEY_COMPANIA AND TERCEROPAGOS.NIT= :KEY_NIT AND TERCEROPAGOS.SUCURSAL= :KEY_SUCURSAL AND TERCEROPAGOS.BANCO= :KEY_BANCO AND TERCEROPAGOS.CUENTA= :KEY_CUENTA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NIT" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_BANCO" sqlType="STRING"/>
+		<param name="KEY_CUENTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="tercerospagos">
+		<call-query href="deleteTercerospagos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NIT" query-param="KEY_NIT"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_BANCO" query-param="KEY_BANCO"/>
+			<with-param name="KEY_CUENTA" query-param="KEY_CUENTA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTercerospagosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT TERCEROPAGOS.COMPANIA, TERCEROPAGOS.NIT, TERCEROPAGOS.SUCURSAL, TERCEROPAGOS.BANCO, BANCO.NOMBREBANCO, TERCEROPAGOS.CUENTA,(TO_CHAR(TERCEROPAGOS.FECHAAUTORIZACION,'DD/MM/YYYY HH24:MI:SS')) FECHAAUTORIZACION, TO_CHAR(TERCEROPAGOS.FECHAAUTORIZACION,'dd/MM/YYYY') AS LBFECHAAUTORIZACION,(CASE TERCEROPAGOS.ACTIVA WHEN 0 THEN 'false' ELSE 'true' END) ACTIVA, CASE TERCEROPAGOS.TIPOCUENTA WHEN 'A' THEN 'Ahorros' WHEN 'C' THEN 'Corriente' END AS lbTIPOCUENTA, TERCEROPAGOS.TIPOCUENTA, TERCEROPAGOS.NOAUTORIZACION,(TO_CHAR(TERCEROPAGOS.FECHAINSCRIPCION,'DD/MM/YYYY HH24:MI:SS')) FECHAINSCRIPCION, TO_CHAR(TERCEROPAGOS.FECHAINSCRIPCION,'dd/MM/YYYY') AS LBFECHAINSCRIPCION, TERCEROPAGOS.ESTADO_CUENTA, CASE TERCEROPAGOS.ESTADO_CUENTA WHEN 'A' THEN 'Aceptada' WHEN 'R' THEN 'Rechazada' WHEN 'P' THEN 'Pendiente' END AS lbESTADO_CUENTA  FROM TERCEROPAGOS INNER JOIN BANCO ON TERCEROPAGOS.COMPANIA = BANCO.COMPANIA AND TERCEROPAGOS.BANCO = BANCO.BANCO WHERE BANCO.BANCO =TERCEROPAGOS.BANCO AND TERCEROPAGOS.NIT =:NIT AND TERCEROPAGOS.SUCURSAL=:SUCURSAL AND TERCEROPAGOS.COMPANIA=:COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NIT":"$NIT","SUCURSAL":"$SUCURSAL","BANCO":"$BANCO","NOMBREBANCO":"$NOMBREBANCO","CUENTA":"$CUENTA","FECHAAUTORIZACION":"$FECHAAUTORIZACION","LBFECHAAUTORIZACION":"$LBFECHAAUTORIZACION","ACTIVA":"$ACTIVA(type:boolean)","LBTIPOCUENTA":"$LBTIPOCUENTA","TIPOCUENTA":"$TIPOCUENTA","NOAUTORIZACION":"$NOAUTORIZACION","FECHAINSCRIPCION":"$FECHAINSCRIPCION","LBFECHAINSCRIPCION":"$LBFECHAINSCRIPCION","ESTADO_CUENTA":"$ESTADO_CUENTA","LBESTADO_CUENTA":"$LBESTADO_CUENTA"}]}}		</result>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tercerospagos">
+		<call-query href="getTercerospagosPaginaQuery">
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTercerospagos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TERCEROPAGOS SET BANCO=:BANCO, CUENTA=:CUENTA, TIPOCUENTA=:TIPOCUENTA, FECHAINSCRIPCION=TO_DATE(:FECHAINSCRIPCION,'DD/MM/YYYY HH24:MI:SS'), ESTADO_CUENTA=:ESTADO_CUENTA, FECHAAUTORIZACION=TO_DATE(:FECHAAUTORIZACION,'DD/MM/YYYY HH24:MI:SS'), NOAUTORIZACION=:NOAUTORIZACION, ACTIVA=:ACTIVA, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE TERCEROPAGOS.COMPANIA= :KEY_COMPANIA AND TERCEROPAGOS.NIT= :KEY_NIT AND TERCEROPAGOS.SUCURSAL= :KEY_SUCURSAL AND TERCEROPAGOS.BANCO= :KEY_BANCO AND TERCEROPAGOS.CUENTA= :KEY_CUENTA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="TIPOCUENTA" sqlType="STRING"/>
+		<param name="FECHAINSCRIPCION" sqlType="STRING"/>
+		<param name="ESTADO_CUENTA" sqlType="STRING"/>
+		<param name="FECHAAUTORIZACION" sqlType="STRING"/>
+		<param name="NOAUTORIZACION" sqlType="STRING"/>
+		<param name="ACTIVA" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NIT" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_BANCO" sqlType="STRING"/>
+		<param name="KEY_CUENTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tercerospagos">
+		<call-query href="updateTercerospagos">
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+			<with-param name="FECHAINSCRIPCION" query-param="FECHAINSCRIPCION"/>
+			<with-param name="ESTADO_CUENTA" query-param="ESTADO_CUENTA"/>
+			<with-param name="FECHAAUTORIZACION" query-param="FECHAAUTORIZACION"/>
+			<with-param name="NOAUTORIZACION" query-param="NOAUTORIZACION"/>
+			<with-param name="ACTIVA" query-param="ACTIVA"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NIT" query-param="KEY_NIT"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_BANCO" query-param="KEY_BANCO"/>
+			<with-param name="KEY_CUENTA" query-param="KEY_CUENTA"/>
+
+		</call-query>
+	</resource>
+
+</data>

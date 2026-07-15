@@ -1,0 +1,133 @@
+﻿<data name="infauditoria" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="deleteInfauditoriaEliminarhistoricosaudit" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM INF_AUDITORIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+ 
+	</query>
+	<resource method="DELETE" path="infauditoria/eliminarhistoricosaudit">
+		<call-query href="deleteInfauditoriaEliminarhistoricosaudit">
+ 
+		</call-query>
+	</resource>
+	<query id="getInfauditoriaPagInfhistoricosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT VAL_ANTERIOR, VAL_ACTUAL FROM INF_AUDITORIA WHERE COMPANIA = :COMPANIA AND FECHA = TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS')) INI WHERE (CASE WHEN VAL_ANTERIOR IS NULL THEN ' ' ELSE UPPER(VAL_ANTERIOR) END) LIKE UPPER(CONCAT(CONCAT('%',:VAL_ANTERIOR), '%')) AND (CASE WHEN VAL_ACTUAL IS NULL THEN ' ' ELSE UPPER(VAL_ACTUAL) END) LIKE UPPER(CONCAT(CONCAT('%',:VAL_ACTUAL), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VAL_ANTERIOR":"$VAL_ANTERIOR","VAL_ACTUAL":"$VAL_ACTUAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="VAL_ANTERIOR" sqlType="STRING"/>
+		<param name="VAL_ACTUAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="infauditoria/infhistoricos/pag">
+		<call-query href="getInfauditoriaPagInfhistoricosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="VAL_ANTERIOR" query-param="VAL_ANTERIOR"/>
+			<with-param name="VAL_ACTUAL" query-param="VAL_ACTUAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getInfauditoriaNumInfhistoricosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT VAL_ANTERIOR, VAL_ACTUAL FROM INF_AUDITORIA WHERE COMPANIA = :COMPANIA AND FECHA = TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS')) INI WHERE (CASE WHEN VAL_ANTERIOR IS NULL THEN ' ' ELSE UPPER(VAL_ANTERIOR) END) LIKE UPPER(CONCAT(CONCAT('%',:VAL_ANTERIOR), '%')) AND (CASE WHEN VAL_ACTUAL IS NULL THEN ' ' ELSE UPPER(VAL_ACTUAL) END) LIKE UPPER(CONCAT(CONCAT('%',:VAL_ACTUAL), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="VAL_ANTERIOR" sqlType="STRING"/>
+		<param name="VAL_ACTUAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="infauditoria/infhistoricos/num">
+		<call-query href="getInfauditoriaNumInfhistoricosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="VAL_ANTERIOR" query-param="VAL_ANTERIOR"/>
+			<with-param name="VAL_ACTUAL" query-param="VAL_ACTUAL"/>
+
+		</call-query>
+	</resource>
+	<query id="insertInfauditoria" keyColumns="COMPANIA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO INF_AUDITORIA (COMPANIA, NOMBRE_PROCESO, ACCION, USUARIO, IP, FECHA, VAL_ANTERIOR, VAL_ACTUAL, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :NOMBRE_PROCESO, :ACCION, :USUARIO, :IP, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :VAL_ANTERIOR, :VAL_ACTUAL, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE_PROCESO" sqlType="STRING"/>
+		<param defaultValue="" name="ACCION" sqlType="STRING"/>
+		<param defaultValue="" name="USUARIO" sqlType="STRING"/>
+		<param defaultValue="" name="IP" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="VAL_ANTERIOR" sqlType="STRING"/>
+		<param defaultValue="" name="VAL_ACTUAL" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="infauditoria">
+		<call-query href="insertInfauditoria">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE_PROCESO" query-param="NOMBRE_PROCESO"/>
+			<with-param name="ACCION" query-param="ACCION"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="IP" query-param="IP"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="VAL_ANTERIOR" query-param="VAL_ANTERIOR"/>
+			<with-param name="VAL_ACTUAL" query-param="VAL_ACTUAL"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="getInfauditoriaPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT NOMBRE_PROCESO, ACCION, TO_CHAR(FECHA, 'DD/MM/YYYY HH24:MI:SS') FECHA, USUARIO, IP FROM INF_AUDITORIA) INI WHERE (CASE WHEN NOMBRE_PROCESO IS NULL THEN ' ' ELSE UPPER(NOMBRE_PROCESO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_PROCESO), '%')) AND (CASE WHEN ACCION IS NULL THEN ' ' ELSE UPPER(ACCION) END) LIKE UPPER(CONCAT(CONCAT('%',:ACCION), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(:FECHA, '%')) AND (CASE WHEN USUARIO IS NULL THEN ' ' ELSE UPPER(USUARIO) END) LIKE UPPER(CONCAT(CONCAT('%',:USUARIO), '%')) AND (CASE WHEN IP IS NULL THEN ' ' ELSE UPPER(IP) END) LIKE UPPER(CONCAT(:IP, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE_PROCESO":"$NOMBRE_PROCESO","ACCION":"$ACCION","FECHA":"$FECHA","USUARIO":"$USUARIO","IP":"$IP"}]}}		</result>
+		<param name="NOMBRE_PROCESO" sqlType="STRING"/>
+		<param name="ACCION" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="IP" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="infauditoria">
+		<call-query href="getInfauditoriaPaginaQuery">
+			<with-param name="NOMBRE_PROCESO" query-param="NOMBRE_PROCESO"/>
+			<with-param name="ACCION" query-param="ACCION"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="IP" query-param="IP"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getInfauditoriaNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT NOMBRE_PROCESO, ACCION, TO_CHAR(FECHA, 'DD/MM/YYYY HH24:MI:SS') FECHA, USUARIO, IP FROM INF_AUDITORIA) INI WHERE (CASE WHEN NOMBRE_PROCESO IS NULL THEN ' ' ELSE UPPER(NOMBRE_PROCESO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_PROCESO), '%')) AND (CASE WHEN ACCION IS NULL THEN ' ' ELSE UPPER(ACCION) END) LIKE UPPER(CONCAT(CONCAT('%',:ACCION), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(:FECHA, '%')) AND (CASE WHEN USUARIO IS NULL THEN ' ' ELSE UPPER(USUARIO) END) LIKE UPPER(CONCAT(CONCAT('%',:USUARIO), '%')) AND (CASE WHEN IP IS NULL THEN ' ' ELSE UPPER(IP) END) LIKE UPPER(CONCAT(:IP, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="NOMBRE_PROCESO" sqlType="STRING"/>
+		<param name="ACCION" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="IP" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="infauditoria/numero">
+		<call-query href="getInfauditoriaNumeroQuery">
+			<with-param name="NOMBRE_PROCESO" query-param="NOMBRE_PROCESO"/>
+			<with-param name="ACCION" query-param="ACCION"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="IP" query-param="IP"/>
+
+		</call-query>
+	</resource>
+
+</data>

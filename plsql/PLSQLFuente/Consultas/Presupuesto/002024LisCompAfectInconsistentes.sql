@@ -1,0 +1,293 @@
+SELECT *
+FROM (
+SELECT MOV.COMPANIA,
+         MOV.ANO,
+         MOV.TIPO_CPTE,
+         MOV.COMPROBANTE, 
+         MOV.CONSECUTIVO,
+         T.CLASE,         
+         CASE WHEN ((MOV.VALOR_DEBITO - MOV.VALOR_CREDITO) -
+                    (NVL(SUM(DEBITOS),0) - NVL(SUM(CREDITOS),0)) + (NVL(SUM(MDEBITOS),0) -NVL(SUM(MCREDITOS),0))) < 0 
+                 THEN 'El valor de la afectación es incosistente en ' || TO_CHAR((MOV.VALOR_DEBITO - MOV.VALOR_CREDITO) -
+                    (NVL(SUM(DEBITOS),0) - NVL(SUM(CREDITOS),0)) + (NVL(SUM(MDEBITOS),0) -NVL(SUM(MCREDITOS),0))) 
+                 ELSE 'El valor de la afectación no coincide con las afectaciones del comprobante ' END OBSERVACION,
+         CASE WHEN ((MOV.VALOR_DEBITO - MOV.VALOR_CREDITO) -
+                    (NVL(SUM(DEBITOS),0) - NVL(SUM(CREDITOS),0)) + (NVL(SUM(MDEBITOS),0) -NVL(SUM(MCREDITOS),0))
+         ) < 0 THEN 0 ELSE 1 END ORDEN  
+    
+FROM DETALLE_COMPROBANTE_PPTAL MOV INNER JOIN TIPO_COMPROBPP  T  
+  ON MOV.COMPANIA  = T.COMPANIA 
+ AND MOV.TIPO_CPTE = T.CODIGO
+    LEFT JOIN 
+    (        
+        SELECT X.COMPANIA,
+               X.ANO_AFECT,
+               X.TIPO_CPTE_AFECT,
+               X.CMPTE_AFECTADO, 
+               X.CONSECUTIVOPPTO,
+               SUM(CASE WHEN C.AFECTACION     IN('A','R') THEN 0 ELSE VALOR_DEBITO  END) DEBITOS,
+               SUM(CASE WHEN C.AFECTACION     IN('A','R') THEN 0 ELSE VALOR_CREDITO END) CREDITOS,
+               SUM(CASE WHEN C.AFECTACION NOT IN('A','R') THEN 0 ELSE VALOR_DEBITO  END) MDEBITOS,
+               SUM(CASE WHEN C.AFECTACION NOT IN('A','R') THEN 0 ELSE VALOR_CREDITO END) MCREDITOS       
+        FROM DETALLE_COMPROBANTE_PPTAL X INNER JOIN TIPO_COMPROBPP  T 
+          ON X.COMPANIA  = T.COMPANIA 
+         AND X.TIPO_CPTE = T.CODIGO
+        INNER JOIN CLASECNTPRES C 
+          ON T.CLASE=C.CODIGO
+        WHERE X.COMPANIA        = 's$compania$s'
+          AND X.ANO_AFECT       = s$anio$s
+          AND X.NATURALEZA      = 'D'  
+        GROUP BY X.COMPANIA,
+                 X.ANO_AFECT,
+                 X.TIPO_CPTE_AFECT,
+                 X.CMPTE_AFECTADO, 
+                 X.CONSECUTIVOPPTO
+    UNION ALL           
+        SELECT NIVEL1.COMPANIA,
+               NIVEL1.ANO,
+               NIVEL1.TIPO_CPTE,
+               NIVEL1.COMPROBANTE, 
+               NIVEL1.CONSECUTIVO,
+               SUM(NIVEL3.VALOR_DEBITO)  DEBITOS,
+               SUM(NIVEL3.VALOR_CREDITO) CREDITOS,
+               0  MDEBITOS,
+               0  MCREDITOS
+        FROM (
+            SELECT COMPANIA,
+                   ANO ,
+                   TIPO_CPTE ,
+                   COMPROBANTE,
+                   CONSECUTIVO, 
+                   ANO_AFECT,
+                   TIPO_CPTE_AFECT,
+                   CMPTE_AFECTADO,
+                   CONSECUTIVOPPTO,
+                   NATURALEZA
+            FROM DETALLE_COMPROBANTE_PPTAL
+            WHERE COMPANIA        = 's$compania$s'
+              AND ANO             = s$anio$s
+        ) NIVEL1 
+        INNER JOIN (SELECT COMPANIA,
+                           ANO,
+                           TIPO_CPTE ,
+                           COMPROBANTE,
+                           CONSECUTIVO, 
+                           ANO_AFECT,
+                           TIPO_CPTE_AFECT,
+                           CMPTE_AFECTADO,
+                           CONSECUTIVOPPTO
+                    FROM DETALLE_COMPROBANTE_PPTAL
+                    WHERE COMPANIA        = 's$compania$s'
+                      AND ANO_AFECT       = s$anio$s
+        ) NIVEL2
+              ON NIVEL1.COMPANIA    = NIVEL2.COMPANIA
+             AND NIVEL1.ANO         = NIVEL2.ANO_AFECT
+             AND NIVEL1.TIPO_CPTE   = NIVEL2.TIPO_CPTE_AFECT
+             AND NIVEL1.COMPROBANTE = NIVEL2.CMPTE_AFECTADO
+             AND NIVEL1.CONSECUTIVO = NIVEL2.CONSECUTIVOPPTO 
+        INNER JOIN (    
+                    SELECT X.COMPANIA,
+                           X.ANO_AFECT,
+                           X.TIPO_CPTE_AFECT,
+                           X.CMPTE_AFECTADO,
+                           X.CONSECUTIVOPPTO,
+                           X.VALOR_DEBITO,
+                           X.VALOR_CREDITO,
+                           C.AFECTACION
+                    FROM DETALLE_COMPROBANTE_PPTAL X INNER JOIN TIPO_COMPROBPP  T 
+                      ON X.COMPANIA=T.COMPANIA 
+                     AND X.TIPO_CPTE=T.CODIGO
+                    INNER JOIN CLASECNTPRES C 
+                      ON T.CLASE=C.CODIGO
+                    WHERE X.COMPANIA        = 's$compania$s'
+                      AND X.ANO_AFECT       = s$anio$s
+                      AND C.AFECTACION      IN('A','R')  
+                      AND X.TIPO_CPTE_AFECT IS NOT NULL 
+                      AND X.CMPTE_AFECTADO  IS NOT NULL
+        ) NIVEL3
+              ON NIVEL2.COMPANIA    = NIVEL3.COMPANIA
+             AND NIVEL2.TIPO_CPTE   = NIVEL3.TIPO_CPTE_AFECT
+             AND NIVEL2.COMPROBANTE = NIVEL3.CMPTE_AFECTADO
+             AND NIVEL2.CONSECUTIVO = NIVEL3.CONSECUTIVOPPTO 
+        WHERE NIVEL1.COMPANIA    = 's$compania$s'
+          AND NIVEL1.ANO         = s$anio$s
+        GROUP BY NIVEL1.COMPANIA,
+                 NIVEL1.ANO,
+                 NIVEL1.TIPO_CPTE,
+                 NIVEL1.COMPROBANTE, 
+                 NIVEL1.CONSECUTIVO,
+                 0
+    ) AFECTA
+      ON MOV.COMPANIA    = AFECTA.COMPANIA
+     AND MOV.ANO         = AFECTA.ANO_AFECT
+     AND MOV.TIPO_CPTE   = AFECTA.TIPO_CPTE_AFECT
+     AND MOV.COMPROBANTE = AFECTA.CMPTE_AFECTADO
+     AND MOV.CONSECUTIVO = AFECTA.CONSECUTIVOPPTO 
+WHERE MOV.COMPANIA    = 's$compania$s'
+  AND MOV.ANO         = s$anio$s
+  AND MOV.NATURALEZA = 'D'     
+  AND T.CLASE IN('DIS', 'RES', 'REO', 'EGR')
+GROUP BY MOV.COMPANIA,
+         MOV.ANO,
+         MOV.TIPO_CPTE,
+         MOV.COMPROBANTE, 
+         MOV.CONSECUTIVO,
+         MOV.DEBITO_AFECTADO,
+         MOV.CREDITO_AFECTADO,
+         MOV.MODIFICACION_DEBITO,
+         MOV.MODIFICACION_CREDITO,
+         MOV.VALOR_DEBITO,
+         MOV.VALOR_CREDITO,
+         T.CLASE
+HAVING MOV.DEBITO_AFECTADO      <> NVL(SUM(DEBITOS),0)
+    OR MOV.CREDITO_AFECTADO     <> NVL(SUM(CREDITOS),0)
+    OR MOV.MODIFICACION_DEBITO  <> NVL(SUM(MDEBITOS),0)
+    OR MOV.MODIFICACION_CREDITO <> NVL(SUM(MCREDITOS),0)  
+  UNION ALL                              
+SELECT COM.COMPANIA,
+        COM.ANO,
+        COM.TIPO TIPO_CPTE,
+        COM.NUMERO COMPROBANTE,
+        NULL CONSECUTIVO,
+        T.CLASE,
+        'El valor afectado en el Detalle no coincide con el Header' OBSERVACION,
+        1 ORDEN
+FROM COMPROBANTE_PPTAL COM LEFT JOIN DETALLE_COMPROBANTE_PPTAL DET 
+  ON COM.COMPANIA  = DET.COMPANIA
+  AND COM.ANO       = DET.ANO
+  AND COM.TIPO      = DET.TIPO_CPTE
+  AND COM.NUMERO    = DET.COMPROBANTE
+ INNER JOIN TIPO_COMPROBPP  T  
+  ON COM.COMPANIA  = T.COMPANIA 
+ AND COM.TIPO      = T.CODIGO 
+WHERE COM.COMPANIA    = 's$compania$s'
+  AND COM.ANO         = s$anio$s
+  AND DET.NATURALEZA = 'D'      
+GROUP BY COM.COMPANIA,
+          COM.ANO,
+          COM.TIPO,
+          COM.NUMERO,
+          COM.DEBITO_AFECTADO, 
+          COM.CREDITO_AFECTADO, 
+          COM.MODIFICACION_DEBITO, 
+          COM.MODIFICACION_CREDITO,
+          T.CLASE
+HAVING  COM.DEBITO_AFECTADO      <> SUM(NVL(DET.DEBITO_AFECTADO,0))
+      OR COM.CREDITO_AFECTADO     <> SUM(NVL(DET.CREDITO_AFECTADO,0))
+      OR COM.MODIFICACION_DEBITO  <> SUM(NVL(DET.MODIFICACION_DEBITO,0))
+      OR COM.MODIFICACION_CREDITO <> SUM(NVL(DET.MODIFICACION_CREDITO,0))      
+UNION ALL     
+SELECT AFEC.COMPANIA, AFEC.ANO, AFEC.TIPO_CPTE, AFEC.COMPROBANTE, null CONSECUTIVO, T.CLASE,
+       'No presenta afectación en el detalle del comprobante' OBSERVACION,
+       1 ORDEN
+FROM COMPROBANTE_PPTALAFECTADOS AFEC INNER JOIN TIPO_COMPROBPP  T  
+  ON AFEC.COMPANIA  = T.COMPANIA 
+ AND AFEC.TIPO_CPTE = T.CODIGO
+    LEFT JOIN
+    (   SELECT DISTINCT COMPANIA,
+               ANO,
+               TIPO_CPTE,
+               COMPROBANTE,
+               CONSECUTIVO,
+               ANO_AFECT,
+               TIPO_CPTE_AFECT,
+               CMPTE_AFECTADO 
+        FROM DETALLE_COMPROBANTE_PPTAL
+        WHERE COMPANIA = 's$compania$s'
+          AND ANO      = s$anio$s
+    ) DET
+    ON AFEC.COMPANIA         = DET.COMPANIA
+   AND AFEC.ANO              = DET.ANO
+   AND AFEC.TIPO_CPTE        = DET.TIPO_CPTE
+   AND AFEC.COMPROBANTE      = DET.COMPROBANTE
+   AND AFEC.ANO_AFECT        = DET.ANO_AFECT
+   AND AFEC.TIPO_CPTE_AFECT  = DET.TIPO_CPTE_AFECT
+   AND AFEC.COMPROBANTE_AFECT= DET.CMPTE_AFECTADO
+WHERE AFEC.COMPANIA = 's$compania$s'
+  AND AFEC.ANO      = s$anio$s
+  AND DET.COMPANIA IS NULL  
+UNION ALL  
+SELECT DET.COMPANIA, DET.ANO, DET.TIPO_CPTE, DET.COMPROBANTE, null CONSECUTIVO, DET.CLASE,
+       'No presenta afectación en el header del comprobante' OBSERVACION,
+       1 ORDEN
+FROM (   SELECT DISTINCT DE.COMPANIA,
+               DE.ANO,
+               DE.TIPO_CPTE,
+               DE.COMPROBANTE,
+               DE.ANO_AFECT,
+               DE.TIPO_CPTE_AFECT,
+               DE.CMPTE_AFECTADO,
+               T.CLASE
+        FROM DETALLE_COMPROBANTE_PPTAL DE INNER JOIN TIPO_COMPROBPP  T  
+          ON DE.COMPANIA  = T.COMPANIA 
+         AND DE.TIPO_CPTE = T.CODIGO
+        WHERE DE.COMPANIA = 's$compania$s'
+          AND DE.ANO      = s$anio$s
+          AND DE.ANO_AFECT       IS NOT NULL
+          AND DE.TIPO_CPTE_AFECT IS NOT NULL
+          AND DE.CMPTE_AFECTADO  IS NOT NULL
+    ) DET
+   LEFT JOIN COMPROBANTE_PPTALAFECTADOS AFEC  
+    ON AFEC.COMPANIA         = DET.COMPANIA
+   AND AFEC.ANO              = DET.ANO
+   AND AFEC.TIPO_CPTE        = DET.TIPO_CPTE
+   AND AFEC.COMPROBANTE      = DET.COMPROBANTE
+   AND AFEC.ANO_AFECT        = DET.ANO_AFECT
+   AND AFEC.TIPO_CPTE_AFECT  = DET.TIPO_CPTE_AFECT
+   AND AFEC.COMPROBANTE_AFECT= DET.CMPTE_AFECTADO
+WHERE DET.COMPANIA = 's$compania$s'
+  AND DET.ANO      = s$anio$s
+  AND AFEC.COMPANIA IS NULL
+UNION ALL
+SELECT COMPROBANTE_PPTAL.COMPANIA,
+       COMPROBANTE_PPTAL.ANO,
+       COMPROBANTE_PPTAL.TIPO TIPO_CPTE,
+       COMPROBANTE_PPTAL.NUMERO COMPROBANTE,
+       NULL CONSECUTIVO,
+       T.CLASE,
+       CASE WHEN COMPROBANTE_PPTAL.VLR_DOCUMENTO <> SUM(NVL(DETALLE_COMPROBANTE_PPTAL.VALOR_DEBITO,0)) 
+            THEN 'Valor del Documento diferente a la suma de los detalles registrados (Diferencia = '
+                 || TO_CHAR(COMPROBANTE_PPTAL.VLR_DOCUMENTO - SUM(NVL(DETALLE_COMPROBANTE_PPTAL.VALOR_DEBITO,0))) || ')'
+            ELSE CASE WHEN COMPROBANTE_PPTAL.DEBITO <> SUM(NVL(DETALLE_COMPROBANTE_PPTAL.VALOR_DEBITO,0)) 
+                      THEN 'Valor del total Debito es diferente a la suma de los detalles registrados (Diferencia = '
+                           || TO_CHAR(COMPROBANTE_PPTAL.DEBITO - SUM(NVL(DETALLE_COMPROBANTE_PPTAL.VALOR_DEBITO,0))) || ')'
+                      END
+        END OBSERVACION,                
+       1 ORDEN 
+FROM COMPROBANTE_PPTAL INNER JOIN TIPO_COMPROBPP  T 
+  ON COMPROBANTE_PPTAL.COMPANIA =T.COMPANIA 
+ AND COMPROBANTE_PPTAL.TIPO     =T.CODIGO
+INNER JOIN CLASECNTPRES C 
+      ON T.CLASE=C.CODIGO
+ LEFT JOIN DETALLE_COMPROBANTE_PPTAL
+  ON COMPROBANTE_PPTAL.COMPANIA =DETALLE_COMPROBANTE_PPTAL.COMPANIA 
+ AND COMPROBANTE_PPTAL.ANO      =DETALLE_COMPROBANTE_PPTAL.ANO
+ AND COMPROBANTE_PPTAL.TIPO     =DETALLE_COMPROBANTE_PPTAL.TIPO_CPTE
+ AND COMPROBANTE_PPTAL.NUMERO   =DETALLE_COMPROBANTE_PPTAL.COMPROBANTE
+WHERE COMPROBANTE_PPTAL.COMPANIA = 's$compania$s'
+  AND COMPROBANTE_PPTAL.ANO      = s$anio$s
+  AND C.AFECTACION   NOT IN('A','R') 
+  AND C.CODIGO IN('DIS','RES','REO','EGR')
+GROUP BY COMPROBANTE_PPTAL.COMPANIA,
+       COMPROBANTE_PPTAL.ANO,
+       COMPROBANTE_PPTAL.TIPO,
+       COMPROBANTE_PPTAL.NUMERO,
+       COMPROBANTE_PPTAL.VLR_DOCUMENTO, 
+       COMPROBANTE_PPTAL.DEBITO,
+       T.CLASE
+HAVING COMPROBANTE_PPTAL.VLR_DOCUMENTO <> SUM(NVL(DETALLE_COMPROBANTE_PPTAL.VALOR_DEBITO,0)) 
+    OR COMPROBANTE_PPTAL.DEBITO        <> SUM(NVL(DETALLE_COMPROBANTE_PPTAL.VALOR_DEBITO,0))
+ )   
+ORDER BY COMPANIA, ANO, ORDEN,
+CASE WHEN CLASE IN('DIS') 
+              THEN 1 
+              ELSE CASE WHEN CLASE IN('RES') 
+                        THEN 2
+                        ELSE CASE WHEN CLASE IN('REO') 
+                                  THEN 3 
+                                  ELSE CASE WHEN CLASE IN('EGR') THEN 4
+                                            ELSE 5    
+                                            END 
+                                  END
+                        END
+               END , TIPO_CPTE, COMPROBANTE, CONSECUTIVO

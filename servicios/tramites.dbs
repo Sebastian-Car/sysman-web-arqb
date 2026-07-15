@@ -1,0 +1,1458 @@
+﻿<data name="tramites" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTramitesPagMonitortramitespagQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  T.COMPANIA, T.PROCESOS, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE PROCESO_NOM, TT.NOMBRE TIPOTRAMITE_NOM, N_ORIGEN.NOMBRE NODO_O_NOM, N_ACTUAL.NOMBRE NODO_A_NOM, T.DESCRIPCION, TI.NOMBRE ESTADO_NOM, EXTRACT(DAY FROM(SYSDATE - T.FECHA)) AS DIAS_TRANSCURRIDOS, PT.DOCUMENTO TERCERO, PT.NOMBRE NOMBRE_TERCERO, TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY') FECHA_RADICADO, TO_CHAR(T.FECHA, 'DD/MM/YYYY') FECHA, TO_CHAR(PCK_SYSMAN_UTL.FC_FECHAFINALHABIL(UN_COMPANIA =&gt; T.COMPANIA, UN_FECHA =&gt; TO_DATE(TO_CHAR(T.FECHA, 'DD/MM/YYYY'), 'DD/MM/YYYY' ), UN_DIAS =&gt; CASE WHEN SUM(PT1.ESTIMADO_DIAS) = 0 THEN 1 ELSE SUM(PT1.ESTIMADO_DIAS) END ), 'DD/MM/YYYY') FECHA_LIMITE_ESTIMADO, TO_CHAR(PCK_SYSMAN_UTL.FC_FECHAFINALHABIL(UN_COMPANIA =&gt; T.COMPANIA, UN_FECHA =&gt; TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY'), UN_DIAS =&gt; CASE WHEN SUM(PT1.ESTIMADO_DIAS) = 0 THEN 1 ELSE SUM(PT1.ESTIMADO_DIAS) END ), 'DD/MM/YYYY') FECHA_LIMITE, CASE WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) &lt; 0 THEN '#FF0000' WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM (SYSDATE - T.FECHA)) * 100 ) &gt;= 0 THEN '#00CC66' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#FF0000' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 80) / N_ORIGEN .TIEMPO_MAXIMO THEN '#FFFF33' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 80 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#3399FF' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#00CC66' END COLOR, T.USUARIO_INTERNO, T.CONTRATO_NUM  FROM TRAMITES T INNER JOIN PROCESOS P ON T.COMPANIA = P.COMPANIA AND T.PROCESOS = P.CODIGO INNER JOIN TIPOTRAMITES TT ON T.COMPANIA = TT.COMPANIA AND T.PROCESOS = TT.PROCESOS AND T.TIPO_TRAMITE = TT.TIPOTRAMITE LEFT JOIN PROCEDENCIA_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.PROCEDENCIA = PT.CODIGO INNER JOIN NODOS N_ORIGEN ON T.COMPANIA = N_ORIGEN.COMPANIA AND T.PROCESOS = N_ORIGEN.CODIGO_PROCESO AND T.NODO_ORIGEN = N_ORIGEN.CODIGO INNER JOIN NODOS N_ACTUAL ON T.COMPANIA = N_ACTUAL.COMPANIA AND T.PROCESOS = N_ACTUAL.CODIGO_PROCESO AND T.NODO_ACTUAL = N_ACTUAL.CODIGO INNER JOIN TIPOS TI ON T.ESTADO = TI.ID INNER JOIN PROYECCIONES_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.PROCESOS = PT.PROCESO AND T.NODO_ACTUAL = PT.NODO AND T.NUMERO = PT.TRAMITE AND T.TIPO_TRAMITE = PT.TIPO_TRAMITE INNER JOIN PROYECCIONES_TRAMITE PT1 ON T.COMPANIA = PT1.COMPANIA AND T.TIPO_TRAMITE = PT1.TIPO_TRAMITE AND T.PROCESOS = PT1.PROCESO AND T.NUMERO = PT1.TRAMITE AND T.NODO_ACTUAL = PT1.NODO WHERE T.COMPANIA = :COMPANIA AND T.USUARIO_INTERNO = :USUARIO_INTERNO AND T.ESTADO = 4 AND N_ORIGEN.CODIGO &lt;&gt; N_ACTUAL.CODIGO GROUP BY T.COMPANIA, T.PROCESOS, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE, TT.NOMBRE, N_ORIGEN.NOMBRE, N_ACTUAL.NOMBRE, T.DESCRIPCION, TI.NOMBRE, EXTRACT(DAY FROM(SYSDATE - T.FECHA)), PT.DOCUMENTO, PT.NOMBRE, TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), TO_CHAR(T.FECHA, 'DD/MM/YYYY'), CASE WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) &lt; 0 THEN '#FF0000' WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM (SYSDATE - T.FECHA)) * 100 ) &gt;= 0 THEN '#00CC66' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#FF0000' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 80) / N_ORIGEN .TIEMPO_MAXIMO THEN '#FFFF33' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 80 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#3399FF' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#00CC66' END, T.USUARIO_INTERNO, T.CONTRATO_NUM, PT.ESTIMADO_FECHA, ( T.FECHA + PT.ESTIMADO_DIAS )) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END)  LIKE UPPER( '%' || :PROCESO_NOM || '%')  AND (CASE WHEN TIPOTRAMITE_NOM IS NULL THEN ' ' ELSE UPPER(TIPOTRAMITE_NOM) END)  LIKE UPPER( '%' || :TIPOTRAMITE_NOM || '%')  AND (CASE WHEN NODO_O_NOM IS NULL THEN ' ' ELSE UPPER(NODO_O_NOM) END)  LIKE UPPER( '%' || :NODO_O_NOM || '%')  AND (CASE WHEN NODO_A_NOM IS NULL THEN ' ' ELSE UPPER(NODO_A_NOM) END)  LIKE UPPER( '%' || :NODO_A_NOM || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN ESTADO_NOM IS NULL THEN ' ' ELSE UPPER(ESTADO_NOM) END)  LIKE UPPER( '%' || :ESTADO_NOM || '%')  AND (CASE WHEN DIAS_TRANSCURRIDOS IS NULL THEN ' ' ELSE UPPER(DIAS_TRANSCURRIDOS) END)  LIKE UPPER(:DIAS_TRANSCURRIDOS || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER( '%' || :TERCERO || '%')  AND (CASE WHEN NOMBRE_TERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRE_TERCERO) END)  LIKE UPPER( '%' || :NOMBRE_TERCERO || '%')  AND (CASE WHEN FECHA_RADICADO IS NULL THEN ' ' ELSE UPPER(FECHA_RADICADO) END)  LIKE UPPER( '%' || :FECHA_RADICADO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER(:FECHA || '%')  AND (CASE WHEN FECHA_LIMITE_ESTIMADO IS NULL THEN ' ' ELSE UPPER(FECHA_LIMITE_ESTIMADO) END)  LIKE UPPER(:FECHA_LIMITE_ESTIMADO || '%')  AND (CASE WHEN FECHA_LIMITE IS NULL THEN ' ' ELSE UPPER(FECHA_LIMITE) END)  LIKE UPPER( '%' || :FECHA_LIMITE || '%')  AND (CASE WHEN CONTRATO_NUM IS NULL THEN ' ' ELSE UPPER(CONTRATO_NUM) END)  LIKE UPPER( '%' || :CONTRATO_NUM || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PROCESOS":"$PROCESOS","TIPO_TRAMITE":"$TIPO_TRAMITE","NUMERO":"$NUMERO(type:long)","PROCESO_NOM":"$PROCESO_NOM","TIPOTRAMITE_NOM":"$TIPOTRAMITE_NOM","NODO_O_NOM":"$NODO_O_NOM","NODO_A_NOM":"$NODO_A_NOM","DESCRIPCION":"$DESCRIPCION","ESTADO_NOM":"$ESTADO_NOM","DIAS_TRANSCURRIDOS":"$DIAS_TRANSCURRIDOS(type:integer)","TERCERO":"$TERCERO","NOMBRE_TERCERO":"$NOMBRE_TERCERO","FECHA_RADICADO":"$FECHA_RADICADO","FECHA":"$FECHA","FECHA_LIMITE_ESTIMADO":"$FECHA_LIMITE_ESTIMADO","FECHA_LIMITE":"$FECHA_LIMITE","COLOR":"$COLOR","USUARIO_INTERNO":"$USUARIO_INTERNO","CONTRATO_NUM":"$CONTRATO_NUM"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="USUARIO_INTERNO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="TIPOTRAMITE_NOM" sqlType="STRING"/>
+		<param name="NODO_O_NOM" sqlType="STRING"/>
+		<param name="NODO_A_NOM" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="ESTADO_NOM" sqlType="STRING"/>
+		<param name="DIAS_TRANSCURRIDOS" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRE_TERCERO" sqlType="STRING"/>
+		<param name="FECHA_RADICADO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="FECHA_LIMITE_ESTIMADO" sqlType="STRING"/>
+		<param name="FECHA_LIMITE" sqlType="STRING"/>
+		<param name="CONTRATO_NUM" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/monitortramitespag/pag">
+		<call-query href="getTramitesPagMonitortramitespagQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="USUARIO_INTERNO" query-param="USUARIO_INTERNO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="TIPOTRAMITE_NOM" query-param="TIPOTRAMITE_NOM"/>
+			<with-param name="NODO_O_NOM" query-param="NODO_O_NOM"/>
+			<with-param name="NODO_A_NOM" query-param="NODO_A_NOM"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="ESTADO_NOM" query-param="ESTADO_NOM"/>
+			<with-param name="DIAS_TRANSCURRIDOS" query-param="DIAS_TRANSCURRIDOS"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRE_TERCERO" query-param="NOMBRE_TERCERO"/>
+			<with-param name="FECHA_RADICADO" query-param="FECHA_RADICADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FECHA_LIMITE_ESTIMADO" query-param="FECHA_LIMITE_ESTIMADO"/>
+			<with-param name="FECHA_LIMITE" query-param="FECHA_LIMITE"/>
+			<with-param name="CONTRATO_NUM" query-param="CONTRATO_NUM"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumMonitortramitespagQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  T.COMPANIA, T.PROCESOS, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE PROCESO_NOM, TT.NOMBRE TIPOTRAMITE_NOM, N_ORIGEN.NOMBRE NODO_O_NOM, N_ACTUAL.NOMBRE NODO_A_NOM, T.DESCRIPCION, TI.NOMBRE ESTADO_NOM, EXTRACT(DAY FROM(SYSDATE - T.FECHA)) AS DIAS_TRANSCURRIDOS, PT.DOCUMENTO TERCERO, PT.NOMBRE NOMBRE_TERCERO, TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY') FECHA_RADICADO, TO_CHAR(T.FECHA, 'DD/MM/YYYY') FECHA, TO_CHAR(PCK_SYSMAN_UTL.FC_FECHAFINALHABIL(UN_COMPANIA =&gt; T.COMPANIA, UN_FECHA =&gt; TO_DATE(TO_CHAR(T.FECHA, 'DD/MM/YYYY'), 'DD/MM/YYYY' ), UN_DIAS =&gt; CASE WHEN SUM(PT1.ESTIMADO_DIAS) = 0 THEN 1 ELSE SUM(PT1.ESTIMADO_DIAS) END ), 'DD/MM/YYYY') FECHA_LIMITE_ESTIMADO, TO_CHAR(PCK_SYSMAN_UTL.FC_FECHAFINALHABIL(UN_COMPANIA =&gt; T.COMPANIA, UN_FECHA =&gt; TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY'), UN_DIAS =&gt; CASE WHEN SUM(PT1.ESTIMADO_DIAS) = 0 THEN 1 ELSE SUM(PT1.ESTIMADO_DIAS) END ), 'DD/MM/YYYY') FECHA_LIMITE, CASE WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) &lt; 0 THEN '#FF0000' WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM (SYSDATE - T.FECHA)) * 100 ) &gt;= 0 THEN '#00CC66' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#FF0000' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 80) / N_ORIGEN .TIEMPO_MAXIMO THEN '#FFFF33' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 80 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#3399FF' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#00CC66' END COLOR, T.USUARIO_INTERNO, T.CONTRATO_NUM  FROM TRAMITES T INNER JOIN PROCESOS P ON T.COMPANIA = P.COMPANIA AND T.PROCESOS = P.CODIGO INNER JOIN TIPOTRAMITES TT ON T.COMPANIA = TT.COMPANIA AND T.PROCESOS = TT.PROCESOS AND T.TIPO_TRAMITE = TT.TIPOTRAMITE LEFT JOIN PROCEDENCIA_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.PROCEDENCIA = PT.CODIGO INNER JOIN NODOS N_ORIGEN ON T.COMPANIA = N_ORIGEN.COMPANIA AND T.PROCESOS = N_ORIGEN.CODIGO_PROCESO AND T.NODO_ORIGEN = N_ORIGEN.CODIGO INNER JOIN NODOS N_ACTUAL ON T.COMPANIA = N_ACTUAL.COMPANIA AND T.PROCESOS = N_ACTUAL.CODIGO_PROCESO AND T.NODO_ACTUAL = N_ACTUAL.CODIGO INNER JOIN TIPOS TI ON T.ESTADO = TI.ID INNER JOIN PROYECCIONES_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.PROCESOS = PT.PROCESO AND T.NODO_ACTUAL = PT.NODO AND T.NUMERO = PT.TRAMITE AND T.TIPO_TRAMITE = PT.TIPO_TRAMITE INNER JOIN PROYECCIONES_TRAMITE PT1 ON T.COMPANIA = PT1.COMPANIA AND T.TIPO_TRAMITE = PT1.TIPO_TRAMITE AND T.PROCESOS = PT1.PROCESO AND T.NUMERO = PT1.TRAMITE AND T.NODO_ACTUAL = PT1.NODO WHERE T.COMPANIA = :COMPANIA AND T.USUARIO_INTERNO = :USUARIO_INTERNO AND T.ESTADO = 4 AND N_ORIGEN.CODIGO &lt;&gt; N_ACTUAL.CODIGO GROUP BY T.COMPANIA, T.PROCESOS, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE, TT.NOMBRE, N_ORIGEN.NOMBRE, N_ACTUAL.NOMBRE, T.DESCRIPCION, TI.NOMBRE, EXTRACT(DAY FROM(SYSDATE - T.FECHA)), PT.DOCUMENTO, PT.NOMBRE, TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), TO_CHAR(T.FECHA, 'DD/MM/YYYY'), CASE WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) &lt; 0 THEN '#FF0000' WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM (SYSDATE - T.FECHA)) * 100 ) &gt;= 0 THEN '#00CC66' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#FF0000' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 80) / N_ORIGEN .TIEMPO_MAXIMO THEN '#FFFF33' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 80 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#3399FF' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#00CC66' END, T.USUARIO_INTERNO, T.CONTRATO_NUM, PT.ESTIMADO_FECHA, ( T.FECHA + PT.ESTIMADO_DIAS )) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END)  LIKE UPPER( '%' || :PROCESO_NOM || '%')  AND (CASE WHEN TIPOTRAMITE_NOM IS NULL THEN ' ' ELSE UPPER(TIPOTRAMITE_NOM) END)  LIKE UPPER( '%' || :TIPOTRAMITE_NOM || '%')  AND (CASE WHEN NODO_O_NOM IS NULL THEN ' ' ELSE UPPER(NODO_O_NOM) END)  LIKE UPPER( '%' || :NODO_O_NOM || '%')  AND (CASE WHEN NODO_A_NOM IS NULL THEN ' ' ELSE UPPER(NODO_A_NOM) END)  LIKE UPPER( '%' || :NODO_A_NOM || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN ESTADO_NOM IS NULL THEN ' ' ELSE UPPER(ESTADO_NOM) END)  LIKE UPPER( '%' || :ESTADO_NOM || '%')  AND (CASE WHEN DIAS_TRANSCURRIDOS IS NULL THEN ' ' ELSE UPPER(DIAS_TRANSCURRIDOS) END)  LIKE UPPER(:DIAS_TRANSCURRIDOS || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER( '%' || :TERCERO || '%')  AND (CASE WHEN NOMBRE_TERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRE_TERCERO) END)  LIKE UPPER( '%' || :NOMBRE_TERCERO || '%')  AND (CASE WHEN FECHA_RADICADO IS NULL THEN ' ' ELSE UPPER(FECHA_RADICADO) END)  LIKE UPPER( '%' || :FECHA_RADICADO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER(:FECHA || '%')  AND (CASE WHEN FECHA_LIMITE_ESTIMADO IS NULL THEN ' ' ELSE UPPER(FECHA_LIMITE_ESTIMADO) END)  LIKE UPPER(:FECHA_LIMITE_ESTIMADO || '%')  AND (CASE WHEN FECHA_LIMITE IS NULL THEN ' ' ELSE UPPER(FECHA_LIMITE) END)  LIKE UPPER( '%' || :FECHA_LIMITE || '%')  AND (CASE WHEN CONTRATO_NUM IS NULL THEN ' ' ELSE UPPER(CONTRATO_NUM) END)  LIKE UPPER( '%' || :CONTRATO_NUM || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="USUARIO_INTERNO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="TIPOTRAMITE_NOM" sqlType="STRING"/>
+		<param name="NODO_O_NOM" sqlType="STRING"/>
+		<param name="NODO_A_NOM" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="ESTADO_NOM" sqlType="STRING"/>
+		<param name="DIAS_TRANSCURRIDOS" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRE_TERCERO" sqlType="STRING"/>
+		<param name="FECHA_RADICADO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="FECHA_LIMITE_ESTIMADO" sqlType="STRING"/>
+		<param name="FECHA_LIMITE" sqlType="STRING"/>
+		<param name="CONTRATO_NUM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/monitortramitespag/num">
+		<call-query href="getTramitesNumMonitortramitespagQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="USUARIO_INTERNO" query-param="USUARIO_INTERNO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="TIPOTRAMITE_NOM" query-param="TIPOTRAMITE_NOM"/>
+			<with-param name="NODO_O_NOM" query-param="NODO_O_NOM"/>
+			<with-param name="NODO_A_NOM" query-param="NODO_A_NOM"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="ESTADO_NOM" query-param="ESTADO_NOM"/>
+			<with-param name="DIAS_TRANSCURRIDOS" query-param="DIAS_TRANSCURRIDOS"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRE_TERCERO" query-param="NOMBRE_TERCERO"/>
+			<with-param name="FECHA_RADICADO" query-param="FECHA_RADICADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FECHA_LIMITE_ESTIMADO" query-param="FECHA_LIMITE_ESTIMADO"/>
+			<with-param name="FECHA_LIMITE" query-param="FECHA_LIMITE"/>
+			<with-param name="CONTRATO_NUM" query-param="CONTRATO_NUM"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPagNumdescfechanomestadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  T.NUMERO , T.DESCRIPCION , TO_CHAR(T.FECHA,'DD/MM/YYYY') FECHA , TI.NOMBRE ESTADO_NOM  FROM TRAMITES T INNER JOIN TIPOS TI ON T.ESTADO = TI.ID WHERE T.COMPANIA = :COMPANIA AND T.PROCESOS = :PROCESO AND T.TIPO_TRAMITE = :TIPO_TRAMITE) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN ESTADO_NOM IS NULL THEN ' ' ELSE UPPER(ESTADO_NOM) END)  LIKE UPPER( '%' || :ESTADO_NOM || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:long)","DESCRIPCION":"$DESCRIPCION","FECHA":"$FECHA","ESTADO_NOM":"$ESTADO_NOM"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ESTADO_NOM" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/numdescfechanomestado/pag">
+		<call-query href="getTramitesPagNumdescfechanomestadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ESTADO_NOM" query-param="ESTADO_NOM"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumNumdescfechanomestadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  T.NUMERO , T.DESCRIPCION , TO_CHAR(T.FECHA,'DD/MM/YYYY') FECHA , TI.NOMBRE ESTADO_NOM  FROM TRAMITES T INNER JOIN TIPOS TI ON T.ESTADO = TI.ID WHERE T.COMPANIA = :COMPANIA AND T.PROCESOS = :PROCESO AND T.TIPO_TRAMITE = :TIPO_TRAMITE) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN ESTADO_NOM IS NULL THEN ' ' ELSE UPPER(ESTADO_NOM) END)  LIKE UPPER( '%' || :ESTADO_NOM || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ESTADO_NOM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/numdescfechanomestado/num">
+		<call-query href="getTramitesNumNumdescfechanomestadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ESTADO_NOM" query-param="ESTADO_NOM"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPagTramitesconmenuasigQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  T.NUMERO , T.DESCRIPCION , TO_CHAR(T.FECHA,'DD/MM/YYYY') FECHA , TI.NOMBRE ESTADO_NOM , DT.CONSECUTIVO DETALLE, T.NODO_ACTUAL  FROM TRAMITES T INNER JOIN TIPOS TI ON T.ESTADO = TI.ID INNER JOIN D_TRAMITES DT ON T.COMPANIA = DT.COMPANIA AND T.TIPO_TRAMITE = DT.TIPO_TRAMITE AND T.PROCESOS = DT.PROCESOS AND T.NUMERO = DT.NUMERO WHERE T.COMPANIA = :COMPANIA AND T.PROCESOS = :PROCESO AND T.TIPO_TRAMITE = :TIPO_TRAMITE AND DT.ESTADO IN(:ESTADO) AND DT.MENU IS NOT NULL AND T.USUARIO_INTERNO IN(:USUARIO)) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN ESTADO_NOM IS NULL THEN ' ' ELSE UPPER(ESTADO_NOM) END)  LIKE UPPER( '%' || :ESTADO_NOM || '%')  AND (CASE WHEN DETALLE IS NULL THEN ' ' ELSE UPPER(DETALLE) END)  LIKE UPPER(:DETALLE || '%')  AND (CASE WHEN NODO_ACTUAL IS NULL THEN ' ' ELSE UPPER(NODO_ACTUAL) END)  LIKE UPPER(:NODO_ACTUAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:long)","DESCRIPCION":"$DESCRIPCION","FECHA":"$FECHA","ESTADO_NOM":"$ESTADO_NOM","DETALLE":"$DETALLE(type:long)","NODO_ACTUAL":"$NODO_ACTUAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ESTADO_NOM" sqlType="STRING"/>
+		<param name="DETALLE" sqlType="STRING"/>
+		<param name="NODO_ACTUAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramitesconmenuasig/pag">
+		<call-query href="getTramitesPagTramitesconmenuasigQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ESTADO_NOM" query-param="ESTADO_NOM"/>
+			<with-param name="DETALLE" query-param="DETALLE"/>
+			<with-param name="NODO_ACTUAL" query-param="NODO_ACTUAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumTramitesconmenuasigQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  T.NUMERO , T.DESCRIPCION , TO_CHAR(T.FECHA,'DD/MM/YYYY') FECHA , TI.NOMBRE ESTADO_NOM , DT.CONSECUTIVO DETALLE, T.NODO_ACTUAL  FROM TRAMITES T INNER JOIN TIPOS TI ON T.ESTADO = TI.ID INNER JOIN D_TRAMITES DT ON T.COMPANIA = DT.COMPANIA AND T.TIPO_TRAMITE = DT.TIPO_TRAMITE AND T.PROCESOS = DT.PROCESOS AND T.NUMERO = DT.NUMERO WHERE T.COMPANIA = :COMPANIA AND T.PROCESOS = :PROCESO AND T.TIPO_TRAMITE = :TIPO_TRAMITE AND DT.ESTADO IN(:ESTADO) AND DT.MENU IS NOT NULL AND T.USUARIO_INTERNO IN(:USUARIO)) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN ESTADO_NOM IS NULL THEN ' ' ELSE UPPER(ESTADO_NOM) END)  LIKE UPPER( '%' || :ESTADO_NOM || '%')  AND (CASE WHEN DETALLE IS NULL THEN ' ' ELSE UPPER(DETALLE) END)  LIKE UPPER(:DETALLE || '%')  AND (CASE WHEN NODO_ACTUAL IS NULL THEN ' ' ELSE UPPER(NODO_ACTUAL) END)  LIKE UPPER(:NODO_ACTUAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ESTADO_NOM" sqlType="STRING"/>
+		<param name="DETALLE" sqlType="STRING"/>
+		<param name="NODO_ACTUAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramitesconmenuasig/num">
+		<call-query href="getTramitesNumTramitesconmenuasigQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ESTADO_NOM" query-param="ESTADO_NOM"/>
+			<with-param name="DETALLE" query-param="DETALLE"/>
+			<with-param name="NODO_ACTUAL" query-param="NODO_ACTUAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesProcesosportramiteQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DISTINCT P.CODIGO, CONCAT('(',CONCAT(P.CODIGO,CONCAT(') ',P.NOMBRE) ) ) NOMBRE FROM TRAMITES T INNER JOIN PROCESOS P ON T.COMPANIA = P.COMPANIA AND T.PROCESOS = P.CODIGO WHERE T.COMPANIA =:COMPANIA AND T.ESTADO =:ESTADO AND T.USUARIO_INTERNO =:USUARIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/procesosportramite">
+		<call-query href="getTramitesProcesosportramiteQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesTipostramiteQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT TT.TIPOTRAMITE , TT.NOMBRE  FROM TRAMITES T INNER JOIN TIPOTRAMITES TT ON T.COMPANIA = TT.COMPANIA AND T.PROCESOS = TT.PROCESOS AND T.TIPO_TRAMITE = TT.TIPOTRAMITE WHERE T.COMPANIA = :COMPANIA AND T.PROCESOS = :PROCESO AND T.ESTADO = :ESTADO AND T.USUARIO_INTERNO = :USUARIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TIPOTRAMITE":"$TIPOTRAMITE","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/tipostramite">
+		<call-query href="getTramitesTipostramiteQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesTramitesporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DISTINCT TRAMITES.NUMERO FROM TRAMITES WHERE TRAMITES.COMPANIA = :COMPANIA ORDER BY TRAMITES.NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramitesporcompania">
+		<call-query href="getTramitesTramitesporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertTramites" keyColumns="COMPANIA,PROCESOS,TIPO_TRAMITE,NUMERO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TRAMITES (COMPANIA, PROCESOS, TIPO_TRAMITE, NUMERO, USUARIO_INTERNO, USUARIO_EXTERNO, PROCEDENCIA, DESTINO, CIUDAD_ORIGEN, PAIS_ORIGEN, DEPARTAMENTO_ORIGEN, DIRECCION_PROCEDENCIA, DIRECCION_DESTINO, REFERENCIA, REFERENCIA1, TIPO_REFERENCIA, TIPO_REFERENCIA1, MODULO, DESCRIPCION, ESTADO, FECHA_REAL, HORA, FECHA, NODO_ORIGEN, NODO_ACTUAL, CODIGO_CALIDAD, SERIE_DOCUMENTAL, DESC_NODO_ACTUAL, CONTRATO_NUM, CANTIDAD_ANEXOS, CANTIDAD_OFICIOS, CLASE_ANEXOS, CORRESPONDENCIA, TIPO_MEDIO, TIPO_POBLACION, DEPENDENCIA, VULNERABILIDAD, OCUPACION, ESCOLARIDAD, RANGO_EDAD, TIPO_PERSONA, DESC_TIPO_POBLACION, DESC_OCUPACION, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :PROCESOS, :TIPO_TRAMITE, :NUMERO, :USUARIO_INTERNO, :USUARIO_EXTERNO, :PROCEDENCIA, :DESTINO, :CIUDAD_ORIGEN, :PAIS_ORIGEN, :DEPARTAMENTO_ORIGEN, :DIRECCION_PROCEDENCIA, :DIRECCION_DESTINO, :REFERENCIA, :REFERENCIA1, :TIPO_REFERENCIA, :TIPO_REFERENCIA1, :MODULO, :DESCRIPCION, :ESTADO, TO_DATE(:FECHA_REAL,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:HORA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :NODO_ORIGEN, :NODO_ACTUAL, :CODIGO_CALIDAD, :SERIE_DOCUMENTAL, :DESC_NODO_ACTUAL, :CONTRATO_NUM, :CANTIDAD_ANEXOS, :CANTIDAD_OFICIOS, :CLASE_ANEXOS, :CORRESPONDENCIA, :TIPO_MEDIO, :TIPO_POBLACION, :DEPENDENCIA, :VULNERABILIDAD, :OCUPACION, :ESCOLARIDAD, :RANGO_EDAD, :TIPO_PERSONA, :DESC_TIPO_POBLACION, :DESC_OCUPACION, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_PROCESOS":"$PROCESOS","KEY_TIPO_TRAMITE":"$TIPO_TRAMITE","KEY_NUMERO":"$NUMERO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESOS" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="USUARIO_INTERNO" sqlType="STRING"/>
+		<param name="USUARIO_EXTERNO" sqlType="STRING"/>
+		<param defaultValue="" name="PROCEDENCIA" sqlType="STRING"/>
+		<param defaultValue="" name="DESTINO" sqlType="STRING"/>
+		<param name="CIUDAD_ORIGEN" sqlType="STRING"/>
+		<param name="PAIS_ORIGEN" sqlType="STRING"/>
+		<param name="DEPARTAMENTO_ORIGEN" sqlType="STRING"/>
+		<param defaultValue="" name="DIRECCION_PROCEDENCIA" sqlType="STRING"/>
+		<param defaultValue="" name="DIRECCION_DESTINO" sqlType="STRING"/>
+		<param defaultValue="" name="REFERENCIA" sqlType="STRING"/>
+		<param defaultValue="" name="REFERENCIA1" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_REFERENCIA" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_REFERENCIA1" sqlType="STRING"/>
+		<param defaultValue="" name="MODULO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="4" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="SYSDATE" name="FECHA_REAL" sqlType="STRING"/>
+		<param defaultValue="" name="HORA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param name="NODO_ORIGEN" sqlType="STRING"/>
+		<param name="NODO_ACTUAL" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGO_CALIDAD" sqlType="STRING"/>
+		<param defaultValue="9999999999" name="SERIE_DOCUMENTAL" sqlType="STRING"/>
+		<param defaultValue="" name="DESC_NODO_ACTUAL" sqlType="STRING"/>
+		<param defaultValue="" name="CONTRATO_NUM" sqlType="STRING"/>
+		<param defaultValue="" name="CANTIDAD_ANEXOS" sqlType="STRING"/>
+		<param defaultValue="" name="CANTIDAD_OFICIOS" sqlType="STRING"/>
+		<param defaultValue="" name="CLASE_ANEXOS" sqlType="STRING"/>
+		<param defaultValue="" name="CORRESPONDENCIA" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_MEDIO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_POBLACION" sqlType="STRING"/>
+		<param defaultValue="" name="DEPENDENCIA" sqlType="STRING"/>
+		<param defaultValue="" name="VULNERABILIDAD" sqlType="STRING"/>
+		<param defaultValue="" name="OCUPACION" sqlType="STRING"/>
+		<param defaultValue="" name="ESCOLARIDAD" sqlType="STRING"/>
+		<param defaultValue="" name="RANGO_EDAD" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_PERSONA" sqlType="STRING"/>
+		<param defaultValue="" name="DESC_TIPO_POBLACION" sqlType="STRING"/>
+		<param defaultValue="" name="DESC_OCUPACION" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="tramites">
+		<call-query href="insertTramites">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESOS" query-param="PROCESOS"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="USUARIO_INTERNO" query-param="USUARIO_INTERNO"/>
+			<with-param name="USUARIO_EXTERNO" query-param="USUARIO_EXTERNO"/>
+			<with-param name="PROCEDENCIA" query-param="PROCEDENCIA"/>
+			<with-param name="DESTINO" query-param="DESTINO"/>
+			<with-param name="CIUDAD_ORIGEN" query-param="CIUDAD_ORIGEN"/>
+			<with-param name="PAIS_ORIGEN" query-param="PAIS_ORIGEN"/>
+			<with-param name="DEPARTAMENTO_ORIGEN" query-param="DEPARTAMENTO_ORIGEN"/>
+			<with-param name="DIRECCION_PROCEDENCIA" query-param="DIRECCION_PROCEDENCIA"/>
+			<with-param name="DIRECCION_DESTINO" query-param="DIRECCION_DESTINO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="REFERENCIA1" query-param="REFERENCIA1"/>
+			<with-param name="TIPO_REFERENCIA" query-param="TIPO_REFERENCIA"/>
+			<with-param name="TIPO_REFERENCIA1" query-param="TIPO_REFERENCIA1"/>
+			<with-param name="MODULO" query-param="MODULO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHA_REAL" query-param="FECHA_REAL"/>
+			<with-param name="HORA" query-param="HORA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NODO_ORIGEN" query-param="NODO_ORIGEN"/>
+			<with-param name="NODO_ACTUAL" query-param="NODO_ACTUAL"/>
+			<with-param name="CODIGO_CALIDAD" query-param="CODIGO_CALIDAD"/>
+			<with-param name="SERIE_DOCUMENTAL" query-param="SERIE_DOCUMENTAL"/>
+			<with-param name="DESC_NODO_ACTUAL" query-param="DESC_NODO_ACTUAL"/>
+			<with-param name="CONTRATO_NUM" query-param="CONTRATO_NUM"/>
+			<with-param name="CANTIDAD_ANEXOS" query-param="CANTIDAD_ANEXOS"/>
+			<with-param name="CANTIDAD_OFICIOS" query-param="CANTIDAD_OFICIOS"/>
+			<with-param name="CLASE_ANEXOS" query-param="CLASE_ANEXOS"/>
+			<with-param name="CORRESPONDENCIA" query-param="CORRESPONDENCIA"/>
+			<with-param name="TIPO_MEDIO" query-param="TIPO_MEDIO"/>
+			<with-param name="TIPO_POBLACION" query-param="TIPO_POBLACION"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="VULNERABILIDAD" query-param="VULNERABILIDAD"/>
+			<with-param name="OCUPACION" query-param="OCUPACION"/>
+			<with-param name="ESCOLARIDAD" query-param="ESCOLARIDAD"/>
+			<with-param name="RANGO_EDAD" query-param="RANGO_EDAD"/>
+			<with-param name="TIPO_PERSONA" query-param="TIPO_PERSONA"/>
+			<with-param name="DESC_TIPO_POBLACION" query-param="DESC_TIPO_POBLACION"/>
+			<with-param name="DESC_OCUPACION" query-param="DESC_OCUPACION"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTramites" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TRAMITES WHERE TRAMITES.COMPANIA= :KEY_COMPANIA AND TRAMITES.PROCESOS= :KEY_PROCESOS AND TRAMITES.TIPO_TRAMITE= :KEY_TIPO_TRAMITE AND TRAMITES.NUMERO= :KEY_NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_PROCESOS" sqlType="STRING"/>
+		<param name="KEY_TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="tramites">
+		<call-query href="deleteTramites">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_PROCESOS" query-param="KEY_PROCESOS"/>
+			<with-param name="KEY_TIPO_TRAMITE" query-param="KEY_TIPO_TRAMITE"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+<query id="getTramitesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT T.COMPANIA, T.PROCESOS, P.NOMBRE PROCESO_NOM, T.TIPO_TRAMITE, TT.NOMBRE TIPOTRAMITE_NOM, T.NUMERO, N_ORIGEN.NOMBRE NODO_O_NOM, N_ACTUAL.NOMBRE NODO_A_NOM, T.ESTADO, TI.NOMBRE ESTADO_NOM, TO_CHAR(T.FECHA, 'DD/MM/YYYY') FECHA, ( SELECT NOMBRE FROM TIPOS WHERE ID = CASE WHEN :USUARIO_INTERNO IN ( SELECT RU.USUARIO FROM NODO_RACI NR INNER JOIN ROL_USUARIO RU ON NR.COMPANIA = RU.COMPANIA AND NR.CODIGO_ROL = RU.CODIGO_ROL WHERE NR.COMPANIA = T.COMPANIA AND NR.CODIGO_PROCESO = T.PROCESOS AND NR.CODIGO_NODO = T.NODO_ACTUAL AND NR.CODIGO_RACI = 9 ) THEN 9 ELSE 10 END ) RACI_NOM, T.CONTRATO_NUM FROM TRAMITES T INNER JOIN PROCESOS P ON T.COMPANIA = P.COMPANIA AND T.PROCESOS = P.CODIGO INNER JOIN TIPOTRAMITES TT ON T.COMPANIA = TT.COMPANIA AND T.PROCESOS = TT.PROCESOS AND T.TIPO_TRAMITE = TT.TIPOTRAMITE INNER JOIN NODOS N_ORIGEN ON T.COMPANIA = N_ORIGEN.COMPANIA AND T.PROCESOS = N_ORIGEN.CODIGO_PROCESO AND T.NODO_ORIGEN = N_ORIGEN.CODIGO INNER JOIN NODOS N_ACTUAL ON T.COMPANIA = N_ACTUAL.COMPANIA AND T.PROCESOS = N_ACTUAL.CODIGO_PROCESO AND T.NODO_ACTUAL = N_ACTUAL.CODIGO INNER JOIN TIPOS TI ON T.ESTADO = TI.ID LEFT JOIN PROYECCIONES_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.PROCESOS = PT.PROCESO AND T.NODO_ACTUAL = PT.NODO AND T.NUMERO = PT.TRAMITE AND T.TIPO_TRAMITE = PT.TIPO_TRAMITE WHERE T.COMPANIA = :COMPANIA AND T.USUARIO_INTERNO = :USUARIO_INTERNO AND INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE(:ESTADO,' ','') ),CONCAT( '',CONCAT( TO_CHAR(T.ESTADO), '')),1) &gt; 0 AND N_ORIGEN.CODIGO = N_ACTUAL.CODIGO ORDER BY T.NUMERO DESC) INI WHERE (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN TIPOTRAMITE_NOM IS NULL THEN ' ' ELSE UPPER(TIPOTRAMITE_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:TIPOTRAMITE_NOM), '%')) AND (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN NODO_O_NOM IS NULL THEN ' ' ELSE UPPER(NODO_O_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_O_NOM), '%')) AND (CASE WHEN NODO_A_NOM IS NULL THEN ' ' ELSE UPPER(NODO_A_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_A_NOM), '%')) AND (CASE WHEN ESTADO_NOM IS NULL THEN ' ' ELSE UPPER(ESTADO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO_NOM), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN RACI_NOM IS NULL THEN ' ' ELSE UPPER(RACI_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:RACI_NOM), '%')) AND (CASE WHEN CONTRATO_NUM IS NULL THEN ' ' ELSE UPPER(CONTRATO_NUM) END) LIKE UPPER(CONCAT(:CONTRATO_NUM, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PROCESOS":"$PROCESOS","PROCESO_NOM":"$PROCESO_NOM","TIPO_TRAMITE":"$TIPO_TRAMITE","TIPOTRAMITE_NOM":"$TIPOTRAMITE_NOM","NUMERO":"$NUMERO(type:long)","NODO_O_NOM":"$NODO_O_NOM","NODO_A_NOM":"$NODO_A_NOM","ESTADO":"$ESTADO(type:integer)","ESTADO_NOM":"$ESTADO_NOM","FECHA":"$FECHA","RACI_NOM":"$RACI_NOM","CONTRATO_NUM":"$CONTRATO_NUM"}]}}		</result>
+		<param name="USUARIO_INTERNO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="TIPOTRAMITE_NOM" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="NODO_O_NOM" sqlType="STRING"/>
+		<param name="NODO_A_NOM" sqlType="STRING"/>
+		<param name="ESTADO_NOM" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="RACI_NOM" sqlType="STRING"/>
+		<param name="CONTRATO_NUM" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites">
+		<call-query href="getTramitesPaginaQuery">
+			<with-param name="USUARIO_INTERNO" query-param="USUARIO_INTERNO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="TIPOTRAMITE_NOM" query-param="TIPOTRAMITE_NOM"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="NODO_O_NOM" query-param="NODO_O_NOM"/>
+			<with-param name="NODO_A_NOM" query-param="NODO_A_NOM"/>
+			<with-param name="ESTADO_NOM" query-param="ESTADO_NOM"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="RACI_NOM" query-param="RACI_NOM"/>
+			<with-param name="CONTRATO_NUM" query-param="CONTRATO_NUM"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT T.COMPANIA, T.PROCESOS, P.NOMBRE PROCESO_NOM, T.TIPO_TRAMITE, TT.NOMBRE TIPOTRAMITE_NOM, T.NUMERO, N_ORIGEN.NOMBRE NODO_O_NOM, N_ACTUAL.NOMBRE NODO_A_NOM, T.ESTADO, TI.NOMBRE ESTADO_NOM, TO_CHAR(T.FECHA, 'DD/MM/YYYY') FECHA, ( SELECT NOMBRE FROM TIPOS WHERE ID = CASE WHEN :USUARIO_INTERNO IN ( SELECT RU.USUARIO FROM NODO_RACI NR INNER JOIN ROL_USUARIO RU ON NR.COMPANIA = RU.COMPANIA AND NR.CODIGO_ROL = RU.CODIGO_ROL WHERE NR.COMPANIA = T.COMPANIA AND NR.CODIGO_PROCESO = T.PROCESOS AND NR.CODIGO_NODO = T.NODO_ACTUAL AND NR.CODIGO_RACI = 9 ) THEN 9 ELSE 10 END ) RACI_NOM, T.CONTRATO_NUM FROM TRAMITES T INNER JOIN PROCESOS P ON T.COMPANIA = P.COMPANIA AND T.PROCESOS = P.CODIGO INNER JOIN TIPOTRAMITES TT ON T.COMPANIA = TT.COMPANIA AND T.PROCESOS = TT.PROCESOS AND T.TIPO_TRAMITE = TT.TIPOTRAMITE INNER JOIN NODOS N_ORIGEN ON T.COMPANIA = N_ORIGEN.COMPANIA AND T.PROCESOS = N_ORIGEN.CODIGO_PROCESO AND T.NODO_ORIGEN = N_ORIGEN.CODIGO INNER JOIN NODOS N_ACTUAL ON T.COMPANIA = N_ACTUAL.COMPANIA AND T.PROCESOS = N_ACTUAL.CODIGO_PROCESO AND T.NODO_ACTUAL = N_ACTUAL.CODIGO INNER JOIN TIPOS TI ON T.ESTADO = TI.ID LEFT JOIN PROYECCIONES_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.PROCESOS = PT.PROCESO AND T.NODO_ACTUAL = PT.NODO AND T.NUMERO = PT.TRAMITE AND T.TIPO_TRAMITE = PT.TIPO_TRAMITE WHERE T.COMPANIA = :COMPANIA AND T.USUARIO_INTERNO = :USUARIO_INTERNO AND INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE(:ESTADO,' ','') ),CONCAT( '',CONCAT( TO_CHAR(T.ESTADO), '')),1) &gt; 0 AND N_ORIGEN.CODIGO = N_ACTUAL.CODIGO ORDER BY T.NUMERO DESC) INI WHERE (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN TIPOTRAMITE_NOM IS NULL THEN ' ' ELSE UPPER(TIPOTRAMITE_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:TIPOTRAMITE_NOM), '%')) AND (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN NODO_O_NOM IS NULL THEN ' ' ELSE UPPER(NODO_O_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_O_NOM), '%')) AND (CASE WHEN NODO_A_NOM IS NULL THEN ' ' ELSE UPPER(NODO_A_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_A_NOM), '%')) AND (CASE WHEN ESTADO_NOM IS NULL THEN ' ' ELSE UPPER(ESTADO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO_NOM), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN RACI_NOM IS NULL THEN ' ' ELSE UPPER(RACI_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:RACI_NOM), '%')) AND (CASE WHEN CONTRATO_NUM IS NULL THEN ' ' ELSE UPPER(CONTRATO_NUM) END) LIKE UPPER(CONCAT(:CONTRATO_NUM, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="USUARIO_INTERNO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="TIPOTRAMITE_NOM" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="NODO_O_NOM" sqlType="STRING"/>
+		<param name="NODO_A_NOM" sqlType="STRING"/>
+		<param name="ESTADO_NOM" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="RACI_NOM" sqlType="STRING"/>
+		<param name="CONTRATO_NUM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/numero">
+		<call-query href="getTramitesNumeroQuery">
+			<with-param name="USUARIO_INTERNO" query-param="USUARIO_INTERNO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="TIPOTRAMITE_NOM" query-param="TIPOTRAMITE_NOM"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="NODO_O_NOM" query-param="NODO_O_NOM"/>
+			<with-param name="NODO_A_NOM" query-param="NODO_A_NOM"/>
+			<with-param name="ESTADO_NOM" query-param="ESTADO_NOM"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="RACI_NOM" query-param="RACI_NOM"/>
+			<with-param name="CONTRATO_NUM" query-param="CONTRATO_NUM"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT TRAMITES.COMPANIA, TRAMITES.PROCESOS, TRAMITES.TIPO_TRAMITE, TRAMITES.NUMERO, TRAMITES.USUARIO_INTERNO, TRAMITES.USUARIO_EXTERNO, TRAMITES.PROCEDENCIA, TRAMITES.DESTINO, TRAMITES.CIUDAD_ORIGEN, TRAMITES.PAIS_ORIGEN, TRAMITES.DEPARTAMENTO_ORIGEN, PROCEDENCIA_TRAMITE.DIRECCION DIRECCION_PROCEDENCIA, TRAMITES.DIRECCION_DESTINO, TRAMITES.REFERENCIA, TRAMITES.REFERENCIA1, TRAMITES.TIPO_REFERENCIA, TRAMITES.TIPO_REFERENCIA1, TRAMITES.MODULO, TRAMITES.DESCRIPCION, TRAMITES.ESTADO, ( TO_CHAR(TRAMITES.FECHA_REAL, 'DD/MM/YYYY HH24:MI:SS') ) FECHA_REAL, ( TO_CHAR(TRAMITES.HORA, 'DD/MM/YYYY HH24:MI:SS') ) HORA, ( TO_CHAR(TRAMITES.FECHA, 'DD/MM/YYYY HH24:MI:SS') ) FECHA, TRAMITES.NODO_ORIGEN, N_ORIGEN.NOMBRE NODO_O_NOM, TRAMITES.NODO_ACTUAL, N_ACTUAL.NOMBRE NODO_A_NOM, TRAMITES.CODIGO_CALIDAD, TRAMITES.SERIE_DOCUMENTAL, SD.NOMBRE SERIE_DOCUMENTAL_NOM, ( CASE N_ACTUAL.NODO_FINAL WHEN 0 THEN 'false' ELSE 'true' END ) NODO_FINAL, TRAMITES.DESC_NODO_ACTUAL, TRAMITES.CONTRATO_NUM, ( TO_CHAR(TRAMITES.DATE_CREATED, 'DD/MM/YYYY HH24:MI:SS') ) DATE_CREATED, TRAMITES.CREATED_BY, TRAMITES.MODIFIED_BY, ( TO_CHAR(TRAMITES.DATE_MODIFIED, 'DD/MM/YYYY HH24:MI:SS') ) DATE_MODIFIED, TRAMITES.CANTIDAD_ANEXOS, TRAMITES.CANTIDAD_OFICIOS, TRAMITES.CLASE_ANEXOS, TRAMITES.CORRESPONDENCIA, ( TO_CHAR(PT.ESTIMADO_FECHA, 'DD/MM/YYYY HH24:MI:SS') ) FECHA_LIMITE, TRAMITES.TIPO_MEDIO, TIPO_MEDIO.NOMBRE AS TIPO_MEDIO_NOM, TRAMITES.TIPO_POBLACION, PROCEDENCIA_TRAMITE.NOMBRE NOMBRE_PROCEDENCIA, PROCEDENCIA_TRAMITE.DOCUMENTO NIT_PROCEDENCIA, TRAMITES.DEPENDENCIA, DEPENDENCIA.NOMBRE AS NOMBRE_DEPENDENCIA, URLSERVICIO.URL, ( CASE N_ACTUAL.ENVIA_CORREO WHEN 0 THEN 'false' ELSE 'true' END ) ENVIA_CORREO, ( CASE N_ACTUAL.PROCEDENCIA_AUT WHEN 0 THEN 'false' ELSE 'true' END ) PROCEDENCIA_AUT, ( CASE N_ACTUAL.RECEPCION_CORRES WHEN 0 THEN 'false' ELSE 'true' END ) RECEPCION_CORRES, ( CASE N_ACTUAL.ENVIO_CORRES WHEN 0 THEN 'false' ELSE 'true' END ) ENVIO_CORRES,TRAMITES.OCUPACION, TRAMITES.VULNERABILIDAD, TRAMITES.ESCOLARIDAD, TRAMITES.RANGO_EDAD, TRAMITES.TIPO_PERSONA, TRAMITES.DESC_TIPO_POBLACION, TRAMITES.DESC_OCUPACION,(CASE N_ACTUAL.PRORROGA WHEN 0 THEN 'false' ELSE 'true' END) PRORROGA,(TO_CHAR(TRAMITES.FECHA_PRORROGA,'DD/MM/YYYY HH24:MI:SS')) FECHA_PRORROGA FROM TRAMITES INNER JOIN NODOS N_ORIGEN ON TRAMITES.COMPANIA = N_ORIGEN.COMPANIA AND TRAMITES.PROCESOS = N_ORIGEN.CODIGO_PROCESO AND TRAMITES.NODO_ORIGEN = N_ORIGEN.CODIGO LEFT JOIN DEPENDENCIA ON TRAMITES.COMPANIA = DEPENDENCIA.COMPANIA AND TRAMITES.DEPENDENCIA = DEPENDENCIA.CODIGO INNER JOIN NODOS N_ACTUAL ON TRAMITES.COMPANIA = N_ACTUAL.COMPANIA AND TRAMITES.PROCESOS = N_ACTUAL.CODIGO_PROCESO AND TRAMITES.NODO_ACTUAL = N_ACTUAL.CODIGO LEFT JOIN SERIEDOCUMENTAL SD ON TRAMITES.COMPANIA = SD.COMPANIA AND TRAMITES.SERIE_DOCUMENTAL = SD.CODIGO LEFT JOIN PROYECCIONES_TRAMITE PT ON TRAMITES.COMPANIA = PT.COMPANIA AND TRAMITES.PROCESOS = PT.PROCESO AND TRAMITES.NODO_ACTUAL = PT.NODO AND TRAMITES.NUMERO = PT.TRAMITE AND TRAMITES.TIPO_TRAMITE = PT.TIPO_TRAMITE LEFT JOIN PROCEDENCIA_TRAMITE ON PROCEDENCIA_TRAMITE.COMPANIA = TRAMITES.COMPANIA AND PROCEDENCIA_TRAMITE.CODIGO = TRAMITES.PROCEDENCIA INNER JOIN PROCESOS ON TRAMITES.COMPANIA = PROCESOS.COMPANIA AND TRAMITES.PROCESOS = PROCESOS.CODIGO LEFT JOIN URLSERVICIO ON PROCESOS.COMPANIA = URLSERVICIO.COMPANIA AND PROCESOS.TRAE_DEUDA = URLSERVICIO.CODIGO LEFT JOIN TIPO_MEDIO ON TRAMITES.COMPANIA = TIPO_MEDIO.COMPANIA AND TRAMITES.TIPO_MEDIO = TIPO_MEDIO.CODIGO WHERE TRAMITES.COMPANIA= :KEY_COMPANIA AND TRAMITES.PROCESOS= :KEY_PROCESOS AND TRAMITES.TIPO_TRAMITE= :KEY_TIPO_TRAMITE AND TRAMITES.NUMERO= :KEY_NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PROCESOS":"$PROCESOS","TIPO_TRAMITE":"$TIPO_TRAMITE","NUMERO":"$NUMERO(type:long)","USUARIO_INTERNO":"$USUARIO_INTERNO","USUARIO_EXTERNO":"$USUARIO_EXTERNO","PROCEDENCIA":"$PROCEDENCIA","DESTINO":"$DESTINO","CIUDAD_ORIGEN":"$CIUDAD_ORIGEN","PAIS_ORIGEN":"$PAIS_ORIGEN","DEPARTAMENTO_ORIGEN":"$DEPARTAMENTO_ORIGEN","DIRECCION_PROCEDENCIA":"$DIRECCION_PROCEDENCIA","DIRECCION_DESTINO":"$DIRECCION_DESTINO","REFERENCIA":"$REFERENCIA","REFERENCIA1":"$REFERENCIA1","TIPO_REFERENCIA":"$TIPO_REFERENCIA(type:integer)","TIPO_REFERENCIA1":"$TIPO_REFERENCIA1(type:integer)","MODULO":"$MODULO","DESCRIPCION":"$DESCRIPCION","ESTADO":"$ESTADO(type:integer)","FECHA_REAL":"$FECHA_REAL","HORA":"$HORA","FECHA":"$FECHA","NODO_ORIGEN":"$NODO_ORIGEN","NODO_O_NOM":"$NODO_O_NOM","NODO_ACTUAL":"$NODO_ACTUAL","NODO_A_NOM":"$NODO_A_NOM","CODIGO_CALIDAD":"$CODIGO_CALIDAD","SERIE_DOCUMENTAL":"$SERIE_DOCUMENTAL","SERIE_DOCUMENTAL_NOM":"$SERIE_DOCUMENTAL_NOM","NODO_FINAL":"$NODO_FINAL","DESC_NODO_ACTUAL":"$DESC_NODO_ACTUAL","CONTRATO_NUM":"$CONTRATO_NUM","DATE_CREATED":"$DATE_CREATED","CREATED_BY":"$CREATED_BY","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","CANTIDAD_ANEXOS":"$CANTIDAD_ANEXOS(type:integer)","CANTIDAD_OFICIOS":"$CANTIDAD_OFICIOS(type:integer)","CLASE_ANEXOS":"$CLASE_ANEXOS","CORRESPONDENCIA":"$CORRESPONDENCIA(type:integer)","FECHA_LIMITE":"$FECHA_LIMITE","TIPO_MEDIO":"$TIPO_MEDIO(type:long)","TIPO_MEDIO_NOM":"$TIPO_MEDIO_NOM","TIPO_POBLACION":"$TIPO_POBLACION(type:long)","NOMBRE_PROCEDENCIA":"$NOMBRE_PROCEDENCIA","NIT_PROCEDENCIA":"$NIT_PROCEDENCIA","DEPENDENCIA":"$DEPENDENCIA","NOMBRE_DEPENDENCIA":"$NOMBRE_DEPENDENCIA","URL":"$URL","ENVIA_CORREO":"$ENVIA_CORREO","PROCEDENCIA_AUT":"$PROCEDENCIA_AUT","RECEPCION_CORRES":"$RECEPCION_CORRES(type:boolean)","ENVIO_CORRES":"$ENVIO_CORRES(type:boolean)","OCUPACION":"$OCUPACION(type:long)","VULNERABILIDAD":"$VULNERABILIDAD(type:long)","ESCOLARIDAD":"$ESCOLARIDAD(type:long)","RANGO_EDAD":"$RANGO_EDAD(type:long)","TIPO_PERSONA":"$TIPO_PERSONA(type:long)","DESC_TIPO_POBLACION":"$DESC_TIPO_POBLACION","DESC_OCUPACION":"$DESC_OCUPACION","PRORROGA":"$PRORROGA(type:boolean)","FECHA_PRORROGA":"$FECHA_PRORROGA"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_PROCESOS" sqlType="STRING"/>
+		<param name="KEY_TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/data">
+		<call-query href="getTramitesRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_PROCESOS" query-param="KEY_PROCESOS"/>
+			<with-param name="KEY_TIPO_TRAMITE" query-param="KEY_TIPO_TRAMITE"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+<query id="updateTramites" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TRAMITES SET PROCESOS=:PROCESOS, TIPO_TRAMITE=:TIPO_TRAMITE, NUMERO=:NUMERO, USUARIO_INTERNO=:USUARIO_INTERNO, USUARIO_EXTERNO=:USUARIO_EXTERNO, PROCEDENCIA=:PROCEDENCIA, DESTINO=:DESTINO, CIUDAD_ORIGEN=:CIUDAD_ORIGEN, PAIS_ORIGEN=:PAIS_ORIGEN, DEPARTAMENTO_ORIGEN=:DEPARTAMENTO_ORIGEN, DIRECCION_PROCEDENCIA=:DIRECCION_PROCEDENCIA, DIRECCION_DESTINO=:DIRECCION_DESTINO, REFERENCIA=:REFERENCIA, REFERENCIA1=:REFERENCIA1, TIPO_REFERENCIA=:TIPO_REFERENCIA, TIPO_REFERENCIA1=:TIPO_REFERENCIA1, MODULO=:MODULO, DESCRIPCION=:DESCRIPCION, ESTADO=:ESTADO, FECHA_REAL=TO_DATE(:FECHA_REAL,'DD/MM/YYYY HH24:MI:SS'), HORA=TO_DATE(:HORA,'DD/MM/YYYY HH24:MI:SS'), FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), NODO_ACTUAL=:NODO_ACTUAL, CODIGO_CALIDAD=:CODIGO_CALIDAD, SERIE_DOCUMENTAL=:SERIE_DOCUMENTAL, DESC_NODO_ACTUAL=:DESC_NODO_ACTUAL, CONTRATO_NUM=:CONTRATO_NUM, CANTIDAD_ANEXOS=:CANTIDAD_ANEXOS, CANTIDAD_OFICIOS=:CANTIDAD_OFICIOS, CLASE_ANEXOS=:CLASE_ANEXOS, CORRESPONDENCIA=:CORRESPONDENCIA, TIPO_MEDIO=:TIPO_MEDIO, TIPO_POBLACION=:TIPO_POBLACION, DEPENDENCIA=:DEPENDENCIA, VULNERABILIDAD=:VULNERABILIDAD, OCUPACION=:OCUPACION, ESCOLARIDAD=:ESCOLARIDAD, RANGO_EDAD=:RANGO_EDAD, TIPO_PERSONA=:TIPO_PERSONA, DESC_TIPO_POBLACION=:DESC_TIPO_POBLACION, DESC_OCUPACION=:DESC_OCUPACION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TRAMITES.COMPANIA= :KEY_COMPANIA AND TRAMITES.PROCESOS= :KEY_PROCESOS AND TRAMITES.TIPO_TRAMITE= :KEY_TIPO_TRAMITE AND TRAMITES.NUMERO= :KEY_NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="PROCESOS" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="USUARIO_INTERNO" sqlType="STRING"/>
+		<param name="USUARIO_EXTERNO" sqlType="STRING"/>
+		<param name="PROCEDENCIA" sqlType="STRING"/>
+		<param name="DESTINO" sqlType="STRING"/>
+		<param name="CIUDAD_ORIGEN" sqlType="STRING"/>
+		<param name="PAIS_ORIGEN" sqlType="STRING"/>
+		<param name="DEPARTAMENTO_ORIGEN" sqlType="STRING"/>
+		<param name="DIRECCION_PROCEDENCIA" sqlType="STRING"/>
+		<param name="DIRECCION_DESTINO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="REFERENCIA1" sqlType="STRING"/>
+		<param name="TIPO_REFERENCIA" sqlType="STRING"/>
+		<param name="TIPO_REFERENCIA1" sqlType="STRING"/>
+		<param name="MODULO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="FECHA_REAL" sqlType="STRING"/>
+		<param name="HORA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NODO_ACTUAL" sqlType="STRING"/>
+		<param name="CODIGO_CALIDAD" sqlType="STRING"/>
+		<param name="SERIE_DOCUMENTAL" sqlType="STRING"/>
+		<param name="DESC_NODO_ACTUAL" sqlType="STRING"/>
+		<param name="CONTRATO_NUM" sqlType="STRING"/>
+		<param name="CANTIDAD_ANEXOS" sqlType="STRING"/>
+		<param name="CANTIDAD_OFICIOS" sqlType="STRING"/>
+		<param name="CLASE_ANEXOS" sqlType="STRING"/>
+		<param name="CORRESPONDENCIA" sqlType="STRING"/>
+		<param name="TIPO_MEDIO" sqlType="STRING"/>
+		<param name="TIPO_POBLACION" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="VULNERABILIDAD" sqlType="STRING"/>
+		<param name="OCUPACION" sqlType="STRING"/>
+		<param name="ESCOLARIDAD" sqlType="STRING"/>
+		<param name="RANGO_EDAD" sqlType="STRING"/>
+		<param name="TIPO_PERSONA" sqlType="STRING"/>
+		<param name="DESC_TIPO_POBLACION" sqlType="STRING"/>
+		<param name="DESC_OCUPACION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_PROCESOS" sqlType="STRING"/>
+		<param name="KEY_TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tramites">
+		<call-query href="updateTramites">
+			<with-param name="PROCESOS" query-param="PROCESOS"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="USUARIO_INTERNO" query-param="USUARIO_INTERNO"/>
+			<with-param name="USUARIO_EXTERNO" query-param="USUARIO_EXTERNO"/>
+			<with-param name="PROCEDENCIA" query-param="PROCEDENCIA"/>
+			<with-param name="DESTINO" query-param="DESTINO"/>
+			<with-param name="CIUDAD_ORIGEN" query-param="CIUDAD_ORIGEN"/>
+			<with-param name="PAIS_ORIGEN" query-param="PAIS_ORIGEN"/>
+			<with-param name="DEPARTAMENTO_ORIGEN" query-param="DEPARTAMENTO_ORIGEN"/>
+			<with-param name="DIRECCION_PROCEDENCIA" query-param="DIRECCION_PROCEDENCIA"/>
+			<with-param name="DIRECCION_DESTINO" query-param="DIRECCION_DESTINO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="REFERENCIA1" query-param="REFERENCIA1"/>
+			<with-param name="TIPO_REFERENCIA" query-param="TIPO_REFERENCIA"/>
+			<with-param name="TIPO_REFERENCIA1" query-param="TIPO_REFERENCIA1"/>
+			<with-param name="MODULO" query-param="MODULO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHA_REAL" query-param="FECHA_REAL"/>
+			<with-param name="HORA" query-param="HORA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NODO_ACTUAL" query-param="NODO_ACTUAL"/>
+			<with-param name="CODIGO_CALIDAD" query-param="CODIGO_CALIDAD"/>
+			<with-param name="SERIE_DOCUMENTAL" query-param="SERIE_DOCUMENTAL"/>
+			<with-param name="DESC_NODO_ACTUAL" query-param="DESC_NODO_ACTUAL"/>
+			<with-param name="CONTRATO_NUM" query-param="CONTRATO_NUM"/>
+			<with-param name="CANTIDAD_ANEXOS" query-param="CANTIDAD_ANEXOS"/>
+			<with-param name="CANTIDAD_OFICIOS" query-param="CANTIDAD_OFICIOS"/>
+			<with-param name="CLASE_ANEXOS" query-param="CLASE_ANEXOS"/>
+			<with-param name="CORRESPONDENCIA" query-param="CORRESPONDENCIA"/>
+			<with-param name="TIPO_MEDIO" query-param="TIPO_MEDIO"/>
+			<with-param name="TIPO_POBLACION" query-param="TIPO_POBLACION"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="VULNERABILIDAD" query-param="VULNERABILIDAD"/>
+			<with-param name="OCUPACION" query-param="OCUPACION"/>
+			<with-param name="ESCOLARIDAD" query-param="ESCOLARIDAD"/>
+			<with-param name="RANGO_EDAD" query-param="RANGO_EDAD"/>
+			<with-param name="TIPO_PERSONA" query-param="TIPO_PERSONA"/>
+			<with-param name="DESC_TIPO_POBLACION" query-param="DESC_TIPO_POBLACION"/>
+			<with-param name="DESC_OCUPACION" query-param="DESC_OCUPACION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_PROCESOS" query-param="KEY_PROCESOS"/>
+			<with-param name="KEY_TIPO_TRAMITE" query-param="KEY_TIPO_TRAMITE"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesTodosporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT TRAMITES.NUMERO  FROM TRAMITES WHERE TRAMITES.COMPANIA = :COMPANIA AND TRAMITES.NUMERO &gt;= :NUMERO ORDER BY TRAMITES.NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/todosporcompania">
+		<call-query href="getTramitesTodosporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesGenerarutasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT('TRAMITE',' - '),T.NUMERO),'/'),TT.PROCESOS),' - '),P.NOMBRE),'/'),T.NODO_ORIGEN), ' - '),N.NOMBRE) AS RUTAS FROM TRAMITES T INNER JOIN TIPOTRAMITES TT ON TT.COMPANIA = T.COMPANIA AND TT.PROCESOS = T.PROCESOS AND TT.TIPOTRAMITE = T.TIPO_TRAMITE INNER JOIN PROCESOS P ON P.COMPANIA = T.COMPANIA AND P.CODIGO = T.PROCESOS INNER JOIN NODOS N ON N.COMPANIA = T.COMPANIA AND N.CODIGO_PROCESO = T.PROCESOS AND N.CODIGO = T.NODO_ORIGEN WHERE T.COMPANIA = :COMPANIA AND NUMERO = :NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RUTAS":"$RUTAS"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/generarutas">
+		<call-query href="getTramitesGenerarutasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesCantidadtramitesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DISTINCT COUNT(TRAMITES.NUMERO) CANTIDAD FROM TRAMITES INNER JOIN ( SELECT DISTINCT D_TRAMITES.COMPANIA, D_TRAMITES.PROCESOS, D_TRAMITES.TIPO_TRAMITE, D_TRAMITES.NUMERO TRAMITE FROM D_TRAMITES ) RS ON TRAMITES.COMPANIA = RS.COMPANIA AND TRAMITES.PROCESOS = RS.PROCESOS AND TRAMITES.TIPO_TRAMITE = RS.TIPO_TRAMITE AND TRAMITES.NUMERO = RS.TRAMITE INNER JOIN ( SELECT DISTINCT COMPANIA, CODIGO_PROCESO, TIPO_TRAMITE, NUMERO_TRAMITE, CODIGO_NODO FROM D_TRAMITE_VARIABLES) DTV ON RS.COMPANIA = DTV.COMPANIA AND RS.PROCESOS = DTV.CODIGO_PROCESO AND RS.TIPO_TRAMITE = DTV.TIPO_TRAMITE AND RS.TRAMITE = DTV.NUMERO_TRAMITE WHERE TRAMITES.COMPANIA = :COMPANIA AND TRAMITES.PROCESOS = :PROCESO AND DTV.CODIGO_NODO = :ETAPA AND TRAMITES.NUMERO BETWEEN :TRAMITEINI AND :TRAMITEFIN AND TRAMITES.USUARIO_INTERNO = :USUARIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CANTIDAD":"$CANTIDAD(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ETAPA" sqlType="STRING"/>
+		<param name="TRAMITEINI" sqlType="STRING"/>
+		<param name="TRAMITEFIN" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/cantidadtramites">
+		<call-query href="getTramitesCantidadtramitesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ETAPA" query-param="ETAPA"/>
+			<with-param name="TRAMITEINI" query-param="TRAMITEINI"/>
+			<with-param name="TRAMITEFIN" query-param="TRAMITEFIN"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumerodetramitesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DISTINCT TRAMITES.NUMERO FROM TRAMITES INNER JOIN D_TRAMITES DT ON TRAMITES.COMPANIA = DT.COMPANIA AND TRAMITES.PROCESOS = DT.PROCESOS AND TRAMITES.TIPO_TRAMITE = DT.TIPO_TRAMITE AND TRAMITES.NUMERO = DT.NUMERO INNER JOIN D_TRAMITE_VARIABLES DTV ON DT.COMPANIA = DTV.COMPANIA AND DT.PROCESOS = DTV.CODIGO_PROCESO AND DT.TIPO_TRAMITE = DTV.TIPO_TRAMITE AND DT.CONSECUTIVO = DTV.CONSECUTIVO_TRAMITE AND DT.NUMERO = DTV.NUMERO_TRAMITE WHERE TRAMITES.COMPANIA = :COMPANIA AND TRAMITES.PROCESOS = :PROCESO AND DTV.CODIGO_NODO = :ETAPA AND TRAMITES.NUMERO BETWEEN :TRAMITEINI AND :TRAMITEFIN AND TRAMITES.USUARIO_INTERNO = :USUARIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ETAPA" sqlType="STRING"/>
+		<param name="TRAMITEINI" sqlType="STRING"/>
+		<param name="TRAMITEFIN" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/numerodetramites">
+		<call-query href="getTramitesNumerodetramitesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ETAPA" query-param="ETAPA"/>
+			<with-param name="TRAMITEINI" query-param="TRAMITEINI"/>
+			<with-param name="TRAMITEFIN" query-param="TRAMITEFIN"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPagTramitepornivelusuarioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT T.COMPANIA, T.PROCESOS, P.NOMBRE PROCESO_NOM, T.TIPO_TRAMITE, TT.NOMBRE TIPOTRAMITE_NOM, T.NUMERO, N_ORIGEN.NOMBRE NODO_O_NOM, N_ACTUAL.NOMBRE NODO_A_NOM, T.ESTADO, TI.NOMBRE ESTADO_NOM, TO_CHAR(T.FECHA, 'DD/MM/YYYY') FECHA, ( SELECT NOMBRE FROM TIPOS WHERE ID = CASE WHEN :USUARIO_INTERNO IN ( SELECT RU.USUARIO FROM NODO_RACI NR INNER JOIN ROL_USUARIO RU ON NR.COMPANIA = RU.COMPANIA AND NR.CODIGO_ROL = RU.CODIGO_ROL WHERE NR.COMPANIA = T.COMPANIA AND NR.CODIGO_PROCESO = T.PROCESOS AND NR.CODIGO_NODO = T.NODO_ACTUAL AND NR.CODIGO_RACI = 9 ) THEN 9 ELSE 10 END ) RACI_NOM, T.CONTRATO_NUM FROM TRAMITES T INNER JOIN PROCESOS P ON T.COMPANIA = P.COMPANIA AND T.PROCESOS = P.CODIGO INNER JOIN TIPOTRAMITES TT ON T.COMPANIA = TT.COMPANIA AND T.PROCESOS = TT.PROCESOS AND T.TIPO_TRAMITE = TT.TIPOTRAMITE INNER JOIN NODOS N_ORIGEN ON T.COMPANIA = N_ORIGEN.COMPANIA AND T.PROCESOS = N_ORIGEN.CODIGO_PROCESO AND T.NODO_ORIGEN = N_ORIGEN.CODIGO INNER JOIN NODOS N_ACTUAL ON T.COMPANIA = N_ACTUAL.COMPANIA AND T.PROCESOS = N_ACTUAL.CODIGO_PROCESO AND T.NODO_ACTUAL = N_ACTUAL.CODIGO INNER JOIN TIPOS TI ON T.ESTADO = TI.ID WHERE T.COMPANIA = :COMPANIA AND T.ESTADO = :ESTADO ORDER BY T.NUMERO DESC) INI WHERE (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN TIPOTRAMITE_NOM IS NULL THEN ' ' ELSE UPPER(TIPOTRAMITE_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:TIPOTRAMITE_NOM), '%')) AND (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN NODO_O_NOM IS NULL THEN ' ' ELSE UPPER(NODO_O_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_O_NOM), '%')) AND (CASE WHEN NODO_A_NOM IS NULL THEN ' ' ELSE UPPER(NODO_A_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_A_NOM), '%')) AND (CASE WHEN ESTADO_NOM IS NULL THEN ' ' ELSE UPPER(ESTADO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO_NOM), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN RACI_NOM IS NULL THEN ' ' ELSE UPPER(RACI_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:RACI_NOM), '%')) AND (CASE WHEN CONTRATO_NUM IS NULL THEN ' ' ELSE UPPER(CONTRATO_NUM) END) LIKE UPPER(CONCAT(:CONTRATO_NUM, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PROCESOS":"$PROCESOS","PROCESO_NOM":"$PROCESO_NOM","TIPO_TRAMITE":"$TIPO_TRAMITE","TIPOTRAMITE_NOM":"$TIPOTRAMITE_NOM","NUMERO":"$NUMERO(type:long)","NODO_O_NOM":"$NODO_O_NOM","NODO_A_NOM":"$NODO_A_NOM","ESTADO":"$ESTADO(type:integer)","ESTADO_NOM":"$ESTADO_NOM","FECHA":"$FECHA","RACI_NOM":"$RACI_NOM","CONTRATO_NUM":"$CONTRATO_NUM"}]}}		</result>
+		<param name="USUARIO_INTERNO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="TIPOTRAMITE_NOM" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="NODO_O_NOM" sqlType="STRING"/>
+		<param name="NODO_A_NOM" sqlType="STRING"/>
+		<param name="ESTADO_NOM" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="RACI_NOM" sqlType="STRING"/>
+		<param name="CONTRATO_NUM" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramitepornivelusuario/pag">
+		<call-query href="getTramitesPagTramitepornivelusuarioQuery">
+			<with-param name="USUARIO_INTERNO" query-param="USUARIO_INTERNO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="TIPOTRAMITE_NOM" query-param="TIPOTRAMITE_NOM"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="NODO_O_NOM" query-param="NODO_O_NOM"/>
+			<with-param name="NODO_A_NOM" query-param="NODO_A_NOM"/>
+			<with-param name="ESTADO_NOM" query-param="ESTADO_NOM"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="RACI_NOM" query-param="RACI_NOM"/>
+			<with-param name="CONTRATO_NUM" query-param="CONTRATO_NUM"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumTramitepornivelusuarioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT T.COMPANIA, T.PROCESOS, P.NOMBRE PROCESO_NOM, T.TIPO_TRAMITE, TT.NOMBRE TIPOTRAMITE_NOM, T.NUMERO, N_ORIGEN.NOMBRE NODO_O_NOM, N_ACTUAL.NOMBRE NODO_A_NOM, T.ESTADO, TI.NOMBRE ESTADO_NOM, TO_CHAR(T.FECHA, 'DD/MM/YYYY') FECHA, ( SELECT NOMBRE FROM TIPOS WHERE ID = CASE WHEN :USUARIO_INTERNO IN ( SELECT RU.USUARIO FROM NODO_RACI NR INNER JOIN ROL_USUARIO RU ON NR.COMPANIA = RU.COMPANIA AND NR.CODIGO_ROL = RU.CODIGO_ROL WHERE NR.COMPANIA = T.COMPANIA AND NR.CODIGO_PROCESO = T.PROCESOS AND NR.CODIGO_NODO = T.NODO_ACTUAL AND NR.CODIGO_RACI = 9 ) THEN 9 ELSE 10 END ) RACI_NOM, T.CONTRATO_NUM FROM TRAMITES T INNER JOIN PROCESOS P ON T.COMPANIA = P.COMPANIA AND T.PROCESOS = P.CODIGO INNER JOIN TIPOTRAMITES TT ON T.COMPANIA = TT.COMPANIA AND T.PROCESOS = TT.PROCESOS AND T.TIPO_TRAMITE = TT.TIPOTRAMITE INNER JOIN NODOS N_ORIGEN ON T.COMPANIA = N_ORIGEN.COMPANIA AND T.PROCESOS = N_ORIGEN.CODIGO_PROCESO AND T.NODO_ORIGEN = N_ORIGEN.CODIGO INNER JOIN NODOS N_ACTUAL ON T.COMPANIA = N_ACTUAL.COMPANIA AND T.PROCESOS = N_ACTUAL.CODIGO_PROCESO AND T.NODO_ACTUAL = N_ACTUAL.CODIGO INNER JOIN TIPOS TI ON T.ESTADO = TI.ID WHERE T.COMPANIA = :COMPANIA AND T.ESTADO = :ESTADO ORDER BY T.NUMERO DESC) INI WHERE (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN TIPOTRAMITE_NOM IS NULL THEN ' ' ELSE UPPER(TIPOTRAMITE_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:TIPOTRAMITE_NOM), '%')) AND (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN NODO_O_NOM IS NULL THEN ' ' ELSE UPPER(NODO_O_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_O_NOM), '%')) AND (CASE WHEN NODO_A_NOM IS NULL THEN ' ' ELSE UPPER(NODO_A_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_A_NOM), '%')) AND (CASE WHEN ESTADO_NOM IS NULL THEN ' ' ELSE UPPER(ESTADO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO_NOM), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN RACI_NOM IS NULL THEN ' ' ELSE UPPER(RACI_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:RACI_NOM), '%')) AND (CASE WHEN CONTRATO_NUM IS NULL THEN ' ' ELSE UPPER(CONTRATO_NUM) END) LIKE UPPER(CONCAT(:CONTRATO_NUM, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="USUARIO_INTERNO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="TIPOTRAMITE_NOM" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="NODO_O_NOM" sqlType="STRING"/>
+		<param name="NODO_A_NOM" sqlType="STRING"/>
+		<param name="ESTADO_NOM" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="RACI_NOM" sqlType="STRING"/>
+		<param name="CONTRATO_NUM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramitepornivelusuario/num">
+		<call-query href="getTramitesNumTramitepornivelusuarioQuery">
+			<with-param name="USUARIO_INTERNO" query-param="USUARIO_INTERNO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="TIPOTRAMITE_NOM" query-param="TIPOTRAMITE_NOM"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="NODO_O_NOM" query-param="NODO_O_NOM"/>
+			<with-param name="NODO_A_NOM" query-param="NODO_A_NOM"/>
+			<with-param name="ESTADO_NOM" query-param="ESTADO_NOM"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="RACI_NOM" query-param="RACI_NOM"/>
+			<with-param name="CONTRATO_NUM" query-param="CONTRATO_NUM"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPagMonitortramites1Query"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT T.COMPANIA, T.PROCESOS, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE PROCESO_NOM, TT.NOMBRE TIPOTRAMITE_NOM, N_ORIGEN.NOMBRE NODO_O_NOM, N_ACTUAL.NOMBRE NODO_A_NOM, T.DESCRIPCION, TI.NOMBRE ESTADO_NOM, PT.DOCUMENTO TERCERO, PT.NOMBRE NOMBRE_TERCERO, TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY') FECHA_RADICADO, TO_CHAR(T.FECHA, 'DD/MM/YYYY') FECHA, TO_CHAR(PCK_SYSMAN_UTL.FC_FECHAFINALHABIL(UN_COMPANIA =&gt; T.COMPANIA, UN_FECHA =&gt; TO_DATE(TO_CHAR(T.FECHA, 'DD/MM/YYYY'), 'DD/MM/YYYY' ), UN_DIAS =&gt; CASE WHEN SUM(PT1.ESTIMADO_DIAS) = 0 THEN 1 ELSE SUM(PT1.ESTIMADO_DIAS) END ), 'DD/MM/YYYY') FECHA_LIMITE_ESTIMADO, TO_CHAR(PCK_SYSMAN_UTL.FC_FECHAFINALHABIL(UN_COMPANIA =&gt; T.COMPANIA, UN_FECHA =&gt; TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY'), UN_DIAS =&gt; CASE WHEN SUM(PT1.ESTIMADO_DIAS) = 0 THEN 1 ELSE SUM(PT1.ESTIMADO_DIAS) END ), 'DD/MM/YYYY') FECHA_LIMITE, EXTRACT(DAY FROM(SYSDATE - T.FECHA)) AS DIAS_TRANSCURRIDOS, CASE WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) &lt; 0 THEN '#FF0000' WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM (SYSDATE - T.FECHA)) * 100 ) &gt;= 0 THEN '#00CC66' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#FF0000' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 80) / N_ORIGEN .TIEMPO_MAXIMO THEN '#FFFF33' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 80 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#3399FF' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#00CC66' END COLOR, T.USUARIO_INTERNO, T.CONTRATO_NUM FROM TRAMITES T INNER JOIN PROCESOS P ON T.COMPANIA = P.COMPANIA AND T.PROCESOS = P.CODIGO LEFT JOIN PROCEDENCIA_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.PROCEDENCIA = PT.CODIGO INNER JOIN TIPOTRAMITES TT ON T.COMPANIA = TT.COMPANIA AND T.PROCESOS = TT.PROCESOS AND T.TIPO_TRAMITE = TT.TIPOTRAMITE INNER JOIN NODOS N_ORIGEN ON T.COMPANIA = N_ORIGEN.COMPANIA AND T.PROCESOS = N_ORIGEN.CODIGO_PROCESO AND T.NODO_ORIGEN = N_ORIGEN.CODIGO INNER JOIN NODOS N_ACTUAL ON T.COMPANIA = N_ACTUAL.COMPANIA AND T.PROCESOS = N_ACTUAL.CODIGO_PROCESO AND T.NODO_ACTUAL = N_ACTUAL.CODIGO INNER JOIN TIPOS TI ON T.ESTADO = TI.ID INNER JOIN PROYECCIONES_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.PROCESOS = PT.PROCESO AND T.NODO_ACTUAL = PT.NODO AND T.NUMERO = PT.TRAMITE AND T.TIPO_TRAMITE = PT.TIPO_TRAMITE INNER JOIN PROYECCIONES_TRAMITE PT1 ON T.COMPANIA = PT1.COMPANIA AND T.TIPO_TRAMITE = PT1.TIPO_TRAMITE AND T.PROCESOS = PT1.PROCESO AND T.NUMERO = PT1.TRAMITE AND T.NODO_ACTUAL = PT1.NODO WHERE T.COMPANIA = :COMPANIA AND T.USUARIO_INTERNO = :USUARIO_INTERNO AND T.ESTADO = 4 GROUP BY T.COMPANIA, T.PROCESOS, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE, TT.NOMBRE, N_ORIGEN.NOMBRE, N_ACTUAL.NOMBRE, T.DESCRIPCION, TI.NOMBRE, PT.DOCUMENTO, PT.NOMBRE, TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), T.FECHA, EXTRACT(DAY FROM(SYSDATE - T.FECHA)), CASE WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) &lt; 0 THEN '#FF0000' WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) &gt;= 0 THEN '#00CC66' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#FF0000' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 80 ) / N_ORIGEN.TIEMPO_MAXIMO THEN '#FFFF33' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 80 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN.TIEMPO_MAXIMO THEN '#3399FF' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#00CC66' END, T.USUARIO_INTERNO, T.CONTRATO_NUM, PT.ESTIMADO_FECHA ORDER BY T.NUMERO DESC) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN TIPOTRAMITE_NOM IS NULL THEN ' ' ELSE UPPER(TIPOTRAMITE_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:TIPOTRAMITE_NOM), '%')) AND (CASE WHEN NODO_O_NOM IS NULL THEN ' ' ELSE UPPER(NODO_O_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_O_NOM), '%')) AND (CASE WHEN NODO_A_NOM IS NULL THEN ' ' ELSE UPPER(NODO_A_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_A_NOM), '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN ESTADO_NOM IS NULL THEN ' ' ELSE UPPER(ESTADO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO_NOM), '%')) AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END) LIKE UPPER(CONCAT(:TERCERO, '%')) AND (CASE WHEN NOMBRE_TERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRE_TERCERO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_TERCERO), '%')) AND (CASE WHEN FECHA_RADICADO IS NULL THEN ' ' ELSE UPPER(FECHA_RADICADO) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA_RADICADO), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN FECHA_LIMITE_ESTIMADO IS NULL THEN ' ' ELSE UPPER(FECHA_LIMITE_ESTIMADO) END) LIKE UPPER(CONCAT(:FECHA_LIMITE_ESTIMADO, '%')) AND (CASE WHEN FECHA_LIMITE IS NULL THEN ' ' ELSE UPPER(FECHA_LIMITE) END) LIKE UPPER(CONCAT(:FECHA_LIMITE, '%')) AND (CASE WHEN DIAS_TRANSCURRIDOS IS NULL THEN ' ' ELSE UPPER(DIAS_TRANSCURRIDOS) END) LIKE UPPER(CONCAT(CONCAT('%',:DIAS_TRANSCURRIDOS), '%')) AND (CASE WHEN CONTRATO_NUM IS NULL THEN ' ' ELSE UPPER(CONTRATO_NUM) END) LIKE UPPER(CONCAT(CONCAT('%',:CONTRATO_NUM), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PROCESOS":"$PROCESOS","TIPO_TRAMITE":"$TIPO_TRAMITE","NUMERO":"$NUMERO(type:long)","PROCESO_NOM":"$PROCESO_NOM","TIPOTRAMITE_NOM":"$TIPOTRAMITE_NOM","NODO_O_NOM":"$NODO_O_NOM","NODO_A_NOM":"$NODO_A_NOM","DESCRIPCION":"$DESCRIPCION","ESTADO_NOM":"$ESTADO_NOM","TERCERO":"$TERCERO","NOMBRE_TERCERO":"$NOMBRE_TERCERO","FECHA_RADICADO":"$FECHA_RADICADO","FECHA":"$FECHA","FECHA_LIMITE_ESTIMADO":"$FECHA_LIMITE_ESTIMADO","FECHA_LIMITE":"$FECHA_LIMITE","DIAS_TRANSCURRIDOS":"$DIAS_TRANSCURRIDOS(type:integer)","COLOR":"$COLOR","USUARIO_INTERNO":"$USUARIO_INTERNO","CONTRATO_NUM":"$CONTRATO_NUM"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="USUARIO_INTERNO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="TIPOTRAMITE_NOM" sqlType="STRING"/>
+		<param name="NODO_O_NOM" sqlType="STRING"/>
+		<param name="NODO_A_NOM" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="ESTADO_NOM" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRE_TERCERO" sqlType="STRING"/>
+		<param name="FECHA_RADICADO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="FECHA_LIMITE_ESTIMADO" sqlType="STRING"/>
+		<param name="FECHA_LIMITE" sqlType="STRING"/>
+		<param name="DIAS_TRANSCURRIDOS" sqlType="STRING"/>
+		<param name="CONTRATO_NUM" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/monitortramites1/pag">
+		<call-query href="getTramitesPagMonitortramites1Query">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="USUARIO_INTERNO" query-param="USUARIO_INTERNO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="TIPOTRAMITE_NOM" query-param="TIPOTRAMITE_NOM"/>
+			<with-param name="NODO_O_NOM" query-param="NODO_O_NOM"/>
+			<with-param name="NODO_A_NOM" query-param="NODO_A_NOM"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="ESTADO_NOM" query-param="ESTADO_NOM"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRE_TERCERO" query-param="NOMBRE_TERCERO"/>
+			<with-param name="FECHA_RADICADO" query-param="FECHA_RADICADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FECHA_LIMITE_ESTIMADO" query-param="FECHA_LIMITE_ESTIMADO"/>
+			<with-param name="FECHA_LIMITE" query-param="FECHA_LIMITE"/>
+			<with-param name="DIAS_TRANSCURRIDOS" query-param="DIAS_TRANSCURRIDOS"/>
+			<with-param name="CONTRATO_NUM" query-param="CONTRATO_NUM"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumMonitortramites1Query"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT T.COMPANIA, T.PROCESOS, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE PROCESO_NOM, TT.NOMBRE TIPOTRAMITE_NOM, N_ORIGEN.NOMBRE NODO_O_NOM, N_ACTUAL.NOMBRE NODO_A_NOM, T.DESCRIPCION, TI.NOMBRE ESTADO_NOM, PT.DOCUMENTO TERCERO, PT.NOMBRE NOMBRE_TERCERO, TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY') FECHA_RADICADO, TO_CHAR(T.FECHA, 'DD/MM/YYYY') FECHA, TO_CHAR(PCK_SYSMAN_UTL.FC_FECHAFINALHABIL(UN_COMPANIA =&gt; T.COMPANIA, UN_FECHA =&gt; TO_DATE(TO_CHAR(T.FECHA, 'DD/MM/YYYY'), 'DD/MM/YYYY' ), UN_DIAS =&gt; CASE WHEN SUM(PT1.ESTIMADO_DIAS) = 0 THEN 1 ELSE SUM(PT1.ESTIMADO_DIAS) END ), 'DD/MM/YYYY') FECHA_LIMITE_ESTIMADO, TO_CHAR(PCK_SYSMAN_UTL.FC_FECHAFINALHABIL(UN_COMPANIA =&gt; T.COMPANIA, UN_FECHA =&gt; TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY'), UN_DIAS =&gt; CASE WHEN SUM(PT1.ESTIMADO_DIAS) = 0 THEN 1 ELSE SUM(PT1.ESTIMADO_DIAS) END ), 'DD/MM/YYYY') FECHA_LIMITE, EXTRACT(DAY FROM(SYSDATE - T.FECHA)) AS DIAS_TRANSCURRIDOS, CASE WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) &lt; 0 THEN '#FF0000' WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM (SYSDATE - T.FECHA)) * 100 ) &gt;= 0 THEN '#00CC66' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#FF0000' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 80) / N_ORIGEN .TIEMPO_MAXIMO THEN '#FFFF33' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 80 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#3399FF' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#00CC66' END COLOR, T.USUARIO_INTERNO, T.CONTRATO_NUM FROM TRAMITES T INNER JOIN PROCESOS P ON T.COMPANIA = P.COMPANIA AND T.PROCESOS = P.CODIGO LEFT JOIN PROCEDENCIA_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.PROCEDENCIA = PT.CODIGO INNER JOIN TIPOTRAMITES TT ON T.COMPANIA = TT.COMPANIA AND T.PROCESOS = TT.PROCESOS AND T.TIPO_TRAMITE = TT.TIPOTRAMITE INNER JOIN NODOS N_ORIGEN ON T.COMPANIA = N_ORIGEN.COMPANIA AND T.PROCESOS = N_ORIGEN.CODIGO_PROCESO AND T.NODO_ORIGEN = N_ORIGEN.CODIGO INNER JOIN NODOS N_ACTUAL ON T.COMPANIA = N_ACTUAL.COMPANIA AND T.PROCESOS = N_ACTUAL.CODIGO_PROCESO AND T.NODO_ACTUAL = N_ACTUAL.CODIGO INNER JOIN TIPOS TI ON T.ESTADO = TI.ID INNER JOIN PROYECCIONES_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.PROCESOS = PT.PROCESO AND T.NODO_ACTUAL = PT.NODO AND T.NUMERO = PT.TRAMITE AND T.TIPO_TRAMITE = PT.TIPO_TRAMITE INNER JOIN PROYECCIONES_TRAMITE PT1 ON T.COMPANIA = PT1.COMPANIA AND T.TIPO_TRAMITE = PT1.TIPO_TRAMITE AND T.PROCESOS = PT1.PROCESO AND T.NUMERO = PT1.TRAMITE AND T.NODO_ACTUAL = PT1.NODO WHERE T.COMPANIA = :COMPANIA AND T.USUARIO_INTERNO = :USUARIO_INTERNO AND T.ESTADO = 4 GROUP BY T.COMPANIA, T.PROCESOS, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE, TT.NOMBRE, N_ORIGEN.NOMBRE, N_ACTUAL.NOMBRE, T.DESCRIPCION, TI.NOMBRE, PT.DOCUMENTO, PT.NOMBRE, TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), T.FECHA, EXTRACT(DAY FROM(SYSDATE - T.FECHA)), CASE WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) &lt; 0 THEN '#FF0000' WHEN N_ORIGEN.TIEMPO_MAXIMO = 0 AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) &gt;= 0 THEN '#00CC66' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#FF0000' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 100 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 80 ) / N_ORIGEN.TIEMPO_MAXIMO THEN '#FFFF33' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 80 ) / N_ORIGEN .TIEMPO_MAXIMO AND ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &gt;= ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN.TIEMPO_MAXIMO THEN '#3399FF' WHEN ( EXTRACT(DAY FROM(SYSDATE - T.FECHA)) * 100 ) / N_ORIGEN.TIEMPO_MAXIMO &lt; ( N_ORIGEN.TIEMPO_MAXIMO * 50 ) / N_ORIGEN .TIEMPO_MAXIMO THEN '#00CC66' END, T.USUARIO_INTERNO, T.CONTRATO_NUM, PT.ESTIMADO_FECHA ORDER BY T.NUMERO DESC) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN TIPOTRAMITE_NOM IS NULL THEN ' ' ELSE UPPER(TIPOTRAMITE_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:TIPOTRAMITE_NOM), '%')) AND (CASE WHEN NODO_O_NOM IS NULL THEN ' ' ELSE UPPER(NODO_O_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_O_NOM), '%')) AND (CASE WHEN NODO_A_NOM IS NULL THEN ' ' ELSE UPPER(NODO_A_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_A_NOM), '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN ESTADO_NOM IS NULL THEN ' ' ELSE UPPER(ESTADO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO_NOM), '%')) AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END) LIKE UPPER(CONCAT(:TERCERO, '%')) AND (CASE WHEN NOMBRE_TERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRE_TERCERO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_TERCERO), '%')) AND (CASE WHEN FECHA_RADICADO IS NULL THEN ' ' ELSE UPPER(FECHA_RADICADO) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA_RADICADO), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN FECHA_LIMITE_ESTIMADO IS NULL THEN ' ' ELSE UPPER(FECHA_LIMITE_ESTIMADO) END) LIKE UPPER(CONCAT(:FECHA_LIMITE_ESTIMADO, '%')) AND (CASE WHEN FECHA_LIMITE IS NULL THEN ' ' ELSE UPPER(FECHA_LIMITE) END) LIKE UPPER(CONCAT(:FECHA_LIMITE, '%')) AND (CASE WHEN DIAS_TRANSCURRIDOS IS NULL THEN ' ' ELSE UPPER(DIAS_TRANSCURRIDOS) END) LIKE UPPER(CONCAT(CONCAT('%',:DIAS_TRANSCURRIDOS), '%')) AND (CASE WHEN CONTRATO_NUM IS NULL THEN ' ' ELSE UPPER(CONTRATO_NUM) END) LIKE UPPER(CONCAT(CONCAT('%',:CONTRATO_NUM), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="USUARIO_INTERNO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="TIPOTRAMITE_NOM" sqlType="STRING"/>
+		<param name="NODO_O_NOM" sqlType="STRING"/>
+		<param name="NODO_A_NOM" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="ESTADO_NOM" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRE_TERCERO" sqlType="STRING"/>
+		<param name="FECHA_RADICADO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="FECHA_LIMITE_ESTIMADO" sqlType="STRING"/>
+		<param name="FECHA_LIMITE" sqlType="STRING"/>
+		<param name="DIAS_TRANSCURRIDOS" sqlType="STRING"/>
+		<param name="CONTRATO_NUM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/monitortramites1/num">
+		<call-query href="getTramitesNumMonitortramites1Query">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="USUARIO_INTERNO" query-param="USUARIO_INTERNO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="TIPOTRAMITE_NOM" query-param="TIPOTRAMITE_NOM"/>
+			<with-param name="NODO_O_NOM" query-param="NODO_O_NOM"/>
+			<with-param name="NODO_A_NOM" query-param="NODO_A_NOM"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="ESTADO_NOM" query-param="ESTADO_NOM"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRE_TERCERO" query-param="NOMBRE_TERCERO"/>
+			<with-param name="FECHA_RADICADO" query-param="FECHA_RADICADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FECHA_LIMITE_ESTIMADO" query-param="FECHA_LIMITE_ESTIMADO"/>
+			<with-param name="FECHA_LIMITE" query-param="FECHA_LIMITE"/>
+			<with-param name="DIAS_TRANSCURRIDOS" query-param="DIAS_TRANSCURRIDOS"/>
+			<with-param name="CONTRATO_NUM" query-param="CONTRATO_NUM"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPagMonitortramitesadmindepQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT T.COMPANIA, T.PROCESOS, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE PROCESO_NOM, T.DEPENDENCIA, D.NOMBRE DEPENDENCIA_NOM, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(U.NOMBRE1, ' '), U.NOMBRE2), ' '), U.APELLIDO1), ' '), U.APELLIDO2) RESPONSABLE_ACT , PT.DOCUMENTO TERCERO, PT.NOMBRE NOMBRE_TERCERO, TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY') FECHA_RADICADO, N.NOMBRE NODO_A_NOM, TO_CHAR(T.FECHA, 'DD/MM/YYYY') FECHA_PASE, TO_CHAR(PT.ESTIMADO_FECHA, 'DD/MM/YYYY') FECHA_LIMITE_ETAPA, /*TO_CHAR(MAX(PT2.ESTIMADO_FECHA), 'DD/MM/YYYY') */ TO_CHAR(PCK_SYSMAN_UTL.FC_FECHAFINALHABIL(UN_COMPANIA =&gt; T.COMPANIA, UN_FECHA =&gt; TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY'), UN_DIAS =&gt; CASE WHEN SUM(PT2.ESTIMADO_DIAS) = 0 THEN 1 ELSE SUM(PT2.ESTIMADO_DIAS) END ), 'DD/MM/YYYY') FECHA_LIMITE_PROCESO, PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA, T.FECHA_REAL, CURRENT_DATE, '0') DURACION_D_HABIL, CASE WHEN TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') = TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY' ) THEN TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') - TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY' ) + 1 ELSE TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') - TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY' ) END DURACION_D_CALENDARIO, CASE WHEN ROUND(PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA, T.FECHA_REAL, CURRENT_DATE, '0') / PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA , TO_DATE(TO_CHAR(T.FECHA_REAL, 'dd/mm/yyyy'), 'dd/mm/yyyy'), MAX(TO_DATE(TO_CHAR(PT2.ESTIMADO_FECHA, 'DD/MM/YYYY'), 'DD/MM/YYYY' )), '0'), 2) &lt; 0.5 THEN '#00CC66' WHEN ROUND(PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA, T.FECHA_REAL, CURRENT_DATE, '0') / PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA , TO_DATE(TO_CHAR(T.FECHA_REAL, 'dd/mm/yyyy'), 'dd/mm/yyyy'), MAX(TO_DATE(TO_CHAR(PT2.ESTIMADO_FECHA, 'DD/MM/YYYY'), 'DD/MM/YYYY' )), '0'), 2) &gt;= 0.50 AND ROUND(PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA, T.FECHA_REAL, CURRENT_DATE, '0') / PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA , TO_DATE(TO_CHAR(T.FECHA_REAL, 'dd/mm/yyyy'), 'dd/mm/yyyy'), MAX(TO_DATE(TO_CHAR(PT2.ESTIMADO_FECHA, 'DD/MM/YYYY'), 'DD/MM/YYYY')), '0'), 2) &lt; 0.8 THEN '#3399FF' WHEN ROUND(PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA, T.FECHA_REAL, CURRENT_DATE, '0') / PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA , TO_DATE(TO_CHAR(T.FECHA_REAL, 'dd/mm/yyyy'), 'dd/mm/yyyy'), MAX(TO_DATE(TO_CHAR(PT2.ESTIMADO_FECHA, 'DD/MM/YYYY'), 'DD/MM/YYYY' )), '0'), 2) &gt;= 0.8 AND ROUND(PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA, T.FECHA_REAL, CURRENT_DATE, '0') / PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA , TO_DATE(TO_CHAR(T.FECHA_REAL, 'dd/mm/yyyy'), 'dd/mm/yyyy'), MAX(TO_DATE(TO_CHAR(PT2.ESTIMADO_FECHA, 'DD/MM/YYYY'), 'DD/MM/YYYY')), '0'), 2) &lt; 1 THEN '#FFFF33' ELSE '#FF0000' END COLOR,(CASE N.PRORROGA WHEN 0 THEN 'false' ELSE 'true' END) PRORROGA FROM TRAMITES T INNER JOIN PROCESOS P ON P.COMPANIA = T.COMPANIA AND P.CODIGO = T.PROCESOS LEFT JOIN PROCEDENCIA_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.PROCEDENCIA = PT.CODIGO LEFT JOIN NODOS N ON T.COMPANIA = N.COMPANIA AND T.PROCESOS = N.CODIGO_PROCESO AND T.NODO_ACTUAL = N.CODIGO LEFT JOIN USUARIO U ON U.CODIGO = T.USUARIO_INTERNO LEFT JOIN DEPENDENCIA D ON T.COMPANIA = D.COMPANIA AND T.DEPENDENCIA = D.CODIGO INNER JOIN PROYECCIONES_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.TIPO_TRAMITE = PT.TIPO_TRAMITE AND T.PROCESOS = PT.PROCESO AND T.NUMERO = PT.TRAMITE AND T.NODO_ACTUAL = PT.NODO INNER JOIN PROYECCIONES_TRAMITE PT2 ON T.COMPANIA = PT2.COMPANIA AND T.TIPO_TRAMITE = PT2.TIPO_TRAMITE AND T.PROCESOS = PT2.PROCESO AND T.NUMERO = PT2.TRAMITE WHERE T.COMPANIA = :COMPANIA AND TO_CHAR(T.FECHA_REAL, 'YYYY') = :ANIO AND T.FECHA_REAL BETWEEN TO_DATE(:FECHAINI,'DD/MM/YYYY') AND TO_DATE(:FECHAFIN,'DD/MM/YYYY') AND P.MONITOR_ADMIN NOT IN ( 0 ) AND N.NODO_FINAL IN ( 0 ) AND T.DEPENDENCIA LIKE CONCAT(NVL(:DEPENDENCIA, '.'), '%') AND T.ESTADO = 4 GROUP BY T.PROCESOS, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE, T.DEPENDENCIA, D.NOMBRE, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(U.NOMBRE1, ' '), U.NOMBRE2), ' '), U.APELLIDO1), ' '), U.APELLIDO2), PT.DOCUMENTO, PT.NOMBRE, T.FECHA_REAL, N.NOMBRE, T.FECHA, PT.ESTIMADO_FECHA, T.COMPANIA, T.FECHA, N.PRORROGA ORDER BY T.NUMERO) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN DEPENDENCIA_NOM IS NULL THEN ' ' ELSE UPPER(DEPENDENCIA_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:DEPENDENCIA_NOM), '%')) AND (CASE WHEN RESPONSABLE_ACT IS NULL THEN ' ' ELSE UPPER(RESPONSABLE_ACT) END) LIKE UPPER(CONCAT(CONCAT('%',:RESPONSABLE_ACT), '%')) AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END) LIKE UPPER(CONCAT(:TERCERO, '%')) AND (CASE WHEN NOMBRE_TERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRE_TERCERO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_TERCERO), '%')) AND (CASE WHEN FECHA_RADICADO IS NULL THEN ' ' ELSE UPPER(FECHA_RADICADO) END) LIKE UPPER(CONCAT(:FECHA_RADICADO, '%')) AND (CASE WHEN NODO_A_NOM IS NULL THEN ' ' ELSE UPPER(NODO_A_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_A_NOM), '%')) AND (CASE WHEN FECHA_PASE IS NULL THEN ' ' ELSE UPPER(FECHA_PASE) END) LIKE UPPER(CONCAT(:FECHA_PASE, '%')) AND (CASE WHEN FECHA_LIMITE_ETAPA IS NULL THEN ' ' ELSE UPPER(FECHA_LIMITE_ETAPA) END) LIKE UPPER(CONCAT(:FECHA_LIMITE_ETAPA, '%')) AND (CASE WHEN FECHA_LIMITE_PROCESO IS NULL THEN ' ' ELSE UPPER(FECHA_LIMITE_PROCESO) END) LIKE UPPER(CONCAT(:FECHA_LIMITE_PROCESO, '%')) AND (CASE WHEN DURACION_D_HABIL IS NULL THEN ' ' ELSE UPPER(DURACION_D_HABIL) END) LIKE UPPER(CONCAT(:DURACION_D_HABIL, '%')) AND (CASE WHEN DURACION_D_CALENDARIO IS NULL THEN ' ' ELSE UPPER(DURACION_D_CALENDARIO) END) LIKE UPPER(CONCAT(:DURACION_D_CALENDARIO, '%')) AND (CASE WHEN COLOR IS NULL THEN ' ' ELSE UPPER(COLOR) END) LIKE UPPER(CONCAT(:COLOR, '%')) AND (CASE WHEN PRORROGA IS NULL THEN ' ' ELSE UPPER(PRORROGA) END) LIKE UPPER(CONCAT(:PRORROGA, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PROCESOS":"$PROCESOS","TIPO_TRAMITE":"$TIPO_TRAMITE","NUMERO":"$NUMERO(type:long)","PROCESO_NOM":"$PROCESO_NOM","DEPENDENCIA":"$DEPENDENCIA","DEPENDENCIA_NOM":"$DEPENDENCIA_NOM","RESPONSABLE_ACT":"$RESPONSABLE_ACT","TERCERO":"$TERCERO","NOMBRE_TERCERO":"$NOMBRE_TERCERO","FECHA_RADICADO":"$FECHA_RADICADO","NODO_A_NOM":"$NODO_A_NOM","FECHA_PASE":"$FECHA_PASE","FECHA_LIMITE_ETAPA":"$FECHA_LIMITE_ETAPA","FECHA_LIMITE_PROCESO":"$FECHA_LIMITE_PROCESO","DURACION_D_HABIL":"$DURACION_D_HABIL(type:integer)","DURACION_D_CALENDARIO":"$DURACION_D_CALENDARIO(type:double)","COLOR":"$COLOR","PRORROGA":"$PRORROGA(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="FECHAINI" sqlType="STRING"/>
+		<param name="FECHAFIN" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="DEPENDENCIA_NOM" sqlType="STRING"/>
+		<param name="RESPONSABLE_ACT" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRE_TERCERO" sqlType="STRING"/>
+		<param name="FECHA_RADICADO" sqlType="STRING"/>
+		<param name="NODO_A_NOM" sqlType="STRING"/>
+		<param name="FECHA_PASE" sqlType="STRING"/>
+		<param name="FECHA_LIMITE_ETAPA" sqlType="STRING"/>
+		<param name="FECHA_LIMITE_PROCESO" sqlType="STRING"/>
+		<param name="DURACION_D_HABIL" sqlType="STRING"/>
+		<param name="DURACION_D_CALENDARIO" sqlType="STRING"/>
+		<param name="COLOR" sqlType="STRING"/>
+		<param name="PRORROGA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/monitortramitesadmindep/pag">
+		<call-query href="getTramitesPagMonitortramitesadmindepQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="FECHAINI" query-param="FECHAINI"/>
+			<with-param name="FECHAFIN" query-param="FECHAFIN"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="DEPENDENCIA_NOM" query-param="DEPENDENCIA_NOM"/>
+			<with-param name="RESPONSABLE_ACT" query-param="RESPONSABLE_ACT"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRE_TERCERO" query-param="NOMBRE_TERCERO"/>
+			<with-param name="FECHA_RADICADO" query-param="FECHA_RADICADO"/>
+			<with-param name="NODO_A_NOM" query-param="NODO_A_NOM"/>
+			<with-param name="FECHA_PASE" query-param="FECHA_PASE"/>
+			<with-param name="FECHA_LIMITE_ETAPA" query-param="FECHA_LIMITE_ETAPA"/>
+			<with-param name="FECHA_LIMITE_PROCESO" query-param="FECHA_LIMITE_PROCESO"/>
+			<with-param name="DURACION_D_HABIL" query-param="DURACION_D_HABIL"/>
+			<with-param name="DURACION_D_CALENDARIO" query-param="DURACION_D_CALENDARIO"/>
+			<with-param name="COLOR" query-param="COLOR"/>
+			<with-param name="PRORROGA" query-param="PRORROGA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumMonitortramitesadmindepQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT T.COMPANIA, T.PROCESOS, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE PROCESO_NOM, T.DEPENDENCIA, D.NOMBRE DEPENDENCIA_NOM, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(U.NOMBRE1, ' '), U.NOMBRE2), ' '), U.APELLIDO1), ' '), U.APELLIDO2) RESPONSABLE_ACT , PT.DOCUMENTO TERCERO, PT.NOMBRE NOMBRE_TERCERO, TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY') FECHA_RADICADO, N.NOMBRE NODO_A_NOM, TO_CHAR(T.FECHA, 'DD/MM/YYYY') FECHA_PASE, TO_CHAR(PT.ESTIMADO_FECHA, 'DD/MM/YYYY') FECHA_LIMITE_ETAPA, /*TO_CHAR(MAX(PT2.ESTIMADO_FECHA), 'DD/MM/YYYY') */ TO_CHAR(PCK_SYSMAN_UTL.FC_FECHAFINALHABIL(UN_COMPANIA =&gt; T.COMPANIA, UN_FECHA =&gt; TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY'), UN_DIAS =&gt; CASE WHEN SUM(PT2.ESTIMADO_DIAS) = 0 THEN 1 ELSE SUM(PT2.ESTIMADO_DIAS) END ), 'DD/MM/YYYY') FECHA_LIMITE_PROCESO, PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA, T.FECHA_REAL, CURRENT_DATE, '0') DURACION_D_HABIL, CASE WHEN TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') = TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY' ) THEN TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') - TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY' ) + 1 ELSE TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') - TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY' ) END DURACION_D_CALENDARIO, CASE WHEN ROUND(PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA, T.FECHA_REAL, CURRENT_DATE, '0') / PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA , TO_DATE(TO_CHAR(T.FECHA_REAL, 'dd/mm/yyyy'), 'dd/mm/yyyy'), MAX(TO_DATE(TO_CHAR(PT2.ESTIMADO_FECHA, 'DD/MM/YYYY'), 'DD/MM/YYYY' )), '0'), 2) &lt; 0.5 THEN '#00CC66' WHEN ROUND(PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA, T.FECHA_REAL, CURRENT_DATE, '0') / PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA , TO_DATE(TO_CHAR(T.FECHA_REAL, 'dd/mm/yyyy'), 'dd/mm/yyyy'), MAX(TO_DATE(TO_CHAR(PT2.ESTIMADO_FECHA, 'DD/MM/YYYY'), 'DD/MM/YYYY' )), '0'), 2) &gt;= 0.50 AND ROUND(PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA, T.FECHA_REAL, CURRENT_DATE, '0') / PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA , TO_DATE(TO_CHAR(T.FECHA_REAL, 'dd/mm/yyyy'), 'dd/mm/yyyy'), MAX(TO_DATE(TO_CHAR(PT2.ESTIMADO_FECHA, 'DD/MM/YYYY'), 'DD/MM/YYYY')), '0'), 2) &lt; 0.8 THEN '#3399FF' WHEN ROUND(PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA, T.FECHA_REAL, CURRENT_DATE, '0') / PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA , TO_DATE(TO_CHAR(T.FECHA_REAL, 'dd/mm/yyyy'), 'dd/mm/yyyy'), MAX(TO_DATE(TO_CHAR(PT2.ESTIMADO_FECHA, 'DD/MM/YYYY'), 'DD/MM/YYYY' )), '0'), 2) &gt;= 0.8 AND ROUND(PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA, T.FECHA_REAL, CURRENT_DATE, '0') / PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA , TO_DATE(TO_CHAR(T.FECHA_REAL, 'dd/mm/yyyy'), 'dd/mm/yyyy'), MAX(TO_DATE(TO_CHAR(PT2.ESTIMADO_FECHA, 'DD/MM/YYYY'), 'DD/MM/YYYY')), '0'), 2) &lt; 1 THEN '#FFFF33' ELSE '#FF0000' END COLOR,(CASE N.PRORROGA WHEN 0 THEN 'false' ELSE 'true' END) PRORROGA FROM TRAMITES T INNER JOIN PROCESOS P ON P.COMPANIA = T.COMPANIA AND P.CODIGO = T.PROCESOS LEFT JOIN PROCEDENCIA_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.PROCEDENCIA = PT.CODIGO LEFT JOIN NODOS N ON T.COMPANIA = N.COMPANIA AND T.PROCESOS = N.CODIGO_PROCESO AND T.NODO_ACTUAL = N.CODIGO LEFT JOIN USUARIO U ON U.CODIGO = T.USUARIO_INTERNO LEFT JOIN DEPENDENCIA D ON T.COMPANIA = D.COMPANIA AND T.DEPENDENCIA = D.CODIGO INNER JOIN PROYECCIONES_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.TIPO_TRAMITE = PT.TIPO_TRAMITE AND T.PROCESOS = PT.PROCESO AND T.NUMERO = PT.TRAMITE AND T.NODO_ACTUAL = PT.NODO INNER JOIN PROYECCIONES_TRAMITE PT2 ON T.COMPANIA = PT2.COMPANIA AND T.TIPO_TRAMITE = PT2.TIPO_TRAMITE AND T.PROCESOS = PT2.PROCESO AND T.NUMERO = PT2.TRAMITE WHERE T.COMPANIA = :COMPANIA AND TO_CHAR(T.FECHA_REAL, 'YYYY') = :ANIO AND T.FECHA_REAL BETWEEN TO_DATE(:FECHAINI,'DD/MM/YYYY') AND TO_DATE(:FECHAFIN,'DD/MM/YYYY') AND P.MONITOR_ADMIN NOT IN ( 0 ) AND N.NODO_FINAL IN ( 0 ) AND T.DEPENDENCIA LIKE CONCAT(NVL(:DEPENDENCIA, '.'), '%') AND T.ESTADO = 4 GROUP BY T.PROCESOS, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE, T.DEPENDENCIA, D.NOMBRE, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(U.NOMBRE1, ' '), U.NOMBRE2), ' '), U.APELLIDO1), ' '), U.APELLIDO2), PT.DOCUMENTO, PT.NOMBRE, T.FECHA_REAL, N.NOMBRE, T.FECHA, PT.ESTIMADO_FECHA, T.COMPANIA, T.FECHA, N.PRORROGA ORDER BY T.NUMERO) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN DEPENDENCIA_NOM IS NULL THEN ' ' ELSE UPPER(DEPENDENCIA_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:DEPENDENCIA_NOM), '%')) AND (CASE WHEN RESPONSABLE_ACT IS NULL THEN ' ' ELSE UPPER(RESPONSABLE_ACT) END) LIKE UPPER(CONCAT(CONCAT('%',:RESPONSABLE_ACT), '%')) AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END) LIKE UPPER(CONCAT(:TERCERO, '%')) AND (CASE WHEN NOMBRE_TERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRE_TERCERO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_TERCERO), '%')) AND (CASE WHEN FECHA_RADICADO IS NULL THEN ' ' ELSE UPPER(FECHA_RADICADO) END) LIKE UPPER(CONCAT(:FECHA_RADICADO, '%')) AND (CASE WHEN NODO_A_NOM IS NULL THEN ' ' ELSE UPPER(NODO_A_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_A_NOM), '%')) AND (CASE WHEN FECHA_PASE IS NULL THEN ' ' ELSE UPPER(FECHA_PASE) END) LIKE UPPER(CONCAT(:FECHA_PASE, '%')) AND (CASE WHEN FECHA_LIMITE_ETAPA IS NULL THEN ' ' ELSE UPPER(FECHA_LIMITE_ETAPA) END) LIKE UPPER(CONCAT(:FECHA_LIMITE_ETAPA, '%')) AND (CASE WHEN FECHA_LIMITE_PROCESO IS NULL THEN ' ' ELSE UPPER(FECHA_LIMITE_PROCESO) END) LIKE UPPER(CONCAT(:FECHA_LIMITE_PROCESO, '%')) AND (CASE WHEN DURACION_D_HABIL IS NULL THEN ' ' ELSE UPPER(DURACION_D_HABIL) END) LIKE UPPER(CONCAT(:DURACION_D_HABIL, '%')) AND (CASE WHEN DURACION_D_CALENDARIO IS NULL THEN ' ' ELSE UPPER(DURACION_D_CALENDARIO) END) LIKE UPPER(CONCAT(:DURACION_D_CALENDARIO, '%')) AND (CASE WHEN COLOR IS NULL THEN ' ' ELSE UPPER(COLOR) END) LIKE UPPER(CONCAT(:COLOR, '%')) AND (CASE WHEN PRORROGA IS NULL THEN ' ' ELSE UPPER(PRORROGA) END) LIKE UPPER(CONCAT(:PRORROGA, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="FECHAINI" sqlType="STRING"/>
+		<param name="FECHAFIN" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="DEPENDENCIA_NOM" sqlType="STRING"/>
+		<param name="RESPONSABLE_ACT" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRE_TERCERO" sqlType="STRING"/>
+		<param name="FECHA_RADICADO" sqlType="STRING"/>
+		<param name="NODO_A_NOM" sqlType="STRING"/>
+		<param name="FECHA_PASE" sqlType="STRING"/>
+		<param name="FECHA_LIMITE_ETAPA" sqlType="STRING"/>
+		<param name="FECHA_LIMITE_PROCESO" sqlType="STRING"/>
+		<param name="DURACION_D_HABIL" sqlType="STRING"/>
+		<param name="DURACION_D_CALENDARIO" sqlType="STRING"/>
+		<param name="COLOR" sqlType="STRING"/>
+		<param name="PRORROGA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/monitortramitesadmindep/num">
+		<call-query href="getTramitesNumMonitortramitesadmindepQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="FECHAINI" query-param="FECHAINI"/>
+			<with-param name="FECHAFIN" query-param="FECHAFIN"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="DEPENDENCIA_NOM" query-param="DEPENDENCIA_NOM"/>
+			<with-param name="RESPONSABLE_ACT" query-param="RESPONSABLE_ACT"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRE_TERCERO" query-param="NOMBRE_TERCERO"/>
+			<with-param name="FECHA_RADICADO" query-param="FECHA_RADICADO"/>
+			<with-param name="NODO_A_NOM" query-param="NODO_A_NOM"/>
+			<with-param name="FECHA_PASE" query-param="FECHA_PASE"/>
+			<with-param name="FECHA_LIMITE_ETAPA" query-param="FECHA_LIMITE_ETAPA"/>
+			<with-param name="FECHA_LIMITE_PROCESO" query-param="FECHA_LIMITE_PROCESO"/>
+			<with-param name="DURACION_D_HABIL" query-param="DURACION_D_HABIL"/>
+			<with-param name="DURACION_D_CALENDARIO" query-param="DURACION_D_CALENDARIO"/>
+			<with-param name="COLOR" query-param="COLOR"/>
+			<with-param name="PRORROGA" query-param="PRORROGA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPagMonitortramitesadminQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, PROCESOS, NOM_TIPO_TRAMITE, TIPO_TRAMITE, NUMERO, PROCESO_NOM, DEPENDENCIA, DEPENDENCIA_NOM, RESPONSABLE_ACT, TERCERO, NOMBRE_TERCERO, FECHA_RADICADO, NODO_A_NOM, FECHA_PASE, CASE WHEN PRORROGA IN ( 0 ) THEN FECHA_LIMITE_ETAPA ELSE '' END FECHA_LIMITE_ETAPA, CASE WHEN PRORROGA IN ( 0 ) THEN FECHA_LIMITE_PROCESO ELSE '' END FECHA_LIMITE_PROCESO, DURACION_D_HABIL, DURACION_D_CALENDARIO, CASE WHEN PRORROGA IN ( 0 ) THEN PCK_WORKFLOW.FC_CALCULAR_COLOR(COMPANIA, FECHA_RADICADO, FECHA_LIMITE_PROCESO) ELSE '' END COLOR, CASE WHEN PRORROGA IN ( 0 ) THEN CASE WHEN FECHA_LIMITE_PROCESO &lt; SYSDATE THEN CONCAT('-', PCK_SYSMAN_UTL.FC_DIASHABIL(COMPANIA, FECHA_LIMITE_PROCESO, SYSDATE, 0)) ELSE CONCAT('+', PCK_SYSMAN_UTL.FC_DIASHABIL(COMPANIA, SYSDATE, FECHA_LIMITE_PROCESO, 0)) END ELSE '' END DIAS_VENCER,(CASE PRORROGA WHEN 0 THEN 'false' ELSE 'true' END) PRORROGA, CASE WHEN PRORROGA NOT IN (0) THEN PCK_SYSMAN_UTL.FC_DIASHABIL(COMPANIA, FECHA_PRORROGA, SYSDATE, 0) ELSE DIAS_PRORROGA END DIAS_PRORROGA,(TO_CHAR(FECHA_PRORROGA,'DD/MM/YYYY HH24:MI:SS')) FECHA_PRORROGA FROM ( SELECT T.COMPANIA, T.PROCESOS, TT.NOMBRE NOM_TIPO_TRAMITE, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE PROCESO_NOM, T.DEPENDENCIA, D.NOMBRE DEPENDENCIA_NOM, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(U.NOMBRE1, ' '), U.NOMBRE2), ' '), U.APELLIDO1), ' '), U.APELLIDO2) RESPONSABLE_ACT , PT.DOCUMENTO TERCERO, PT.NOMBRE NOMBRE_TERCERO, TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY') FECHA_RADICADO, N.NOMBRE NODO_A_NOM, TO_CHAR(T.FECHA, 'DD/MM/YYYY') FECHA_PASE, TO_CHAR(PCK_SYSMAN_UTL.FC_FECHAFINALHABIL(UN_COMPANIA =&gt; T.COMPANIA, UN_FECHA =&gt; TO_DATE(TO_CHAR(T.FECHA, 'DD/MM/YYYY' ), 'DD/MM/YYYY'), UN_DIAS =&gt; (CASE WHEN SUM(PT1.ESTIMADO_DIAS) = 0 THEN 1 ELSE SUM(PT1.ESTIMADO_DIAS) END) + T.DIAS_PRORROGA ), 'DD/MM/YYYY') FECHA_LIMITE_ETAPA, TO_CHAR(PCK_SYSMAN_UTL.FC_FECHAFINALHABIL(UN_COMPANIA =&gt; T.COMPANIA, UN_FECHA =&gt; TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY' ), 'DD/MM/YYYY'), UN_DIAS =&gt; (CASE WHEN SUM(N_DIAS.TIEMPO_ESTIMADO) = 0 THEN 1 ELSE SUM(N_DIAS.TIEMPO_ESTIMADO) END) + T.DIAS_PRORROGA ), 'DD/MM/YYYY') FECHA_LIMITE_PROCESO, PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA, T.FECHA_REAL, CURRENT_DATE, '0') DURACION_D_HABIL, CASE WHEN TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') = TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY' ) THEN TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') - TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY' ) + 1 ELSE TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') - TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY' ) END DURACION_D_CALENDARIO, N.PRORROGA, T.FECHA_PRORROGA, T.DIAS_PRORROGA FROM TRAMITES T INNER JOIN PROCESOS P ON P.COMPANIA = T.COMPANIA AND P.CODIGO = T.PROCESOS LEFT JOIN PROCEDENCIA_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.PROCEDENCIA = PT.CODIGO INNER JOIN NODOS N ON T.COMPANIA = N.COMPANIA AND T.PROCESOS = N.CODIGO_PROCESO AND T.NODO_ACTUAL = N.CODIGO LEFT JOIN USUARIO U ON U.CODIGO = T.USUARIO_INTERNO LEFT JOIN DEPENDENCIA D ON T.COMPANIA = D.COMPANIA AND SUBSTR(T.DEPENDENCIA, 0, PCK_SYSMAN_UTL.FC_PAR(:COMPANIA, 'LONGITUD PREDECESOR DEPENDENCIAS ALMACEN' , 35, SYSDATE)) = D.CODIGO INNER JOIN PROYECCIONES_TRAMITE PT1 ON T.COMPANIA = PT1.COMPANIA AND T.TIPO_TRAMITE = PT1.TIPO_TRAMITE AND T.PROCESOS = PT1.PROCESO AND T.NUMERO = PT1.TRAMITE AND T.NODO_ACTUAL = PT1.NODO INNER JOIN TIPOTRAMITES TT ON T.COMPANIA = TT.COMPANIA AND T.PROCESOS = TT.PROCESOS AND T.TIPO_TRAMITE = TT.TIPOTRAMITE INNER JOIN ( SELECT NODOS.COMPANIA, NODOS.CODIGO_PROCESO, SUM(TIEMPO_ESTIMADO) AS TIEMPO_ESTIMADO FROM NODOS INNER JOIN PROCESOS ON NODOS.COMPANIA = PROCESOS.COMPANIA AND NODOS.CODIGO_PROCESO = PROCESOS.CODIGO GROUP BY NODOS.COMPANIA, CODIGO_PROCESO ) N_DIAS ON T.COMPANIA = N_DIAS.COMPANIA AND T.PROCESOS = N_DIAS.CODIGO_PROCESO WHERE T.COMPANIA = :COMPANIA AND TO_CHAR(T.FECHA_REAL, 'YYYY') = :ANIO AND T.FECHA_REAL BETWEEN TO_DATE(:FECHAINI,'DD/MM/YYYY') AND TO_DATE(:FECHAFIN,'DD/MM/YYYY') AND P.MONITOR_ADMIN NOT IN ( 0 ) AND N.NODO_FINAL IN ( 0 ) AND T.ESTADO = 4 GROUP BY T.COMPANIA, T.PROCESOS, TT.NOMBRE, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE, T.DEPENDENCIA, D.NOMBRE, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(U.NOMBRE1, ' '), U.NOMBRE2), ' '), U.APELLIDO1), ' ' ), U.APELLIDO2), PT.DOCUMENTO, PT.NOMBRE, T.FECHA_REAL, N.NOMBRE, T.FECHA, CASE WHEN TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') = TO_DATE(TO_CHAR(T.FECHA_REAL , 'DD/MM/YYYY'), 'DD/MM/YYYY') THEN TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') - TO_DATE(TO_CHAR(T.FECHA_REAL , 'DD/MM/YYYY'), 'DD/MM/YYYY') + 1 ELSE TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') - TO_DATE(TO_CHAR(T.FECHA_REAL , 'DD/MM/YYYY'), 'DD/MM/YYYY') END, N.PRORROGA, T.FECHA_PRORROGA, T.DIAS_PRORROGA ORDER BY T.NUMERO ) CONS) INI WHERE (CASE WHEN NOM_TIPO_TRAMITE IS NULL THEN ' ' ELSE UPPER(NOM_TIPO_TRAMITE) END) LIKE UPPER(CONCAT(:NOM_TIPO_TRAMITE, '%')) AND (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN DEPENDENCIA_NOM IS NULL THEN ' ' ELSE UPPER(DEPENDENCIA_NOM) END) LIKE UPPER(CONCAT(:DEPENDENCIA_NOM, '%')) AND (CASE WHEN RESPONSABLE_ACT IS NULL THEN ' ' ELSE UPPER(RESPONSABLE_ACT) END) LIKE UPPER(CONCAT(CONCAT('%',:RESPONSABLE_ACT), '%')) AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END) LIKE UPPER(CONCAT(:TERCERO, '%')) AND (CASE WHEN NOMBRE_TERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRE_TERCERO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_TERCERO), '%')) AND (CASE WHEN FECHA_RADICADO IS NULL THEN ' ' ELSE UPPER(FECHA_RADICADO) END) LIKE UPPER(CONCAT(:FECHA_RADICADO, '%')) AND (CASE WHEN NODO_A_NOM IS NULL THEN ' ' ELSE UPPER(NODO_A_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_A_NOM), '%')) AND (CASE WHEN FECHA_PASE IS NULL THEN ' ' ELSE UPPER(FECHA_PASE) END) LIKE UPPER(CONCAT(:FECHA_PASE, '%')) AND (CASE WHEN FECHA_LIMITE_ETAPA IS NULL THEN ' ' ELSE UPPER(FECHA_LIMITE_ETAPA) END) LIKE UPPER(CONCAT(:FECHA_LIMITE_ETAPA, '%')) AND (CASE WHEN FECHA_PRORROGA IS NULL THEN ' ' ELSE UPPER(FECHA_PRORROGA) END) LIKE UPPER(CONCAT(:FECHA_PRORROGA, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PROCESOS":"$PROCESOS","NOM_TIPO_TRAMITE":"$NOM_TIPO_TRAMITE","TIPO_TRAMITE":"$TIPO_TRAMITE","NUMERO":"$NUMERO(type:long)","PROCESO_NOM":"$PROCESO_NOM","DEPENDENCIA":"$DEPENDENCIA","DEPENDENCIA_NOM":"$DEPENDENCIA_NOM","RESPONSABLE_ACT":"$RESPONSABLE_ACT","TERCERO":"$TERCERO","NOMBRE_TERCERO":"$NOMBRE_TERCERO","FECHA_RADICADO":"$FECHA_RADICADO","NODO_A_NOM":"$NODO_A_NOM","FECHA_PASE":"$FECHA_PASE","FECHA_LIMITE_ETAPA":"$FECHA_LIMITE_ETAPA","FECHA_LIMITE_PROCESO":"$FECHA_LIMITE_PROCESO","DURACION_D_HABIL":"$DURACION_D_HABIL(type:integer)","DURACION_D_CALENDARIO":"$DURACION_D_CALENDARIO(type:integer)","COLOR":"$COLOR","DIAS_VENCER":"$DIAS_VENCER","PRORROGA":"$PRORROGA(type:boolean)","DIAS_PRORROGA":"$DIAS_PRORROGA(type:integer)","FECHA_PRORROGA":"$FECHA_PRORROGA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="FECHAINI" sqlType="STRING"/>
+		<param name="FECHAFIN" sqlType="STRING"/>
+		<param name="NOM_TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="DEPENDENCIA_NOM" sqlType="STRING"/>
+		<param name="RESPONSABLE_ACT" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRE_TERCERO" sqlType="STRING"/>
+		<param name="FECHA_RADICADO" sqlType="STRING"/>
+		<param name="NODO_A_NOM" sqlType="STRING"/>
+		<param name="FECHA_PASE" sqlType="STRING"/>
+		<param name="FECHA_LIMITE_ETAPA" sqlType="STRING"/>
+		<param name="FECHA_PRORROGA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/monitortramitesadmin/pag">
+		<call-query href="getTramitesPagMonitortramitesadminQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="FECHAINI" query-param="FECHAINI"/>
+			<with-param name="FECHAFIN" query-param="FECHAFIN"/>
+			<with-param name="NOM_TIPO_TRAMITE" query-param="NOM_TIPO_TRAMITE"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="DEPENDENCIA_NOM" query-param="DEPENDENCIA_NOM"/>
+			<with-param name="RESPONSABLE_ACT" query-param="RESPONSABLE_ACT"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRE_TERCERO" query-param="NOMBRE_TERCERO"/>
+			<with-param name="FECHA_RADICADO" query-param="FECHA_RADICADO"/>
+			<with-param name="NODO_A_NOM" query-param="NODO_A_NOM"/>
+			<with-param name="FECHA_PASE" query-param="FECHA_PASE"/>
+			<with-param name="FECHA_LIMITE_ETAPA" query-param="FECHA_LIMITE_ETAPA"/>
+			<with-param name="FECHA_PRORROGA" query-param="FECHA_PRORROGA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumMonitortramitesadminQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, PROCESOS, NOM_TIPO_TRAMITE, TIPO_TRAMITE, NUMERO, PROCESO_NOM, DEPENDENCIA, DEPENDENCIA_NOM, RESPONSABLE_ACT, TERCERO, NOMBRE_TERCERO, FECHA_RADICADO, NODO_A_NOM, FECHA_PASE, CASE WHEN PRORROGA IN ( 0 ) THEN FECHA_LIMITE_ETAPA ELSE '' END FECHA_LIMITE_ETAPA, CASE WHEN PRORROGA IN ( 0 ) THEN FECHA_LIMITE_PROCESO ELSE '' END FECHA_LIMITE_PROCESO, DURACION_D_HABIL, DURACION_D_CALENDARIO, CASE WHEN PRORROGA IN ( 0 ) THEN PCK_WORKFLOW.FC_CALCULAR_COLOR(COMPANIA, FECHA_RADICADO, FECHA_LIMITE_PROCESO) ELSE '' END COLOR, CASE WHEN PRORROGA IN ( 0 ) THEN CASE WHEN FECHA_LIMITE_PROCESO &lt; SYSDATE THEN CONCAT('-', PCK_SYSMAN_UTL.FC_DIASHABIL(COMPANIA, FECHA_LIMITE_PROCESO, SYSDATE, 0)) ELSE CONCAT('+', PCK_SYSMAN_UTL.FC_DIASHABIL(COMPANIA, SYSDATE, FECHA_LIMITE_PROCESO, 0)) END ELSE '' END DIAS_VENCER,(CASE PRORROGA WHEN 0 THEN 'false' ELSE 'true' END) PRORROGA, CASE WHEN PRORROGA NOT IN (0) THEN PCK_SYSMAN_UTL.FC_DIASHABIL(COMPANIA, FECHA_PRORROGA, SYSDATE, 0) ELSE DIAS_PRORROGA END DIAS_PRORROGA,(TO_CHAR(FECHA_PRORROGA,'DD/MM/YYYY HH24:MI:SS')) FECHA_PRORROGA FROM ( SELECT T.COMPANIA, T.PROCESOS, TT.NOMBRE NOM_TIPO_TRAMITE, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE PROCESO_NOM, T.DEPENDENCIA, D.NOMBRE DEPENDENCIA_NOM, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(U.NOMBRE1, ' '), U.NOMBRE2), ' '), U.APELLIDO1), ' '), U.APELLIDO2) RESPONSABLE_ACT , PT.DOCUMENTO TERCERO, PT.NOMBRE NOMBRE_TERCERO, TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY') FECHA_RADICADO, N.NOMBRE NODO_A_NOM, TO_CHAR(T.FECHA, 'DD/MM/YYYY') FECHA_PASE, TO_CHAR(PCK_SYSMAN_UTL.FC_FECHAFINALHABIL(UN_COMPANIA =&gt; T.COMPANIA, UN_FECHA =&gt; TO_DATE(TO_CHAR(T.FECHA, 'DD/MM/YYYY' ), 'DD/MM/YYYY'), UN_DIAS =&gt; (CASE WHEN SUM(PT1.ESTIMADO_DIAS) = 0 THEN 1 ELSE SUM(PT1.ESTIMADO_DIAS) END) + T.DIAS_PRORROGA ), 'DD/MM/YYYY') FECHA_LIMITE_ETAPA, TO_CHAR(PCK_SYSMAN_UTL.FC_FECHAFINALHABIL(UN_COMPANIA =&gt; T.COMPANIA, UN_FECHA =&gt; TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY' ), 'DD/MM/YYYY'), UN_DIAS =&gt; (CASE WHEN SUM(N_DIAS.TIEMPO_ESTIMADO) = 0 THEN 1 ELSE SUM(N_DIAS.TIEMPO_ESTIMADO) END) + T.DIAS_PRORROGA ), 'DD/MM/YYYY') FECHA_LIMITE_PROCESO, PCK_SYSMAN_UTL.FC_DIASHABIL(T.COMPANIA, T.FECHA_REAL, CURRENT_DATE, '0') DURACION_D_HABIL, CASE WHEN TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') = TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY' ) THEN TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') - TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY' ) + 1 ELSE TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') - TO_DATE(TO_CHAR(T.FECHA_REAL, 'DD/MM/YYYY'), 'DD/MM/YYYY' ) END DURACION_D_CALENDARIO, N.PRORROGA, T.FECHA_PRORROGA, T.DIAS_PRORROGA FROM TRAMITES T INNER JOIN PROCESOS P ON P.COMPANIA = T.COMPANIA AND P.CODIGO = T.PROCESOS LEFT JOIN PROCEDENCIA_TRAMITE PT ON T.COMPANIA = PT.COMPANIA AND T.PROCEDENCIA = PT.CODIGO INNER JOIN NODOS N ON T.COMPANIA = N.COMPANIA AND T.PROCESOS = N.CODIGO_PROCESO AND T.NODO_ACTUAL = N.CODIGO LEFT JOIN USUARIO U ON U.CODIGO = T.USUARIO_INTERNO LEFT JOIN DEPENDENCIA D ON T.COMPANIA = D.COMPANIA AND SUBSTR(T.DEPENDENCIA, 0, PCK_SYSMAN_UTL.FC_PAR(:COMPANIA, 'LONGITUD PREDECESOR DEPENDENCIAS ALMACEN' , 35, SYSDATE)) = D.CODIGO INNER JOIN PROYECCIONES_TRAMITE PT1 ON T.COMPANIA = PT1.COMPANIA AND T.TIPO_TRAMITE = PT1.TIPO_TRAMITE AND T.PROCESOS = PT1.PROCESO AND T.NUMERO = PT1.TRAMITE AND T.NODO_ACTUAL = PT1.NODO INNER JOIN TIPOTRAMITES TT ON T.COMPANIA = TT.COMPANIA AND T.PROCESOS = TT.PROCESOS AND T.TIPO_TRAMITE = TT.TIPOTRAMITE INNER JOIN ( SELECT NODOS.COMPANIA, NODOS.CODIGO_PROCESO, SUM(TIEMPO_ESTIMADO) AS TIEMPO_ESTIMADO FROM NODOS INNER JOIN PROCESOS ON NODOS.COMPANIA = PROCESOS.COMPANIA AND NODOS.CODIGO_PROCESO = PROCESOS.CODIGO GROUP BY NODOS.COMPANIA, CODIGO_PROCESO ) N_DIAS ON T.COMPANIA = N_DIAS.COMPANIA AND T.PROCESOS = N_DIAS.CODIGO_PROCESO WHERE T.COMPANIA = :COMPANIA AND TO_CHAR(T.FECHA_REAL, 'YYYY') = :ANIO AND T.FECHA_REAL BETWEEN TO_DATE(:FECHAINI,'DD/MM/YYYY') AND TO_DATE(:FECHAFIN,'DD/MM/YYYY') AND P.MONITOR_ADMIN NOT IN ( 0 ) AND N.NODO_FINAL IN ( 0 ) AND T.ESTADO = 4 GROUP BY T.COMPANIA, T.PROCESOS, TT.NOMBRE, T.TIPO_TRAMITE, T.NUMERO, P.NOMBRE, T.DEPENDENCIA, D.NOMBRE, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(U.NOMBRE1, ' '), U.NOMBRE2), ' '), U.APELLIDO1), ' ' ), U.APELLIDO2), PT.DOCUMENTO, PT.NOMBRE, T.FECHA_REAL, N.NOMBRE, T.FECHA, CASE WHEN TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') = TO_DATE(TO_CHAR(T.FECHA_REAL , 'DD/MM/YYYY'), 'DD/MM/YYYY') THEN TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') - TO_DATE(TO_CHAR(T.FECHA_REAL , 'DD/MM/YYYY'), 'DD/MM/YYYY') + 1 ELSE TO_DATE(TO_CHAR(CURRENT_DATE, 'DD/MM/YYYY'), 'DD/MM/YYYY') - TO_DATE(TO_CHAR(T.FECHA_REAL , 'DD/MM/YYYY'), 'DD/MM/YYYY') END, N.PRORROGA, T.FECHA_PRORROGA, T.DIAS_PRORROGA ORDER BY T.NUMERO ) CONS) INI WHERE (CASE WHEN NOM_TIPO_TRAMITE IS NULL THEN ' ' ELSE UPPER(NOM_TIPO_TRAMITE) END) LIKE UPPER(CONCAT(:NOM_TIPO_TRAMITE, '%')) AND (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN DEPENDENCIA_NOM IS NULL THEN ' ' ELSE UPPER(DEPENDENCIA_NOM) END) LIKE UPPER(CONCAT(:DEPENDENCIA_NOM, '%')) AND (CASE WHEN RESPONSABLE_ACT IS NULL THEN ' ' ELSE UPPER(RESPONSABLE_ACT) END) LIKE UPPER(CONCAT(CONCAT('%',:RESPONSABLE_ACT), '%')) AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END) LIKE UPPER(CONCAT(:TERCERO, '%')) AND (CASE WHEN NOMBRE_TERCERO IS NULL THEN ' ' ELSE UPPER(NOMBRE_TERCERO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_TERCERO), '%')) AND (CASE WHEN FECHA_RADICADO IS NULL THEN ' ' ELSE UPPER(FECHA_RADICADO) END) LIKE UPPER(CONCAT(:FECHA_RADICADO, '%')) AND (CASE WHEN NODO_A_NOM IS NULL THEN ' ' ELSE UPPER(NODO_A_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_A_NOM), '%')) AND (CASE WHEN FECHA_PASE IS NULL THEN ' ' ELSE UPPER(FECHA_PASE) END) LIKE UPPER(CONCAT(:FECHA_PASE, '%')) AND (CASE WHEN FECHA_LIMITE_ETAPA IS NULL THEN ' ' ELSE UPPER(FECHA_LIMITE_ETAPA) END) LIKE UPPER(CONCAT(:FECHA_LIMITE_ETAPA, '%')) AND (CASE WHEN FECHA_PRORROGA IS NULL THEN ' ' ELSE UPPER(FECHA_PRORROGA) END) LIKE UPPER(CONCAT(:FECHA_PRORROGA, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="FECHAINI" sqlType="STRING"/>
+		<param name="FECHAFIN" sqlType="STRING"/>
+		<param name="NOM_TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="DEPENDENCIA_NOM" sqlType="STRING"/>
+		<param name="RESPONSABLE_ACT" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="NOMBRE_TERCERO" sqlType="STRING"/>
+		<param name="FECHA_RADICADO" sqlType="STRING"/>
+		<param name="NODO_A_NOM" sqlType="STRING"/>
+		<param name="FECHA_PASE" sqlType="STRING"/>
+		<param name="FECHA_LIMITE_ETAPA" sqlType="STRING"/>
+		<param name="FECHA_PRORROGA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/monitortramitesadmin/num">
+		<call-query href="getTramitesNumMonitortramitesadminQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="FECHAINI" query-param="FECHAINI"/>
+			<with-param name="FECHAFIN" query-param="FECHAFIN"/>
+			<with-param name="NOM_TIPO_TRAMITE" query-param="NOM_TIPO_TRAMITE"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="DEPENDENCIA_NOM" query-param="DEPENDENCIA_NOM"/>
+			<with-param name="RESPONSABLE_ACT" query-param="RESPONSABLE_ACT"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NOMBRE_TERCERO" query-param="NOMBRE_TERCERO"/>
+			<with-param name="FECHA_RADICADO" query-param="FECHA_RADICADO"/>
+			<with-param name="NODO_A_NOM" query-param="NODO_A_NOM"/>
+			<with-param name="FECHA_PASE" query-param="FECHA_PASE"/>
+			<with-param name="FECHA_LIMITE_ETAPA" query-param="FECHA_LIMITE_ETAPA"/>
+			<with-param name="FECHA_PRORROGA" query-param="FECHA_PRORROGA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPorcompaniainicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT TRAMITES.NUMERO  FROM TRAMITES WHERE TRAMITES.COMPANIA = :COMPANIA ORDER BY TRAMITES.NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/porcompaniainicial">
+		<call-query href="getTramitesPorcompaniainicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPagGettramitesgestdocumentalfechaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DEPENDENCIA.CODIGO, DEPENDENCIA.NOMBRE FROM TRAMITES INNER JOIN DEPENDENCIA ON TRAMITES.COMPANIA = DEPENDENCIA.COMPANIA AND TRAMITES.DEPENDENCIA = DEPENDENCIA.CODIGO WHERE DEPENDENCIA.COMPANIA = :COMPANIA AND GESTION_DOCUMENTAL NOT IN (0) AND FECHA_REAL BETWEEN :FECHAINICIAL AND :FECHAFINAL ORDER BY DEPENDENCIA.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/gettramitesgestdocumentalfecha/pag">
+		<call-query href="getTramitesPagGettramitesgestdocumentalfechaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumGettramitesgestdocumentalfechaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DEPENDENCIA.CODIGO, DEPENDENCIA.NOMBRE FROM TRAMITES INNER JOIN DEPENDENCIA ON TRAMITES.COMPANIA = DEPENDENCIA.COMPANIA AND TRAMITES.DEPENDENCIA = DEPENDENCIA.CODIGO WHERE DEPENDENCIA.COMPANIA = :COMPANIA AND GESTION_DOCUMENTAL NOT IN (0) AND FECHA_REAL BETWEEN :FECHAINICIAL AND :FECHAFINAL ORDER BY DEPENDENCIA.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/gettramitesgestdocumentalfecha/num">
+		<call-query href="getTramitesNumGettramitesgestdocumentalfechaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPagTramites/tramitesprocedenciafechaini/pagQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT PROCESOS.CODIGO, PROCESOS.NOMBRE FROM TRAMITES INNER JOIN DEPENDENCIA ON TRAMITES.COMPANIA = DEPENDENCIA.COMPANIA AND TRAMITES.DEPENDENCIA = DEPENDENCIA.CODIGO INNER JOIN TIPOTRAMITES ON TRAMITES.COMPANIA = TIPOTRAMITES.COMPANIA AND TRAMITES.PROCESOS = TIPOTRAMITES.PROCESOS AND TRAMITES.TIPO_TRAMITE = TIPOTRAMITES.TIPOTRAMITE INNER JOIN PROCESOS ON TIPOTRAMITES.COMPANIA = PROCESOS.COMPANIA AND TIPOTRAMITES.PROCESOS = PROCESOS.CODIGO WHERE DEPENDENCIA.COMPANIA = :COMPANIA AND GESTION_DOCUMENTAL NOT IN (0) AND NUMERACION_UNICA NOT IN (0) AND FECHA_REAL BETWEEN :FECHAINICIAL AND :FECHAFINAL and DEPENDENCIA.CODIGO BETWEEN :DEPENDENCIAINICIAL AND :DEPENDENCIAFINAL ORDER BY DEPENDENCIA.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="DEPENDENCIAINICIAL" sqlType="STRING"/>
+		<param name="DEPENDENCIAFINAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+	</query>
+	<resource method="GET" path="tramites/tramites/tramitesprocesofechaini/pag/pag">
+		<call-query href="getTramitesPagTramites/tramitesprocedenciafechaini/pagQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="DEPENDENCIAINICIAL" query-param="DEPENDENCIAINICIAL"/>
+			<with-param name="DEPENDENCIAFINAL" query-param="DEPENDENCIAFINAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+		</call-query>
+	</resource>
+	<query id="getTramitesNumTramites/tramitesprocedenciafechaini/pagQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT PROCESOS.CODIGO, PROCESOS.NOMBRE FROM TRAMITES INNER JOIN DEPENDENCIA ON TRAMITES.COMPANIA = DEPENDENCIA.COMPANIA AND TRAMITES.DEPENDENCIA = DEPENDENCIA.CODIGO INNER JOIN TIPOTRAMITES ON TRAMITES.COMPANIA = TIPOTRAMITES.COMPANIA AND TRAMITES.PROCESOS = TIPOTRAMITES.PROCESOS AND TRAMITES.TIPO_TRAMITE = TIPOTRAMITES.TIPOTRAMITE INNER JOIN PROCESOS ON TIPOTRAMITES.COMPANIA = PROCESOS.COMPANIA AND TIPOTRAMITES.PROCESOS = PROCESOS.CODIGO WHERE DEPENDENCIA.COMPANIA = :COMPANIA AND GESTION_DOCUMENTAL NOT IN (0) AND NUMERACION_UNICA NOT IN (0) AND FECHA_REAL BETWEEN :FECHAINICIAL AND :FECHAFINAL and DEPENDENCIA.CODIGO BETWEEN :DEPENDENCIAINICIAL AND :DEPENDENCIAFINAL ORDER BY DEPENDENCIA.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="DEPENDENCIAINICIAL" sqlType="STRING"/>
+		<param name="DEPENDENCIAFINAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+	</query>
+	<resource method="GET" path="tramites/tramites/tramitesprocesofechaini/pag/num">
+		<call-query href="getTramitesNumTramites/tramitesprocedenciafechaini/pagQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="DEPENDENCIAINICIAL" query-param="DEPENDENCIAINICIAL"/>
+			<with-param name="DEPENDENCIAFINAL" query-param="DEPENDENCIAFINAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+		</call-query>
+	</resource>
+	<query id="getTramitesPagTramites/tramitesprocesofecha/pagQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT TRAMITES.NUMERO, PROCESOS.NOMBRE FROM TRAMITES INNER JOIN DEPENDENCIA ON TRAMITES.COMPANIA = DEPENDENCIA.COMPANIA AND TRAMITES.DEPENDENCIA = DEPENDENCIA.CODIGO INNER JOIN TIPOTRAMITES ON TRAMITES.COMPANIA = TIPOTRAMITES.COMPANIA AND TRAMITES.PROCESOS = TIPOTRAMITES.PROCESOS AND TRAMITES.TIPO_TRAMITE = TIPOTRAMITES.TIPOTRAMITE INNER JOIN PROCESOS ON TIPOTRAMITES.COMPANIA = PROCESOS.COMPANIA AND TIPOTRAMITES.PROCESOS = PROCESOS.CODIGO WHERE DEPENDENCIA.COMPANIA = :COMPANIA AND GESTION_DOCUMENTAL NOT IN (0) AND NUMERACION_UNICA NOT IN (0) AND FECHA_REAL BETWEEN :FECHAINICIAL AND :FECHAFINAL and DEPENDENCIA.CODIGO BETWEEN :DEPENDENCIAINICIAL AND :DEPENDENCIAFINAL and PROCESOS.CODIGO BETWEEN :PROCESOINICIAL and :PROCESOFINAL ORDER BY TRAMITES.NUMERO) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="DEPENDENCIAINICIAL" sqlType="STRING"/>
+		<param name="DEPENDENCIAFINAL" sqlType="STRING"/>
+		<param name="PROCESOINICIAL" sqlType="STRING"/>
+		<param name="PROCESOFINAL" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramites/tramitesprocesofecha/pag/pag">
+		<call-query href="getTramitesPagTramites/tramitesprocesofecha/pagQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="DEPENDENCIAINICIAL" query-param="DEPENDENCIAINICIAL"/>
+			<with-param name="DEPENDENCIAFINAL" query-param="DEPENDENCIAFINAL"/>
+			<with-param name="PROCESOINICIAL" query-param="PROCESOINICIAL"/>
+			<with-param name="PROCESOFINAL" query-param="PROCESOFINAL"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumTramites/atramitesprocesofecha/pagQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT TRAMITES.NUMERO, PROCESOS.NOMBRE FROM TRAMITES INNER JOIN DEPENDENCIA ON TRAMITES.COMPANIA = DEPENDENCIA.COMPANIA AND TRAMITES.DEPENDENCIA = DEPENDENCIA.CODIGO INNER JOIN TIPOTRAMITES ON TRAMITES.COMPANIA = TIPOTRAMITES.COMPANIA AND TRAMITES.PROCESOS = TIPOTRAMITES.PROCESOS AND TRAMITES.TIPO_TRAMITE = TIPOTRAMITES.TIPOTRAMITE INNER JOIN PROCESOS ON TIPOTRAMITES.COMPANIA = PROCESOS.COMPANIA AND TIPOTRAMITES.PROCESOS = PROCESOS.CODIGO WHERE DEPENDENCIA.COMPANIA = :COMPANIA AND GESTION_DOCUMENTAL NOT IN (0) AND NUMERACION_UNICA NOT IN (0) AND FECHA_REAL BETWEEN :FECHAINICIAL AND :FECHAFINAL and DEPENDENCIA.CODIGO BETWEEN :DEPENDENCIAINICIAL AND :DEPENDENCIAFINAL and PROCESOS.CODIGO BETWEEN :PROCESOINICIAL and :PROCESOFINAL ORDER BY TRAMITES.NUMERO) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="DEPENDENCIAINICIAL" sqlType="STRING"/>
+		<param name="DEPENDENCIAFINAL" sqlType="STRING"/>
+		<param name="PROCESOINICIAL" sqlType="STRING"/>
+		<param name="PROCESOFINAL" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramites/tramitesprocesofecha/pag/num">
+		<call-query href="getTramitesNumTramites/atramitesprocesofecha/pagQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="DEPENDENCIAINICIAL" query-param="DEPENDENCIAINICIAL"/>
+			<with-param name="DEPENDENCIAFINAL" query-param="DEPENDENCIAFINAL"/>
+			<with-param name="PROCESOINICIAL" query-param="PROCESOINICIAL"/>
+			<with-param name="PROCESOFINAL" query-param="PROCESOFINAL"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPagTramites/tramitesprocesofechaini/pagQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT PROCESOS.CODIGO, PROCESOS.NOMBRE FROM TRAMITES INNER JOIN DEPENDENCIA ON TRAMITES.COMPANIA = DEPENDENCIA.COMPANIA AND TRAMITES.DEPENDENCIA = DEPENDENCIA.CODIGO INNER JOIN TIPOTRAMITES ON TRAMITES.COMPANIA = TIPOTRAMITES.COMPANIA AND TRAMITES.PROCESOS = TIPOTRAMITES.PROCESOS AND TRAMITES.TIPO_TRAMITE = TIPOTRAMITES.TIPOTRAMITE INNER JOIN PROCESOS ON TIPOTRAMITES.COMPANIA = PROCESOS.COMPANIA AND TIPOTRAMITES.PROCESOS = PROCESOS.CODIGO WHERE DEPENDENCIA.COMPANIA = :COMPANIA AND GESTION_DOCUMENTAL NOT IN (0) AND NUMERACION_UNICA NOT IN (0) AND FECHA_REAL BETWEEN :FECHAINICIAL AND :FECHAFINAL AND DEPENDENCIA.CODIGO BETWEEN :DEPENDENCIAINICIAL AND :DEPENDENCIAFINAL AND PROCESOS.CODIGO &gt;= :NUMERO ORDER BY DEPENDENCIA.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="DEPENDENCIAINICIAL" sqlType="STRING"/>
+		<param name="DEPENDENCIAFINAL" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramites/tramitesprocesofechaini/pag/pag">
+		<call-query href="getTramitesPagTramites/tramitesprocesofechaini/pagQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="DEPENDENCIAINICIAL" query-param="DEPENDENCIAINICIAL"/>
+			<with-param name="DEPENDENCIAFINAL" query-param="DEPENDENCIAFINAL"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumTramites/tramitesprocesofechaini/pagQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT PROCESOS.CODIGO, PROCESOS.NOMBRE FROM TRAMITES INNER JOIN DEPENDENCIA ON TRAMITES.COMPANIA = DEPENDENCIA.COMPANIA AND TRAMITES.DEPENDENCIA = DEPENDENCIA.CODIGO INNER JOIN TIPOTRAMITES ON TRAMITES.COMPANIA = TIPOTRAMITES.COMPANIA AND TRAMITES.PROCESOS = TIPOTRAMITES.PROCESOS AND TRAMITES.TIPO_TRAMITE = TIPOTRAMITES.TIPOTRAMITE INNER JOIN PROCESOS ON TIPOTRAMITES.COMPANIA = PROCESOS.COMPANIA AND TIPOTRAMITES.PROCESOS = PROCESOS.CODIGO WHERE DEPENDENCIA.COMPANIA = :COMPANIA AND GESTION_DOCUMENTAL NOT IN (0) AND NUMERACION_UNICA NOT IN (0) AND FECHA_REAL BETWEEN :FECHAINICIAL AND :FECHAFINAL AND DEPENDENCIA.CODIGO BETWEEN :DEPENDENCIAINICIAL AND :DEPENDENCIAFINAL AND PROCESOS.CODIGO &gt;= :NUMERO ORDER BY DEPENDENCIA.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="DEPENDENCIAINICIAL" sqlType="STRING"/>
+		<param name="DEPENDENCIAFINAL" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramites/tramitesprocesofechaini/pag/num">
+		<call-query href="getTramitesNumTramites/tramitesprocesofechaini/pagQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="DEPENDENCIAINICIAL" query-param="DEPENDENCIAINICIAL"/>
+			<with-param name="DEPENDENCIAFINAL" query-param="DEPENDENCIAFINAL"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPagTramitesdependenciafinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DEPENDENCIA.CODIGO, DEPENDENCIA.NOMBRE FROM TRAMITES INNER JOIN DEPENDENCIA ON TRAMITES.COMPANIA = DEPENDENCIA.COMPANIA AND TRAMITES.DEPENDENCIA = DEPENDENCIA.CODIGO WHERE DEPENDENCIA.COMPANIA = :COMPANIA AND GESTION_DOCUMENTAL NOT IN (0) AND FECHA_REAL BETWEEN :FECHAINICIAL AND :FECHAFINAL AND DEPENDENCIA.CODIGO &gt;= :NUMERO ORDER BY DEPENDENCIA.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramitesdependenciafinal/pag">
+		<call-query href="getTramitesPagTramitesdependenciafinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumTramitesdependenciafinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DEPENDENCIA.CODIGO, DEPENDENCIA.NOMBRE FROM TRAMITES INNER JOIN DEPENDENCIA ON TRAMITES.COMPANIA = DEPENDENCIA.COMPANIA AND TRAMITES.DEPENDENCIA = DEPENDENCIA.CODIGO WHERE DEPENDENCIA.COMPANIA = :COMPANIA AND GESTION_DOCUMENTAL NOT IN (0) AND FECHA_REAL BETWEEN :FECHAINICIAL AND :FECHAFINAL AND DEPENDENCIA.CODIGO &gt;= :NUMERO ORDER BY DEPENDENCIA.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramitesdependenciafinal/num">
+		<call-query href="getTramitesNumTramitesdependenciafinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPagTramitesnumeroregistrofinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT TRAMITES.NUMERO, PROCESOS.NOMBRE FROM TRAMITES INNER JOIN TIPOTRAMITES ON TRAMITES.COMPANIA = TIPOTRAMITES.COMPANIA AND TRAMITES.PROCESOS = TIPOTRAMITES.PROCESOS AND TRAMITES.TIPO_TRAMITE = TIPOTRAMITES.TIPOTRAMITE INNER JOIN PROCESOS ON TIPOTRAMITES.COMPANIA = PROCESOS.COMPANIA AND TIPOTRAMITES.PROCESOS = PROCESOS.CODIGO WHERE PROCESOS.COMPANIA = :COMPANIA AND PROCESOS.CODIGO BETWEEN :PROCESOINICIAL AND :PROCESOFINAL AND TRAMITES.NUMERO &gt;= :CODIGO ORDER BY TRAMITES.NUMERO) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESOINICIAL" sqlType="STRING"/>
+		<param name="PROCESOFINAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramitesnumeroregistrofinal/pag">
+		<call-query href="getTramitesPagTramitesnumeroregistrofinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESOINICIAL" query-param="PROCESOINICIAL"/>
+			<with-param name="PROCESOFINAL" query-param="PROCESOFINAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumTramitesnumeroregistrofinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT TRAMITES.NUMERO, PROCESOS.NOMBRE FROM TRAMITES INNER JOIN TIPOTRAMITES ON TRAMITES.COMPANIA = TIPOTRAMITES.COMPANIA AND TRAMITES.PROCESOS = TIPOTRAMITES.PROCESOS AND TRAMITES.TIPO_TRAMITE = TIPOTRAMITES.TIPOTRAMITE INNER JOIN PROCESOS ON TIPOTRAMITES.COMPANIA = PROCESOS.COMPANIA AND TIPOTRAMITES.PROCESOS = PROCESOS.CODIGO WHERE PROCESOS.COMPANIA = :COMPANIA AND PROCESOS.CODIGO BETWEEN :PROCESOINICIAL AND :PROCESOFINAL AND TRAMITES.NUMERO &gt;= :CODIGO ORDER BY TRAMITES.NUMERO) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESOINICIAL" sqlType="STRING"/>
+		<param name="PROCESOFINAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramitesnumeroregistrofinal/num">
+		<call-query href="getTramitesNumTramitesnumeroregistrofinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESOINICIAL" query-param="PROCESOINICIAL"/>
+			<with-param name="PROCESOFINAL" query-param="PROCESOFINAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPagTramitesnumeroregistroinicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT TRAMITES.NUMERO, PROCESOS.NOMBRE FROM TRAMITES INNER JOIN TIPOTRAMITES ON TRAMITES.COMPANIA = TIPOTRAMITES.COMPANIA AND TRAMITES.PROCESOS = TIPOTRAMITES.PROCESOS AND TRAMITES.TIPO_TRAMITE = TIPOTRAMITES.TIPOTRAMITE INNER JOIN PROCESOS ON TIPOTRAMITES.COMPANIA = PROCESOS.COMPANIA AND TIPOTRAMITES.PROCESOS = PROCESOS.CODIGO WHERE PROCESOS.COMPANIA = :COMPANIA AND PROCESOS.CODIGO BETWEEN :PROCESOINICIAL AND :PROCESOFINAL ORDER BY TRAMITES.NUMERO) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESOINICIAL" sqlType="STRING"/>
+		<param name="PROCESOFINAL" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramitesnumeroregistroinicial/pag">
+		<call-query href="getTramitesPagTramitesnumeroregistroinicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESOINICIAL" query-param="PROCESOINICIAL"/>
+			<with-param name="PROCESOFINAL" query-param="PROCESOFINAL"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumTramitesnumeroregistroinicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT TRAMITES.NUMERO, PROCESOS.NOMBRE FROM TRAMITES INNER JOIN TIPOTRAMITES ON TRAMITES.COMPANIA = TIPOTRAMITES.COMPANIA AND TRAMITES.PROCESOS = TIPOTRAMITES.PROCESOS AND TRAMITES.TIPO_TRAMITE = TIPOTRAMITES.TIPOTRAMITE INNER JOIN PROCESOS ON TIPOTRAMITES.COMPANIA = PROCESOS.COMPANIA AND TIPOTRAMITES.PROCESOS = PROCESOS.CODIGO WHERE PROCESOS.COMPANIA = :COMPANIA AND PROCESOS.CODIGO BETWEEN :PROCESOINICIAL AND :PROCESOFINAL ORDER BY TRAMITES.NUMERO) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESOINICIAL" sqlType="STRING"/>
+		<param name="PROCESOFINAL" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/tramitesnumeroregistroinicial/num">
+		<call-query href="getTramitesNumTramitesnumeroregistroinicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESOINICIAL" query-param="PROCESOINICIAL"/>
+			<with-param name="PROCESOFINAL" query-param="PROCESOFINAL"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPagRegistroprocesosiniQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT TRAMITES.NUMERO, PROCESOS.NOMBRE PROCESO, NODO_O.NOMBRE ETAPA_O, NODO_A.NOMBRE ETAPA_A  FROM TRAMITES INNER JOIN PROCESOS ON PROCESOS.COMPANIA = TRAMITES.COMPANIA AND PROCESOS.CODIGO = TRAMITES.PROCESOS INNER JOIN NODOS NODO_O ON NODO_O.COMPANIA = TRAMITES.COMPANIA AND NODO_O.CODIGO_PROCESO = TRAMITES.PROCESOS AND NODO_O.CODIGO = TRAMITES.NODO_ORIGEN INNER JOIN NODOS NODO_A ON NODO_A.COMPANIA = TRAMITES.COMPANIA AND NODO_A.CODIGO_PROCESO = TRAMITES.PROCESOS AND NODO_A.CODIGO = TRAMITES.NODO_ORIGEN WHERE TRAMITES.COMPANIA = :COMPANIA ORDER BY TRAMITES.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN PROCESO IS NULL THEN ' ' ELSE UPPER(PROCESO) END)  LIKE UPPER( '%' || :PROCESO || '%')  AND (CASE WHEN ETAPA_O IS NULL THEN ' ' ELSE UPPER(ETAPA_O) END)  LIKE UPPER( '%' || :ETAPA_O || '%')  AND (CASE WHEN ETAPA_A IS NULL THEN ' ' ELSE UPPER(ETAPA_A) END)  LIKE UPPER( '%' || :ETAPA_A || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:long)","PROCESO":"$PROCESO","ETAPA_O":"$ETAPA_O","ETAPA_A":"$ETAPA_A"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ETAPA_O" sqlType="STRING"/>
+		<param name="ETAPA_A" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/registroprocesosini/pag">
+		<call-query href="getTramitesPagRegistroprocesosiniQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ETAPA_O" query-param="ETAPA_O"/>
+			<with-param name="ETAPA_A" query-param="ETAPA_A"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumRegistroprocesosiniQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT TRAMITES.NUMERO, PROCESOS.NOMBRE PROCESO, NODO_O.NOMBRE ETAPA_O, NODO_A.NOMBRE ETAPA_A  FROM TRAMITES INNER JOIN PROCESOS ON PROCESOS.COMPANIA = TRAMITES.COMPANIA AND PROCESOS.CODIGO = TRAMITES.PROCESOS INNER JOIN NODOS NODO_O ON NODO_O.COMPANIA = TRAMITES.COMPANIA AND NODO_O.CODIGO_PROCESO = TRAMITES.PROCESOS AND NODO_O.CODIGO = TRAMITES.NODO_ORIGEN INNER JOIN NODOS NODO_A ON NODO_A.COMPANIA = TRAMITES.COMPANIA AND NODO_A.CODIGO_PROCESO = TRAMITES.PROCESOS AND NODO_A.CODIGO = TRAMITES.NODO_ORIGEN WHERE TRAMITES.COMPANIA = :COMPANIA ORDER BY TRAMITES.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN PROCESO IS NULL THEN ' ' ELSE UPPER(PROCESO) END)  LIKE UPPER( '%' || :PROCESO || '%')  AND (CASE WHEN ETAPA_O IS NULL THEN ' ' ELSE UPPER(ETAPA_O) END)  LIKE UPPER( '%' || :ETAPA_O || '%')  AND (CASE WHEN ETAPA_A IS NULL THEN ' ' ELSE UPPER(ETAPA_A) END)  LIKE UPPER( '%' || :ETAPA_A || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ETAPA_O" sqlType="STRING"/>
+		<param name="ETAPA_A" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/registroprocesosini/num">
+		<call-query href="getTramitesNumRegistroprocesosiniQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ETAPA_O" query-param="ETAPA_O"/>
+			<with-param name="ETAPA_A" query-param="ETAPA_A"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesPagRegistroprocesosfinQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT TRAMITES.NUMERO, PROCESOS.NOMBRE PROCESO, NODO_O.NOMBRE ETAPA_O, NODO_A.NOMBRE ETAPA_A  FROM TRAMITES INNER JOIN PROCESOS ON PROCESOS.COMPANIA = TRAMITES.COMPANIA AND PROCESOS.CODIGO = TRAMITES.PROCESOS INNER JOIN NODOS NODO_O ON NODO_O.COMPANIA = TRAMITES.COMPANIA AND NODO_O.CODIGO_PROCESO = TRAMITES.PROCESOS AND NODO_O.CODIGO = TRAMITES.NODO_ORIGEN INNER JOIN NODOS NODO_A ON NODO_A.COMPANIA = TRAMITES.COMPANIA AND NODO_A.CODIGO_PROCESO = TRAMITES.PROCESOS AND NODO_A.CODIGO = TRAMITES.NODO_ORIGEN WHERE TRAMITES.COMPANIA = :COMPANIA AND TRAMITES.NUMERO &gt;= :NUMERO ORDER BY TRAMITES.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN PROCESO IS NULL THEN ' ' ELSE UPPER(PROCESO) END)  LIKE UPPER( '%' || :PROCESO || '%')  AND (CASE WHEN ETAPA_O IS NULL THEN ' ' ELSE UPPER(ETAPA_O) END)  LIKE UPPER( '%' || :ETAPA_O || '%')  AND (CASE WHEN ETAPA_A IS NULL THEN ' ' ELSE UPPER(ETAPA_A) END)  LIKE UPPER( '%' || :ETAPA_A || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:long)","PROCESO":"$PROCESO","ETAPA_O":"$ETAPA_O","ETAPA_A":"$ETAPA_A"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ETAPA_O" sqlType="STRING"/>
+		<param name="ETAPA_A" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tramites/registroprocesosfin/pag">
+		<call-query href="getTramitesPagRegistroprocesosfinQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ETAPA_O" query-param="ETAPA_O"/>
+			<with-param name="ETAPA_A" query-param="ETAPA_A"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTramitesNumRegistroprocesosfinQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT TRAMITES.NUMERO, PROCESOS.NOMBRE PROCESO, NODO_O.NOMBRE ETAPA_O, NODO_A.NOMBRE ETAPA_A  FROM TRAMITES INNER JOIN PROCESOS ON PROCESOS.COMPANIA = TRAMITES.COMPANIA AND PROCESOS.CODIGO = TRAMITES.PROCESOS INNER JOIN NODOS NODO_O ON NODO_O.COMPANIA = TRAMITES.COMPANIA AND NODO_O.CODIGO_PROCESO = TRAMITES.PROCESOS AND NODO_O.CODIGO = TRAMITES.NODO_ORIGEN INNER JOIN NODOS NODO_A ON NODO_A.COMPANIA = TRAMITES.COMPANIA AND NODO_A.CODIGO_PROCESO = TRAMITES.PROCESOS AND NODO_A.CODIGO = TRAMITES.NODO_ORIGEN WHERE TRAMITES.COMPANIA = :COMPANIA AND TRAMITES.NUMERO &gt;= :NUMERO ORDER BY TRAMITES.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN PROCESO IS NULL THEN ' ' ELSE UPPER(PROCESO) END)  LIKE UPPER( '%' || :PROCESO || '%')  AND (CASE WHEN ETAPA_O IS NULL THEN ' ' ELSE UPPER(ETAPA_O) END)  LIKE UPPER( '%' || :ETAPA_O || '%')  AND (CASE WHEN ETAPA_A IS NULL THEN ' ' ELSE UPPER(ETAPA_A) END)  LIKE UPPER( '%' || :ETAPA_A || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="ETAPA_O" sqlType="STRING"/>
+		<param name="ETAPA_A" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tramites/registroprocesosfin/num">
+		<call-query href="getTramitesNumRegistroprocesosfinQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="ETAPA_O" query-param="ETAPA_O"/>
+			<with-param name="ETAPA_A" query-param="ETAPA_A"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,122 @@
+CREATE OR REPLACE TRIGGER "BU_SP_ABONOS" 
+  /*
+      NAME              : BU_SP_ABONOS
+      AUTHORS           : SYSMAN  SAS
+      AUTHOR MIGRACION  : MIGUEL ANGEL ZANGUÑA HURTADO
+      DATE MIGRADOR     : 25/08/2017
+      TIME              : 08:41 AM
+      SOURCE MODULE     :
+      MODIFIER          :
+      DATE MODIFIED     :
+      TIME              :
+      DESCRIPTION       : Crea los detalles de los abonos autorizados que se están pagando
+
+  */
+FOR UPDATE ON SP_ABONOS
+REFERENCING OLD AS OLD NEW AS NEW
+COMPOUND TRIGGER
+
+MI_COMPANIA       SP_ABONOS.COMPANIA%TYPE;
+MI_CICLO          SP_ABONOS.CICLO%TYPE;
+MI_CODIGORUTA     SP_ABONOS.CODIGORUTA%TYPE;
+MI_ANO            SP_ABONOS.ANO%TYPE;
+MI_PERIODO        SP_ABONOS.PERIODO%TYPE;
+MI_CONSECUTIVO    SP_ABONOS.CONSECUTIVO%TYPE;
+MI_VALOR          SP_ABONOS.VALOR%TYPE;
+MI_CREATED_BY     SP_ABONOS.CREATED_BY%TYPE;
+MI_CAMBIOCICLO    SP_USUARIO.CAMBIOCICLORUTA%TYPE;
+MI_PAGOCONVENIOS  SP_ABONOS.PAGOCONVENIOS%TYPE;
+MI_PTERCERIZADO   SP_ABONOS.PAGOTERCERIZADO%TYPE;
+MI_FECHA          DATE;
+MI_BANCO          SP_ABONOS.BANCO%TYPE;
+MI_RTA            NUMBER DEFAULT 0;
+MI_NUMABONO       NUMBER DEFAULT 0;
+
+AFTER EACH ROW IS --Ejecución despues de cada fila,
+BEGIN
+
+    BEGIN
+        SELECT CAMBIOCICLORUTA
+        INTO   MI_CAMBIOCICLO
+        FROM   SP_USUARIO
+        WHERE  COMPANIA   = :NEW.COMPANIA
+          AND  CICLO      = :NEW.CICLO
+          AND  CODIGORUTA = :NEW.CODIGORUTA;
+    END;
+
+    --VALIDA POR CADA FILA QUE SE PUEDA ACTUALIZAR
+    MI_RTA :=0;
+    IF MI_CAMBIOCICLO = 0 THEN
+        MI_RTA := PCK_SERVICIOS_PUBLICOS_ABONOS.FC_VALIDARABONO
+                  ( UN_COMPANIA        => :OLD.COMPANIA
+                   ,UN_CODIGORUTA      => :OLD.CODIGORUTA
+                   ,UN_CICLO           => :OLD.CICLO
+                   ,UN_ANO             => :OLD.ANO
+                   ,UN_PERIODO         => :OLD.PERIODO
+                   ,UN_ABONOAUTORIZADO => :OLD.INDAUTORIZADO
+                   ,UN_CONSECUTIVO     => :OLD.CONSECUTIVO
+                   ,UN_BANCOABONO      => :NEW.BANCO
+                   ,UN_FECHAABONO      => :NEW.FECHA
+                   ,UN_PAGOCONVENIO    => :OLD.PAGOCONVENIOS
+                   ,UN_PAGOTERCERIZADO => :OLD.PAGOTERCERIZADO
+                   ,UN_VALORABONO      => CASE WHEN :NEW.VALOR IS NULL THEN :OLD.VALOR ELSE :NEW.VALOR END
+                   ,UN_VALORABONOOLD   => :OLD.VALOR
+                   ,UN_ACCION          => 'MODIFICAR'
+                  );
+    END IF;
+
+
+    IF MI_RTA <>0 THEN  --Si se permite Modificar.
+        --Registra los detalle de los abonos.
+        MI_COMPANIA := :OLD.COMPANIA;
+        MI_CICLO := :OLD.CICLO;
+        MI_CODIGORUTA := :OLD.CODIGORUTA;
+        MI_ANO := :OLD.ANO;
+        MI_PERIODO := :OLD.PERIODO;
+        MI_CONSECUTIVO := :OLD.CONSECUTIVO;
+        MI_VALOR := :OLD.VALOR;
+        MI_CREATED_BY := :NEW.MODIFIED_BY;
+        MI_PAGOCONVENIOS := :OLD.PAGOCONVENIOS;
+        MI_PTERCERIZADO := :OLD.PAGOTERCERIZADO;
+        MI_FECHA := :NEW.FECHA;
+        MI_BANCO := :NEW.BANCO;
+    END IF;
+
+END AFTER EACH ROW;
+
+AFTER STATEMENT IS --Ejecución despues de una consulta DML
+BEGIN
+  IF MI_RTA <>0 THEN
+    BEGIN
+        SELECT COUNT(1)
+        INTO   MI_NUMABONO
+        FROM   SP_D_ABONOS
+        WHERE  COMPANIA = MI_COMPANIA
+          AND  CICLO = MI_CICLO
+          AND  CODIGORUTA = MI_CODIGORUTA
+          AND  ANO = MI_ANO
+          AND  PERIODO = MI_PERIODO
+          AND  CONSECUTIVO = MI_CONSECUTIVO;
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+        MI_NUMABONO :=0;
+    END;
+
+    IF MI_NUMABONO =0 THEN --Si no tiene registrado abonos
+        PCK_SERVICIOS_PUBLICOS_ABONOS.PR_REGISTRARABONO
+              ( UN_COMPANIA         => MI_COMPANIA
+               ,UN_CICLO            => MI_CICLO
+               ,UN_CODIGORUTA       => MI_CODIGORUTA
+               ,UN_ANO              => MI_ANO
+               ,UN_PERIODO          => MI_PERIODO
+               ,UN_CONSECUTIVOABONO => MI_CONSECUTIVO
+               ,UN_VALORABONO       => MI_VALOR
+               ,UN_PAGOCONVENIOS    => MI_PAGOCONVENIOS
+               ,UN_PAGOTERCERIZADO  => MI_PTERCERIZADO
+               ,UN_FECHAABONO       => MI_FECHA
+               ,UN_BANCOABONO       => MI_BANCO
+               ,UN_USUARIO          => MI_CREATED_BY );
+    END IF;
+  END IF;
+END AFTER STATEMENT;
+
+END;

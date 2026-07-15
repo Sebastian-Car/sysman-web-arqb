@@ -1,0 +1,174 @@
+﻿<data name="vpprocesofacturacion" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getVpprocesofacturacionPagTodoslosprocesosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT VPF.ID, VPF.NUMERO, VPF.ID_PROYECTO, VF.CODIGO, VF.DESCRIPCION  FROM VP_PROCESO_FACTURACION VPF INNER JOIN VP_PROYECTOS VF ON VPF.CODIGO_PROYECTO = VF.CODIGO WHERE VPF.COMPANIA = :COMPANIA AND VF.CLASE = :CLASE) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER(:DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","NUMERO":"$NUMERO(type:long)","ID_PROYECTO":"$ID_PROYECTO","CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vpprocesofacturacion/todoslosprocesos/pag">
+		<call-query href="getVpprocesofacturacionPagTodoslosprocesosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getVpprocesofacturacionNumTodoslosprocesosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT VPF.ID, VPF.NUMERO, VPF.ID_PROYECTO, VF.CODIGO, VF.DESCRIPCION  FROM VP_PROCESO_FACTURACION VPF INNER JOIN VP_PROYECTOS VF ON VPF.CODIGO_PROYECTO = VF.CODIGO WHERE VPF.COMPANIA = :COMPANIA AND VF.CLASE = :CLASE) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER(:DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vpprocesofacturacion/todoslosprocesos/num">
+		<call-query href="getVpprocesofacturacionNumTodoslosprocesosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getVpprocesofacturacionPagListafacturaporclaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  VPF.ID, VPF.NUMERO, VPF.ID_PROYECTO, VPF.CODIGO_PROYECTO, REC.CODIGO NUMERO_FACTURA, VF.ID_BENEFICIARIOS, VP_BENEFICIARIOS.TERCERO IP_CODIGO, TERCERO.NOMBRE NOMBRE_USUARIO, TO_CHAR(REC.FECHA, 'DD/MM/YYYY') FECHA, SUM(DET.VALOR) VALOR, CASE WHEN REC.ANULADO IN ( 0 ) THEN 'true' ELSE 'false' END ESTADO  FROM GN_RECIBOS REC INNER JOIN GN_RECIBOS_DET DET ON REC.ID = DET.ID_RECIBO INNER JOIN VP_FACTURA VF ON REC.REFERENCIA = VF.ID AND REC.REFERENCIA2 = VF.CLASE_PROYECTO INNER JOIN VP_PROCESO_FACTURACION VPF ON VPF.ID = VF.ID_PROCESO_FACTURACION INNER JOIN VP_BENEFICIARIOS ON VF.ID_BENEFICIARIOS = VP_BENEFICIARIOS.ID INNER JOIN TERCERO ON VP_BENEFICIARIOS.COMPANIA = TERCERO.COMPANIA AND VP_BENEFICIARIOS.TERCERO = TERCERO.NIT AND VP_BENEFICIARIOS.SUCURSAL = TERCERO.SUCURSAL WHERE VPF.COMPANIA = :COMPANIA AND VPF.CLASE_PROYECTO = :CLASE AND VPF.ID_PROYECTO = CASE WHEN :REEMPLAZO = 1 THEN TO_NUMBER(:PROYECTO) ELSE VPF.ID_PROYECTO END AND REC.ANULADO = CASE WHEN :PORESTADO IN (0) THEN (0) ELSE CASE WHEN :PORESTADO IN (1) THEN (-1) ELSE REC.ANULADO END END GROUP BY VPF.NUMERO, VPF.ID_PROYECTO, VPF.CODIGO_PROYECTO, REC.CODIGO, VF.ID_BENEFICIARIOS, VP_BENEFICIARIOS.TERCERO, TERCERO.NOMBRE, TO_CHAR(REC.FECHA, 'DD/MM/YYYY'), VF.ESTADO, VPF.ID, REC.ANULADO ORDER BY VPF.NUMERO) WHERE (CASE WHEN CODIGO_PROYECTO IS NULL THEN ' ' ELSE UPPER(CODIGO_PROYECTO) END)  LIKE UPPER(:CODIGO_PROYECTO || '%')  AND (CASE WHEN NUMERO_FACTURA IS NULL THEN ' ' ELSE UPPER(NUMERO_FACTURA) END)  LIKE UPPER(:NUMERO_FACTURA || '%')  AND (CASE WHEN IP_CODIGO IS NULL THEN ' ' ELSE UPPER(IP_CODIGO) END)  LIKE UPPER(:IP_CODIGO || '%')  AND (CASE WHEN NOMBRE_USUARIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_USUARIO) END)  LIKE UPPER(:NOMBRE_USUARIO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER(:FECHA || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER(:ESTADO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","NUMERO":"$NUMERO(type:long)","ID_PROYECTO":"$ID_PROYECTO","CODIGO_PROYECTO":"$CODIGO_PROYECTO","NUMERO_FACTURA":"$NUMERO_FACTURA","ID_BENEFICIARIOS":"$ID_BENEFICIARIOS","IP_CODIGO":"$IP_CODIGO","NOMBRE_USUARIO":"$NOMBRE_USUARIO","FECHA":"$FECHA","VALOR":"$VALOR(type:double)","ESTADO":"$ESTADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="REEMPLAZO" sqlType="STRING"/>
+		<param name="PROYECTO" sqlType="STRING"/>
+		<param name="PORESTADO" sqlType="STRING"/>
+		<param name="CODIGO_PROYECTO" sqlType="STRING"/>
+		<param name="NUMERO_FACTURA" sqlType="STRING"/>
+		<param name="IP_CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE_USUARIO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vpprocesofacturacion/listafacturaporclase/pag">
+		<call-query href="getVpprocesofacturacionPagListafacturaporclaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="REEMPLAZO" query-param="REEMPLAZO"/>
+			<with-param name="PROYECTO" query-param="PROYECTO"/>
+			<with-param name="PORESTADO" query-param="PORESTADO"/>
+			<with-param name="CODIGO_PROYECTO" query-param="CODIGO_PROYECTO"/>
+			<with-param name="NUMERO_FACTURA" query-param="NUMERO_FACTURA"/>
+			<with-param name="IP_CODIGO" query-param="IP_CODIGO"/>
+			<with-param name="NOMBRE_USUARIO" query-param="NOMBRE_USUARIO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getVpprocesofacturacionNumListafacturaporclaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  VPF.ID, VPF.NUMERO, VPF.ID_PROYECTO, VPF.CODIGO_PROYECTO, REC.CODIGO NUMERO_FACTURA, VF.ID_BENEFICIARIOS, VP_BENEFICIARIOS.TERCERO IP_CODIGO, TERCERO.NOMBRE NOMBRE_USUARIO, TO_CHAR(REC.FECHA, 'DD/MM/YYYY') FECHA, SUM(DET.VALOR) VALOR, CASE WHEN REC.ANULADO IN ( 0 ) THEN 'true' ELSE 'false' END ESTADO  FROM GN_RECIBOS REC INNER JOIN GN_RECIBOS_DET DET ON REC.ID = DET.ID_RECIBO INNER JOIN VP_FACTURA VF ON REC.REFERENCIA = VF.ID AND REC.REFERENCIA2 = VF.CLASE_PROYECTO INNER JOIN VP_PROCESO_FACTURACION VPF ON VPF.ID = VF.ID_PROCESO_FACTURACION INNER JOIN VP_BENEFICIARIOS ON VF.ID_BENEFICIARIOS = VP_BENEFICIARIOS.ID INNER JOIN TERCERO ON VP_BENEFICIARIOS.COMPANIA = TERCERO.COMPANIA AND VP_BENEFICIARIOS.TERCERO = TERCERO.NIT AND VP_BENEFICIARIOS.SUCURSAL = TERCERO.SUCURSAL WHERE VPF.COMPANIA = :COMPANIA AND VPF.CLASE_PROYECTO = :CLASE AND VPF.ID_PROYECTO = CASE WHEN :REEMPLAZO = 1 THEN TO_NUMBER(:PROYECTO) ELSE VPF.ID_PROYECTO END AND REC.ANULADO = CASE WHEN :PORESTADO IN (0) THEN (0) ELSE CASE WHEN :PORESTADO IN (1) THEN (-1) ELSE REC.ANULADO END END GROUP BY VPF.NUMERO, VPF.ID_PROYECTO, VPF.CODIGO_PROYECTO, REC.CODIGO, VF.ID_BENEFICIARIOS, VP_BENEFICIARIOS.TERCERO, TERCERO.NOMBRE, TO_CHAR(REC.FECHA, 'DD/MM/YYYY'), VF.ESTADO, VPF.ID, REC.ANULADO ORDER BY VPF.NUMERO) WHERE (CASE WHEN CODIGO_PROYECTO IS NULL THEN ' ' ELSE UPPER(CODIGO_PROYECTO) END)  LIKE UPPER(:CODIGO_PROYECTO || '%')  AND (CASE WHEN NUMERO_FACTURA IS NULL THEN ' ' ELSE UPPER(NUMERO_FACTURA) END)  LIKE UPPER(:NUMERO_FACTURA || '%')  AND (CASE WHEN IP_CODIGO IS NULL THEN ' ' ELSE UPPER(IP_CODIGO) END)  LIKE UPPER(:IP_CODIGO || '%')  AND (CASE WHEN NOMBRE_USUARIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_USUARIO) END)  LIKE UPPER(:NOMBRE_USUARIO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER(:FECHA || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER(:ESTADO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="REEMPLAZO" sqlType="STRING"/>
+		<param name="PROYECTO" sqlType="STRING"/>
+		<param name="PORESTADO" sqlType="STRING"/>
+		<param name="CODIGO_PROYECTO" sqlType="STRING"/>
+		<param name="NUMERO_FACTURA" sqlType="STRING"/>
+		<param name="IP_CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE_USUARIO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vpprocesofacturacion/listafacturaporclase/num">
+		<call-query href="getVpprocesofacturacionNumListafacturaporclaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="REEMPLAZO" query-param="REEMPLAZO"/>
+			<with-param name="PROYECTO" query-param="PROYECTO"/>
+			<with-param name="PORESTADO" query-param="PORESTADO"/>
+			<with-param name="CODIGO_PROYECTO" query-param="CODIGO_PROYECTO"/>
+			<with-param name="NUMERO_FACTURA" query-param="NUMERO_FACTURA"/>
+			<with-param name="IP_CODIGO" query-param="IP_CODIGO"/>
+			<with-param name="NOMBRE_USUARIO" query-param="NOMBRE_USUARIO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getVpprocesofacturacionPagLiquidarporclaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT VPF.ID, VPF.NUMERO, VPF.ID_PROYECTO, VB.DOCUMENTO_PROPIETARIO, VB.NOMBRE_USUARIO, VP.CODIGO, VP.DESCRIPCION  FROM VP_PROCESO_FACTURACION VPF INNER JOIN VP_PROYECTOS VP ON VPF.CODIGO_PROYECTO = VP.CODIGO INNER JOIN VP_BENEFICIARIOS VB ON VP.ID = VB.ID_PROYECTO WHERE VPF.COMPANIA = :COMPANIA AND VP.CLASE = :CLASE ORDER BY VPF.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN DOCUMENTO_PROPIETARIO IS NULL THEN ' ' ELSE UPPER(DOCUMENTO_PROPIETARIO) END)  LIKE UPPER(:DOCUMENTO_PROPIETARIO || '%')  AND (CASE WHEN NOMBRE_USUARIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_USUARIO) END)  LIKE UPPER(:NOMBRE_USUARIO || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER(:DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","NUMERO":"$NUMERO(type:long)","ID_PROYECTO":"$ID_PROYECTO","DOCUMENTO_PROPIETARIO":"$DOCUMENTO_PROPIETARIO","NOMBRE_USUARIO":"$NOMBRE_USUARIO","CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DOCUMENTO_PROPIETARIO" sqlType="STRING"/>
+		<param name="NOMBRE_USUARIO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vpprocesofacturacion/liquidarporclase/pag">
+		<call-query href="getVpprocesofacturacionPagLiquidarporclaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DOCUMENTO_PROPIETARIO" query-param="DOCUMENTO_PROPIETARIO"/>
+			<with-param name="NOMBRE_USUARIO" query-param="NOMBRE_USUARIO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getVpprocesofacturacionNumLiquidarporclaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT VPF.ID, VPF.NUMERO, VPF.ID_PROYECTO, VB.DOCUMENTO_PROPIETARIO, VB.NOMBRE_USUARIO, VP.CODIGO, VP.DESCRIPCION  FROM VP_PROCESO_FACTURACION VPF INNER JOIN VP_PROYECTOS VP ON VPF.CODIGO_PROYECTO = VP.CODIGO INNER JOIN VP_BENEFICIARIOS VB ON VP.ID = VB.ID_PROYECTO WHERE VPF.COMPANIA = :COMPANIA AND VP.CLASE = :CLASE ORDER BY VPF.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN DOCUMENTO_PROPIETARIO IS NULL THEN ' ' ELSE UPPER(DOCUMENTO_PROPIETARIO) END)  LIKE UPPER(:DOCUMENTO_PROPIETARIO || '%')  AND (CASE WHEN NOMBRE_USUARIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_USUARIO) END)  LIKE UPPER(:NOMBRE_USUARIO || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER(:DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DOCUMENTO_PROPIETARIO" sqlType="STRING"/>
+		<param name="NOMBRE_USUARIO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vpprocesofacturacion/liquidarporclase/num">
+		<call-query href="getVpprocesofacturacionNumLiquidarporclaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DOCUMENTO_PROPIETARIO" query-param="DOCUMENTO_PROPIETARIO"/>
+			<with-param name="NOMBRE_USUARIO" query-param="NOMBRE_USUARIO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+
+</data>

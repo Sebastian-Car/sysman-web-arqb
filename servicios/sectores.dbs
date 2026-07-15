@@ -1,0 +1,280 @@
+﻿<data name="sectores" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSectoresTodosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT SECTORES.CODIGO, SECTORES.DESCRIPCION  FROM SECTORES WHERE SECTORES.COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sectores/todos">
+		<call-query href="getSectoresTodosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSectoresPagCodigodescripcionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, DESCRIPCION  FROM SECTORES WHERE COMPANIA = :COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sectores/codigodescripcion/pag">
+		<call-query href="getSectoresPagCodigodescripcionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSectoresNumCodigodescripcionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, DESCRIPCION  FROM SECTORES WHERE COMPANIA = :COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sectores/codigodescripcion/num">
+		<call-query href="getSectoresNumCodigodescripcionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getSectoresListadosectorescodigodescQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SECTORES.CODIGO, SECTORES.DESCRIPCION  FROM SECTORES</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="sectores/listadosectorescodigodesc">
+		<call-query href="getSectoresListadosectorescodigodescQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getSectoresPagSectoresDePlanDeAccionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT SECTORES.CODIGO, SECTORES.DESCRIPCION , SECTORES.SECTOR_SIA  FROM SECTORES INNER JOIN PI_INDICADOR ON SECTORES.COMPANIA = PI_INDICADOR.COMPANIA AND SECTORES.CODIGO = PI_INDICADOR.SECTOR WHERE SECTORES.COMPANIA = :COMPANIA UNION ALL SELECT 'T', 'TODOS' , '' FROM DUAL ORDER BY 1) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN SECTOR_SIA IS NULL THEN ' ' ELSE UPPER(SECTOR_SIA) END)  LIKE UPPER(:SECTOR_SIA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION","SECTOR_SIA":"$SECTOR_SIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="SECTOR_SIA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sectores/sectoresdeplandeaccion/pag">
+		<call-query href="getSectoresPagSectoresDePlanDeAccionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="SECTOR_SIA" query-param="SECTOR_SIA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSectoresNumSectoresDePlanDeAccionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT SECTORES.CODIGO, SECTORES.DESCRIPCION , SECTORES.SECTOR_SIA  FROM SECTORES INNER JOIN PI_INDICADOR ON SECTORES.COMPANIA = PI_INDICADOR.COMPANIA AND SECTORES.CODIGO = PI_INDICADOR.SECTOR WHERE SECTORES.COMPANIA = :COMPANIA UNION ALL SELECT 'T', 'TODOS' , '' FROM DUAL ORDER BY 1) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN SECTOR_SIA IS NULL THEN ' ' ELSE UPPER(SECTOR_SIA) END)  LIKE UPPER(:SECTOR_SIA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="SECTOR_SIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sectores/sectoresdeplandeaccion/num">
+		<call-query href="getSectoresNumSectoresDePlanDeAccionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="SECTOR_SIA" query-param="SECTOR_SIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSectoresPagSectorFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, DESCRIPCION  FROM SECTORES WHERE COMPANIA = :COMPANIA AND CODIGO &gt;=:SECTOR ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SECTOR" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sectores/sectorfinal/pag">
+		<call-query href="getSectoresPagSectorFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SECTOR" query-param="SECTOR"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSectoresNumSectorFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, DESCRIPCION  FROM SECTORES WHERE COMPANIA = :COMPANIA AND CODIGO &gt;=:SECTOR ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SECTOR" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sectores/sectorfinal/num">
+		<call-query href="getSectoresNumSectorFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SECTOR" query-param="SECTOR"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getSectoresCodigosectorpiQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CODIGO, DESCRIPCION, SECTOR_PI FROM SECTORES WHERE COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION","SECTOR_PI":"$SECTOR_PI"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sectores/codigosectorpi">
+		<call-query href="getSectoresCodigosectorpiQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSectores" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SECTORES (COMPANIA, CODIGO, DESCRIPCION, SECTOR_PI, SECTOR_SIA, SECTOR_APPUI, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :DESCRIPCION, :SECTOR_PI, :SECTOR_SIA, :SECTOR_APPUI, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="" name="SECTOR_PI" sqlType="STRING"/>
+		<param defaultValue="" name="SECTOR_SIA" sqlType="STRING"/>
+		<param defaultValue="" name="SECTOR_APPUI" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="sectores">
+		<call-query href="insertSectores">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="SECTOR_PI" query-param="SECTOR_PI"/>
+			<with-param name="SECTOR_SIA" query-param="SECTOR_SIA"/>
+			<with-param name="SECTOR_APPUI" query-param="SECTOR_APPUI"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSectores" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SECTORES WHERE SECTORES.COMPANIA= :KEY_COMPANIA AND SECTORES.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="sectores">
+		<call-query href="deleteSectores">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSectoresPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, CODIGO, DESCRIPCION , SECTOR_PI, SECTOR_SIA, SECTOR_APPUI FROM SECTORES WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN SECTOR_PI IS NULL THEN ' ' ELSE UPPER(SECTOR_PI) END) LIKE UPPER(CONCAT(CONCAT('%',:SECTOR_PI), '%')) AND (CASE WHEN SECTOR_SIA IS NULL THEN ' ' ELSE UPPER(SECTOR_SIA) END) LIKE UPPER(CONCAT(CONCAT('%',:SECTOR_SIA), '%')) AND (CASE WHEN SECTOR_APPUI IS NULL THEN ' ' ELSE UPPER(SECTOR_APPUI) END) LIKE UPPER(CONCAT(CONCAT('%',:SECTOR_APPUI), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION","SECTOR_PI":"$SECTOR_PI","SECTOR_SIA":"$SECTOR_SIA","SECTOR_APPUI":"$SECTOR_APPUI"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="SECTOR_PI" sqlType="STRING"/>
+		<param name="SECTOR_SIA" sqlType="STRING"/>
+		<param name="SECTOR_APPUI" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sectores">
+		<call-query href="getSectoresPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="SECTOR_PI" query-param="SECTOR_PI"/>
+			<with-param name="SECTOR_SIA" query-param="SECTOR_SIA"/>
+			<with-param name="SECTOR_APPUI" query-param="SECTOR_APPUI"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSectoresNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, CODIGO, DESCRIPCION , SECTOR_PI, SECTOR_SIA, SECTOR_APPUI FROM SECTORES WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION), '%')) AND (CASE WHEN SECTOR_PI IS NULL THEN ' ' ELSE UPPER(SECTOR_PI) END) LIKE UPPER(CONCAT(CONCAT('%',:SECTOR_PI), '%')) AND (CASE WHEN SECTOR_SIA IS NULL THEN ' ' ELSE UPPER(SECTOR_SIA) END) LIKE UPPER(CONCAT(CONCAT('%',:SECTOR_SIA), '%')) AND (CASE WHEN SECTOR_APPUI IS NULL THEN ' ' ELSE UPPER(SECTOR_APPUI) END) LIKE UPPER(CONCAT(CONCAT('%',:SECTOR_APPUI), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="SECTOR_PI" sqlType="STRING"/>
+		<param name="SECTOR_SIA" sqlType="STRING"/>
+		<param name="SECTOR_APPUI" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sectores/numero">
+		<call-query href="getSectoresNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="SECTOR_PI" query-param="SECTOR_PI"/>
+			<with-param name="SECTOR_SIA" query-param="SECTOR_SIA"/>
+			<with-param name="SECTOR_APPUI" query-param="SECTOR_APPUI"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSectores" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SECTORES SET COMPANIA=:COMPANIA, CODIGO=:CODIGO, DESCRIPCION=:DESCRIPCION, SECTOR_PI=:SECTOR_PI, SECTOR_SIA=:SECTOR_SIA, SECTOR_APPUI=:SECTOR_APPUI, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SECTORES.COMPANIA= :KEY_COMPANIA AND SECTORES.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="SECTOR_PI" sqlType="STRING"/>
+		<param name="SECTOR_SIA" sqlType="STRING"/>
+		<param name="SECTOR_APPUI" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="sectores">
+		<call-query href="updateSectores">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="SECTOR_PI" query-param="SECTOR_PI"/>
+			<with-param name="SECTOR_SIA" query-param="SECTOR_SIA"/>
+			<with-param name="SECTOR_APPUI" query-param="SECTOR_APPUI"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

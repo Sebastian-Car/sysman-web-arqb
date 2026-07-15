@@ -1,0 +1,184 @@
+﻿<data name="gruposformularios" transports="http https local">
+	<config enableOData="false" id="sysmanirisst">
+		<property name="carbon_datasource_name">SYSMANIRISST</property>
+	</config>
+	<query id="getGruposformulariosPermisosDeUsuarioQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  FORMULARIO,(CASE MODAL WHEN 0 THEN 'false' ELSE 'true' END) MODAL,ANCHO_MODAL,ALTO_MODAL,GF.APLICACION,(CASE ADICIONAR WHEN 0 THEN 'false' ELSE 'true' END) ADICIONAR,(CASE BORRAR WHEN 0 THEN 'false' ELSE 'true' END) BORRAR,(CASE MODIFICAR WHEN 0 THEN 'false' ELSE 'true' END) MODIFICAR,(CASE CONSULTAR WHEN 0 THEN 'false' ELSE 'true' END) CONSULTAR,(CASE EXPORTAR WHEN 0 THEN 'false' ELSE 'true' END) EXPORTAR, RUTA  FROM GRUPO_FORMULARIO GF, FORMULARIO F,USUARIO U WHERE F.CODIGO_FORMULARIO= GF.FORMULARIO AND GF.GRUPO=U.CODIGO AND GF.APLICACION=U.APLICACION AND U.CODIGO IN (SELECT GRUPO FROM USUARIO_D WHERE USUARIO= :CODIGO ) AND GF.COMPANIA= :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FORMULARIO":"$FORMULARIO(type:integer)","MODAL":"$MODAL(type:boolean)","ANCHO_MODAL":"$ANCHO_MODAL(type:integer)","ALTO_MODAL":"$ALTO_MODAL(type:integer)","APLICACION":"$APLICACION(type:integer)","ADICIONAR":"$ADICIONAR(type:boolean)","BORRAR":"$BORRAR(type:boolean)","MODIFICAR":"$MODIFICAR(type:boolean)","CONSULTAR":"$CONSULTAR(type:boolean)","EXPORTAR":"$EXPORTAR(type:boolean)","RUTA":"$RUTA"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="gruposformularios/permisosdeusuario">
+		<call-query href="getGruposformulariosPermisosDeUsuarioQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertGruposformularios" keyColumns="COMPANIA,GRUPO,FORMULARIO,APLICACION" returnGeneratedKeys="true" useConfig="sysmanirisst">
+		<sql>INSERT INTO GRUPO_FORMULARIO (COMPANIA, GRUPO, FORMULARIO, APLICACION, ADICIONAR, BORRAR, MODIFICAR, CONSULTAR, EXPORTAR, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :GRUPO, :FORMULARIO, :APLICACION, :ADICIONAR, :BORRAR, :MODIFICAR, :CONSULTAR, :EXPORTAR, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_GRUPO":"$GRUPO","KEY_FORMULARIO":"$FORMULARIO(type:integer)","KEY_APLICACION":"$APLICACION(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="FORMULARIO" sqlType="STRING"/>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param defaultValue="0" name="ADICIONAR" sqlType="STRING"/>
+		<param defaultValue="0" name="BORRAR" sqlType="STRING"/>
+		<param defaultValue="0" name="MODIFICAR" sqlType="STRING"/>
+		<param defaultValue="0" name="CONSULTAR" sqlType="STRING"/>
+		<param defaultValue="0" name="EXPORTAR" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="gruposformularios">
+		<call-query href="insertGruposformularios">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="FORMULARIO" query-param="FORMULARIO"/>
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="ADICIONAR" query-param="ADICIONAR"/>
+			<with-param name="BORRAR" query-param="BORRAR"/>
+			<with-param name="MODIFICAR" query-param="MODIFICAR"/>
+			<with-param name="CONSULTAR" query-param="CONSULTAR"/>
+			<with-param name="EXPORTAR" query-param="EXPORTAR"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteGruposformularios" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>DELETE FROM GRUPO_FORMULARIO WHERE GRUPO_FORMULARIO.COMPANIA= :KEY_COMPANIA AND GRUPO_FORMULARIO.GRUPO= :KEY_GRUPO AND GRUPO_FORMULARIO.FORMULARIO= :KEY_FORMULARIO AND GRUPO_FORMULARIO.APLICACION= :KEY_APLICACION</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_GRUPO" sqlType="STRING"/>
+		<param name="KEY_FORMULARIO" sqlType="INTEGER"/>
+		<param name="KEY_APLICACION" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="gruposformularios">
+		<call-query href="deleteGruposformularios">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_GRUPO" query-param="KEY_GRUPO"/>
+			<with-param name="KEY_FORMULARIO" query-param="KEY_FORMULARIO"/>
+			<with-param name="KEY_APLICACION" query-param="KEY_APLICACION"/>
+
+		</call-query>
+	</resource>
+	<query id="getGruposformulariosPaginaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  GF.COMPANIA, GF.GRUPO, GF.FORMULARIO, GF.APLICACION, F.NOMBRE_FORMULARIO, F.DESCRIPCION_FORMULARIO, FA.RUTA,(CASE GF.ADICIONAR WHEN 0 THEN 'false' ELSE 'true' END) ADICIONAR,(CASE GF.BORRAR WHEN 0 THEN 'false' ELSE 'true' END) BORRAR,(CASE GF.MODIFICAR WHEN 0 THEN 'false' ELSE 'true' END) MODIFICAR,(CASE GF.CONSULTAR WHEN 0 THEN 'false' ELSE 'true' END) CONSULTAR,(CASE GF.EXPORTAR WHEN 0 THEN 'false' ELSE 'true' END) EXPORTAR FROM GRUPO_FORMULARIO GF INNER JOIN FORMULARIO F ON(F.CODIGO_FORMULARIO=GF.FORMULARIO) INNER JOIN USUARIO U ON(U.CODIGO=GF.GRUPO) INNER JOIN FORMULARIO_APLICACION FA ON(FA.FORMULARIO=F.CODIGO_FORMULARIO AND FA.APLICACION=U.APLICACION) WHERE GRUPO = :CODIGO AND COMPANIA = :COMPANIA ORDER BY F.CODIGO_FORMULARIO) WHERE (CASE WHEN FORMULARIO IS NULL THEN ' ' ELSE UPPER(FORMULARIO) END)  LIKE UPPER( '%' || :FORMULARIO || '%')  AND (CASE WHEN NOMBRE_FORMULARIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_FORMULARIO) END)  LIKE UPPER( '%' || :NOMBRE_FORMULARIO || '%')  AND (CASE WHEN DESCRIPCION_FORMULARIO IS NULL THEN ' ' ELSE UPPER(DESCRIPCION_FORMULARIO) END)  LIKE UPPER( '%' || :DESCRIPCION_FORMULARIO || '%')  AND (CASE WHEN RUTA IS NULL THEN ' ' ELSE UPPER(RUTA) END)  LIKE UPPER( '%' || :RUTA || '%')  AND (CASE WHEN ADICIONAR IS NULL THEN ' ' ELSE UPPER(ADICIONAR) END)  LIKE UPPER(:ADICIONAR || '%')  AND (CASE WHEN BORRAR IS NULL THEN ' ' ELSE UPPER(BORRAR) END)  LIKE UPPER(:BORRAR || '%')  AND (CASE WHEN MODIFICAR IS NULL THEN ' ' ELSE UPPER(MODIFICAR) END)  LIKE UPPER(:MODIFICAR || '%')  AND (CASE WHEN CONSULTAR IS NULL THEN ' ' ELSE UPPER(CONSULTAR) END)  LIKE UPPER(:CONSULTAR || '%')  AND (CASE WHEN EXPORTAR IS NULL THEN ' ' ELSE UPPER(EXPORTAR) END)  LIKE UPPER(:EXPORTAR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","GRUPO":"$GRUPO","FORMULARIO":"$FORMULARIO(type:integer)","APLICACION":"$APLICACION(type:integer)","NOMBRE_FORMULARIO":"$NOMBRE_FORMULARIO","DESCRIPCION_FORMULARIO":"$DESCRIPCION_FORMULARIO","RUTA":"$RUTA","ADICIONAR":"$ADICIONAR(type:boolean)","BORRAR":"$BORRAR(type:boolean)","MODIFICAR":"$MODIFICAR(type:boolean)","CONSULTAR":"$CONSULTAR(type:boolean)","EXPORTAR":"$EXPORTAR(type:boolean)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FORMULARIO" sqlType="STRING"/>
+		<param name="NOMBRE_FORMULARIO" sqlType="STRING"/>
+		<param name="DESCRIPCION_FORMULARIO" sqlType="STRING"/>
+		<param name="RUTA" sqlType="STRING"/>
+		<param name="ADICIONAR" sqlType="STRING"/>
+		<param name="BORRAR" sqlType="STRING"/>
+		<param name="MODIFICAR" sqlType="STRING"/>
+		<param name="CONSULTAR" sqlType="STRING"/>
+		<param name="EXPORTAR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="gruposformularios">
+		<call-query href="getGruposformulariosPaginaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FORMULARIO" query-param="FORMULARIO"/>
+			<with-param name="NOMBRE_FORMULARIO" query-param="NOMBRE_FORMULARIO"/>
+			<with-param name="DESCRIPCION_FORMULARIO" query-param="DESCRIPCION_FORMULARIO"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+			<with-param name="ADICIONAR" query-param="ADICIONAR"/>
+			<with-param name="BORRAR" query-param="BORRAR"/>
+			<with-param name="MODIFICAR" query-param="MODIFICAR"/>
+			<with-param name="CONSULTAR" query-param="CONSULTAR"/>
+			<with-param name="EXPORTAR" query-param="EXPORTAR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getGruposformulariosNumeroQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  GF.COMPANIA, GF.GRUPO, GF.FORMULARIO, GF.APLICACION, F.NOMBRE_FORMULARIO, F.DESCRIPCION_FORMULARIO, FA.RUTA,(CASE GF.ADICIONAR WHEN 0 THEN 'false' ELSE 'true' END) ADICIONAR,(CASE GF.BORRAR WHEN 0 THEN 'false' ELSE 'true' END) BORRAR,(CASE GF.MODIFICAR WHEN 0 THEN 'false' ELSE 'true' END) MODIFICAR,(CASE GF.CONSULTAR WHEN 0 THEN 'false' ELSE 'true' END) CONSULTAR,(CASE GF.EXPORTAR WHEN 0 THEN 'false' ELSE 'true' END) EXPORTAR FROM GRUPO_FORMULARIO GF INNER JOIN FORMULARIO F ON(F.CODIGO_FORMULARIO=GF.FORMULARIO) INNER JOIN USUARIO U ON(U.CODIGO=GF.GRUPO) INNER JOIN FORMULARIO_APLICACION FA ON(FA.FORMULARIO=F.CODIGO_FORMULARIO AND FA.APLICACION=U.APLICACION) WHERE GRUPO = :CODIGO AND COMPANIA = :COMPANIA ORDER BY F.CODIGO_FORMULARIO) WHERE (CASE WHEN FORMULARIO IS NULL THEN ' ' ELSE UPPER(FORMULARIO) END)  LIKE UPPER( '%' || :FORMULARIO || '%')  AND (CASE WHEN NOMBRE_FORMULARIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_FORMULARIO) END)  LIKE UPPER( '%' || :NOMBRE_FORMULARIO || '%')  AND (CASE WHEN DESCRIPCION_FORMULARIO IS NULL THEN ' ' ELSE UPPER(DESCRIPCION_FORMULARIO) END)  LIKE UPPER( '%' || :DESCRIPCION_FORMULARIO || '%')  AND (CASE WHEN RUTA IS NULL THEN ' ' ELSE UPPER(RUTA) END)  LIKE UPPER( '%' || :RUTA || '%')  AND (CASE WHEN ADICIONAR IS NULL THEN ' ' ELSE UPPER(ADICIONAR) END)  LIKE UPPER( '%' || :ADICIONAR || '%')  AND (CASE WHEN BORRAR IS NULL THEN ' ' ELSE UPPER(BORRAR) END)  LIKE UPPER( '%' || :BORRAR || '%')  AND (CASE WHEN MODIFICAR IS NULL THEN ' ' ELSE UPPER(MODIFICAR) END)  LIKE UPPER( '%' || :MODIFICAR || '%')  AND (CASE WHEN CONSULTAR IS NULL THEN ' ' ELSE UPPER(CONSULTAR) END)  LIKE UPPER( '%' || :CONSULTAR || '%')  AND (CASE WHEN EXPORTAR IS NULL THEN ' ' ELSE UPPER(EXPORTAR) END)  LIKE UPPER( '%' || :EXPORTAR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FORMULARIO" sqlType="STRING"/>
+		<param name="NOMBRE_FORMULARIO" sqlType="STRING"/>
+		<param name="DESCRIPCION_FORMULARIO" sqlType="STRING"/>
+		<param name="RUTA" sqlType="STRING"/>
+		<param name="ADICIONAR" sqlType="STRING"/>
+		<param name="BORRAR" sqlType="STRING"/>
+		<param name="MODIFICAR" sqlType="STRING"/>
+		<param name="CONSULTAR" sqlType="STRING"/>
+		<param name="EXPORTAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="gruposformularios/numero">
+		<call-query href="getGruposformulariosNumeroQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FORMULARIO" query-param="FORMULARIO"/>
+			<with-param name="NOMBRE_FORMULARIO" query-param="NOMBRE_FORMULARIO"/>
+			<with-param name="DESCRIPCION_FORMULARIO" query-param="DESCRIPCION_FORMULARIO"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+			<with-param name="ADICIONAR" query-param="ADICIONAR"/>
+			<with-param name="BORRAR" query-param="BORRAR"/>
+			<with-param name="MODIFICAR" query-param="MODIFICAR"/>
+			<with-param name="CONSULTAR" query-param="CONSULTAR"/>
+			<with-param name="EXPORTAR" query-param="EXPORTAR"/>
+
+		</call-query>
+	</resource>
+	<query id="updateGruposformularios" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>UPDATE GRUPO_FORMULARIO SET COMPANIA=:COMPANIA, GRUPO=:GRUPO, FORMULARIO=:FORMULARIO, APLICACION=:APLICACION, ADICIONAR=:ADICIONAR, BORRAR=:BORRAR, MODIFICAR=:MODIFICAR, CONSULTAR=:CONSULTAR, EXPORTAR=:EXPORTAR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE GRUPO_FORMULARIO.COMPANIA= :KEY_COMPANIA AND GRUPO_FORMULARIO.GRUPO= :KEY_GRUPO AND GRUPO_FORMULARIO.FORMULARIO= :KEY_FORMULARIO AND GRUPO_FORMULARIO.APLICACION= :KEY_APLICACION</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="FORMULARIO" sqlType="STRING"/>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="ADICIONAR" sqlType="STRING"/>
+		<param name="BORRAR" sqlType="STRING"/>
+		<param name="MODIFICAR" sqlType="STRING"/>
+		<param name="CONSULTAR" sqlType="STRING"/>
+		<param name="EXPORTAR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_GRUPO" sqlType="STRING"/>
+		<param name="KEY_FORMULARIO" sqlType="STRING"/>
+		<param name="KEY_APLICACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="gruposformularios">
+		<call-query href="updateGruposformularios">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="FORMULARIO" query-param="FORMULARIO"/>
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="ADICIONAR" query-param="ADICIONAR"/>
+			<with-param name="BORRAR" query-param="BORRAR"/>
+			<with-param name="MODIFICAR" query-param="MODIFICAR"/>
+			<with-param name="CONSULTAR" query-param="CONSULTAR"/>
+			<with-param name="EXPORTAR" query-param="EXPORTAR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_GRUPO" query-param="KEY_GRUPO"/>
+			<with-param name="KEY_FORMULARIO" query-param="KEY_FORMULARIO"/>
+			<with-param name="KEY_APLICACION" query-param="KEY_APLICACION"/>
+
+		</call-query>
+	</resource>
+
+</data>

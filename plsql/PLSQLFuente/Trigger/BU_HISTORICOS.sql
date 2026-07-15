@@ -1,0 +1,27 @@
+CREATE OR REPLACE TRIGGER "BU_HISTORICOS" 
+  /*
+      NAME              : BU_HISTORICOS
+      AUTHORS           : SYSMAN  SAS
+      AUTHOR MIGRACION  : ELKIN GEOVANNY AMAYA SILVA
+      DATE MIGRADOR     : 27/01/2017
+      TIME              : 14:45 PM
+      SOURCE MODULE     : 
+      MODIFIER          : 
+      DATE MODIFIED     : 
+      TIME              : 
+      DESCRIPTION       : ACTUALIZA LAS OBSERVACIONES DE HISTORICOS CUANDO SE CAMBIAN LOS VALORES DE SALDOS
+  */
+ 
+ BEFORE UPDATE ON HISTORICOS
+ FOR EACH ROW  
+ 
+ 
+ 
+  BEGIN
+  IF :NEW.VALOR <> :OLD.VALOR THEN
+    
+    
+    :NEW.OBSERVACIONES := 'Cambio en el valor de $'||:OLD.VALOR|| ' a $'||:NEW.VALOR  ;  
+  
+  END IF;
+END;

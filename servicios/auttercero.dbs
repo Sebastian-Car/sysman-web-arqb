@@ -1,0 +1,50 @@
+﻿<data name="auttercero" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getAutterceroPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CONSECUTIVO, NOMBRE NOMBRES, ESTADO,(CASE ACTUALIZADO WHEN 0 THEN 'false' ELSE 'true' END) ACTUALIZADO,(CASE ENVIADO WHEN 0 THEN 'false' ELSE 'true' END) ENVIADO, CASE WHEN ESTADO = 'T' AND FECHA_APROBACION IS NULL AND DESTINATARIO = :DESTINATARIO THEN 'T' ELSE CASE WHEN FECHA_APROBACION IS NULL THEN 'S' ELSE 'A' END END DESTINO  FROM AUT_TERCERO WHERE COMPANIA = :COMPANIA AND NIT = CASE WHEN :PORTRAMITAR = 1 THEN NIT ELSE :NIT END AND DESTINATARIO = CASE WHEN :PORTRAMITAR = 1 THEN :DESTINATARIO ELSE DESTINATARIO END AND CASE WHEN :PORTRAMITAR = 1 THEN FECHA_APROBACION ELSE NULL END IS NULL AND CASE WHEN :PORTRAMITAR = 1 THEN ENVIADO ELSE 1 END NOT IN(0) ORDER BY CONSECUTIVO ASC) WHERE (CASE WHEN NOMBRES IS NULL THEN ' ' ELSE UPPER(NOMBRES) END)  LIKE UPPER( '%' || :NOMBRES || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO(type:long)","NOMBRES":"$NOMBRES","ESTADO":"$ESTADO","ACTUALIZADO":"$ACTUALIZADO(type:boolean)","ENVIADO":"$ENVIADO(type:boolean)","DESTINO":"$DESTINO"}]}}		</result>
+		<param name="DESTINATARIO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PORTRAMITAR" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="auttercero">
+		<call-query href="getAutterceroPaginaQuery">
+			<with-param name="DESTINATARIO" query-param="DESTINATARIO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PORTRAMITAR" query-param="PORTRAMITAR"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRES" query-param="NOMBRES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAutterceroNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CONSECUTIVO, NOMBRE NOMBRES, ESTADO,(CASE ACTUALIZADO WHEN 0 THEN 'false' ELSE 'true' END) ACTUALIZADO,(CASE ENVIADO WHEN 0 THEN 'false' ELSE 'true' END) ENVIADO, CASE WHEN ESTADO = 'T' AND FECHA_APROBACION IS NULL AND DESTINATARIO = :DESTINATARIO THEN 'T' ELSE CASE WHEN FECHA_APROBACION IS NULL THEN 'S' ELSE 'A' END END DESTINO  FROM AUT_TERCERO WHERE COMPANIA = :COMPANIA AND NIT = CASE WHEN :PORTRAMITAR = 1 THEN NIT ELSE :NIT END AND DESTINATARIO = CASE WHEN :PORTRAMITAR = 1 THEN :DESTINATARIO ELSE DESTINATARIO END AND CASE WHEN :PORTRAMITAR = 1 THEN FECHA_APROBACION ELSE NULL END IS NULL AND CASE WHEN :PORTRAMITAR = 1 THEN ENVIADO ELSE 1 END NOT IN(0) ORDER BY CONSECUTIVO ASC) WHERE (CASE WHEN NOMBRES IS NULL THEN ' ' ELSE UPPER(NOMBRES) END)  LIKE UPPER( '%' || :NOMBRES || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="DESTINATARIO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PORTRAMITAR" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="auttercero/numero">
+		<call-query href="getAutterceroNumeroQuery">
+			<with-param name="DESTINATARIO" query-param="DESTINATARIO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PORTRAMITAR" query-param="PORTRAMITAR"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRES" query-param="NOMBRES"/>
+
+		</call-query>
+	</resource>
+
+</data>

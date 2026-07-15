@@ -1,0 +1,369 @@
+﻿<data name="headercierres" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getHeadercierresAnosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT ANO  FROM HEADERCIERRE WHERE COMPANIA=:COMPANIA ORDER BY ANO DESC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="headercierres/anos">
+		<call-query href="getHeadercierresAnosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getHeadercierresPagCuentaacerrarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  HEADERCIERRE.CUENTAACERRAR, PLAN_CONTABLE.NOMBRE  FROM HEADERCIERRE INNER JOIN PLAN_CONTABLE ON HEADERCIERRE.COMPANIA = PLAN_CONTABLE.COMPANIA AND HEADERCIERRE.ANO = PLAN_CONTABLE.ANO AND HEADERCIERRE.CUENTAACERRAR = PLAN_CONTABLE.CODIGO WHERE HEADERCIERRE.COMPANIA =:COMPANIA AND HEADERCIERRE.ANO= :ANO AND HEADERCIERRE.CUENTAACERRAR NOT IN (SELECT PLAN_CONTABLE.CODIGO FROM PLAN_CONTABLE WHERE PLAN_CONTABLE.COMPANIA = :COMPANIA AND PLAN_CONTABLE.ANO = :PREPARAANO)) WHERE (CASE WHEN CUENTAACERRAR IS NULL THEN ' ' ELSE UPPER(CUENTAACERRAR) END)  LIKE UPPER(:CUENTAACERRAR || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTAACERRAR":"$CUENTAACERRAR","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PREPARAANO" sqlType="STRING"/>
+		<param name="CUENTAACERRAR" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="headercierres/cuentaacerrar/pag">
+		<call-query href="getHeadercierresPagCuentaacerrarQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PREPARAANO" query-param="PREPARAANO"/>
+			<with-param name="CUENTAACERRAR" query-param="CUENTAACERRAR"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHeadercierresNumCuentaacerrarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  HEADERCIERRE.CUENTAACERRAR, PLAN_CONTABLE.NOMBRE  FROM HEADERCIERRE INNER JOIN PLAN_CONTABLE ON HEADERCIERRE.COMPANIA = PLAN_CONTABLE.COMPANIA AND HEADERCIERRE.ANO = PLAN_CONTABLE.ANO AND HEADERCIERRE.CUENTAACERRAR = PLAN_CONTABLE.CODIGO WHERE HEADERCIERRE.COMPANIA =:COMPANIA AND HEADERCIERRE.ANO= :ANO AND HEADERCIERRE.CUENTAACERRAR NOT IN (SELECT PLAN_CONTABLE.CODIGO FROM PLAN_CONTABLE WHERE PLAN_CONTABLE.COMPANIA = :COMPANIA AND PLAN_CONTABLE.ANO = :PREPARAANO)) WHERE (CASE WHEN CUENTAACERRAR IS NULL THEN ' ' ELSE UPPER(CUENTAACERRAR) END)  LIKE UPPER(:CUENTAACERRAR || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PREPARAANO" sqlType="STRING"/>
+		<param name="CUENTAACERRAR" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="headercierres/cuentaacerrar/num">
+		<call-query href="getHeadercierresNumCuentaacerrarQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PREPARAANO" query-param="PREPARAANO"/>
+			<with-param name="CUENTAACERRAR" query-param="CUENTAACERRAR"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getHeadercierresPagContracuentaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  HEADERCIERRE.CONTRACUENTA, PLAN_CONTABLE.NOMBRE  FROM HEADERCIERRE INNER JOIN PLAN_CONTABLE ON HEADERCIERRE.COMPANIA = PLAN_CONTABLE.COMPANIA AND HEADERCIERRE.ANO = PLAN_CONTABLE.ANO AND HEADERCIERRE.CONTRACUENTA = PLAN_CONTABLE.CODIGO WHERE HEADERCIERRE.COMPANIA = :COMPANIA AND HEADERCIERRE.ANO= :ANO AND HEADERCIERRE.CONTRACUENTA NOT IN (SELECT PLAN_CONTABLE.CODIGO FROM PLAN_CONTABLE WHERE PLAN_CONTABLE.COMPANIA = :COMPANIA AND PLAN_CONTABLE.ANO= :PREPARAANO)) WHERE (CASE WHEN CONTRACUENTA IS NULL THEN ' ' ELSE UPPER(CONTRACUENTA) END)  LIKE UPPER(:CONTRACUENTA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONTRACUENTA":"$CONTRACUENTA","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PREPARAANO" sqlType="STRING"/>
+		<param name="CONTRACUENTA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="headercierres/contracuenta/pag">
+		<call-query href="getHeadercierresPagContracuentaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PREPARAANO" query-param="PREPARAANO"/>
+			<with-param name="CONTRACUENTA" query-param="CONTRACUENTA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHeadercierresNumContracuentaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  HEADERCIERRE.CONTRACUENTA, PLAN_CONTABLE.NOMBRE  FROM HEADERCIERRE INNER JOIN PLAN_CONTABLE ON HEADERCIERRE.COMPANIA = PLAN_CONTABLE.COMPANIA AND HEADERCIERRE.ANO = PLAN_CONTABLE.ANO AND HEADERCIERRE.CONTRACUENTA = PLAN_CONTABLE.CODIGO WHERE HEADERCIERRE.COMPANIA = :COMPANIA AND HEADERCIERRE.ANO= :ANO AND HEADERCIERRE.CONTRACUENTA NOT IN (SELECT PLAN_CONTABLE.CODIGO FROM PLAN_CONTABLE WHERE PLAN_CONTABLE.COMPANIA = :COMPANIA AND PLAN_CONTABLE.ANO= :PREPARAANO)) WHERE (CASE WHEN CONTRACUENTA IS NULL THEN ' ' ELSE UPPER(CONTRACUENTA) END)  LIKE UPPER(:CONTRACUENTA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PREPARAANO" sqlType="STRING"/>
+		<param name="CONTRACUENTA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="headercierres/contracuenta/num">
+		<call-query href="getHeadercierresNumContracuentaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PREPARAANO" query-param="PREPARAANO"/>
+			<with-param name="CONTRACUENTA" query-param="CONTRACUENTA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getHeadercierresConsecutivoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NVL(MAX(CONSECUTIVO),-1)+1 NEWCONSEC  FROM HEADERCIERRE WHERE COMPANIA = :COMPANIA AND ANO = :ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NEWCONSEC":"$NEWCONSEC(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="headercierres/consecutivo">
+		<call-query href="getHeadercierresConsecutivoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertHeadercierresPreparaSigAno" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO HEADERCIERRE (COMPANIA,ANO,TIPOCOMPROBANTE,CUENTAACERRAR,CONTRACUENTA,CONSECUTIVO,CONDICION,CIERREIMPUESTOS)    SELECT    COMPANIA,   :PREPARAANO ANO,   TIPOCOMPROBANTE,   CUENTAACERRAR,   CONTRACUENTA,   CONSECUTIVO,   CONDICION,   NVL(CIERREIMPUESTOS,0) CIERREIMPUESTOS FROM HEADERCIERRE WHERE COMPANIA = :COMPANIA AND ANO        = :ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="PREPARAANO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="headercierres/preparasigano">
+		<call-query href="insertHeadercierresPreparaSigAno">
+			<with-param name="PREPARAANO" query-param="PREPARAANO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHeadercierresExisteanoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(1) NUMERO  FROM HEADERCIERRE WHERE COMPANIA = :COMPANIA AND ANO = :PREPARAANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREPARAANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="headercierres/existeano">
+		<call-query href="getHeadercierresExisteanoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREPARAANO" query-param="PREPARAANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHeadercierresCuentasACerrarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CIERREDEMES.CUENTAACERRAR, PLAN_CONTABLE.CODIGO  FROM HEADERCIERRE CIERREDEMES LEFT JOIN PLAN_CONTABLE ON CIERREDEMES.COMPANIA = PLAN_CONTABLE.COMPANIA AND CIERREDEMES.ANO = PLAN_CONTABLE.ANO AND CIERREDEMES.CUENTAACERRAR = PLAN_CONTABLE.CODIGO WHERE CIERREDEMES.COMPANIA = :COMPANIA AND CIERREDEMES.ANO = :ANO AND PLAN_CONTABLE.CODIGO IS NULL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTAACERRAR":"$CUENTAACERRAR","CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="headercierres/cuentasacerrar">
+		<call-query href="getHeadercierresCuentasACerrarQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertHeadercierres" keyColumns="COMPANIA,ANO,TIPOCOMPROBANTE,CUENTAACERRAR,CONTRACUENTA,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO HEADERCIERRE (COMPANIA, ANO, TIPOCOMPROBANTE, CUENTAACERRAR, CONTRACUENTA, CONSECUTIVO, CONDICION, AUXILIAR, REFERENCIA, TERCERO, FUENTE_RECURSO, SUCURSAL, CIERREIMPUESTOS, TERCEROIMPUESTO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :TIPOCOMPROBANTE, :CUENTAACERRAR, :CONTRACUENTA, :CONSECUTIVO, :CONDICION, :AUXILIAR, :REFERENCIA, :TERCERO, :FUENTE_RECURSO, :SUCURSAL, :CIERREIMPUESTOS, :TERCEROIMPUESTO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_TIPOCOMPROBANTE":"$TIPOCOMPROBANTE","KEY_CUENTAACERRAR":"$CUENTAACERRAR","KEY_CONTRACUENTA":"$CONTRACUENTA","KEY_CONSECUTIVO":"$CONSECUTIVO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOMPROBANTE" sqlType="STRING"/>
+		<param name="CUENTAACERRAR" sqlType="STRING"/>
+		<param name="CONTRACUENTA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param defaultValue="" name="CONDICION" sqlType="STRING"/>
+		<param defaultValue="99999999999999999999" name="AUXILIAR" sqlType="STRING"/>
+		<param defaultValue="99999999999999999999" name="REFERENCIA" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="TERCERO" sqlType="STRING"/>
+		<param defaultValue="99999999999999999999" name="FUENTE_RECURSO" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="0" name="CIERREIMPUESTOS" sqlType="STRING"/>
+		<param defaultValue="" name="TERCEROIMPUESTO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="headercierres">
+		<call-query href="insertHeadercierres">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOMPROBANTE" query-param="TIPOCOMPROBANTE"/>
+			<with-param name="CUENTAACERRAR" query-param="CUENTAACERRAR"/>
+			<with-param name="CONTRACUENTA" query-param="CONTRACUENTA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CONDICION" query-param="CONDICION"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="CIERREIMPUESTOS" query-param="CIERREIMPUESTOS"/>
+			<with-param name="TERCEROIMPUESTO" query-param="TERCEROIMPUESTO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteHeadercierres" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM HEADERCIERRE WHERE HEADERCIERRE.COMPANIA= :KEY_COMPANIA AND HEADERCIERRE.ANO= :KEY_ANO AND HEADERCIERRE.TIPOCOMPROBANTE= :KEY_TIPOCOMPROBANTE AND HEADERCIERRE.CUENTAACERRAR= :KEY_CUENTAACERRAR AND HEADERCIERRE.CONTRACUENTA= :KEY_CONTRACUENTA AND HEADERCIERRE.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_TIPOCOMPROBANTE" sqlType="STRING"/>
+		<param name="KEY_CUENTAACERRAR" sqlType="STRING"/>
+		<param name="KEY_CONTRACUENTA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="headercierres">
+		<call-query href="deleteHeadercierres">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPOCOMPROBANTE" query-param="KEY_TIPOCOMPROBANTE"/>
+			<with-param name="KEY_CUENTAACERRAR" query-param="KEY_CUENTAACERRAR"/>
+			<with-param name="KEY_CONTRACUENTA" query-param="KEY_CONTRACUENTA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHeadercierresPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  HEADERCIERRE.COMPANIA, HEADERCIERRE.ANO, HEADERCIERRE.TIPOCOMPROBANTE, HEADERCIERRE.CUENTAACERRAR, HEADERCIERRE.CONTRACUENTA, PLAN_CONTABLE.NOMBRE PLAN_CONTABLE_NOMBRE, PLAN_CONTABLE_1.NOMBRE PLAN_CONTABLE_1_NOMBRE, HEADERCIERRE.CONSECUTIVO, HEADERCIERRE.CONDICION,(CASE HEADERCIERRE.CIERREIMPUESTOS WHEN 0 THEN 'false' ELSE 'true' END) CIERREIMPUESTOS, HEADERCIERRE.TERCEROIMPUESTO,HEADERCIERRE.AUXILIAR,HEADERCIERRE.REFERENCIA ,HEADERCIERRE.TERCERO ,HEADERCIERRE.FUENTE_RECURSO,HEADERCIERRE.SUCURSAL  FROM HEADERCIERRE LEFT JOIN PLAN_CONTABLE ON HEADERCIERRE.COMPANIA = PLAN_CONTABLE.COMPANIA AND HEADERCIERRE.ANO = PLAN_CONTABLE.ANO AND HEADERCIERRE.CUENTAACERRAR = PLAN_CONTABLE.CODIGO LEFT JOIN V_PLAN_CONTABLE PLAN_CONTABLE_1 ON HEADERCIERRE.COMPANIA = PLAN_CONTABLE_1.COMPANIA AND HEADERCIERRE.ANO = PLAN_CONTABLE_1.ANO AND HEADERCIERRE.CONTRACUENTA = PLAN_CONTABLE_1.CODIGO AND HEADERCIERRE.CENTRO_COSTO = PLAN_CONTABLE_1.CENTRO_COSTO AND HEADERCIERRE.TERCERO = PLAN_CONTABLE_1.TERCERO AND HEADERCIERRE.SUCURSAL = PLAN_CONTABLE_1.SUCURSAL AND HEADERCIERRE.AUXILIAR = PLAN_CONTABLE_1.AUXILIAR AND HEADERCIERRE.REFERENCIA = PLAN_CONTABLE_1.REFERENCIA AND HEADERCIERRE.FUENTE_RECURSO = PLAN_CONTABLE_1.FUENTE_RECURSO WHERE HEADERCIERRE.COMPANIA = :COMPANIA AND HEADERCIERRE.ANO = :ANO AND HEADERCIERRE.TIPOCOMPROBANTE = :TIPOCOMPROBANTE ORDER BY CONSECUTIVO) WHERE (CASE WHEN CUENTAACERRAR IS NULL THEN ' ' ELSE UPPER(CUENTAACERRAR) END)  LIKE UPPER( '%' || :CUENTAACERRAR || '%')  AND (CASE WHEN CONTRACUENTA IS NULL THEN ' ' ELSE UPPER(CONTRACUENTA) END)  LIKE UPPER( '%' || :CONTRACUENTA || '%')  AND (CASE WHEN PLAN_CONTABLE_NOMBRE IS NULL THEN ' ' ELSE UPPER(PLAN_CONTABLE_NOMBRE) END)  LIKE UPPER( '%' || :PLAN_CONTABLE_NOMBRE || '%')  AND (CASE WHEN PLAN_CONTABLE_1_NOMBRE IS NULL THEN ' ' ELSE UPPER(PLAN_CONTABLE_1_NOMBRE) END)  LIKE UPPER( '%' || :PLAN_CONTABLE_1_NOMBRE || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%')  AND (CASE WHEN CONDICION IS NULL THEN ' ' ELSE UPPER(CONDICION) END)  LIKE UPPER(:CONDICION || '%')  AND (CASE WHEN CIERREIMPUESTOS IS NULL THEN ' ' ELSE UPPER(CIERREIMPUESTOS) END)  LIKE UPPER( '%' || :CIERREIMPUESTOS || '%')  AND (CASE WHEN TERCEROIMPUESTO IS NULL THEN ' ' ELSE UPPER(TERCEROIMPUESTO) END)  LIKE UPPER( '%' || :TERCEROIMPUESTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPOCOMPROBANTE":"$TIPOCOMPROBANTE","CUENTAACERRAR":"$CUENTAACERRAR","CONTRACUENTA":"$CONTRACUENTA","PLAN_CONTABLE_NOMBRE":"$PLAN_CONTABLE_NOMBRE","PLAN_CONTABLE_1_NOMBRE":"$PLAN_CONTABLE_1_NOMBRE","CONSECUTIVO":"$CONSECUTIVO(type:integer)","CONDICION":"$CONDICION","CIERREIMPUESTOS":"$CIERREIMPUESTOS(type:boolean)","TERCEROIMPUESTO":"$TERCEROIMPUESTO","AUXILIAR":"$AUXILIAR","REFERENCIA":"$REFERENCIA","TERCERO":"$TERCERO","FUENTE_RECURSO":"$FUENTE_RECURSO","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOMPROBANTE" sqlType="STRING"/>
+		<param name="CUENTAACERRAR" sqlType="STRING"/>
+		<param name="CONTRACUENTA" sqlType="STRING"/>
+		<param name="PLAN_CONTABLE_NOMBRE" sqlType="STRING"/>
+		<param name="PLAN_CONTABLE_1_NOMBRE" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CONDICION" sqlType="STRING"/>
+		<param name="CIERREIMPUESTOS" sqlType="STRING"/>
+		<param name="TERCEROIMPUESTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="headercierres">
+		<call-query href="getHeadercierresPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOMPROBANTE" query-param="TIPOCOMPROBANTE"/>
+			<with-param name="CUENTAACERRAR" query-param="CUENTAACERRAR"/>
+			<with-param name="CONTRACUENTA" query-param="CONTRACUENTA"/>
+			<with-param name="PLAN_CONTABLE_NOMBRE" query-param="PLAN_CONTABLE_NOMBRE"/>
+			<with-param name="PLAN_CONTABLE_1_NOMBRE" query-param="PLAN_CONTABLE_1_NOMBRE"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CONDICION" query-param="CONDICION"/>
+			<with-param name="CIERREIMPUESTOS" query-param="CIERREIMPUESTOS"/>
+			<with-param name="TERCEROIMPUESTO" query-param="TERCEROIMPUESTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHeadercierresNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  HEADERCIERRE.COMPANIA, HEADERCIERRE.ANO, HEADERCIERRE.TIPOCOMPROBANTE, HEADERCIERRE.CUENTAACERRAR, HEADERCIERRE.CONTRACUENTA, PLAN_CONTABLE.NOMBRE PLAN_CONTABLE_NOMBRE, PLAN_CONTABLE_1.NOMBRE PLAN_CONTABLE_1_NOMBRE, HEADERCIERRE.CONSECUTIVO, HEADERCIERRE.CONDICION,(CASE HEADERCIERRE.CIERREIMPUESTOS WHEN 0 THEN 'false' ELSE 'true' END) CIERREIMPUESTOS, HEADERCIERRE.TERCEROIMPUESTO,HEADERCIERRE.AUXILIAR,HEADERCIERRE.REFERENCIA ,HEADERCIERRE.TERCERO ,HEADERCIERRE.FUENTE_RECURSO,HEADERCIERRE.SUCURSAL  FROM HEADERCIERRE LEFT JOIN PLAN_CONTABLE ON HEADERCIERRE.COMPANIA = PLAN_CONTABLE.COMPANIA AND HEADERCIERRE.ANO = PLAN_CONTABLE.ANO AND HEADERCIERRE.CUENTAACERRAR = PLAN_CONTABLE.CODIGO LEFT JOIN V_PLAN_CONTABLE PLAN_CONTABLE_1 ON HEADERCIERRE.COMPANIA = PLAN_CONTABLE_1.COMPANIA AND HEADERCIERRE.ANO = PLAN_CONTABLE_1.ANO AND HEADERCIERRE.CONTRACUENTA = PLAN_CONTABLE_1.CODIGO AND HEADERCIERRE.CENTRO_COSTO = PLAN_CONTABLE_1.CENTRO_COSTO AND HEADERCIERRE.TERCERO = PLAN_CONTABLE_1.TERCERO AND HEADERCIERRE.SUCURSAL = PLAN_CONTABLE_1.SUCURSAL AND HEADERCIERRE.AUXILIAR = PLAN_CONTABLE_1.AUXILIAR AND HEADERCIERRE.REFERENCIA = PLAN_CONTABLE_1.REFERENCIA AND HEADERCIERRE.FUENTE_RECURSO = PLAN_CONTABLE_1.FUENTE_RECURSO WHERE HEADERCIERRE.COMPANIA = :COMPANIA AND HEADERCIERRE.ANO = :ANO AND HEADERCIERRE.TIPOCOMPROBANTE = :TIPOCOMPROBANTE ORDER BY CONSECUTIVO) WHERE (CASE WHEN CUENTAACERRAR IS NULL THEN ' ' ELSE UPPER(CUENTAACERRAR) END)  LIKE UPPER( '%' || :CUENTAACERRAR || '%')  AND (CASE WHEN CONTRACUENTA IS NULL THEN ' ' ELSE UPPER(CONTRACUENTA) END)  LIKE UPPER( '%' || :CONTRACUENTA || '%')  AND (CASE WHEN PLAN_CONTABLE_NOMBRE IS NULL THEN ' ' ELSE UPPER(PLAN_CONTABLE_NOMBRE) END)  LIKE UPPER( '%' || :PLAN_CONTABLE_NOMBRE || '%')  AND (CASE WHEN PLAN_CONTABLE_1_NOMBRE IS NULL THEN ' ' ELSE UPPER(PLAN_CONTABLE_1_NOMBRE) END)  LIKE UPPER( '%' || :PLAN_CONTABLE_1_NOMBRE || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%')  AND (CASE WHEN CONDICION IS NULL THEN ' ' ELSE UPPER(CONDICION) END)  LIKE UPPER( '%' || :CONDICION || '%')  AND (CASE WHEN CIERREIMPUESTOS IS NULL THEN ' ' ELSE UPPER(CIERREIMPUESTOS) END)  LIKE UPPER( '%' || :CIERREIMPUESTOS || '%')  AND (CASE WHEN TERCEROIMPUESTO IS NULL THEN ' ' ELSE UPPER(TERCEROIMPUESTO) END)  LIKE UPPER( '%' || :TERCEROIMPUESTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOMPROBANTE" sqlType="STRING"/>
+		<param name="CUENTAACERRAR" sqlType="STRING"/>
+		<param name="CONTRACUENTA" sqlType="STRING"/>
+		<param name="PLAN_CONTABLE_NOMBRE" sqlType="STRING"/>
+		<param name="PLAN_CONTABLE_1_NOMBRE" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CONDICION" sqlType="STRING"/>
+		<param name="CIERREIMPUESTOS" sqlType="STRING"/>
+		<param name="TERCEROIMPUESTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="headercierres/numero">
+		<call-query href="getHeadercierresNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOMPROBANTE" query-param="TIPOCOMPROBANTE"/>
+			<with-param name="CUENTAACERRAR" query-param="CUENTAACERRAR"/>
+			<with-param name="CONTRACUENTA" query-param="CONTRACUENTA"/>
+			<with-param name="PLAN_CONTABLE_NOMBRE" query-param="PLAN_CONTABLE_NOMBRE"/>
+			<with-param name="PLAN_CONTABLE_1_NOMBRE" query-param="PLAN_CONTABLE_1_NOMBRE"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CONDICION" query-param="CONDICION"/>
+			<with-param name="CIERREIMPUESTOS" query-param="CIERREIMPUESTOS"/>
+			<with-param name="TERCEROIMPUESTO" query-param="TERCEROIMPUESTO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateHeadercierres" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE HEADERCIERRE SET CUENTAACERRAR=:CUENTAACERRAR, CONTRACUENTA=:CONTRACUENTA, CONSECUTIVO=:CONSECUTIVO, CONDICION=:CONDICION, CIERREIMPUESTOS=:CIERREIMPUESTOS, TERCEROIMPUESTO=:TERCEROIMPUESTO, AUXILIAR=:AUXILIAR, REFERENCIA=:REFERENCIA, TERCERO=:TERCERO, FUENTE_RECURSO=:FUENTE_RECURSO, SUCURSAL=:SUCURSAL, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE HEADERCIERRE.COMPANIA= :KEY_COMPANIA AND HEADERCIERRE.ANO= :KEY_ANO AND HEADERCIERRE.TIPOCOMPROBANTE= :KEY_TIPOCOMPROBANTE AND HEADERCIERRE.CUENTAACERRAR= :KEY_CUENTAACERRAR AND HEADERCIERRE.CONTRACUENTA= :KEY_CONTRACUENTA AND HEADERCIERRE.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CUENTAACERRAR" sqlType="STRING"/>
+		<param name="CONTRACUENTA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CONDICION" sqlType="STRING"/>
+		<param name="CIERREIMPUESTOS" sqlType="STRING"/>
+		<param name="TERCEROIMPUESTO" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="FUENTE_RECURSO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_TIPOCOMPROBANTE" sqlType="STRING"/>
+		<param name="KEY_CUENTAACERRAR" sqlType="STRING"/>
+		<param name="KEY_CONTRACUENTA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="headercierres">
+		<call-query href="updateHeadercierres">
+			<with-param name="CUENTAACERRAR" query-param="CUENTAACERRAR"/>
+			<with-param name="CONTRACUENTA" query-param="CONTRACUENTA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CONDICION" query-param="CONDICION"/>
+			<with-param name="CIERREIMPUESTOS" query-param="CIERREIMPUESTOS"/>
+			<with-param name="TERCEROIMPUESTO" query-param="TERCEROIMPUESTO"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPOCOMPROBANTE" query-param="KEY_TIPOCOMPROBANTE"/>
+			<with-param name="KEY_CUENTAACERRAR" query-param="KEY_CUENTAACERRAR"/>
+			<with-param name="KEY_CONTRACUENTA" query-param="KEY_CONTRACUENTA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHeadercierresValidaCuentasACerrarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CIERREDEMES.CUENTAACERRAR, PLAN_CONTABLE.ID, PLAN_CONTABLE.MOVIMIENTO  FROM HEADERCIERRE CIERREDEMES LEFT JOIN V_PLAN_CONTABLE PLAN_CONTABLE ON CIERREDEMES.COMPANIA = PLAN_CONTABLE.COMPANIA AND CIERREDEMES.ANO = PLAN_CONTABLE.ANO AND CIERREDEMES.CONTRACUENTA = PLAN_CONTABLE.ID WHERE CIERREDEMES.COMPANIA = :COMPANIA AND CIERREDEMES.ANO = :ANO AND CIERREDEMES.TIPOCOMPROBANTE = :TIPOCOMPROBANTE AND (PLAN_CONTABLE.ID IS NULL OR (PLAN_CONTABLE.MOVIMIENTO IN(0) AND PLAN_CONTABLE.MAN_AUX_TER IN(0) AND PLAN_CONTABLE.MAN_AUX_GEN IN(0) AND PLAN_CONTABLE.MAN_CEN_CTO IN(0) AND PLAN_CONTABLE.MAN_AUX_REF IN(0) AND PLAN_CONTABLE.MAN_AUX_FUE IN(0) ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTAACERRAR":"$CUENTAACERRAR","ID":"$ID","MOVIMIENTO":"$MOVIMIENTO(type:double)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOMPROBANTE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="headercierres/validacuentasacerrar">
+		<call-query href="getHeadercierresValidaCuentasACerrarQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOMPROBANTE" query-param="TIPOCOMPROBANTE"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,75 @@
+/*-
+ * FrmEstadoFinancieraAuxiliaresControladorUrlEnum.java
+ *
+ * 1.0
+ * 
+ * 30/05/2019
+ * 
+ * Copyright (c) 2016 Stefanini Sysman.
+ * Paipa, Boyaca.
+ * All rights reserved.
+ */
+
+package com.sysman.contabilidad.enums;
+
+/**
+ * 
+ * @version 1.0, 30/05/2019
+ * @author bcardenas
+ *
+ */
+public enum FrmEstadoFinancieraAuxiliaresControladorUrlEnum {
+
+    URL4199("LISRESULTADOSCONTROLADORURL4199", "118002"), // Titulo_Informe
+
+    URL4828("LISRESULTADOSCONTROLADORURL4828", "4007"), // Año
+
+    URL5322("LISRESULTADOSCONTROLADORURL5322", "7011"), // Mes
+
+    URL6648("LISRESULTADOSCONTROLADORURL6648", "16067"), // Codigo_Inicial
+
+    URL7929("LISRESULTADOSCONTROLADORURL7929", "16071"), // Codigo_Final
+
+    URL16130("BALANCECONAUXILIARESCONTROLADORURL16130", "14001"),
+
+    URL18172("BALANCECONAUXILIARESCONTROLADORURL18172", "23010"),
+
+    URL15101("BALANCECONAUXILIARESCONTROLADORURL15101", "14001"),
+
+    URL20207("BALANCECONAUXILIARESCONTROLADORURL20207", "13001"),
+
+    URL21231("BALANCECONAUXILIARESCONTROLADORURL21231", "34001"),
+
+    URL14266("BALANCECONAUXILIARESCONTROLADORURL14266", "20013"),
+
+    URL11002("BALANCECONAUXILIARESCONTROLADORURL11002", "4013"),
+
+    URL13433("BALANCECONAUXILIARESCONTROLADORURL13433", "20013"),
+
+    URL17165("BALANCECONAUXILIARESCONTROLADORURL17165", "23010"),
+
+    URL19185("BALANCECONAUXILIARESCONTROLADORURL19185", "13001"),
+
+    URL22291("BALANCECONAUXILIARESCONTROLADORURL22291", "34001"),
+
+    URL11513("BALANCECONAUXILIARESCONTROLADORURL11513", "16005"),
+
+    URL12468("BALANCECONAUXILIARESCONTROLADORURL12468", "16005");
+
+    private final String key;
+    private final String value;
+
+    private FrmEstadoFinancieraAuxiliaresControladorUrlEnum(String key,
+        String value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}

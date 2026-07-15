@@ -1,0 +1,226 @@
+﻿<data name="comprobantescntbancos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getComprobantescntbancosPorcentajeAfectadosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SUM(PORCENTAJE) PORCENTAJE, SUM(VALOR) VALOR, SUM(PORCENTAJERETENCION) PORCENTAJERETENCION  FROM COMPROBANTE_CNTBANCOS WHERE COMPANIA = :COMPANIA AND ANO = :ANOEGRESO AND TIPO = :TIPOEGRESO AND NUMERO = :NUMEROEGRESO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PORCENTAJE":"$PORCENTAJE","VALOR":"$VALOR","PORCENTAJERETENCION":"$PORCENTAJERETENCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANOEGRESO" sqlType="STRING"/>
+		<param name="TIPOEGRESO" sqlType="STRING"/>
+		<param name="NUMEROEGRESO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="comprobantescntbancos/porcentajeafectados">
+		<call-query href="getComprobantescntbancosPorcentajeAfectadosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANOEGRESO" query-param="ANOEGRESO"/>
+			<with-param name="TIPOEGRESO" query-param="TIPOEGRESO"/>
+			<with-param name="NUMEROEGRESO" query-param="NUMEROEGRESO"/>
+
+		</call-query>
+	</resource>
+	<query id="getComprobantescntbancosSaldoBancarioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPROBANTE_CNTBANCOS.CUENTA, SALDO13 AS SALDO, COMPROBANTE_CNTBANCOS.VALOR AS VALORPAGAR  FROM COMPROBANTE_CNTBANCOS LEFT JOIN PLAN_CONTABLE ON COMPROBANTE_CNTBANCOS.CUENTA = PLAN_CONTABLE.CODIGO AND COMPROBANTE_CNTBANCOS.ANO = PLAN_CONTABLE.ANO AND COMPROBANTE_CNTBANCOS.COMPANIA = PLAN_CONTABLE.COMPANIA WHERE COMPROBANTE_CNTBANCOS.COMPANIA = :COMPANIA AND COMPROBANTE_CNTBANCOS.ANO = :ANO AND COMPROBANTE_CNTBANCOS.TIPO = :TIPO AND COMPROBANTE_CNTBANCOS.NUMERO = :NUMERO ORDER BY COMPROBANTE_CNTBANCOS.ANO, COMPROBANTE_CNTBANCOS.TIPO, COMPROBANTE_CNTBANCOS.NUMERO, COMPROBANTE_CNTBANCOS.CUENTA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTA":"$CUENTA","SALDO":"$SALDO","VALORPAGAR":"$VALORPAGAR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="comprobantescntbancos/saldobancario">
+		<call-query href="getComprobantescntbancosSaldoBancarioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertComprobantescntbancos" keyColumns="COMPANIA,ANO,TIPO,NUMERO,CUENTA,REFERENCIA,CENTRO_COSTO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO COMPROBANTE_CNTBANCOS (CUENTA, NUMEROCHEQUE, PORCENTAJE, VALOR, PORCENTAJERETENCION, COMPANIA, ANO, TIPO, NUMERO, DESEMBOLSO, REFERENCIA, CENTRO_COSTO, DATE_CREATED, CREATED_BY) VALUES (:CUENTA, :NUMEROCHEQUE, :PORCENTAJE, :VALOR, :PORCENTAJERETENCION, :COMPANIA, :ANO, :TIPO, :NUMERO, :DESEMBOLSO, :REFERENCIA, :CENTRO_COSTO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_TIPO":"$TIPO","KEY_NUMERO":"$NUMERO(type:long)","KEY_CUENTA":"$CUENTA","KEY_REFERENCIA":"$REFERENCIA","KEY_CENTRO_COSTO":"$CENTRO_COSTO"}]}}		</result>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param defaultValue="" name="NUMEROCHEQUE" sqlType="STRING"/>
+		<param defaultValue="0" name="PORCENTAJE" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR" sqlType="STRING"/>
+		<param defaultValue="0" name="PORCENTAJERETENCION" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="DESEMBOLSO" sqlType="STRING"/>
+		<param defaultValue="99999999999999999999" name="REFERENCIA" sqlType="STRING"/>
+		<param defaultValue="99999999999999999999" name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="comprobantescntbancos">
+		<call-query href="insertComprobantescntbancos">
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="NUMEROCHEQUE" query-param="NUMEROCHEQUE"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="PORCENTAJERETENCION" query-param="PORCENTAJERETENCION"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="DESEMBOLSO" query-param="DESEMBOLSO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteComprobantescntbancos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM COMPROBANTE_CNTBANCOS WHERE COMPROBANTE_CNTBANCOS.COMPANIA= :KEY_COMPANIA AND COMPROBANTE_CNTBANCOS.ANO= :KEY_ANO AND COMPROBANTE_CNTBANCOS.TIPO= :KEY_TIPO AND COMPROBANTE_CNTBANCOS.NUMERO= :KEY_NUMERO AND COMPROBANTE_CNTBANCOS.CUENTA= :KEY_CUENTA AND COMPROBANTE_CNTBANCOS.REFERENCIA= :KEY_REFERENCIA AND COMPROBANTE_CNTBANCOS.CENTRO_COSTO= :KEY_CENTRO_COSTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_TIPO" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+		<param name="KEY_CUENTA" sqlType="STRING"/>
+		<param name="KEY_REFERENCIA" sqlType="STRING"/>
+		<param name="KEY_CENTRO_COSTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="comprobantescntbancos">
+		<call-query href="deleteComprobantescntbancos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPO" query-param="KEY_TIPO"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+			<with-param name="KEY_CUENTA" query-param="KEY_CUENTA"/>
+			<with-param name="KEY_REFERENCIA" query-param="KEY_REFERENCIA"/>
+			<with-param name="KEY_CENTRO_COSTO" query-param="KEY_CENTRO_COSTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getComprobantescntbancosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPROBANTE_CNTBANCOS.CUENTA, PLAN_CONTABLE.NOMBRE, COMPROBANTE_CNTBANCOS.NUMEROCHEQUE, COMPROBANTE_CNTBANCOS.PORCENTAJE, COMPROBANTE_CNTBANCOS.VALOR, COMPROBANTE_CNTBANCOS.PORCENTAJERETENCION, COMPROBANTE_CNTBANCOS.COMPANIA, COMPROBANTE_CNTBANCOS.ANO, COMPROBANTE_CNTBANCOS.TIPO, COMPROBANTE_CNTBANCOS.NUMERO, COMPROBANTE_CNTBANCOS.DESEMBOLSO, COMPROBANTE_CNTBANCOS.REFERENCIA, COMPROBANTE_CNTBANCOS.CENTRO_COSTO FROM COMPROBANTE_CNTBANCOS INNER JOIN PLAN_CONTABLE ON COMPROBANTE_CNTBANCOS.COMPANIA = PLAN_CONTABLE.COMPANIA AND COMPROBANTE_CNTBANCOS.CUENTA = PLAN_CONTABLE.CODIGO AND COMPROBANTE_CNTBANCOS.ANO = PLAN_CONTABLE.ANO WHERE COMPROBANTE_CNTBANCOS.COMPANIA = :COMPANIA AND COMPROBANTE_CNTBANCOS.ANO = :ANOEGRESO AND COMPROBANTE_CNTBANCOS.TIPO = :TIPOEGRESO AND COMPROBANTE_CNTBANCOS.NUMERO = :NUMEROEGRESO ORDER BY COMPROBANTE_CNTBANCOS.COMPANIA, COMPROBANTE_CNTBANCOS.ANO, COMPROBANTE_CNTBANCOS.TIPO, COMPROBANTE_CNTBANCOS.NUMERO, COMPROBANTE_CNTBANCOS.CUENTA) INI WHERE (CASE WHEN CUENTA IS NULL THEN ' ' ELSE UPPER(CUENTA) END) LIKE UPPER(CONCAT(CONCAT('%',:CUENTA), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN NUMEROCHEQUE IS NULL THEN ' ' ELSE UPPER(NUMEROCHEQUE) END) LIKE UPPER(CONCAT(:NUMEROCHEQUE, '%')) AND (CASE WHEN PORCENTAJE IS NULL THEN ' ' ELSE UPPER(PORCENTAJE) END) LIKE UPPER(CONCAT(:PORCENTAJE, '%')) AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END) LIKE UPPER(CONCAT(:VALOR, '%')) AND (CASE WHEN PORCENTAJERETENCION IS NULL THEN ' ' ELSE UPPER(PORCENTAJERETENCION) END) LIKE UPPER(CONCAT(:PORCENTAJERETENCION, '%')) AND (CASE WHEN REFERENCIA IS NULL THEN ' ' ELSE UPPER(REFERENCIA) END) LIKE UPPER(CONCAT(:REFERENCIA, '%')) AND (CASE WHEN CENTRO_COSTO IS NULL THEN ' ' ELSE UPPER(CENTRO_COSTO) END) LIKE UPPER(CONCAT(:CENTRO_COSTO, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTA":"$CUENTA","NOMBRE":"$NOMBRE","NUMEROCHEQUE":"$NUMEROCHEQUE(type:long)","PORCENTAJE":"$PORCENTAJE","VALOR":"$VALOR","PORCENTAJERETENCION":"$PORCENTAJERETENCION","COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO":"$TIPO","NUMERO":"$NUMERO(type:long)","DESEMBOLSO":"$DESEMBOLSO(type:long)","REFERENCIA":"$REFERENCIA","CENTRO_COSTO":"$CENTRO_COSTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANOEGRESO" sqlType="STRING"/>
+		<param name="TIPOEGRESO" sqlType="STRING"/>
+		<param name="NUMEROEGRESO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NUMEROCHEQUE" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="PORCENTAJERETENCION" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="comprobantescntbancos">
+		<call-query href="getComprobantescntbancosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANOEGRESO" query-param="ANOEGRESO"/>
+			<with-param name="TIPOEGRESO" query-param="TIPOEGRESO"/>
+			<with-param name="NUMEROEGRESO" query-param="NUMEROEGRESO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NUMEROCHEQUE" query-param="NUMEROCHEQUE"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="PORCENTAJERETENCION" query-param="PORCENTAJERETENCION"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getComprobantescntbancosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPROBANTE_CNTBANCOS.CUENTA, PLAN_CONTABLE.NOMBRE, COMPROBANTE_CNTBANCOS.NUMEROCHEQUE, COMPROBANTE_CNTBANCOS.PORCENTAJE, COMPROBANTE_CNTBANCOS.VALOR, COMPROBANTE_CNTBANCOS.PORCENTAJERETENCION, COMPROBANTE_CNTBANCOS.COMPANIA, COMPROBANTE_CNTBANCOS.ANO, COMPROBANTE_CNTBANCOS.TIPO, COMPROBANTE_CNTBANCOS.NUMERO, COMPROBANTE_CNTBANCOS.DESEMBOLSO, COMPROBANTE_CNTBANCOS.REFERENCIA, COMPROBANTE_CNTBANCOS.CENTRO_COSTO FROM COMPROBANTE_CNTBANCOS INNER JOIN PLAN_CONTABLE ON COMPROBANTE_CNTBANCOS.COMPANIA = PLAN_CONTABLE.COMPANIA AND COMPROBANTE_CNTBANCOS.CUENTA = PLAN_CONTABLE.CODIGO AND COMPROBANTE_CNTBANCOS.ANO = PLAN_CONTABLE.ANO WHERE COMPROBANTE_CNTBANCOS.COMPANIA = :COMPANIA AND COMPROBANTE_CNTBANCOS.ANO = :ANOEGRESO AND COMPROBANTE_CNTBANCOS.TIPO = :TIPOEGRESO AND COMPROBANTE_CNTBANCOS.NUMERO = :NUMEROEGRESO ORDER BY COMPROBANTE_CNTBANCOS.COMPANIA, COMPROBANTE_CNTBANCOS.ANO, COMPROBANTE_CNTBANCOS.TIPO, COMPROBANTE_CNTBANCOS.NUMERO, COMPROBANTE_CNTBANCOS.CUENTA) INI WHERE (CASE WHEN CUENTA IS NULL THEN ' ' ELSE UPPER(CUENTA) END) LIKE UPPER(CONCAT(CONCAT('%',:CUENTA), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN NUMEROCHEQUE IS NULL THEN ' ' ELSE UPPER(NUMEROCHEQUE) END) LIKE UPPER(CONCAT(:NUMEROCHEQUE, '%')) AND (CASE WHEN PORCENTAJE IS NULL THEN ' ' ELSE UPPER(PORCENTAJE) END) LIKE UPPER(CONCAT(:PORCENTAJE, '%')) AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END) LIKE UPPER(CONCAT(:VALOR, '%')) AND (CASE WHEN PORCENTAJERETENCION IS NULL THEN ' ' ELSE UPPER(PORCENTAJERETENCION) END) LIKE UPPER(CONCAT(:PORCENTAJERETENCION, '%')) AND (CASE WHEN REFERENCIA IS NULL THEN ' ' ELSE UPPER(REFERENCIA) END) LIKE UPPER(CONCAT(:REFERENCIA, '%')) AND (CASE WHEN CENTRO_COSTO IS NULL THEN ' ' ELSE UPPER(CENTRO_COSTO) END) LIKE UPPER(CONCAT(:CENTRO_COSTO, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANOEGRESO" sqlType="STRING"/>
+		<param name="TIPOEGRESO" sqlType="STRING"/>
+		<param name="NUMEROEGRESO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NUMEROCHEQUE" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="PORCENTAJERETENCION" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="comprobantescntbancos/numero">
+		<call-query href="getComprobantescntbancosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANOEGRESO" query-param="ANOEGRESO"/>
+			<with-param name="TIPOEGRESO" query-param="TIPOEGRESO"/>
+			<with-param name="NUMEROEGRESO" query-param="NUMEROEGRESO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NUMEROCHEQUE" query-param="NUMEROCHEQUE"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="PORCENTAJERETENCION" query-param="PORCENTAJERETENCION"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateComprobantescntbancos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE COMPROBANTE_CNTBANCOS SET CUENTA=:CUENTA, NUMEROCHEQUE=:NUMEROCHEQUE, PORCENTAJE=:PORCENTAJE, VALOR=:VALOR, PORCENTAJERETENCION=:PORCENTAJERETENCION, DESEMBOLSO=:DESEMBOLSO, REFERENCIA=:REFERENCIA, CENTRO_COSTO=:CENTRO_COSTO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE COMPROBANTE_CNTBANCOS.COMPANIA= :KEY_COMPANIA AND COMPROBANTE_CNTBANCOS.ANO= :KEY_ANO AND COMPROBANTE_CNTBANCOS.TIPO= :KEY_TIPO AND COMPROBANTE_CNTBANCOS.NUMERO= :KEY_NUMERO AND COMPROBANTE_CNTBANCOS.CUENTA= :KEY_CUENTA AND COMPROBANTE_CNTBANCOS.REFERENCIA= :KEY_REFERENCIA AND COMPROBANTE_CNTBANCOS.CENTRO_COSTO= :KEY_CENTRO_COSTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="NUMEROCHEQUE" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="PORCENTAJERETENCION" sqlType="STRING"/>
+		<param name="DESEMBOLSO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_TIPO" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+		<param name="KEY_CUENTA" sqlType="STRING"/>
+		<param name="KEY_REFERENCIA" sqlType="STRING"/>
+		<param name="KEY_CENTRO_COSTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="comprobantescntbancos">
+		<call-query href="updateComprobantescntbancos">
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="NUMEROCHEQUE" query-param="NUMEROCHEQUE"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="PORCENTAJERETENCION" query-param="PORCENTAJERETENCION"/>
+			<with-param name="DESEMBOLSO" query-param="DESEMBOLSO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPO" query-param="KEY_TIPO"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+			<with-param name="KEY_CUENTA" query-param="KEY_CUENTA"/>
+			<with-param name="KEY_REFERENCIA" query-param="KEY_REFERENCIA"/>
+			<with-param name="KEY_CENTRO_COSTO" query-param="KEY_CENTRO_COSTO"/>
+
+		</call-query>
+	</resource>
+
+</data>

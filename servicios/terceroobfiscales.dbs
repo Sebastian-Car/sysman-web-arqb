@@ -1,0 +1,114 @@
+﻿<data name="terceroobfiscales" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTerceroobfiscalesObligacionesPorTerceroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT TIPOS_FE.CODIGO FROM TERCERO_OBFISCALES INNER JOIN TIPOS_FE ON TERCERO_OBFISCALES.ID_OBFISCAL = TIPOS_FE.ID WHERE TERCERO_OBFISCALES.COMPANIA =:COMPANIA AND CASE WHEN INSTR(TERCERO_OBFISCALES.IDENTIFICACION,'-') &lt;&gt; 0 THEN REPLACE(SUBSTR(TERCERO_OBFISCALES.IDENTIFICACION,1,INSTR(TERCERO_OBFISCALES .IDENTIFICACION,'-') - 1),'.','') ELSE REPLACE(TERCERO_OBFISCALES.IDENTIFICACION,'.','') END =:NIT AND TERCERO_OBFISCALES.TIPO IN ('T')</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="terceroobfiscales/obligacionesportercero">
+		<call-query href="getTerceroobfiscalesObligacionesPorTerceroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+
+		</call-query>
+	</resource>
+	<query id="insertTerceroobfiscales" keyColumns="COMPANIA,IDENTIFICACION,SUCURSAL,ID_OBFISCAL" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TERCERO_OBFISCALES (COMPANIA, IDENTIFICACION, SUCURSAL, ID_OBFISCAL, TIPO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :IDENTIFICACION, :SUCURSAL, :ID_OBFISCAL, :TIPO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_IDENTIFICACION":"$IDENTIFICACION","KEY_SUCURSAL":"$SUCURSAL","KEY_ID_OBFISCAL":"$ID_OBFISCAL(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="IDENTIFICACION" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="ID_OBFISCAL" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="terceroobfiscales">
+		<call-query href="insertTerceroobfiscales">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="IDENTIFICACION" query-param="IDENTIFICACION"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="ID_OBFISCAL" query-param="ID_OBFISCAL"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTerceroobfiscales" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TERCERO_OBFISCALES WHERE TERCERO_OBFISCALES.COMPANIA= :KEY_COMPANIA AND TERCERO_OBFISCALES.IDENTIFICACION= :KEY_IDENTIFICACION AND TERCERO_OBFISCALES.SUCURSAL= :KEY_SUCURSAL AND TERCERO_OBFISCALES.ID_OBFISCAL= :KEY_ID_OBFISCAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_IDENTIFICACION" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_ID_OBFISCAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="terceroobfiscales">
+		<call-query href="deleteTerceroobfiscales">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_IDENTIFICACION" query-param="KEY_IDENTIFICACION"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_ID_OBFISCAL" query-param="KEY_ID_OBFISCAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getTerceroobfiscalesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT T.COMPANIA, T.IDENTIFICACION, T.SUCURSAL, T.ID_OBFISCAL, F.CODIGO, F.DESCRIPCION, F.ID FROM TERCERO_OBFISCALES T INNER JOIN TIPOS_FE F ON T.ID_OBFISCAL = F.ID WHERE T.COMPANIA =:COMPANIA AND T.IDENTIFICACION =:NIT AND T.SUCURSAL =:SUCURSAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","IDENTIFICACION":"$IDENTIFICACION","SUCURSAL":"$SUCURSAL","ID_OBFISCAL":"$ID_OBFISCAL(type:long)","CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION","ID":"$ID(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="terceroobfiscales">
+		<call-query href="getTerceroobfiscalesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTerceroobfiscales" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TERCERO_OBFISCALES SET IDENTIFICACION=:IDENTIFICACION, SUCURSAL=:SUCURSAL, ID_OBFISCAL=:ID_OBFISCAL, TIPO=:TIPO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TERCERO_OBFISCALES.COMPANIA= :KEY_COMPANIA AND TERCERO_OBFISCALES.IDENTIFICACION= :KEY_IDENTIFICACION AND TERCERO_OBFISCALES.SUCURSAL= :KEY_SUCURSAL AND TERCERO_OBFISCALES.ID_OBFISCAL= :KEY_ID_OBFISCAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="IDENTIFICACION" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="ID_OBFISCAL" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_IDENTIFICACION" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_ID_OBFISCAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="terceroobfiscales">
+		<call-query href="updateTerceroobfiscales">
+			<with-param name="IDENTIFICACION" query-param="IDENTIFICACION"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="ID_OBFISCAL" query-param="ID_OBFISCAL"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_IDENTIFICACION" query-param="KEY_IDENTIFICACION"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_ID_OBFISCAL" query-param="KEY_ID_OBFISCAL"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,272 @@
+﻿<data name="natelegibles" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="updateNatelegiblesPorconvoc" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE NAT_ELEGIBLES SET ACEPTO=:ACEPTO, TOTAL=:TOTAL, NUMERO_DCTO=:NUMERO_DCTO, SUCURSAL=:SUCURSAL, COMPANIA=:COMPANIA, NRO_CONVOCATORIA=:NRO_CONVOCATORIA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE NAT_ELEGIBLES.COMPANIA= :KEY_COMPANIA AND NAT_ELEGIBLES.NRO_CONVOCATORIA= :KEY_NRO_CONVOCATORIA AND NAT_ELEGIBLES.NUMERO_DCTO= :KEY_NUMERO_DCTO AND NAT_ELEGIBLES.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ACEPTO" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NRO_CONVOCATORIA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NRO_CONVOCATORIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO_DCTO" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="natelegibles/porconvoc">
+		<call-query href="updateNatelegiblesPorconvoc">
+			<with-param name="ACEPTO" query-param="ACEPTO"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NRO_CONVOCATORIA" query-param="NRO_CONVOCATORIA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NRO_CONVOCATORIA" query-param="KEY_NRO_CONVOCATORIA"/>
+			<with-param name="KEY_NUMERO_DCTO" query-param="KEY_NUMERO_DCTO"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatelegiblesPagPorconvocQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NAT_ELEGIBLES.NUMERO_DCTO, TERCERO.NOMBRE, NAT_ELEGIBLES.TOTAL,(CASE NAT_ELEGIBLES.ACEPTO WHEN 0 THEN 'false' ELSE 'true' END) ACEPTO, NAT_ELEGIBLES.SUCURSAL, NAT_ELEGIBLES.COMPANIA, NAT_ELEGIBLES.NRO_CONVOCATORIA  FROM NAT_ELEGIBLES INNER JOIN NAT_APERTURA_INSCRITOS ON NAT_APERTURA_INSCRITOS.NRO_CONVOCATORIA = NAT_ELEGIBLES.NRO_CONVOCATORIA AND NAT_APERTURA_INSCRITOS.COMPANIA = NAT_ELEGIBLES.COMPANIA AND NAT_APERTURA_INSCRITOS.NUMERO_DCTO = NAT_ELEGIBLES.NUMERO_DCTO AND NAT_APERTURA_INSCRITOS.SUCURSAL = NAT_ELEGIBLES.SUCURSAL INNER JOIN TERCERO ON NAT_ELEGIBLES.COMPANIA = TERCERO.COMPANIA AND NAT_ELEGIBLES.NUMERO_DCTO = TERCERO.NIT AND NAT_ELEGIBLES.SUCURSAL = TERCERO.SUCURSAL WHERE NAT_APERTURA_INSCRITOS.COMPANIA = :COMPANIA AND NAT_APERTURA_INSCRITOS.NRO_CONVOCATORIA = :NO_CONVOCATORIA ORDER BY NAT_ELEGIBLES.TOTAL DESC) WHERE (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END)  LIKE UPPER(:NUMERO_DCTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END)  LIKE UPPER(:TOTAL || '%')  AND (CASE WHEN ACEPTO IS NULL THEN ' ' ELSE UPPER(ACEPTO) END)  LIKE UPPER(:ACEPTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO_DCTO":"$NUMERO_DCTO","NOMBRE":"$NOMBRE","TOTAL":"$TOTAL","ACEPTO":"$ACEPTO(type:boolean)","SUCURSAL":"$SUCURSAL","COMPANIA":"$COMPANIA","NRO_CONVOCATORIA":"$NRO_CONVOCATORIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NO_CONVOCATORIA" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="ACEPTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="natelegibles/porconvoc/pag">
+		<call-query href="getNatelegiblesPagPorconvocQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NO_CONVOCATORIA" query-param="NO_CONVOCATORIA"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="ACEPTO" query-param="ACEPTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatelegiblesNumPorconvocQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NAT_ELEGIBLES.NUMERO_DCTO, TERCERO.NOMBRE, NAT_ELEGIBLES.TOTAL,(CASE NAT_ELEGIBLES.ACEPTO WHEN 0 THEN 'false' ELSE 'true' END) ACEPTO, NAT_ELEGIBLES.SUCURSAL, NAT_ELEGIBLES.COMPANIA, NAT_ELEGIBLES.NRO_CONVOCATORIA  FROM NAT_ELEGIBLES INNER JOIN NAT_APERTURA_INSCRITOS ON NAT_APERTURA_INSCRITOS.NRO_CONVOCATORIA = NAT_ELEGIBLES.NRO_CONVOCATORIA AND NAT_APERTURA_INSCRITOS.COMPANIA = NAT_ELEGIBLES.COMPANIA AND NAT_APERTURA_INSCRITOS.NUMERO_DCTO = NAT_ELEGIBLES.NUMERO_DCTO AND NAT_APERTURA_INSCRITOS.SUCURSAL = NAT_ELEGIBLES.SUCURSAL INNER JOIN TERCERO ON NAT_ELEGIBLES.COMPANIA = TERCERO.COMPANIA AND NAT_ELEGIBLES.NUMERO_DCTO = TERCERO.NIT AND NAT_ELEGIBLES.SUCURSAL = TERCERO.SUCURSAL WHERE NAT_APERTURA_INSCRITOS.COMPANIA = :COMPANIA AND NAT_APERTURA_INSCRITOS.NRO_CONVOCATORIA = :NO_CONVOCATORIA ORDER BY NAT_ELEGIBLES.TOTAL DESC) WHERE (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END)  LIKE UPPER(:NUMERO_DCTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END)  LIKE UPPER(:TOTAL || '%')  AND (CASE WHEN ACEPTO IS NULL THEN ' ' ELSE UPPER(ACEPTO) END)  LIKE UPPER(:ACEPTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NO_CONVOCATORIA" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="ACEPTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="natelegibles/porconvoc/num">
+		<call-query href="getNatelegiblesNumPorconvocQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NO_CONVOCATORIA" query-param="NO_CONVOCATORIA"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="ACEPTO" query-param="ACEPTO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateNatelegiblesNatelegiblesporconvocatoria" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE NAT_ELEGIBLES SET ACEPTO=:ACEPTO, TOTAL=:TOTAL, OBSERVACIONES=:OBSERVACIONES, VERIFICAREDU=:VERIFICAREDU, VERIFICAREXP=:VERIFICAREXP, NUMERO_DCTO=:NUMERO_DCTO, SUCURSAL=:SUCURSAL, COMPANIA=:COMPANIA, NRO_CONVOCATORIA=:NRO_CONVOCATORIA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE NAT_ELEGIBLES.COMPANIA= :KEY_COMPANIA AND NAT_ELEGIBLES.NRO_CONVOCATORIA= :KEY_NRO_CONVOCATORIA AND NAT_ELEGIBLES.NUMERO_DCTO= :KEY_NUMERO_DCTO AND NAT_ELEGIBLES.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ACEPTO" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="VERIFICAREDU" sqlType="STRING"/>
+		<param name="VERIFICAREXP" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NRO_CONVOCATORIA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NRO_CONVOCATORIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO_DCTO" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="natelegibles/natelegiblesporconvocatoria">
+		<call-query href="updateNatelegiblesNatelegiblesporconvocatoria">
+			<with-param name="ACEPTO" query-param="ACEPTO"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="VERIFICAREDU" query-param="VERIFICAREDU"/>
+			<with-param name="VERIFICAREXP" query-param="VERIFICAREXP"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NRO_CONVOCATORIA" query-param="NRO_CONVOCATORIA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NRO_CONVOCATORIA" query-param="KEY_NRO_CONVOCATORIA"/>
+			<with-param name="KEY_NUMERO_DCTO" query-param="KEY_NUMERO_DCTO"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatelegiblesPagNatelegiblesporconvocatoriaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NAT_ELEGIBLES.NUMERO_DCTO, NAT_APERTURA_INSCRITOS.NOMBRE, NAT_ELEGIBLES.TOTAL,(CASE NAT_ELEGIBLES.ACEPTO WHEN 0 THEN 'false' ELSE 'true' END) ACEPTO, NAT_ELEGIBLES.SUCURSAL, NAT_ELEGIBLES.COMPANIA, NAT_ELEGIBLES.NRO_CONVOCATORIA,(CASE NAT_ELEGIBLES.VERIFICAREDU WHEN 0 THEN 'false' ELSE 'true' END) VERIFICAREDU,(CASE NAT_ELEGIBLES.VERIFICAREXP WHEN 0 THEN 'false' ELSE 'true' END) VERIFICAREXP, NAT_ELEGIBLES.OBSERVACIONES  FROM NAT_ELEGIBLES INNER JOIN NAT_APERTURA_INSCRITOS ON NAT_APERTURA_INSCRITOS.NRO_CONVOCATORIA = NAT_ELEGIBLES.NRO_CONVOCATORIA AND NAT_APERTURA_INSCRITOS.COMPANIA = NAT_ELEGIBLES.COMPANIA AND NAT_APERTURA_INSCRITOS.NUMERO_DCTO = NAT_ELEGIBLES.NUMERO_DCTO AND NAT_APERTURA_INSCRITOS.SUCURSAL = NAT_ELEGIBLES.SUCURSAL WHERE NAT_APERTURA_INSCRITOS.COMPANIA = :COMPANIA AND NAT_APERTURA_INSCRITOS.NRO_CONVOCATORIA = :NO_CONVOCATORIA ORDER BY NAT_ELEGIBLES.TOTAL DESC) WHERE (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END)  LIKE UPPER(:NUMERO_DCTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END)  LIKE UPPER(:TOTAL || '%')  AND (CASE WHEN ACEPTO IS NULL THEN ' ' ELSE UPPER(ACEPTO) END)  LIKE UPPER(:ACEPTO || '%')  AND (CASE WHEN VERIFICAREDU IS NULL THEN ' ' ELSE UPPER(VERIFICAREDU) END)  LIKE UPPER(:VERIFICAREDU || '%')  AND (CASE WHEN VERIFICAREXP IS NULL THEN ' ' ELSE UPPER(VERIFICAREXP) END)  LIKE UPPER(:VERIFICAREXP || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER(:OBSERVACIONES || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO_DCTO":"$NUMERO_DCTO","NOMBRE":"$NOMBRE","TOTAL":"$TOTAL","ACEPTO":"$ACEPTO(type:boolean)","SUCURSAL":"$SUCURSAL","COMPANIA":"$COMPANIA","NRO_CONVOCATORIA":"$NRO_CONVOCATORIA","VERIFICAREDU":"$VERIFICAREDU(type:boolean)","VERIFICAREXP":"$VERIFICAREXP(type:boolean)","OBSERVACIONES":"$OBSERVACIONES"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NO_CONVOCATORIA" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="ACEPTO" sqlType="STRING"/>
+		<param name="VERIFICAREDU" sqlType="STRING"/>
+		<param name="VERIFICAREXP" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="natelegibles/natelegiblesporconvocatoria/pag">
+		<call-query href="getNatelegiblesPagNatelegiblesporconvocatoriaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NO_CONVOCATORIA" query-param="NO_CONVOCATORIA"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="ACEPTO" query-param="ACEPTO"/>
+			<with-param name="VERIFICAREDU" query-param="VERIFICAREDU"/>
+			<with-param name="VERIFICAREXP" query-param="VERIFICAREXP"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatelegiblesNumNatelegiblesporconvocatoriaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NAT_ELEGIBLES.NUMERO_DCTO, NAT_APERTURA_INSCRITOS.NOMBRE, NAT_ELEGIBLES.TOTAL,(CASE NAT_ELEGIBLES.ACEPTO WHEN 0 THEN 'false' ELSE 'true' END) ACEPTO, NAT_ELEGIBLES.SUCURSAL, NAT_ELEGIBLES.COMPANIA, NAT_ELEGIBLES.NRO_CONVOCATORIA,(CASE NAT_ELEGIBLES.VERIFICAREDU WHEN 0 THEN 'false' ELSE 'true' END) VERIFICAREDU,(CASE NAT_ELEGIBLES.VERIFICAREXP WHEN 0 THEN 'false' ELSE 'true' END) VERIFICAREXP, NAT_ELEGIBLES.OBSERVACIONES  FROM NAT_ELEGIBLES INNER JOIN NAT_APERTURA_INSCRITOS ON NAT_APERTURA_INSCRITOS.NRO_CONVOCATORIA = NAT_ELEGIBLES.NRO_CONVOCATORIA AND NAT_APERTURA_INSCRITOS.COMPANIA = NAT_ELEGIBLES.COMPANIA AND NAT_APERTURA_INSCRITOS.NUMERO_DCTO = NAT_ELEGIBLES.NUMERO_DCTO AND NAT_APERTURA_INSCRITOS.SUCURSAL = NAT_ELEGIBLES.SUCURSAL WHERE NAT_APERTURA_INSCRITOS.COMPANIA = :COMPANIA AND NAT_APERTURA_INSCRITOS.NRO_CONVOCATORIA = :NO_CONVOCATORIA ORDER BY NAT_ELEGIBLES.TOTAL DESC) WHERE (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END)  LIKE UPPER(:NUMERO_DCTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END)  LIKE UPPER(:TOTAL || '%')  AND (CASE WHEN ACEPTO IS NULL THEN ' ' ELSE UPPER(ACEPTO) END)  LIKE UPPER(:ACEPTO || '%')  AND (CASE WHEN VERIFICAREDU IS NULL THEN ' ' ELSE UPPER(VERIFICAREDU) END)  LIKE UPPER(:VERIFICAREDU || '%')  AND (CASE WHEN VERIFICAREXP IS NULL THEN ' ' ELSE UPPER(VERIFICAREXP) END)  LIKE UPPER(:VERIFICAREXP || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER(:OBSERVACIONES || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NO_CONVOCATORIA" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="ACEPTO" sqlType="STRING"/>
+		<param name="VERIFICAREDU" sqlType="STRING"/>
+		<param name="VERIFICAREXP" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="natelegibles/natelegiblesporconvocatoria/num">
+		<call-query href="getNatelegiblesNumNatelegiblesporconvocatoriaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NO_CONVOCATORIA" query-param="NO_CONVOCATORIA"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="ACEPTO" query-param="ACEPTO"/>
+			<with-param name="VERIFICAREDU" query-param="VERIFICAREDU"/>
+			<with-param name="VERIFICAREXP" query-param="VERIFICAREXP"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatelegiblesElegiblesaceptadoryrechazadosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  LISTAGG(NAT_APERTURA_INSCRITOS.DIRECCIONEMAIL, ',') WITHIN GROUP ( ORDER BY NAT_APERTURA_INSCRITOS.DIRECCIONEMAIL) CORREOS_DESTINOS  FROM NAT_ELEGIBLES INNER JOIN NAT_APERTURA_INSCRITOS ON NAT_ELEGIBLES.NUMERO_DCTO = NAT_APERTURA_INSCRITOS.NUMERO_DCTO AND NAT_ELEGIBLES.NRO_CONVOCATORIA = NAT_APERTURA_INSCRITOS.NRO_CONVOCATORIA AND NAT_ELEGIBLES.SUCURSAL = NAT_APERTURA_INSCRITOS.SUCURSAL WHERE NAT_ELEGIBLES.COMPANIA = :COMPANIA AND NAT_ELEGIBLES.NRO_CONVOCATORIA = :NRO_CONVOCATORIA AND NAT_ELEGIBLES.ACEPTO IN (:ACEPTO)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CORREOS_DESTINOS":"$CORREOS_DESTINOS"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NRO_CONVOCATORIA" sqlType="STRING"/>
+		<param name="ACEPTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="natelegibles/elegiblesaceptadoryrechazados">
+		<call-query href="getNatelegiblesElegiblesaceptadoryrechazadosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NRO_CONVOCATORIA" query-param="NRO_CONVOCATORIA"/>
+			<with-param name="ACEPTO" query-param="ACEPTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatelegiblesFechaenvioelegiblesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (TO_CHAR(FECHA_ENVIO_CORREO,'DD/MM/YYYY HH24:MI:SS')) FECHA_ENVIO_CORREO FROM NAT_ELEGIBLES WHERE NRO_CONVOCATORIA = :NRO_CONVOCATORIA AND COMPANIA = :COMPANIA AND ROWNUM = 1</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FECHA_ENVIO_CORREO":"$FECHA_ENVIO_CORREO"}]}}		</result>
+		<param name="NRO_CONVOCATORIA" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="natelegibles/fechaenvioelegibles">
+		<call-query href="getNatelegiblesFechaenvioelegiblesQuery">
+			<with-param name="NRO_CONVOCATORIA" query-param="NRO_CONVOCATORIA"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatelegiblesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NAT_ELEGIBLES.NUMERO_DCTO, TERCERO.NOMBRE, NAT_ELEGIBLES.TOTAL,(CASE NAT_ELEGIBLES.ACEPTO WHEN 0 THEN 'false' ELSE 'true' END) ACEPTO FROM NAT_ELEGIBLES INNER JOIN NAT_APERTURA_INSCRITOS ON NAT_APERTURA_INSCRITOS.NRO_CONVOCATORIA = NAT_ELEGIBLES.NRO_CONVOCATORIA AND NAT_APERTURA_INSCRITOS.COMPANIA = NAT_ELEGIBLES.COMPANIA AND NAT_APERTURA_INSCRITOS.NUMERO_DCTO = NAT_ELEGIBLES.NUMERO_DCTO AND NAT_APERTURA_INSCRITOS.SUCURSAL = NAT_ELEGIBLES.SUCURSAL INNER JOIN TERCERO ON NAT_ELEGIBLES.COMPANIA = TERCERO.COMPANIA AND NAT_ELEGIBLES.NUMERO_DCTO = TERCERO.NIT AND NAT_ELEGIBLES.SUCURSAL = TERCERO.SUCURSAL WHERE NAT_APERTURA_INSCRITOS.COMPANIA = :COMPANIA AND NAT_APERTURA_INSCRITOS.NRO_CONVOCATORIA = :NO_CONVOCATORIA ORDER BY NAT_ELEGIBLES.TOTAL DESC) WHERE (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END)  LIKE UPPER(:NUMERO_DCTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END)  LIKE UPPER(:TOTAL || '%')  AND (CASE WHEN ACEPTO IS NULL THEN ' ' ELSE UPPER(ACEPTO) END)  LIKE UPPER(:ACEPTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO_DCTO":"$NUMERO_DCTO","NOMBRE":"$NOMBRE","TOTAL":"$TOTAL","ACEPTO":"$ACEPTO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NO_CONVOCATORIA" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="ACEPTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="natelegibles">
+		<call-query href="getNatelegiblesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NO_CONVOCATORIA" query-param="NO_CONVOCATORIA"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="ACEPTO" query-param="ACEPTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatelegiblesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NAT_ELEGIBLES.NUMERO_DCTO, TERCERO.NOMBRE, NAT_ELEGIBLES.TOTAL,(CASE NAT_ELEGIBLES.ACEPTO WHEN 0 THEN 'false' ELSE 'true' END) ACEPTO FROM NAT_ELEGIBLES INNER JOIN NAT_APERTURA_INSCRITOS ON NAT_APERTURA_INSCRITOS.NRO_CONVOCATORIA = NAT_ELEGIBLES.NRO_CONVOCATORIA AND NAT_APERTURA_INSCRITOS.COMPANIA = NAT_ELEGIBLES.COMPANIA AND NAT_APERTURA_INSCRITOS.NUMERO_DCTO = NAT_ELEGIBLES.NUMERO_DCTO AND NAT_APERTURA_INSCRITOS.SUCURSAL = NAT_ELEGIBLES.SUCURSAL INNER JOIN TERCERO ON NAT_ELEGIBLES.COMPANIA = TERCERO.COMPANIA AND NAT_ELEGIBLES.NUMERO_DCTO = TERCERO.NIT AND NAT_ELEGIBLES.SUCURSAL = TERCERO.SUCURSAL WHERE NAT_APERTURA_INSCRITOS.COMPANIA = :COMPANIA AND NAT_APERTURA_INSCRITOS.NRO_CONVOCATORIA = :NO_CONVOCATORIA ORDER BY NAT_ELEGIBLES.TOTAL DESC) WHERE (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END)  LIKE UPPER(:NUMERO_DCTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END)  LIKE UPPER(:TOTAL || '%')  AND (CASE WHEN ACEPTO IS NULL THEN ' ' ELSE UPPER(ACEPTO) END)  LIKE UPPER(:ACEPTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NO_CONVOCATORIA" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="ACEPTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="natelegibles/numero">
+		<call-query href="getNatelegiblesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NO_CONVOCATORIA" query-param="NO_CONVOCATORIA"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="ACEPTO" query-param="ACEPTO"/>
+
+		</call-query>
+	</resource>
+
+</data>

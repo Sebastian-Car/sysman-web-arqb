@@ -1,0 +1,105 @@
+﻿<data name="tipovigencia" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTipovigenciaTodosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO, NOMBRE  FROM TIPOVIGENCIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="tipovigencia/todos">
+		<call-query href="getTipovigenciaTodosQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getTipovigenciaPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT TIPOVIGENCIA.CODIGO, TIPOVIGENCIA.NOMBRE, TIPOVIGENCIA.EQUIVALENTE_CUIPO, VIGENCIAS_CUIPO.NOMBRE NOMBRECUIPO,(CASE TIPOVIGENCIA.REPORTAR_SIA WHEN 0 THEN 'false' ELSE 'true' END) REPORTAR_SIA, TIPOVIGENCIA.EQUIVALENTE_APPUI, VIGENCIAS_APPUI.NOMBRE_APPUI FROM TIPOVIGENCIA LEFT JOIN VIGENCIAS_CUIPO ON TIPOVIGENCIA.EQUIVALENTE_CUIPO = VIGENCIAS_CUIPO.CODIGO LEFT JOIN VIGENCIAS_APPUI ON TIPOVIGENCIA.EQUIVALENTE_APPUI = VIGENCIAS_APPUI.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN NOMBRECUIPO IS NULL THEN ' ' ELSE UPPER(NOMBRECUIPO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRECUIPO), '%')) AND (CASE WHEN REPORTAR_SIA IS NULL THEN ' ' ELSE UPPER(REPORTAR_SIA) END) LIKE UPPER(CONCAT(CONCAT('%',:REPORTAR_SIA), '%')) AND (CASE WHEN EQUIVALENTE_APPUI IS NULL THEN ' ' ELSE UPPER(EQUIVALENTE_APPUI) END) LIKE UPPER(CONCAT(CONCAT('%',:EQUIVALENTE_APPUI), '%')) AND (CASE WHEN NOMBRE_APPUI IS NULL THEN ' ' ELSE UPPER(NOMBRE_APPUI) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_APPUI), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","EQUIVALENTE_CUIPO":"$EQUIVALENTE_CUIPO","NOMBRECUIPO":"$NOMBRECUIPO","REPORTAR_SIA":"$REPORTAR_SIA(type:boolean)","EQUIVALENTE_APPUI":"$EQUIVALENTE_APPUI","NOMBRE_APPUI":"$NOMBRE_APPUI"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBRECUIPO" sqlType="STRING"/>
+		<param name="REPORTAR_SIA" sqlType="STRING"/>
+		<param name="EQUIVALENTE_APPUI" sqlType="STRING"/>
+		<param name="NOMBRE_APPUI" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipovigencia">
+		<call-query href="getTipovigenciaPaginaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBRECUIPO" query-param="NOMBRECUIPO"/>
+			<with-param name="REPORTAR_SIA" query-param="REPORTAR_SIA"/>
+			<with-param name="EQUIVALENTE_APPUI" query-param="EQUIVALENTE_APPUI"/>
+			<with-param name="NOMBRE_APPUI" query-param="NOMBRE_APPUI"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipovigenciaNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT TIPOVIGENCIA.CODIGO, TIPOVIGENCIA.NOMBRE, TIPOVIGENCIA.EQUIVALENTE_CUIPO, VIGENCIAS_CUIPO.NOMBRE NOMBRECUIPO,(CASE TIPOVIGENCIA.REPORTAR_SIA WHEN 0 THEN 'false' ELSE 'true' END) REPORTAR_SIA, TIPOVIGENCIA.EQUIVALENTE_APPUI, VIGENCIAS_APPUI.NOMBRE_APPUI FROM TIPOVIGENCIA LEFT JOIN VIGENCIAS_CUIPO ON TIPOVIGENCIA.EQUIVALENTE_CUIPO = VIGENCIAS_CUIPO.CODIGO LEFT JOIN VIGENCIAS_APPUI ON TIPOVIGENCIA.EQUIVALENTE_APPUI = VIGENCIAS_APPUI.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN NOMBRECUIPO IS NULL THEN ' ' ELSE UPPER(NOMBRECUIPO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRECUIPO), '%')) AND (CASE WHEN REPORTAR_SIA IS NULL THEN ' ' ELSE UPPER(REPORTAR_SIA) END) LIKE UPPER(CONCAT(CONCAT('%',:REPORTAR_SIA), '%')) AND (CASE WHEN EQUIVALENTE_APPUI IS NULL THEN ' ' ELSE UPPER(EQUIVALENTE_APPUI) END) LIKE UPPER(CONCAT(CONCAT('%',:EQUIVALENTE_APPUI), '%')) AND (CASE WHEN NOMBRE_APPUI IS NULL THEN ' ' ELSE UPPER(NOMBRE_APPUI) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_APPUI), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBRECUIPO" sqlType="STRING"/>
+		<param name="REPORTAR_SIA" sqlType="STRING"/>
+		<param name="EQUIVALENTE_APPUI" sqlType="STRING"/>
+		<param name="NOMBRE_APPUI" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipovigencia/numero">
+		<call-query href="getTipovigenciaNumeroQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBRECUIPO" query-param="NOMBRECUIPO"/>
+			<with-param name="REPORTAR_SIA" query-param="REPORTAR_SIA"/>
+			<with-param name="EQUIVALENTE_APPUI" query-param="EQUIVALENTE_APPUI"/>
+			<with-param name="NOMBRE_APPUI" query-param="NOMBRE_APPUI"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipovigenciaRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT TIPOVIGENCIA.CODIGO, TIPOVIGENCIA.NOMBRE, TIPOVIGENCIA.EQUIVALENTE_CUIPO FROM TIPOVIGENCIA WHERE TIPOVIGENCIA.CODIGO= :KEY_CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","EQUIVALENTE_CUIPO":"$EQUIVALENTE_CUIPO"}]}}		</result>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipovigencia/data">
+		<call-query href="getTipovigenciaRegistroQuery">
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTipovigencia" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TIPOVIGENCIA SET CODIGO=:CODIGO, NOMBRE=:NOMBRE, EQUIVALENTE_CUIPO=:EQUIVALENTE_CUIPO, REPORTAR_SIA=:REPORTAR_SIA, EQUIVALENTE_APPUI=:EQUIVALENTE_APPUI, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TIPOVIGENCIA.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="EQUIVALENTE_CUIPO" sqlType="STRING"/>
+		<param name="REPORTAR_SIA" sqlType="STRING"/>
+		<param name="EQUIVALENTE_APPUI" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tipovigencia">
+		<call-query href="updateTipovigencia">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="EQUIVALENTE_CUIPO" query-param="EQUIVALENTE_CUIPO"/>
+			<with-param name="REPORTAR_SIA" query-param="REPORTAR_SIA"/>
+			<with-param name="EQUIVALENTE_APPUI" query-param="EQUIVALENTE_APPUI"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

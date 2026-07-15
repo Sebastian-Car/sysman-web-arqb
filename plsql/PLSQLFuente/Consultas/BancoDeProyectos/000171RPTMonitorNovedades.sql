@@ -1,0 +1,100 @@
+SELECT N.TIPOT, 
+          N.CODIGO 
+          NOVEDAD, 
+          D.ESPECIFICACION, 
+          N.FECHA,  
+          N.CLASET,
+          N.VIGENCIA, 
+          CASE N.VOBOBP WHEN 0 THEN ' ' ELSE 'X' END VOBOBP, 
+          N.IMPRESO,
+          N.AFECTADO, 
+          N.FECHA_VOBO,
+          N.HORA_VOBO, 
+          N.ESTADO, 
+          P.CODIGOBPIM,
+          P.NOMBREPROYECTO 
+          PROYECTO, N.OBJETO, 
+          D.VALORSOLICITADO  VLR_SOLICITADO,
+          D.VALORAPROBADO  VAL_APROBADO, 
+          D.ACTIVIDAD  COD_ACTIVIDAD,
+          A.NOMBRE  ACTIVIDAD, 
+          D.ID_META_PRODUCTO  META_PRODUCTO,
+          D.RUBROPRESUPUESTAL,
+          D.FUENTERECURSOS, 
+          DP.NOMBRE  DEPENDENCIA, 
+          T.NOMBRE  RESPONSABLE,
+          N.COMPANIA 
+ FROM BPNOVEDADPROYECTO  N 
+ LEFT JOIN BP_D_NOVEDADPROYECTO  D 
+ ON  N.COMPANIA = D.COMPANIA
+ AND N.CODIGO = D.NOVEDAD
+ AND N.CLASET = D.CLASET
+ AND N.TIPOT = D.TIPOT
+ AND N.DEPENDENCIA = D.DEPENDENCIA
+ LEFT JOIN PROYECTOS  P 
+ ON  D.COMPANIA = P.COMPANIA
+ AND  D.PROYECTO = P.CODIGO
+ LEFT JOIN DEPENDENCIA_RESPONSABLE  DR 
+ ON  P.COMPANIA = DR.COMPANIA 
+ AND  P.DEPENDENCIA = DR.DEPENDENCIA 
+ AND  P.RESPONSABLE = DR.RESPONSABLE
+ LEFT JOIN DEPENDENCIA  DP  
+ ON  N.COMPANIA = DP.COMPANIA 
+ AND  N.DEPENDENCIA = DP.CODIGO 
+ LEFT JOIN BP_ACTIVIDADES  A  
+ ON D.COMPANIA = A.COMPANIA 
+ AND  D.ACTIVIDAD = A.CODIGO
+ LEFT JOIN RESPONSABLE  R 
+ ON P.COMPANIA = R.COMPANIA
+ AND P.RESPONSABLE = R.CEDULA
+ LEFT JOIN TERCERO T 
+ ON R.COMPANIA = T.COMPANIA 
+ AND R.CEDULA = T.NIT 
+ AND R.SUCURSAL = T.SUCURSAL
+ WHERE  N.COMPANIA = s$compania$s
+ AND N.FECHA BETWEEN  s$fechainicial$s AND s$fechafinal$s
+AND -1 =
+  CASE
+    WHEN 
+'Todos' <> 's$filtroproyecto$s'
+    THEN
+      CASE
+        WHEN D.PROYECTO = 's$filtroproyecto$s'
+        THEN -1
+        ELSE 0
+      END
+    ELSE -1
+  END
+AND -1 =
+  CASE
+    WHEN 'Todas' <> 's$filtrodependencia$s'
+    THEN
+      CASE
+        WHEN N.DEPENDENCIA = 's$filtrodependencia$s'
+        THEN -1
+        ELSE 0
+      END
+    ELSE -1
+  END
+AND -1 =
+  CASE
+    WHEN 'Todos' <> 's$filtrotipot$s'
+    THEN
+      CASE
+        WHEN N.TIPOT = 's$filtrotipot$s'
+        THEN -1
+        ELSE 0
+      END
+    ELSE -1
+  END
+AND -1 =
+  CASE
+    WHEN 'T' <> 's$filtroestado$s'
+    THEN
+      CASE
+        WHEN N.ESTADO = 's$filtroestado$s'
+        THEN -1
+        ELSE 0
+      END
+    ELSE -1
+  END

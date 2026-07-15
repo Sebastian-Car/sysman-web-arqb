@@ -1,0 +1,148 @@
+﻿<data name="tipopoliza" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTipopolizaTodosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TIPOPOLIZA.CODIGO, TIPOPOLIZA.DESCRIPCION  FROM TIPOPOLIZA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="tipopoliza/todos">
+		<call-query href="getTipopolizaTodosQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getTipopolizaPagTodosPorCodigoDescripcionYTipoPolizaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TIPOPOLIZA.CODIGO, TIPOPOLIZA.DESCRIPCION, TIPOPOLIZA.TIPOPOLIZA  FROM TIPOPOLIZA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN TIPOPOLIZA IS NULL THEN ' ' ELSE UPPER(TIPOPOLIZA) END)  LIKE UPPER(:TIPOPOLIZA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION","TIPOPOLIZA":"$TIPOPOLIZA"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="TIPOPOLIZA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipopoliza/todosporcodigodescripcionytipopoliza/pag">
+		<call-query href="getTipopolizaPagTodosPorCodigoDescripcionYTipoPolizaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="TIPOPOLIZA" query-param="TIPOPOLIZA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipopolizaNumTodosPorCodigoDescripcionYTipoPolizaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TIPOPOLIZA.CODIGO, TIPOPOLIZA.DESCRIPCION, TIPOPOLIZA.TIPOPOLIZA  FROM TIPOPOLIZA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN TIPOPOLIZA IS NULL THEN ' ' ELSE UPPER(TIPOPOLIZA) END)  LIKE UPPER(:TIPOPOLIZA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="TIPOPOLIZA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipopoliza/todosporcodigodescripcionytipopoliza/num">
+		<call-query href="getTipopolizaNumTodosPorCodigoDescripcionYTipoPolizaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="TIPOPOLIZA" query-param="TIPOPOLIZA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertTipopoliza" keyColumns="CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TIPOPOLIZA (CODIGO, DESCRIPCION, TIPOPOLIZA, DATE_CREATED, CREATED_BY) VALUES (:CODIGO, :DESCRIPCION, :TIPOPOLIZA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="" name="TIPOPOLIZA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="tipopoliza">
+		<call-query href="insertTipopoliza">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="TIPOPOLIZA" query-param="TIPOPOLIZA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTipopoliza" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TIPOPOLIZA WHERE TIPOPOLIZA.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="tipopoliza">
+		<call-query href="deleteTipopoliza">
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipopolizaPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, DESCRIPCION, TIPOPOLIZA, DECODE (TIPOPOLIZA , 'R' , 'Responsabilidad' , 'C' , 'Cumplimiento' , 'O' , 'Otra' , 'A' , 'Ampliación') TIPOPOLIZALB  FROM TIPOPOLIZA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN TIPOPOLIZALB IS NULL THEN ' ' ELSE UPPER(TIPOPOLIZALB) END)  LIKE UPPER( '%' || :TIPOPOLIZALB || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION","TIPOPOLIZA":"$TIPOPOLIZA","TIPOPOLIZALB":"$TIPOPOLIZALB"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="TIPOPOLIZALB" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipopoliza">
+		<call-query href="getTipopolizaPaginaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="TIPOPOLIZALB" query-param="TIPOPOLIZALB"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipopolizaNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, DESCRIPCION, TIPOPOLIZA, DECODE (TIPOPOLIZA , 'R' , 'Responsabilidad' , 'C' , 'Cumplimiento' , 'O' , 'Otra' , 'A' , 'Ampliación') TIPOPOLIZALB  FROM TIPOPOLIZA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN TIPOPOLIZALB IS NULL THEN ' ' ELSE UPPER(TIPOPOLIZALB) END)  LIKE UPPER( '%' || :TIPOPOLIZALB || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="TIPOPOLIZALB" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipopoliza/numero">
+		<call-query href="getTipopolizaNumeroQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="TIPOPOLIZALB" query-param="TIPOPOLIZALB"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTipopoliza" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TIPOPOLIZA SET CODIGO=:CODIGO, DESCRIPCION=:DESCRIPCION, TIPOPOLIZA=:TIPOPOLIZA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TIPOPOLIZA.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="TIPOPOLIZA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tipopoliza">
+		<call-query href="updateTipopoliza">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="TIPOPOLIZA" query-param="TIPOPOLIZA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

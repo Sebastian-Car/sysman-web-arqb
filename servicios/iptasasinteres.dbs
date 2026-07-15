@@ -1,0 +1,124 @@
+﻿<data name="iptasasinteres" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertIptasasinteres" keyColumns="COMPANIA,ANO,MES" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_TASASINTERES (COMPANIA, ANO, MES, TASADIARIA, TASAMENSUAL, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :MES, :TASADIARIA, :TASAMENSUAL, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_MES":"$MES(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param defaultValue="0" name="TASADIARIA" sqlType="STRING"/>
+		<param defaultValue="0" name="TASAMENSUAL" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="iptasasinteres">
+		<call-query href="insertIptasasinteres">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="TASADIARIA" query-param="TASADIARIA"/>
+			<with-param name="TASAMENSUAL" query-param="TASAMENSUAL"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteIptasasinteres" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM IP_TASASINTERES WHERE IP_TASASINTERES.COMPANIA= :KEY_COMPANIA AND IP_TASASINTERES.ANO= :KEY_ANO AND IP_TASASINTERES.MES= :KEY_MES</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_MES" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="iptasasinteres">
+		<call-query href="deleteIptasasinteres">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_MES" query-param="KEY_MES"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptasasinteresPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT IP_TASASINTERES.COMPANIA, IP_TASASINTERES.ANO, IP_TASASINTERES.MES, TRIM(TO_CHAR(IP_TASASINTERES.TASADIARIA,CONCAT( RPAD('9',18,'9') , '0D9999999')) ) TASADIARIA, TRIM(TO_CHAR(IP_TASASINTERES.TASAMENSUAL,CONCAT( RPAD('9',18,'9') , '0D9999999')) ) TASAMENSUAL, MES.NOMBRE FROM IP_TASASINTERES INNER JOIN MES ON IP_TASASINTERES.COMPANIA = MES.COMPANIA AND IP_TASASINTERES.ANO = MES.ANO AND IP_TASASINTERES.MES = MES.NUMERO WHERE IP_TASASINTERES.COMPANIA =:COMPANIA ORDER BY IP_TASASINTERES.ANO, IP_TASASINTERES.MES) INI WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(CONCAT('%',:ANO), '%')) AND (CASE WHEN MES IS NULL THEN ' ' ELSE UPPER(MES) END) LIKE UPPER(CONCAT(CONCAT('%',:MES), '%')) AND (CASE WHEN TASADIARIA IS NULL THEN ' ' ELSE UPPER(TASADIARIA) END) LIKE UPPER(CONCAT(CONCAT('%',:TASADIARIA), '%')) AND (CASE WHEN TASAMENSUAL IS NULL THEN ' ' ELSE UPPER(TASAMENSUAL) END) LIKE UPPER(CONCAT(CONCAT('%',:TASAMENSUAL), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","MES":"$MES(type:integer)","TASADIARIA":"$TASADIARIA","TASAMENSUAL":"$TASAMENSUAL","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="TASADIARIA" sqlType="STRING"/>
+		<param name="TASAMENSUAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iptasasinteres">
+		<call-query href="getIptasasinteresPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="TASADIARIA" query-param="TASADIARIA"/>
+			<with-param name="TASAMENSUAL" query-param="TASAMENSUAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptasasinteresNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT IP_TASASINTERES.COMPANIA, IP_TASASINTERES.ANO, IP_TASASINTERES.MES, TRIM(TO_CHAR(IP_TASASINTERES.TASADIARIA,CONCAT( RPAD('9',18,'9') , '0D9999999')) ) TASADIARIA, TRIM(TO_CHAR(IP_TASASINTERES.TASAMENSUAL,CONCAT( RPAD('9',18,'9') , '0D9999999')) ) TASAMENSUAL, MES.NOMBRE FROM IP_TASASINTERES INNER JOIN MES ON IP_TASASINTERES.COMPANIA = MES.COMPANIA AND IP_TASASINTERES.ANO = MES.ANO AND IP_TASASINTERES.MES = MES.NUMERO WHERE IP_TASASINTERES.COMPANIA =:COMPANIA ORDER BY IP_TASASINTERES.ANO, IP_TASASINTERES.MES) INI WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(CONCAT('%',:ANO), '%')) AND (CASE WHEN MES IS NULL THEN ' ' ELSE UPPER(MES) END) LIKE UPPER(CONCAT(CONCAT('%',:MES), '%')) AND (CASE WHEN TASADIARIA IS NULL THEN ' ' ELSE UPPER(TASADIARIA) END) LIKE UPPER(CONCAT(CONCAT('%',:TASADIARIA), '%')) AND (CASE WHEN TASAMENSUAL IS NULL THEN ' ' ELSE UPPER(TASAMENSUAL) END) LIKE UPPER(CONCAT(CONCAT('%',:TASAMENSUAL), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="TASADIARIA" sqlType="STRING"/>
+		<param name="TASAMENSUAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iptasasinteres/numero">
+		<call-query href="getIptasasinteresNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="TASADIARIA" query-param="TASADIARIA"/>
+			<with-param name="TASAMENSUAL" query-param="TASAMENSUAL"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIptasasinteres" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_TASASINTERES SET ANO=:ANO, MES=:MES, TASADIARIA=:TASADIARIA, TASAMENSUAL=:TASAMENSUAL, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE IP_TASASINTERES.COMPANIA= :KEY_COMPANIA AND IP_TASASINTERES.ANO= :KEY_ANO AND IP_TASASINTERES.MES= :KEY_MES</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="TASADIARIA" sqlType="STRING"/>
+		<param name="TASAMENSUAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_MES" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="iptasasinteres">
+		<call-query href="updateIptasasinteres">
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="TASADIARIA" query-param="TASADIARIA"/>
+			<with-param name="TASAMENSUAL" query-param="TASAMENSUAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_MES" query-param="KEY_MES"/>
+
+		</call-query>
+	</resource>
+
+</data>

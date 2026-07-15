@@ -1,0 +1,138 @@
+﻿<data name="picodigosbpin" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getPicodigosbpinPagTodosPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  BPIN, NOMBRE  FROM PI_CODIGOS_BPIN WHERE COMPANIA =:COMPANIA) WHERE (CASE WHEN BPIN IS NULL THEN ' ' ELSE UPPER(BPIN) END)  LIKE UPPER(:BPIN || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"BPIN":"$BPIN","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BPIN" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="picodigosbpin/todosporcodigo/pag">
+		<call-query href="getPicodigosbpinPagTodosPorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BPIN" query-param="BPIN"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPicodigosbpinNumTodosPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  BPIN, NOMBRE  FROM PI_CODIGOS_BPIN WHERE COMPANIA =:COMPANIA) WHERE (CASE WHEN BPIN IS NULL THEN ' ' ELSE UPPER(BPIN) END)  LIKE UPPER(:BPIN || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BPIN" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="picodigosbpin/todosporcodigo/num">
+		<call-query href="getPicodigosbpinNumTodosPorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BPIN" query-param="BPIN"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertPicodigosbpin" keyColumns="COMPANIA,BPIN" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PI_CODIGOS_BPIN (COMPANIA, BPIN, NOMBRE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :BPIN, :NOMBRE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_BPIN":"$BPIN"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BPIN" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="picodigosbpin">
+		<call-query href="insertPicodigosbpin">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BPIN" query-param="BPIN"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deletePicodigosbpin" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM PI_CODIGOS_BPIN WHERE PI_CODIGOS_BPIN.BPIN= :KEY_BPIN</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_BPIN" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="picodigosbpin">
+		<call-query href="deletePicodigosbpin">
+			<with-param name="KEY_BPIN" query-param="KEY_BPIN"/>
+
+		</call-query>
+	</resource>
+	<query id="getPicodigosbpinPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA,BPIN, NOMBRE  FROM PI_CODIGOS_BPIN WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN BPIN IS NULL THEN ' ' ELSE UPPER(BPIN) END)  LIKE UPPER(:BPIN || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","BPIN":"$BPIN","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BPIN" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="picodigosbpin">
+		<call-query href="getPicodigosbpinPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BPIN" query-param="BPIN"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPicodigosbpinNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA,BPIN, NOMBRE  FROM PI_CODIGOS_BPIN WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN BPIN IS NULL THEN ' ' ELSE UPPER(BPIN) END)  LIKE UPPER(:BPIN || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BPIN" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="picodigosbpin/numero">
+		<call-query href="getPicodigosbpinNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BPIN" query-param="BPIN"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePicodigosbpin" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PI_CODIGOS_BPIN SET BPIN=:BPIN, NOMBRE=:NOMBRE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PI_CODIGOS_BPIN.COMPANIA= :KEY_COMPANIA AND PI_CODIGOS_BPIN.BPIN= :KEY_BPIN</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="BPIN" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_BPIN" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="picodigosbpin">
+		<call-query href="updatePicodigosbpin">
+			<with-param name="BPIN" query-param="BPIN"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_BPIN" query-param="KEY_BPIN"/>
+
+		</call-query>
+	</resource>
+
+</data>

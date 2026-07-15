@@ -1,0 +1,1180 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+                if("#{centroscostosControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TG_CENTROS_DE_COSTO_DE_LA_COMPANIIA}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{centroscostosControlador.cargarLista}" />
+		<section class="radius">
+			<h:form id="FR36">
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="lista" widgetVar="lista"
+					visible="#{centroscostosControlador.accion==null}">
+					<p:confirmDialog global="true" showEffect="fade" id="confFR36"
+						widgetVar="confFR36"
+						rendered="#{centroscostosControlador.permisos[1]}">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:dataTable id="TBFR36" widgetVar="TBFR36" var="reg"
+						value="#{centroscostosControlador.listaInicial}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" paginator="true" lazy="true">
+						<f:facet name="{Exporters}"
+							rendered="#{centroscostosControlador.permisos[4] }">
+							<h:commandLink
+								rendered="#{centroscostosControlador.permisos[4] }"
+								title="#{idm.TI_VER_EXCEL}">
+								<p:graphicImage name="/images/general/excel.png" width="24" />
+								<p:dataExporter type="xls" target="TBFR36" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+							<h:commandLink
+								rendered="#{centroscostosControlador.permisos[4] }"
+								title="#{idm.TI_VER_PDF}">
+								<p:graphicImage name="/images/general/pdf.png" width="24" />
+								<p:dataExporter type="pdf" target="TBFR36" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+						</f:facet>
+						<f:facet name="header">
+							<div style="position: relative; height: 50px">
+								<h:panelGroup class="acme"
+									rendered="#{centroscostosControlador.permisos[0] }">
+									<p:commandLink
+										action="#{centroscostosControlador.cargarRegistroNuevo}"
+										update=":FR36_nuevo:nuevoPanel"
+										rendered="#{centroscostosControlador.permisos[0]}"
+										onclick="try { PF('blockLista').show(); PF('TBCB75').nuevo=true;PF('TBCB2185').nuevo=true;} catch (e) { }"
+										oncomplete="try{ asignarEventoContGrande();
+validarCargaGrandes();
+  PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{PF('TS3').select(0);}"
+										title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+										id="btNuevo">
+										<center>
+											<p:graphicImage name="/images/menus/32/add.png" />
+											<div>#{idm.TI_NUEVO}</div>
+										</center>
+									</p:commandLink>
+								</h:panelGroup>
+								<div class="acme">
+									<h:outputLink value="#{request.contextPath}/menu.sysman"
+										title="#{idm.TI_VOLVER}" style="padding-top: 10px;">
+										<center>
+											<p:graphicImage name="/images/menus/32/close.png" />
+											<div>#{idm.TI_CERRAR}</div>
+										</center>
+									</h:outputLink>
+								</div>
+							</div>
+                            #{idm.TG_CENTROS_DE_COSTO_DE_LA_COMPANIIA}
+                        </f:facet>
+						<p:column headerText="#{idm.TG_ANIO3}"
+							filterBy="#{reg.campos['ANO']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="15%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['ANO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_CODIGO7}"
+							filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="25%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['CODIGO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_NOMBRE3}"
+							filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+							style="text-align:center; " width="60%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column width="150" headerText="Acciones"
+							style="text-align: center" exportable="false">
+							<p:commandButton icon="ui-icon-search"
+								title="#{idm.TI_VER_REGISTRO}"
+								action="#{centroscostosControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+								update=":FR36_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB75').nuevo=true;PF('TBCB2185').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{centroscostosControlador.permisos[3]}"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-document-b"
+								title="#{idm.TI_EDITAR_REGISTRO}"
+								action="#{centroscostosControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+								update=":FR36_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB75').nuevo=true;PF('TBCB2185').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{centroscostosControlador.permisos[2] }"
+								oncomplete="try{asignarEventoContGrande();
+validarCargaGrandes();
+ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{PF('TS3').select(0); } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-trash"
+								title="#{idm.TI_ELIMINAR_REGISTRO}"
+								onclick="PF('blockListaGuardar').show()"
+								action="#{centroscostosControlador.eliminarReg(reg)}"
+								update=":FR36:TBFR36,:FR36:alert"
+								rendered="#{centroscostosControlador.permisos[1] }"
+								oncomplete=" PF('blockListaGuardar').hide();">
+								<p:confirm header="#{sessionBean.tituloMensajes}"
+									message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR36">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+			<h:form id="FR36_nuevo" style="margin-top: -20px;">
+				<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA"
+					my="left bottom" at="left bottom" for="BTBUSQUEDA"
+					hideEffect="fade"
+					rendered="#{centroscostosControlador.accion!='i'}"
+					style="width: 500px">
+					<p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA" var="reg"
+						value="#{centroscostosControlador.listaInicialF}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" selectionMode="single"
+						rowKey="#{reg.llave}" paginator="true" lazy="true">
+						<p:ajax event="rowSelect"
+							listener="#{centroscostosControlador.seleccionarFilaBusqueda}"
+							onstart="PF('blockNuevo').show()"
+							oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();  PF('TS3').select(0);  "
+							update="@form" />
+						<p:column headerText="#{idm.TG_ANIO3}"
+							filterBy="#{reg.campos['ANO']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="15%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['ANO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_CODIGO7}"
+							filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="25%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['CODIGO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_NOMBRE3}"
+							filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+							style="text-align:center; " width="60%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+					</p:dataTable>
+				</p:overlayPanel>
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="nuevoPanel"
+					visible="#{centroscostosControlador.accion!=null}"
+					widgetVar="nuevoPanel">
+					<div
+						style="position: relative; height: 50px; padding-bottom: 80px;">
+						<div class="acme"
+							style="display:#{centroscostosControlador.accion=='v'?'none':'block'}">
+							<p:commandLink
+								action="#{centroscostosControlador.agregarRegistroNuevo(false)}"
+								rendered="#{centroscostosControlador.accion!='v'}"
+								update=":FR36_nuevo,#{!centroscostosControlador.permisos[2]?':FR36':'' }"
+								onclick="if (!validarVacios(['CB69','CB70','CP288','CP289'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+								title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+								oncomplete="asignarEventoContGrande(); validarCargaGrandes(); PF('TS3').select(0);">
+								<center>
+									<p:graphicImage name="/images/menus/32/save.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{centroscostosControlador.accion=='v' or !centroscostosControlador.permisos[0]?'none':'block'}">
+							<p:commandLink action="#{centroscostosControlador.guardarNuevo}"
+								rendered="#{centroscostosControlador.accion!='v' and centroscostosControlador.permisos[0]}"
+								update=":FR36_nuevo"
+								onclick="if (!validarVacios(['CB69','CB70','CP288','CP289'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{centroscostosControlador.accion!='i'  and centroscostosControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+								oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+								title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}"
+								style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/savenew.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{centroscostosControlador.accion=='i' or !centroscostosControlador.permisos[0]?'none':'block'}">
+							<p:commandLink id="BTBUSQUEDA"
+								rendered="#{centroscostosControlador.accion!='i' and centroscostosControlador.permisos[0]}"
+								title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/search.png" />
+									<div style="height: 30px">#{idm.TI_BUSCAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme">
+							<p:commandLink update=":FR36:TBFR36"
+								onclick="try {
+		           PF('TBFR36').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+								title="#{idm.TI_ATRAS}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/back.png" />
+									<div style="height: 30px">#{idm.TI_VOLVER}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<p:panel
+							rendered="#{centroscostosControlador.accion!='i'  and centroscostosControlador.rid==null }"
+							styleClass="acme"
+							style="min-width: 350px; width:30%; padding: 10px;">
+							<center style="margin: 2px;">
+								<p:commandButton icon="ui-icon-seek-first"
+									action="#{centroscostosControlador.irPrimero()}"
+									title="#{idm.TI_PRIMER_REGISTRO}" update=":FR36_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide();PF('TS3').select(0); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-prev"
+									action="#{centroscostosControlador.irAnterior()}"
+									title="#{idm.TI_REGISTRO_ANTERIOR}" update=":FR36_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide();PF('TS3').select(0); ">
+								</p:commandButton>
+								<p:outputLabel
+									value="#{idm.TI_REGISTRO} #{centroscostosControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{centroscostosControlador.listaInicial.rowCount} " />
+								<p:commandButton icon="ui-icon-seek-next"
+									title="#{idm.TI_REGISTRO_SIGUIENTE}"
+									action="#{centroscostosControlador.irSiguiente()}"
+									update=":FR36_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide();PF('TS3').select(0); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-end"
+									title="#{idm.TI_ULTIMO_REGISTRO}"
+									action="#{centroscostosControlador.irUltimo()}"
+									update=":FR36_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide();PF('TS3').select(0); ">
+								</p:commandButton>
+							</center>
+						</p:panel>
+						<p:panel styleClass="acme" style="width:21%; min-width:260px">
+							<h:panelGrid columns="3"
+								style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+								<h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}" />
+								<p:inputText id="CPCREADO" readonly="true" widgetVar="CPCREADO"
+									value="#{centroscostosControlador.registro.campos['CREATED_BY']}"
+									placeholder="#{idm.TI_CREADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPCREADOF" widgetVar="CPCREADOF"
+									value="#{centroscostosControlador.registro.campos['DATE_CREATED']}"
+									disabled="true" />
+								<h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+								<p:inputText id="CPMODIFICADO" readonly="true"
+									widgetVar="CPMODIFICADO"
+									value="#{centroscostosControlador.registro.campos['MODIFIED_BY']}"
+									placeholder="#{idm.TI_MODIFICADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPMODIFICADOF" widgetVar="CPMODIFICADOF"
+									value="#{centroscostosControlador.registro.campos['DATE_MODIFIED']}"
+									disabled="true" />
+							</h:panelGrid>
+						</p:panel>
+					</div>
+					<div id="PL84" class="
+" style="position: relative; height: 38px;">
+						<h:outputLabel id="LB203" value="#{idm.TG_CENTROS_DE_COSTO}"
+							style="position: absolute; width:593px; height: 24px; left: 5px;   top: 5px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<div id="PL85" class="
+"
+						style="position: relative; height: 546px;">
+						<p:tabView id="TS3" widgetVar="TS3"
+							style="top:5px; left:5px; width:624px; height:541px; display:block;"
+							tabindex="1">
+							<p:tab title="#{idm.TG_DATOS_GENERALES}" id="PG8">
+								<div style="position: relative;">
+									<h:outputLabel id="LB9023" value="#{idm.TT_LB9023}"
+										rendered="#{loginBean.modulo=='10' or loginBean.modulo==1 or loginBean.modulo==2 or loginBean.modulo=='3'}"
+										style="position: absolute; width:157px; height: 19px; left: 35px;   top: 182px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+									<p:selectOneMenu filter="true" editable="false"    rendered="#{loginBean.modulo=='1'}"   effect="fade" id="CB8939"   widgetVar="CB8939"  value="#{centroscostosControlador.registro.campos['EQUIVALENTE_SIG_VIG']}" disabled="#{centroscostosControlador.accion=='v'?true:false}"  tabindex="10"  
+ 													 style=	"position: absolute; width:200px; height: 20px; left: 195px;   top: 230px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px;">
+     									 <f:selectItem/>
+       									 <f:selectItems value="#{centroscostosControlador.listaequivalenteSigVig}" var="regc" itemLabel="#{regc.campos['CODIGO']}" itemValue="#{regc.campos['CODIGO']}" />
+       							    </p:selectOneMenu>
+       									<p:selectBooleanCheckbox id="CK793" widgetVar="CK793"
+										rendered="#{loginBean.modulo=='3'}"
+										value="#{centroscostosControlador.registro.campos['DISTRIBUIR']}"
+										disabled="#{centroscostosControlador.accion=='v'?true:false}"
+										tabindex="7"
+										style="position: absolute;  left: 335px;   top: 156px; display:true; ">
+									</p:selectBooleanCheckbox>
+									<p:selectBooleanCheckbox id="CK258" widgetVar="CK258"
+										rendered="#{loginBean.modulo=='10' or loginBean.modulo==1 or loginBean.modulo==2 or loginBean.modulo=='3'}"
+										value="#{centroscostosControlador.registro.campos['ACTIVOCENTRO']}"
+										disabled="#{centroscostosControlador.accion=='v'?true:false}"
+										tabindex="9"
+										style="position: absolute;  left: 196px;   top: 182px; display:block; ">
+									</p:selectBooleanCheckbox>
+									<h:outputLabel id="LB21599" value="#{idm.TT_LB21599}"
+										rendered="#{loginBean.modulo=='3'}"
+										style="position: absolute; width:100px; height: 20px; left: 229px;   top: 156px; text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB204" value="#{idm.TT_LB204}"
+										rendered="#{loginBean.modulo==1 or loginBean.modulo==2}"
+										style="position: absolute; width:154px; height: 20px; left: 37px;   top: 206px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB205" value="#{idm.TG_ANIO6}"
+										rendered="#{centroscostosControlador.accion=='i'}"
+										style="position: absolute; width:154px; height: 20px; left: 36px;   top: 29px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB58344" value="#{idm.TT_LB58344}" 
+										rendered="#{loginBean.modulo=='1'}"      
+										style="position: absolute; width:146px; height: 20px; left: 36px;   top:230px; text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#000000; border:#000000  none  1px;"   />
+									<h:outputLabel id="LB206" value="#{idm.TT_LB206}"
+										style="position: absolute; width:154px; height: 20px; left: 36px;   top: 54px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB207" value="#{idm.TG_NOMBRE5}"
+										style="position: absolute; width:154px; height: 20px; left: 36px;   top: 79px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB208" value="#{idm.TT_LB208}"
+										style="position: absolute; width:154px; height: 20px; left: 36px;   top: 105px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB209" value="#{idm.TT_LB209}"
+										rendered="#{centroscostosControlador.visibleCategoria}"
+										style="position: absolute; width:154px; height: 20px; left: 36px;   top: 130px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB210" value="#{idm.TT_LB210}"
+										style="position: absolute; width:154px; height: 20px; left: 36px;   top: 156px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<p:inputText id="CP288" widgetVar="CP288" styleClass="inputTab"
+										value="#{centroscostosControlador.registro.campos['CODIGO']}"
+										placeholder="#{idm.TG_CODIGO_DEL_CENTRO_DE_COSTO}"
+										readonly="#{centroscostosControlador.accion=='m' or  centroscostosControlador.accion=='v'?true:false}"
+										tabindex="2" maxlength="20"
+										style="position: absolute; width:180px; height: 20px; text-decoration:none; left: 195px;   top: 54px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+									</p:inputText>
+									<p:inputText id="CP289" widgetVar="CP289" styleClass="inputTab"
+										value="#{centroscostosControlador.registro.campos['NOMBRE']}"
+										placeholder="#{idm.TG_NOMBRE_DEL_CENTRO_DE_COSTO_DE_LA_COMPANIIA}"
+										readonly="#{centroscostosControlador.accion=='v'?true:false}"
+										tabindex="3" maxlength="60"
+										style="position: absolute; width:392px; height: 20px; text-decoration:none; left: 195px;   top: 79px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+									</p:inputText>
+									<p:selectOneMenu filter="true" editable="false"
+										rendered="#{centroscostosControlador.visibleCategoria}"
+										effect="fade" id="CB71" widgetVar="CB71"
+										value="#{centroscostosControlador.registro.campos['CATEGORIAGASTO']}"
+										disabled="#{centroscostosControlador.accion=='v'?true:false}"
+										tabindex="5"
+										style="position: absolute; width:200px; height: 20px; left: 195px;   top: 130px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+										<f:selectItem />
+										<f:selectItems
+											value="#{centroscostosControlador.listaCategoriaGasto}"
+											var="regc" itemLabel="#{regc.campos['NOMBRE']}"
+											itemValue="#{regc.campos['CODIGO']}" />
+									</p:selectOneMenu>
+									<p:selectOneMenu filter="true" editable="false" effect="fade"
+										id="CB70" widgetVar="CB70"
+										value="#{centroscostosControlador.registro.campos['TIPO']}"
+										disabled="#{centroscostosControlador.accion=='v'?true:false}"
+										tabindex="4"
+										style="position: absolute; width:200px; height: 20px; left: 195px;   top: 105px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+										<f:selectItem />
+										<f:selectItems value="#{centroscostosControlador.listaTipo}"
+											var="regc" itemLabel="#{regc.campos['NOMBRE']}"
+											itemValue="#{regc.campos['CODIGO']}" />
+									</p:selectOneMenu>
+									<p:selectOneMenu filter="true" editable="false"
+										rendered="#{centroscostosControlador.accion=='i'}"
+										effect="fade" id="CB69" widgetVar="CB69"
+										value="#{centroscostosControlador.registro.campos['ANO']}"
+										disabled="#{centroscostosControlador.accion=='m' or centroscostosControlador.accion=='v' or  centroscostosControlador.accion=='v'?true:false}"
+										tabindex="1"
+										style="position: absolute; width:101px; height: 20px; left: 195px;   top: 29px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+										<f:selectItem />
+										<f:selectItems value="#{centroscostosControlador.listaAno}"
+											var="regc" itemLabel="#{regc.campos['NUMERO']}"
+											itemValue="#{regc.campos['NUMERO']}" />
+									</p:selectOneMenu>
+									<p:selectBooleanCheckbox id="CK31" widgetVar="CK31"
+										value="#{centroscostosControlador.registro.campos['MOVIMIENTO']}"
+										disabled="#{centroscostosControlador.accion=='v'?true:false}"
+										tabindex="6"
+										style="position: absolute;  left: 195px;   top: 156px; display:block; ">
+									</p:selectBooleanCheckbox>
+									<p:selectBooleanCheckbox id="CK32" widgetVar="CK32"
+										rendered="#{loginBean.modulo==1 or loginBean.modulo==2}"
+										value="#{centroscostosControlador.registro.campos['APLICADISTRIBUCION']}"
+										disabled="#{centroscostosControlador.accion=='v'?true:false}"
+										tabindex="8"
+										style="position: absolute;  left: 196px;   top: 206px; display:block; ">
+									</p:selectBooleanCheckbox>
+								</div>
+							</p:tab>
+							<p:tab title="#{idm.TG_MOVIMIENTOS}" id="PG9"
+								rendered="#{centroscostosControlador.visibleCategoria}">
+								<div style="position: relative;">
+									<p:commandButton id="BT30" widgetVar="BT30"
+										onclick="if(!enviarConsultaCCto())
+                                                return false;"
+										disabled="#{centroscostosControlador.accion=='v'?true:false}"
+										tabindex="4" value="#{idm.TG_CONTABLES}"
+										actionListener="#{centroscostosControlador.oprimircmdContable}"
+										style="position: absolute; width:144px; height: 29px; left: 417px;   top: 67px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#000000  solid  1px ;">
+									</p:commandButton>
+									<p:commandButton id="BT31" widgetVar="BT31"
+										onclick="if(!enviarConsultaCCto())
+                                                return false;"
+										disabled="#{centroscostosControlador.accion=='v'?true:false}"
+										tabindex="5" value="#{idm.TG_PRESUPUESTALES}"
+										actionListener="#{centroscostosControlador.oprimircmdPptales}"
+										style="position: absolute; width:144px; height: 29px; left: 417px;   top: 100px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#000000  solid  1px ;">
+									</p:commandButton>
+									<p:commandButton id="BT32" widgetVar="BT32"
+										onclick="if(!enviarConsultaCCto())
+                                                return false;"
+										disabled="#{centroscostosControlador.accion=='v'?true:false}"
+										tabindex="6" value="#{idm.TG_ALMACEN}"
+										actionListener="#{centroscostosControlador.oprimircmdAlmacen}"
+										style="position: absolute; width:144px; height: 29px; left: 417px;   top: 134px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#000000  solid  1px ;">
+									</p:commandButton>
+									<p:selectOneMenu filter="true" editable="false" effect="fade"
+										id="CB72" widgetVar="CB72"
+										value="#{centroscostosControlador.mesInicialQr}" tabindex="1"
+										style="position: absolute; width:185px; height: 20px; left: 147px;   top: 67px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+										<f:selectItem />
+										<f:selectItem itemValue="1" itemLabel="#{idm.TG_ENERO}" />
+										<f:selectItem itemValue="2" itemLabel="#{idm.TG_FEBRERO}" />
+										<f:selectItem itemValue="3" itemLabel="#{idm.TG_MARZO}" />
+										<f:selectItem itemValue="4" itemLabel="#{idm.TG_ABRIL}" />
+										<f:selectItem itemValue="5" itemLabel="#{idm.TG_MAYO}" />
+										<f:selectItem itemValue="6" itemLabel="#{idm.TG_JUNIO}" />
+										<f:selectItem itemValue="7" itemLabel="#{idm.TG_JULIO}" />
+										<f:selectItem itemValue="8" itemLabel="#{idm.TG_AGOSTO}" />
+										<f:selectItem itemValue="9" itemLabel="#{idm.TG_SEPTIEMBRE}" />
+										<f:selectItem itemValue="10" itemLabel="#{idm.TG_OCTUBRE}" />
+										<f:selectItem itemValue="11" itemLabel="#{idm.TG_NOVIEMBRE}" />
+										<f:selectItem itemValue="12" itemLabel="#{idm.TG_DICIEMBRE}" />
+									</p:selectOneMenu>
+									<h:outputLabel id="LB213" value="#{idm.TG_ANIO4}"
+										style="position: absolute; width:95px; height: 20px; left: 46px;   top: 138px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<p:selectOneMenu filter="true" editable="false" effect="fade"
+										id="CB74" widgetVar="CB74"
+										value="#{centroscostosControlador.anoQr}" disabled="true"
+										tabindex="3"
+										style="position: absolute; width:120px; height: 20px; left: 147px;   top: 138px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+										<f:selectItem />
+										<f:selectItems value="#{centroscostosControlador.listaAnoQR}"
+											var="regc" itemLabel="#{regc.campos['NUMERO']}"
+											itemValue="#{regc.campos['NUMERO']}" />
+									</p:selectOneMenu>
+									<h:outputLabel id="LB211" value="#{idm.TG_MES_INICIAL3}"
+										style="position: absolute; width:95px; height: 20px; left: 46px;   top: 67px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<h:outputLabel id="LB212" value="#{idm.TG_MES_FINAL3}"
+										style="position: absolute; width:95px; height: 20px; left: 46px;   top: 102px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+									<p:selectOneMenu filter="true" editable="false" effect="fade"
+										id="CB73" widgetVar="CB73"
+										value="#{centroscostosControlador.mesFinalQr}" tabindex="2"
+										style="position: absolute; width:185px; height: 20px; left: 147px;   top: 102px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+										<f:selectItem />
+										<f:selectItem itemValue="1" itemLabel="#{idm.TG_ENERO}" />
+										<f:selectItem itemValue="2" itemLabel="#{idm.TG_FEBRERO}" />
+										<f:selectItem itemValue="3" itemLabel="#{idm.TG_MARZO}" />
+										<f:selectItem itemValue="4" itemLabel="#{idm.TG_ABRIL}" />
+										<f:selectItem itemValue="5" itemLabel="#{idm.TG_MAYO}" />
+										<f:selectItem itemValue="6" itemLabel="#{idm.TG_JUNIO}" />
+										<f:selectItem itemValue="7" itemLabel="#{idm.TG_JULIO}" />
+										<f:selectItem itemValue="8" itemLabel="#{idm.TG_AGOSTO}" />
+										<f:selectItem itemValue="9" itemLabel="#{idm.TG_SEPTIEMBRE}" />
+										<f:selectItem itemValue="10" itemLabel="#{idm.TG_OCTUBRE}" />
+										<f:selectItem itemValue="11" itemLabel="#{idm.TG_NOVIEMBRE}" />
+										<f:selectItem itemValue="12" itemLabel="#{idm.TG_DICIEMBRE}" />
+									</p:selectOneMenu>
+								</div>
+							</p:tab>
+							<p:tab title="#{idm.TG_DISTRIBUCION}" id="PG10"
+								rendered="#{loginBean.modulo==6}">
+								<div style="position: relative;">
+									<h:panelGroup id="SF7"
+										style="position: absolute; width:500px; height: 500px; left: 9px;   top: 0px; ">
+										<p:overlayPanel widgetVar="PLCB75" id="PLCB75"
+											onShow="if(PF('TBCB75').nuevo){ PF('TBCB75').filter(); PF('TBCB75').nuevo=false;}"
+											onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB75').jq.focus();}"
+											my="left" at="left" for="BTCB75" hideEffect="fade"
+											rendered="#{centroscostosControlador.accion!='v'}"
+											style="width: 600px">
+											<p:dataTable id="TBCB75" widgetVar="TBCB75" var="reg"
+												value="#{centroscostosControlador.listaCENTROCOSTO}"
+												editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+												currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+												rows="11" rowIndexVar="rowIndex" selectionMode="single"
+												rowKey="#{reg.campos['CODIGO']}" paginator="true"
+												lazy="true">
+												<p:ajax event="rowSelect"
+													listener="#{centroscostosControlador.seleccionarFilaCENTROCOSTO}"
+													update=":FR36_nuevo:TS3:CB75,:FR36_nuevo:TS3:BTCB75,"
+													oncomplete="PF('PLCB75').hide(); $('#speCB75').remove();  " />
+												<p:column headerText="#{idm.TG_CODIGO7}"
+													style="text-align:center; " width="90"
+													filterBy="#{reg.campos['CODIGO']}"
+													filterMatchMode="startsWith" filterStyle="width:100%;">
+													<h:outputText value="#{reg.campos['CODIGO']}"
+														style="float:left;  text-align:left;  min-height: 20px;" />
+												</p:column>
+												<p:column headerText="#{idm.TG_NOMBRE3}"
+													style="text-align:center; " width="337"
+													filterBy="#{reg.campos['NOMBRE']}"
+													filterMatchMode="contains" filterStyle="width:100%;">
+													<h:outputText value="#{reg.campos['NOMBRE']}"
+														style="float:left;  text-align:left;  min-height: 20px;" />
+												</p:column>
+												<p:column headerText="#{idm.NG_CB75_2}"
+													style="text-align:center; " width="96"
+													filterBy="#{reg.campos['MOVIMIENTO']}"
+													filterMatchMode="startsWith">
+													<f:facet name="filter">
+														<p:selectOneMenu onchange="PF('TBCB75').filter()">
+															<f:selectItem itemLabel="#{idm.TI_TODOS}" itemValue="" />
+															<f:selectItem itemLabel="#{idm.TI_SI}" itemValue="true" />
+															<f:selectItem itemLabel="#{idm.TI_NO}" itemValue="false" />
+														</p:selectOneMenu>
+													</f:facet>
+													<h:outputText
+														value="#{reg.campos['MOVIMIENTO']=='false'? idm.TI_NO: reg.campos['MOVIMIENTO']=='true'? idm.TI_SI:''}"
+														style="float:left;  text-align:left;  min-height: 20px;" />
+												</p:column>
+											</p:dataTable>
+										</p:overlayPanel>
+										<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}"
+											id="dlg7" widgetVar="dlg7" resizable="false" modal="true"
+											rendered="#{centroscostosControlador.permisos[0]}"
+											onHide="restaurarCampos(['CB75','CP291'])">
+											<h:panelGrid columns="2" cellpadding="2">
+												<h:outputLabel value="#{idm.TG_CENTRO_DE_COSTO3}:"
+													id="LCB75" class="cont-inst-element" />
+												<h:panelGroup>
+													<p:inputText id="CB75" widgetVar="CB75"
+														onfocus="if(!false){PF('BTCB75').jq.focus();}"
+														onclick="if(!false){PF('PLCB75').show();}"
+														value="#{centroscostosControlador.registroSubSubDistribucionCCto.campos['CENTRO_COSTO']}"
+														style="cursor:pointer; width: 80%;" tabindex="-1"
+														class="cont-inst-element" />
+													<p:commandButton id="BTCB75" widgetVar="BTCB75"
+														onclick="PF('PLCB75').show();"
+														onblur="PF('CB75').jq.blur();"
+														onfocus="PF('CB75').jq.addClass('ui-state-focus');"
+														type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+														style="width:25px; height:  23px; top:3px; border-left-width: 0; "
+														class="cont-inst-element" />
+												</h:panelGroup>
+												<h:outputLabel value="#{idm.TG_PORCENTAJE}:" id="LCP291"
+													class="cont-inst-element" />
+												<pe:inputNumber id="CP291" widgetVar="CP291"
+													styleClass="inputTab"
+													value="#{centroscostosControlador.registroSubSubDistribucionCCto.campos['PORCENTAJE']}"
+													label="LCP291" decimalPlaces="4" thousandSeparator=","
+													decimalSeparator="." maxValue="100" minValue="0"
+													converter="convertidorPorc"
+													style=" width: 95%; float: left;" symbol="%"
+													symbolPosition="s" class="cont-inst-element">
+												</pe:inputNumber>
+												<f:facet name="footer">
+													<center>
+														<p:commandButton value="#{idm.TI_GUARDAR}"
+															style="padding:10px;"
+															update=":FR36_nuevo:alert,tablePL86,dlg7,"
+															actionListener="#{centroscostosControlador.agregarRegistroSubSubdistribucionccto}"
+															oncomplete="PF('dlg7').hide();PF('blockNuevoGuardar').hide();"
+															onclick="    if (!validarVaciosModal(['CB75','CP291'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockNuevoGuardar').show();" />
+														<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+															href="#" onclick="PF('dlg7').hide();" />
+													</center>
+												</f:facet>
+											</h:panelGrid>
+										</p:dialog>
+										<div id="PL86" class="
+"
+											style="position: relative; height: 300px;">
+											<center style="height: 0px">
+												<p:inputText id="HCB75" widgetVar="HCB75"
+													value="#{centroscostosControlador.auxiliar}"
+													style="width: 0px; height: 0px; border: #ffffff; background: #FFFFFF; box-shadow: none"
+													disabled="true" />
+											</center>
+											<p:overlayPanel widgetVar="PLSCB75" id="PLSCB75"
+												onShow="if(PF('TBSCB75').nuevo){ PF('TBSCB75').clearFilters(); PF('TBSCB75').nuevo=false;}"
+												onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){aux= aux.replace(':BT',':'); aux=aux.replace(/:/g,'\\:'); $('#'+aux).focus();}"
+												for="HCB75" hideEffect="fade" style="width:600px; ">
+												<p:dataTable id="TBSCB75" widgetVar="TBSCB75" var="reg"
+													value="#{centroscostosControlador.listaCENTROCOSTOE}"
+													editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+													currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+													rows="11" rowIndexVar="rowIndex" selectionMode="single"
+													rowKey="#{reg.campos['CODIGO']}" paginator="true"
+													lazy="true">
+													<p:ajax event="rowSelect"
+														listener="#{centroscostosControlador.seleccionarFilaCENTROCOSTOE}"
+														update=":FR36_nuevo:TS3:HCB75"
+														oncomplete="aux=aux.replace(/\\/g,''); aux= aux.replace(':BT',':'); aux=aux.replace(/:/g,'\\:'); $('#'+aux)[0].value=PF('HCB75').jq[0].value;  PF('PLSCB75').hide();  $('#'+aux).change(); ind=false; " />
+													<p:column headerText="#{idm.TG_CODIGO7}"
+														style="text-align:center; " width="90"
+														filterBy="#{reg.campos['CODIGO']}"
+														filterMatchMode="startsWith" filterStyle="width:100%;">
+														<h:outputText value="#{reg.campos['CODIGO']}"
+															style="float:left;  text-align:left;  min-height: 20px;" />
+													</p:column>
+													<p:column headerText="#{idm.TG_NOMBRE3}"
+														style="text-align:center; " width="337"
+														filterBy="#{reg.campos['NOMBRE']}"
+														filterMatchMode="contains" filterStyle="width:100%;">
+														<h:outputText value="#{reg.campos['NOMBRE']}"
+															style="float:left;  text-align:left;  min-height: 20px;" />
+													</p:column>
+													<p:column headerText="#{idm.NG_CB75_2}"
+														style="text-align:center; " width="96"
+														filterBy="#{reg.campos['MOVIMIENTO']}"
+														filterMatchMode="startsWith">
+														<f:facet name="filter">
+															<p:selectOneMenu onchange="PF('TBSCB75').filter()">
+																<f:selectItem itemLabel="#{idm.TI_TODOS}" itemValue="" />
+																<f:selectItem itemLabel="#{idm.TI_SI}" itemValue="true" />
+																<f:selectItem itemLabel="#{idm.TI_NO}" itemValue="false" />
+															</p:selectOneMenu>
+														</f:facet>
+														<h:outputText
+															value="#{reg.campos['MOVIMIENTO']=='false'? idm.TI_NO: reg.campos['MOVIMIENTO']=='true'? idm.TI_SI:''}"
+															style="float:left;  text-align:left;  min-height: 20px;" />
+													</p:column>
+												</p:dataTable>
+											</p:overlayPanel>
+											<p:remoteCommand name="refreshTabPL86" update="tablePL86" />
+											<p:dataTable id="tablePL86" var="reg"
+												value="#{centroscostosControlador.listaSubdistribucionccto}"
+												emptyMessage="#{idm.TI_EMPTY_MESSAGE}" scrollable="true"
+												scrollHeight="300" scrollWidth="500" rowIndexVar="rowNun"
+												editable="true" widgetVar="tablePL86" tabindex="1">
+												<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+												<p:ajax event="rowEdit"
+													update=":FR36_nuevo:alert,tablePL86,"
+													onstart="PF('blockNuevoGuardar').show()"
+													oncomplete="refreshTabPL86(); PF('blockNuevoGuardar').hide();  mostarEditor();"
+													listener="#{centroscostosControlador.editarRegSubSubdistribucionccto}" />
+												<p:ajax event="rowEditCancel" update="tablePL86
+"
+													listener="#{centroscostosControlador.cancelarEdicionSubdistribucionccto}"
+													oncomplete=" mostarEditor();" />
+												<f:facet name="header">
+													<div style="position: relative; height: 50px">
+														<h:panelGroup class="acme" style="width: 50px;"
+															rendered="#{centroscostosControlador.accion=='m' 
+}">
+															<h:outputLink value="javascript:void(0)"
+																onclick=" PF('dlg7').show();"
+																title="#{idm.TI_NUEVO_REGISTRO}"
+																style="padding-top: 10px;" tabindex="1">
+																<center>
+																	<p:graphicImage name="/images/menus/32/adds.png" />
+																	<div style="font-size: 12px">#{idm.TI_NUEVO}</div>
+																</center>
+															</h:outputLink>
+														</h:panelGroup>
+													</div>    
+			#{idm.TG_CENTROS_DE_COSTO_DE_LA_COMPANIIA}
+                                            </f:facet>
+												<p:column headerText="#{idm.TG_ANIO3}" width="84px"
+													style="
+" styleClass="
+">
+													<p:cellEditor>
+														<f:facet name="output">
+															<h:outputText value="#{reg.campos['ANO']}"
+																style="text-align:  left; float:  left" />
+														</f:facet>
+														<f:facet name="input">
+															<pe:inputNumber id="CP290" value="#{reg.campos['ANO']}"
+																styleClass="inputTab" style="width:100%"
+																decimalPlaces="0" thousandSeparator=""
+																decimalSeparator="" maxValue="9999" minValue="-9999"
+																converter="convertidorDouble">
+															</pe:inputNumber>
+														</f:facet>
+													</p:cellEditor>
+												</p:column>
+												<p:column headerText="#{idm.TG_CENTRO_DE_COSTO3}"
+													width="263" style="
+">
+													<p:cellEditor>
+														<f:facet name="output">
+															<h:outputText value="#{reg.campos['NOMBRE_CCTO']}" />
+														</f:facet>
+														<f:facet name="input">
+															<h:panelGroup>
+																<p:inputText id="CB75" widgetVar="CB75"
+																	onfocus="if(!false){onfocusCBG('#{component.clientId}');}"
+																	onchange="return ind;"
+																	value="#{reg.campos['CENTRO_COSTO']}"
+																	onclick="if(!false){ PF('PLSCB75').show('#{component.clientId}');} aux= '#{component.clientId}'; ind = true;"
+																	style="cursor:pointer; width: 75%;" tabindex="-1">
+																</p:inputText>
+																<p:commandButton id="BTCB75" type="button"
+																	icon="ui-icon ui-icon-triangle-1-s ui-c"
+																	onclick="PF('PLSCB75').show('#{component.clientId}'); aux= '#{component.clientId}'; ind = true;"
+																	onblur="onblurBTCBG('#{component.clientId}');"
+																	onfocus="onfocusBTCBG('#{component.clientId}');"
+																	style="width:25px; height:  21px; top:5px; border-left-width: 0; " />
+															</h:panelGroup>
+														</f:facet>
+													</p:cellEditor>
+												</p:column>
+												<p:column headerText="#{idm.TG_PORCENTAJE}" width="122px"
+													style="
+" styleClass="
+">
+													<p:cellEditor>
+														<f:facet name="output">
+															<h:outputText value="#{reg.campos['PORCENTAJE']}"
+																converter="convertidorPortContinuo" />
+														</f:facet>
+														<f:facet name="input">
+															<pe:inputNumber id="CP291"
+																value="#{reg.campos['PORCENTAJE']}"
+																styleClass="inputTab" style="width:100%"
+																decimalPlaces="4" thousandSeparator=","
+																decimalSeparator="." maxValue="100" minValue="0"
+																converter="convertidorPorc" symbol="%"
+																symbolPosition="s">
+															</pe:inputNumber>
+														</f:facet>
+													</p:cellEditor>
+												</p:column>
+												<p:column width="30"
+													rendered="#{centroscostosControlador.accion=='m'}">
+													<p:rowEditor />
+												</p:column>
+												<p:column width="30"
+													rendered="#{centroscostosControlador.accion=='m'}">
+													<p:commandButton icon="ui-icon-trash"
+														title="#{idm.TI_ELIMINAR_REGISTRO}"
+														action="#{centroscostosControlador.eliminarRegSubSubdistribucionccto(reg)}"
+														oncomplete="PF('blockNuevoGuardar').hide(); refreshTabPL86();"
+														onclick="PF('blockNuevoGuardar').show();"
+														update=":FR36_nuevo:alert,tablePL86,"
+														style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;"
+														tabindex="1">
+														<p:confirm header="#{sessionBean.tituloMensajes}"
+															message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+													</p:commandButton>
+												</p:column>
+											</p:dataTable>
+										</div>
+									</h:panelGroup>
+								</div>
+							</p:tab>
+							<p:tab title="#{idm.TT_PG156}" id="PG156"
+								rendered="#{loginBean.modulo==1 or loginBean.modulo==2}">
+								<div style="position: relative;">
+									<h:panelGroup id="SF102"
+										style="position: absolute; width:575px; height: 500px; left: 2px;   top: 0px; ">
+										<p:overlayPanel widgetVar="PLCB2185" id="PLCB2185"
+											onShow="if(PF('TBCB2185').nuevo){ PF('TBCB2185').filter(); PF('TBCB2185').nuevo=false;}"
+											onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB2185').jq.focus();}"
+											my="left" at="left" for="BTCB2185" hideEffect="fade"
+											rendered="#{centroscostosControlador.accion!='v'}"
+											style="width: 600px">
+											<p:dataTable id="TBCB2185" widgetVar="TBCB2185" var="reg"
+												value="#{centroscostosControlador.listacbCentroCostoDis}"
+												editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+												currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+												rows="11" rowIndexVar="rowIndex" selectionMode="single"
+												rowKey="#{reg.campos['CODIGO']}" paginator="true"
+												lazy="true">
+												<p:ajax event="rowSelect"
+													listener="#{centroscostosControlador.seleccionarFilacbCentroCostoDis}"
+													update=":FR36_nuevo:TS3:CB2185,:FR36_nuevo:TS3:BTCB2185,"
+													oncomplete="PF('PLCB2185').hide(); $('#speCB2185').remove();  " />
+												<p:column headerText="#{idm.TG_CODIGO4}"
+													style="text-align:center; " width="90"
+													filterBy="#{reg.campos['CODIGO']}"
+													filterMatchMode="startsWith" filterStyle="width:100%;">
+													<h:outputText value="#{reg.campos['CODIGO']}"
+														style="float:left;  text-align:left;  min-height: 20px;" />
+												</p:column>
+												<p:column headerText="#{idm.NG_CB2185_1}"
+													style="text-align:center; " width="337"
+													filterBy="#{reg.campos['NOMBRE']}"
+													filterMatchMode="contains" filterStyle="width:100%;">
+													<h:outputText value="#{reg.campos['NOMBRE']}"
+														style="float:left;  text-align:left;  min-height: 20px;" />
+												</p:column>
+												<p:column headerText="#{idm.TG_MOVIMIENTO2}"
+													style="text-align:center; " width="96"
+													filterBy="#{reg.campos['MOVIMIENTO']}"
+													filterMatchMode="startsWith">
+													<f:facet name="filter">
+														<p:selectOneMenu onchange="PF('TBCB2185').filter()">
+															<f:selectItem itemLabel="#{idm.TI_TODOS}" itemValue="" />
+															<f:selectItem itemLabel="#{idm.TI_SI}" itemValue="true" />
+															<f:selectItem itemLabel="#{idm.TI_NO}" itemValue="false" />
+														</p:selectOneMenu>
+													</f:facet>
+													<h:outputText
+														value="#{reg.campos['MOVIMIENTO']=='false'? idm.TI_NO: reg.campos['MOVIMIENTO']=='true'? idm.TI_SI:''}"
+														style="float:left;  text-align:left;  min-height: 20px;" />
+												</p:column>
+											</p:dataTable>
+										</p:overlayPanel>
+										<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}"
+											id="dlg102" widgetVar="dlg102" resizable="false" modal="true"
+											rendered="#{centroscostosControlador.permisos[0]}"
+											onHide="restaurarCampos(['CB2176','CB2177','CB2185','CP18567'])">
+											<h:panelGrid columns="2" cellpadding="2">
+												<h:outputLabel value="#{idm.TG_MES3}:" id="LCB2177"
+													class="cont-inst-element" />
+												<p:selectOneMenu filter="true" effect="fade" id="CB2177"
+													editable="false" widgetVar="CB2177"
+													value="#{centroscostosControlador.registroSubDistribucionCentroCosto.campos['MES']}"
+													onchange="" style="
+" class="cont-inst-element">
+													<f:selectItem />
+													<f:selectItem itemValue="1" itemLabel="#{idm.TG_ENERO}" />
+													<f:selectItem itemValue="2" itemLabel="#{idm.TG_FEBRERO}" />
+													<f:selectItem itemValue="3" itemLabel="#{idm.TG_MARZO}" />
+													<f:selectItem itemValue="4" itemLabel="#{idm.TG_ABRIL}" />
+													<f:selectItem itemValue="5" itemLabel="#{idm.TG_MAYO}" />
+													<f:selectItem itemValue="6" itemLabel="#{idm.TG_JUNIO}" />
+													<f:selectItem itemValue="7" itemLabel="#{idm.TG_JULIO}" />
+													<f:selectItem itemValue="8" itemLabel="#{idm.TG_AGOSTO}" />
+													<f:selectItem itemValue="9"
+														itemLabel="#{idm.TG_SEPTIEMBRE}" />
+													<f:selectItem itemValue="10" itemLabel="#{idm.TG_OCTUBRE}" />
+													<f:selectItem itemValue="11"
+														itemLabel="#{idm.TG_NOVIEMBRE}" />
+													<f:selectItem itemValue="12"
+														itemLabel="#{idm.TG_DICIEMBRE}" />
+												</p:selectOneMenu>
+												<h:outputLabel value="#{idm.TG_CENTRO_DE_COSTO5}:"
+													id="LCB2185" class="cont-inst-element" />
+												<h:panelGroup>
+													<p:inputText id="CB2185" widgetVar="CB2185"
+														onfocus="if(!false){PF('BTCB2185').jq.focus();}"
+														onclick="if(!false){PF('PLCB2185').show();}"
+														value="#{centroscostosControlador.registroSubDistribucionCentroCosto.campos['CODIGO']}"
+														style="cursor:pointer; width: 80%;" tabindex="-1"
+														class="cont-inst-element" />
+													<p:commandButton id="BTCB2185" widgetVar="BTCB2185"
+														onclick="PF('PLCB2185').show();"
+														onblur="PF('CB2185').jq.blur();"
+														onfocus="PF('CB2185').jq.addClass('ui-state-focus');"
+														type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+														style="width:25px; height:  23px; top:3px; border-left-width: 0; "
+														class="cont-inst-element" />
+												</h:panelGroup>
+												<h:outputLabel value="#{idm.TG_PORCENTAJE}:" id="LCP18567"
+													class="cont-inst-element" />
+												<pe:inputNumber id="CP18567" widgetVar="CP18567"
+													styleClass="inputTab"
+													value="#{centroscostosControlador.registroSubDistribucionCentroCosto.campos['PORCENTAJE']}"
+													label="LCP18567" decimalPlaces="4" thousandSeparator=","
+													decimalSeparator="." maxValue="100" minValue="0"
+													converter="convertidorPorc"
+													style=" width: 95%; float: left;" symbol="%"
+													symbolPosition="s" class="cont-inst-element">
+												</pe:inputNumber>
+												<f:facet name="footer">
+													<center>
+														<p:commandButton value="#{idm.TI_GUARDAR}"
+															style="padding:10px;"
+															update=":FR36_nuevo:alert,tablePL1318,dlg102,"
+															actionListener="#{centroscostosControlador.agregarRegistroSubDistribucioncentrocosto}"
+															oncomplete="PF('dlg102').hide();PF('blockNuevoGuardar').hide();"
+															onclick="    if (!validarVaciosModal(['CB2176','CB2177','CB2185','CP18567'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockNuevoGuardar').show();" />
+														<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+															href="#" onclick="PF('dlg102').hide();" />
+													</center>
+												</f:facet>
+											</h:panelGrid>
+										</p:dialog>
+										<div id="PL1318" class="
+"
+											style="position: relative; height: 450px;">
+											<center style="height: 0px">
+												<p:inputText id="HCB2185" widgetVar="HCB2185"
+													value="#{centroscostosControlador.auxiliar}"
+													style="width: 0px; height: 0px; border: #ffffff; background: #FFFFFF; box-shadow: none"
+													disabled="true" />
+											</center>
+											<p:overlayPanel widgetVar="PLSCB2185" id="PLSCB2185"
+												onShow="if(PF('TBSCB2185').nuevo){ PF('TBSCB2185').clearFilters(); PF('TBSCB2185').nuevo=false;}"
+												onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){aux= aux.replace(':BT',':'); aux=aux.replace(/:/g,'\\:'); $('#'+aux).focus();}"
+												for="HCB2185" hideEffect="fade" style="width:600px; ">
+												<p:dataTable id="TBSCB2185" widgetVar="TBSCB2185" var="reg"
+													value="#{centroscostosControlador.listacbCentroCostoDisE}"
+													editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+													currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+													rows="11" rowIndexVar="rowIndex" selectionMode="single"
+													rowKey="#{reg.campos['CODIGO']}" paginator="true"
+													lazy="true">
+													<p:ajax event="rowSelect"
+														listener="#{centroscostosControlador.seleccionarFilacbCentroCostoDisE}"
+														update=":FR36_nuevo:TS3:HCB2185"
+														oncomplete="aux=aux.replace(/\\/g,''); aux= aux.replace(':BT',':'); aux=aux.replace(/:/g,'\\:'); $('#'+aux)[0].value=PF('HCB2185').jq[0].value;  PF('PLSCB2185').hide();  $('#'+aux).change(); ind=false; " />
+													<p:column headerText="#{idm.TG_CODIGO4}"
+														style="text-align:center; " width="90"
+														filterBy="#{reg.campos['CODIGO']}"
+														filterMatchMode="startsWith" filterStyle="width:100%;">
+														<h:outputText value="#{reg.campos['CODIGO']}"
+															style="float:left;  text-align:left;  min-height: 20px;" />
+													</p:column>
+													<p:column headerText="#{idm.NG_CB2185_1}"
+														style="text-align:center; " width="337"
+														filterBy="#{reg.campos['NOMBRE']}"
+														filterMatchMode="contains" filterStyle="width:100%;">
+														<h:outputText value="#{reg.campos['NOMBRE']}"
+															style="float:left;  text-align:left;  min-height: 20px;" />
+													</p:column>
+													<p:column headerText="#{idm.TG_MOVIMIENTO2}"
+														style="text-align:center; " width="96"
+														filterBy="#{reg.campos['MOVIMIENTO']}"
+														filterMatchMode="startsWith">
+														<f:facet name="filter">
+															<p:selectOneMenu onchange="PF('TBSCB2185').filter()">
+																<f:selectItem itemLabel="#{idm.TI_TODOS}" itemValue="" />
+																<f:selectItem itemLabel="#{idm.TI_SI}" itemValue="true" />
+																<f:selectItem itemLabel="#{idm.TI_NO}" itemValue="false" />
+															</p:selectOneMenu>
+														</f:facet>
+														<h:outputText
+															value="#{reg.campos['MOVIMIENTO']=='false'? idm.TI_NO: reg.campos['MOVIMIENTO']=='true'? idm.TI_SI:''}"
+															style="float:left;  text-align:left;  min-height: 20px;" />
+													</p:column>
+												</p:dataTable>
+											</p:overlayPanel>
+											<p:remoteCommand name="refreshTabPL1318" update="tablePL1318" />
+											<p:dataTable id="tablePL1318" var="reg"
+												value="#{centroscostosControlador.listaDistribucioncentrocosto}"
+												emptyMessage="#{idm.TI_EMPTY_MESSAGE}" scrollable="true"
+												scrollHeight="450" scrollWidth="575" rowIndexVar="rowNun"
+												editable="true" widgetVar="tablePL1318" tabindex="1">
+												<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+												<p:ajax event="rowEdit"
+													update=":FR36_nuevo:alert,tablePL1318,"
+													onstart="PF('blockNuevoGuardar').show()"
+													oncomplete="refreshTabPL1318(); PF('blockNuevoGuardar').hide();  mostarEditor();"
+													listener="#{centroscostosControlador.editarRegSubDistribucioncentrocosto}" />
+												<p:ajax event="rowEditCancel" update="tablePL1318
+"
+													listener="#{centroscostosControlador.cancelarEdicionDistribucioncentrocosto}"
+													oncomplete=" mostarEditor();" />
+												<f:facet name="header">
+													<div style="position: relative; height: 50px">
+														<h:panelGroup class="acme" style="width: 50px;"
+															rendered="#{centroscostosControlador.accion=='m' 
+}">
+															<h:outputLink value="javascript:void(0)"
+																onclick=" PF('dlg102').show();"
+																title="#{idm.TI_NUEVO_REGISTRO}"
+																style="padding-top: 10px;" tabindex="1">
+																<center>
+																	<p:graphicImage name="/images/menus/32/adds.png" />
+																	<div style="font-size: 12px">#{idm.TI_NUEVO}</div>
+																</center>
+															</h:outputLink>
+														</h:panelGroup>
+													</div>    
+			#{idm.TT_SF102}
+                                            </f:facet>
+												<p:column headerText="#{idm.TG_ANIO3}" width="64" style="
+">
+													<p:cellEditor>
+														<f:facet name="output">
+															<h:outputText value="#{reg.campos['ANO']}" />
+														</f:facet>
+														<f:facet name="input">
+															<h:selectOneMenu id="CB2176" value="#{reg.campos['ANO']}"
+																style="width:100%" onchange="">
+																<p:ajax
+																	listener="#{centroscostosControlador.cambiarANOSUBC(rowNun)}"
+																	update=":FR36_nuevo:TS3:tablePL1318:CB2185,:FR36_nuevo:TS3:tablePL1318:BTCB2185,:FR36_nuevo:TS3:TBSCB2185" />
+																<f:selectItem />
+																<f:selectItems
+																	value="#{centroscostosControlador.listaANOSUB}"
+																	var="regc" itemLabel="#{regc.campos['NUMERO']}"
+																	itemValue="#{regc.campos['NUMERO']}" />
+															</h:selectOneMenu>
+														</f:facet>
+													</p:cellEditor>
+												</p:column>
+												<p:column headerText="#{idm.TG_MES3}" width="65" style="
+">
+													<p:cellEditor>
+														<f:facet name="output">
+															<h:outputText value="#{reg.campos['MES']}" />
+														</f:facet>
+														<f:facet name="input">
+															<h:selectOneMenu id="CB2177" value="#{reg.campos['MES']}"
+																style="width:100%" onchange="">
+																<f:selectItem />
+																<f:selectItem itemValue="1" itemLabel="#{idm.TG_ENERO}" />
+																<f:selectItem itemValue="2"
+																	itemLabel="#{idm.TG_FEBRERO}" />
+																<f:selectItem itemValue="3" itemLabel="#{idm.TG_MARZO}" />
+																<f:selectItem itemValue="4" itemLabel="#{idm.TG_ABRIL}" />
+																<f:selectItem itemValue="5" itemLabel="#{idm.TG_MAYO}" />
+																<f:selectItem itemValue="6" itemLabel="#{idm.TG_JUNIO}" />
+																<f:selectItem itemValue="7" itemLabel="#{idm.TG_JULIO}" />
+																<f:selectItem itemValue="8" itemLabel="#{idm.TG_AGOSTO}" />
+																<f:selectItem itemValue="9"
+																	itemLabel="#{idm.TG_SEPTIEMBRE}" />
+																<f:selectItem itemValue="10"
+																	itemLabel="#{idm.TG_OCTUBRE}" />
+																<f:selectItem itemValue="11"
+																	itemLabel="#{idm.TG_NOVIEMBRE}" />
+																<f:selectItem itemValue="12"
+																	itemLabel="#{idm.TG_DICIEMBRE}" />
+															</h:selectOneMenu>
+														</f:facet>
+													</p:cellEditor>
+												</p:column>
+												<p:column headerText="#{idm.TG_CENTRO_DE_COSTO5}"
+													width="266" style="
+">
+													<p:cellEditor>
+														<f:facet name="output">
+															<h:outputText value="#{reg.campos['NOMBRE_CCTOSUB']}" />
+														</f:facet>
+														<f:facet name="input">
+															<h:panelGroup>
+																<p:inputText id="CB2185" widgetVar="CB2185"
+																	onfocus="if(!false){onfocusCBG('#{component.clientId}');}"
+																	onchange="return ind;" value="#{reg.campos['CODIGO']}"
+																	onclick="if(!false){ PF('PLSCB2185').show('#{component.clientId}');} aux= '#{component.clientId}'; ind = true;"
+																	style="cursor:pointer; width: 75%;" tabindex="-1">
+																</p:inputText>
+																<p:commandButton id="BTCB2185" type="button"
+																	icon="ui-icon ui-icon-triangle-1-s ui-c"
+																	onclick="PF('PLSCB2185').show('#{component.clientId}'); aux= '#{component.clientId}'; ind = true;"
+																	onblur="onblurBTCBG('#{component.clientId}');"
+																	onfocus="onfocusBTCBG('#{component.clientId}');"
+																	style="width:25px; height:  21px; top:5px; border-left-width: 0; " />
+															</h:panelGroup>
+														</f:facet>
+													</p:cellEditor>
+												</p:column>
+												<p:column headerText="#{idm.TG_PORCENTAJE}" width="65px"
+													style="
+" styleClass="
+">
+													<p:cellEditor>
+														<f:facet name="output">
+															<h:outputText value="#{reg.campos['PORCENTAJE']}"
+																converter="convertidorPortContinuo" />
+														</f:facet>
+														<f:facet name="input">
+															<pe:inputNumber id="CP18567"
+																value="#{reg.campos['PORCENTAJE']}"
+																styleClass="inputTab" style="width:100%"
+																decimalPlaces="4" thousandSeparator=","
+																decimalSeparator="." maxValue="100" minValue="0"
+																converter="convertidorPorc" symbol="%"
+																symbolPosition="s">
+															</pe:inputNumber>
+														</f:facet>
+													</p:cellEditor>
+												</p:column>
+												<p:column width="30"
+													rendered="#{centroscostosControlador.accion=='m'}">
+													<p:rowEditor />
+												</p:column>
+												<p:column width="30"
+													rendered="#{centroscostosControlador.accion=='m'}">
+													<p:commandButton icon="ui-icon-trash"
+														title="#{idm.TI_ELIMINAR_REGISTRO}"
+														action="#{centroscostosControlador.eliminarRegSubDistribucioncentrocosto(reg)}"
+														oncomplete="PF('blockNuevoGuardar').hide(); refreshTabPL1318();"
+														onclick="PF('blockNuevoGuardar').show();"
+														update=":FR36_nuevo:alert,tablePL1318,"
+														style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;"
+														tabindex="1">
+														<p:confirm header="#{sessionBean.tituloMensajes}"
+															message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+													</p:commandButton>
+												</p:column>
+											</p:dataTable>
+										</div>
+									</h:panelGroup>
+								</div>
+							</p:tab>
+						</p:tabView>
+					</div>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,5 @@
+SELECT ID_DE_FESTIVO,  
+       TO_CHAR(ID_DE_FESTIVO,'YYYY') ANO 
+FROM FESTIVOS 
+WHERE FESTIVOS.COMPANIA               = s$compania$s 
+  AND TO_CHAR(ID_DE_FESTIVO,'YYYY')   = s$anioNomina$s

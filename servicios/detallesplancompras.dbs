@@ -1,0 +1,518 @@
+﻿<data name="detallesplancompras" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getDetallesplancomprasPorDependenciaAnoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO, DEPENDENCIA, ANO, SUM(CANTIDAD+ENTRADAS-SALIDAS-COMPRADO) DISPONIBLE  FROM DETALLE_PLAN_COMPRAS WHERE COMPANIA= :COMPANIA AND CODIGO = :CODIGO AND DEPENDENCIA= :DEPENDENCIA AND ANO= :ANO GROUP BY COMPANIA, CODIGO, DEPENDENCIA, ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DEPENDENCIA":"$DEPENDENCIA","ANO":"$ANO(type:integer)","DISPONIBLE":"$DISPONIBLE(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="detallesplancompras/pordependenciaano">
+		<call-query href="getDetallesplancomprasPorDependenciaAnoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDetallesplancomprasPorDependenciaFechaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CODIGO, DEPENDENCIA, ANO, ( CANTIDAD + ENTRADAS - SALIDAS - COMPRADO ) DISPONIBLE FROM DETALLE_PLAN_COMPRAS WHERE COMPANIA =:COMPANIA AND CODIGO =:CODIGO AND DEPENDENCIA =:DEPENDENCIA AND CONCAT( PCK_SYSMAN_UTL.FC_STRZERO(ANO,4), PCK_SYSMAN_UTL.FC_STRZERO(MES,2)) =:FECHA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DEPENDENCIA":"$DEPENDENCIA","ANO":"$ANO(type:integer)","DISPONIBLE":"$DISPONIBLE(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="detallesplancompras/pordependenciafecha">
+		<call-query href="getDetallesplancomprasPorDependenciaFechaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDetallesplancomprasPagInventariosporanioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DETALLE.COMPANIA , DETALLE.ANO , DETALLE.RUBRO , DETALLE.CODIGO , DETALLE.DEPENDENCIA , DETALLE.MES , INVENTARIO.CODIGOCUBS , INVENTARIO.NOMBRECORTO , DETALLE.TIPO_CONTRATACION, TIPOADJUDICACION.DESCRIPCION NOMTIPOCONTRATACION  FROM DETALLE_PLAN_COMPRAS DETALLE INNER JOIN INVENTARIO ON DETALLE.COMPANIA = INVENTARIO.COMPANIA AND DETALLE.CODIGO = INVENTARIO.CODIGOELEMENTO LEFT JOIN TIPOADJUDICACION ON DETALLE.COMPANIA = TIPOADJUDICACION.COMPANIA AND DETALLE.TIPO_CONTRATACION = TIPOADJUDICACION.CODIGO WHERE DETALLE.COMPANIA = :COMPANIA AND DETALLE.ANO = :ANO ORDER BY DETALLE.MES) WHERE (CASE WHEN MES IS NULL THEN ' ' ELSE UPPER(MES) END)  LIKE UPPER(:MES || '%')  AND (CASE WHEN CODIGOCUBS IS NULL THEN ' ' ELSE UPPER(CODIGOCUBS) END)  LIKE UPPER(:CODIGOCUBS || '%')  AND (CASE WHEN NOMBRECORTO IS NULL THEN ' ' ELSE UPPER(NOMBRECORTO) END)  LIKE UPPER( '%' || :NOMBRECORTO || '%')  AND (CASE WHEN NOMTIPOCONTRATACION IS NULL THEN ' ' ELSE UPPER(NOMTIPOCONTRATACION) END)  LIKE UPPER( '%' || :NOMTIPOCONTRATACION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","RUBRO":"$RUBRO","CODIGO":"$CODIGO","DEPENDENCIA":"$DEPENDENCIA","MES":"$MES(type:integer)","CODIGOCUBS":"$CODIGOCUBS","NOMBRECORTO":"$NOMBRECORTO","TIPO_CONTRATACION":"$TIPO_CONTRATACION","NOMTIPOCONTRATACION":"$NOMTIPOCONTRATACION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="CODIGOCUBS" sqlType="STRING"/>
+		<param name="NOMBRECORTO" sqlType="STRING"/>
+		<param name="NOMTIPOCONTRATACION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="detallesplancompras/inventariosporanio/pag">
+		<call-query href="getDetallesplancomprasPagInventariosporanioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="CODIGOCUBS" query-param="CODIGOCUBS"/>
+			<with-param name="NOMBRECORTO" query-param="NOMBRECORTO"/>
+			<with-param name="NOMTIPOCONTRATACION" query-param="NOMTIPOCONTRATACION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDetallesplancomprasNumInventariosporanioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DETALLE.COMPANIA , DETALLE.ANO , DETALLE.RUBRO , DETALLE.CODIGO , DETALLE.DEPENDENCIA , DETALLE.MES , INVENTARIO.CODIGOCUBS , INVENTARIO.NOMBRECORTO , DETALLE.TIPO_CONTRATACION, TIPOADJUDICACION.DESCRIPCION NOMTIPOCONTRATACION  FROM DETALLE_PLAN_COMPRAS DETALLE INNER JOIN INVENTARIO ON DETALLE.COMPANIA = INVENTARIO.COMPANIA AND DETALLE.CODIGO = INVENTARIO.CODIGOELEMENTO LEFT JOIN TIPOADJUDICACION ON DETALLE.COMPANIA = TIPOADJUDICACION.COMPANIA AND DETALLE.TIPO_CONTRATACION = TIPOADJUDICACION.CODIGO WHERE DETALLE.COMPANIA = :COMPANIA AND DETALLE.ANO = :ANO ORDER BY DETALLE.MES) WHERE (CASE WHEN MES IS NULL THEN ' ' ELSE UPPER(MES) END)  LIKE UPPER(:MES || '%')  AND (CASE WHEN CODIGOCUBS IS NULL THEN ' ' ELSE UPPER(CODIGOCUBS) END)  LIKE UPPER(:CODIGOCUBS || '%')  AND (CASE WHEN NOMBRECORTO IS NULL THEN ' ' ELSE UPPER(NOMBRECORTO) END)  LIKE UPPER( '%' || :NOMBRECORTO || '%')  AND (CASE WHEN NOMTIPOCONTRATACION IS NULL THEN ' ' ELSE UPPER(NOMTIPOCONTRATACION) END)  LIKE UPPER( '%' || :NOMTIPOCONTRATACION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="CODIGOCUBS" sqlType="STRING"/>
+		<param name="NOMBRECORTO" sqlType="STRING"/>
+		<param name="NOMTIPOCONTRATACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="detallesplancompras/inventariosporanio/num">
+		<call-query href="getDetallesplancomprasNumInventariosporanioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="CODIGOCUBS" query-param="CODIGOCUBS"/>
+			<with-param name="NOMBRECORTO" query-param="NOMBRECORTO"/>
+			<with-param name="NOMTIPOCONTRATACION" query-param="NOMTIPOCONTRATACION"/>
+
+		</call-query>
+	</resource>
+	<query id="getDetallesplancomprasMesesPorRubroYDependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DETALLE_PLAN_COMPRAS.MES, (PCK_SYSMAN_UTL.FC_NOMBRE_MES(MES)) NOMBREMES  FROM DETALLE_PLAN_COMPRAS WHERE DETALLE_PLAN_COMPRAS.COMPANIA = :COMPANIA AND DETALLE_PLAN_COMPRAS.RUBRO = :RUBRO AND DETALLE_PLAN_COMPRAS.CODIGO = :CODIGO AND DETALLE_PLAN_COMPRAS.DEPENDENCIA= :DEPENDENCIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"MES":"$MES(type:integer)","NOMBREMES":"$NOMBREMES"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="detallesplancompras/mesesporrubroydependencia">
+		<call-query href="getDetallesplancomprasMesesPorRubroYDependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDetallesplancomprasSumvaloracomprarporanoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SUM(DETALLE.VALORACOMPRAR) TOTAL  FROM DETALLE_PLAN_COMPRAS DETALLE INNER JOIN INVENTARIO ON DETALLE.COMPANIA = INVENTARIO.COMPANIA AND DETALLE.CODIGO = INVENTARIO.CODIGOELEMENTO WHERE DETALLE.COMPANIA= :COMPANIA AND DETALLE.ANO = :ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="detallesplancompras/sumvaloracomprarporano">
+		<call-query href="getDetallesplancomprasSumvaloracomprarporanoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDetallesplancomprasCantidadyvaloracomprarpordetalleQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DETALLE.COMPANIA , DETALLE.ANO , DETALLE.RUBRO , DETALLE.CODIGO , DETALLE.DEPENDENCIA , DETALLE.MES , INVENTARIO.CODIGOCUBS , INVENTARIO.NOMBRECORTO DESCRIPCION , DETALLE.TIPO_CONTRATACION , TO_NUMBER(SUM(DETALLE.CANTIDAD)) CANTIDAD , TO_NUMBER(SUM(DETALLE.VALORACOMPRAR)) VALORACOMPRAR  FROM DETALLE_PLAN_COMPRAS DETALLE INNER JOIN INVENTARIO ON DETALLE.COMPANIA = INVENTARIO.COMPANIA AND DETALLE.CODIGO = INVENTARIO.CODIGOELEMENTO WHERE DETALLE.COMPANIA = :COMPANIA AND DETALLE.ANO = :ANO GROUP BY DETALLE.COMPANIA , DETALLE.ANO , DETALLE.RUBRO , DETALLE.CODIGO , DETALLE.DEPENDENCIA , DETALLE.MES , INVENTARIO.CODIGOCUBS , INVENTARIO.NOMBRECORTO , DETALLE.TIPO_CONTRATACION ORDER BY DETALLE.MES</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","RUBRO":"$RUBRO","CODIGO":"$CODIGO","DEPENDENCIA":"$DEPENDENCIA","MES":"$MES(type:integer)","CODIGOCUBS":"$CODIGOCUBS","DESCRIPCION":"$DESCRIPCION","TIPO_CONTRATACION":"$TIPO_CONTRATACION","CANTIDAD":"$CANTIDAD","VALORACOMPRAR":"$VALORACOMPRAR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="detallesplancompras/cantidadyvaloracomprarpordetalle">
+		<call-query href="getDetallesplancomprasCantidadyvaloracomprarpordetalleQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDetallesplancomprasVlrProgramadoPorDependenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT NVL(SUM(VALORACOMPRAR),0) SUMA FROM DETALLE_PLAN_COMPRAS WHERE COMPANIA = :COMPANIA AND DEPENDENCIA = :DEPENDENCIA AND RUBRO = :RUBRO AND FUENTE_DE_RECURSOS = :FUENTE_RECURSO AND REFERENCIA = :REFERENCIA AND CENTRO_COSTO = :CENTRO_COSTO AND AUXILIAR = :AUXILIAR</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SUMA":"$SUMA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="FUENTE_RECURSO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="detallesplancompras/vlrprogramadopordependencia">
+		<call-query href="getDetallesplancomprasVlrProgramadoPorDependenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDetallesplancomprasTipocontratacion" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE DETALLE_PLAN_COMPRAS SET TIPO_CONTRATACION=:TIPO_CONTRATACION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE DETALLE_PLAN_COMPRAS.COMPANIA= :KEY_COMPANIA AND DETALLE_PLAN_COMPRAS.ANO= :KEY_ANO AND DETALLE_PLAN_COMPRAS.RUBRO= :KEY_RUBRO AND DETALLE_PLAN_COMPRAS.CODIGO= :KEY_CODIGO AND DETALLE_PLAN_COMPRAS.DEPENDENCIA= :KEY_DEPENDENCIA AND DETALLE_PLAN_COMPRAS.MES= :KEY_MES</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="TIPO_CONTRATACION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_RUBRO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_DEPENDENCIA" sqlType="STRING"/>
+		<param name="KEY_MES" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="detallesplancompras/tipocontratacion">
+		<call-query href="updateDetallesplancomprasTipocontratacion">
+			<with-param name="TIPO_CONTRATACION" query-param="TIPO_CONTRATACION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_RUBRO" query-param="KEY_RUBRO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_DEPENDENCIA" query-param="KEY_DEPENDENCIA"/>
+			<with-param name="KEY_MES" query-param="KEY_MES"/>
+
+		</call-query>
+	</resource>
+	<query id="insertDetallesplancompras" keyColumns="COMPANIA,ANO,RUBRO,CODIGO,DEPENDENCIA,MES,CONSECUTIVO,FUENTE_DE_RECURSOS,REFERENCIA,CENTRO_COSTO,AUXILIAR" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO DETALLE_PLAN_COMPRAS (COMPANIA, ANO, RUBRO, CODIGO, CONSECUTIVO, DEPENDENCIA, MES, CANTIDAD, VALOR_UNITARIO, VALORACOMPRAR, COMPRADO, VALORTOTALCOMPRADO, ENTRADAS, SALIDAS, ESPECIFICACION, SALDO_CANTIDAD, SALDO_TOTALACOMPRAR, TIPO_CONTRATACION, DURACION_ESTIMADA_DEL_CONTRATO, RESPONSABLE, SUCURSAL, FUENTE_DE_RECURSOS, REFERENCIA, CENTRO_COSTO, AUXILIAR, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :RUBRO, :CODIGO, :CONSECUTIVO, :DEPENDENCIA, :MES, :CANTIDAD, :VALOR_UNITARIO, :VALORACOMPRAR, :COMPRADO, :VALORTOTALCOMPRADO, :ENTRADAS, :SALIDAS, :ESPECIFICACION, :SALDO_CANTIDAD, :SALDO_TOTALACOMPRAR, :TIPO_CONTRATACION, :DURACION_ESTIMADA_DEL_CONTRATO, :RESPONSABLE, :SUCURSAL, :FUENTE_DE_RECURSOS, :REFERENCIA, :CENTRO_COSTO, :AUXILIAR, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_RUBRO":"$RUBRO","KEY_CODIGO":"$CODIGO","KEY_DEPENDENCIA":"$DEPENDENCIA","KEY_MES":"$MES(type:integer)","KEY_CONSECUTIVO":"$CONSECUTIVO","KEY_FUENTE_DE_RECURSOS":"$FUENTE_DE_RECURSOS","KEY_REFERENCIA":"$REFERENCIA","KEY_CENTRO_COSTO":"$CENTRO_COSTO","KEY_AUXILIAR":"$AUXILIAR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="0" name="ANO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param defaultValue="0" name="MES" sqlType="STRING"/>
+		<param defaultValue="0" name="CANTIDAD" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_UNITARIO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORACOMPRAR" sqlType="STRING"/>
+		<param defaultValue="0" name="COMPRADO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORTOTALCOMPRADO" sqlType="STRING"/>
+		<param defaultValue="0" name="ENTRADAS" sqlType="STRING"/>
+		<param defaultValue="0" name="SALIDAS" sqlType="STRING"/>
+		<param defaultValue="" name="ESPECIFICACION" sqlType="STRING"/>
+		<param defaultValue="0" name="SALDO_CANTIDAD" sqlType="STRING"/>
+		<param defaultValue="0" name="SALDO_TOTALACOMPRAR" sqlType="STRING"/>
+		<param defaultValue="3" name="TIPO_CONTRATACION" sqlType="STRING"/>
+		<param defaultValue="" name="DURACION_ESTIMADA_DEL_CONTRATO" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="RESPONSABLE" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="99999999999999999999" name="FUENTE_DE_RECURSOS" sqlType="STRING"/>
+		<param defaultValue="99999999999999999999" name="REFERENCIA" sqlType="STRING"/>
+		<param defaultValue="99999999999999999999" name="CENTRO_COSTO" sqlType="STRING"/>
+		<param defaultValue="99999999999999999999" name="AUXILIAR" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="detallesplancompras">
+		<call-query href="insertDetallesplancompras">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="CANTIDAD" query-param="CANTIDAD"/>
+			<with-param name="VALOR_UNITARIO" query-param="VALOR_UNITARIO"/>
+			<with-param name="VALORACOMPRAR" query-param="VALORACOMPRAR"/>
+			<with-param name="COMPRADO" query-param="COMPRADO"/>
+			<with-param name="VALORTOTALCOMPRADO" query-param="VALORTOTALCOMPRADO"/>
+			<with-param name="ENTRADAS" query-param="ENTRADAS"/>
+			<with-param name="SALIDAS" query-param="SALIDAS"/>
+			<with-param name="ESPECIFICACION" query-param="ESPECIFICACION"/>
+			<with-param name="SALDO_CANTIDAD" query-param="SALDO_CANTIDAD"/>
+			<with-param name="SALDO_TOTALACOMPRAR" query-param="SALDO_TOTALACOMPRAR"/>
+			<with-param name="TIPO_CONTRATACION" query-param="TIPO_CONTRATACION"/>
+			<with-param name="DURACION_ESTIMADA_DEL_CONTRATO" query-param="DURACION_ESTIMADA_DEL_CONTRATO"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="FUENTE_DE_RECURSOS" query-param="FUENTE_DE_RECURSOS"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteDetallesplancompras" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM DETALLE_PLAN_COMPRAS WHERE DETALLE_PLAN_COMPRAS.COMPANIA= :KEY_COMPANIA AND DETALLE_PLAN_COMPRAS.ANO= :KEY_ANO AND DETALLE_PLAN_COMPRAS.RUBRO= :KEY_RUBRO AND DETALLE_PLAN_COMPRAS.CODIGO= :KEY_CODIGO AND DETALLE_PLAN_COMPRAS.DEPENDENCIA= :KEY_DEPENDENCIA AND DETALLE_PLAN_COMPRAS.MES= :KEY_MES AND DETALLE_PLAN_COMPRAS.CONSECUTIVO= :KEY_CONSECUTIVO AND DETALLE_PLAN_COMPRAS.FUENTE_DE_RECURSOS= :KEY_FUENTE_DE_RECURSOS AND DETALLE_PLAN_COMPRAS.REFERENCIA= :KEY_REFERENCIA AND DETALLE_PLAN_COMPRAS.CENTRO_COSTO= :KEY_CENTRO_COSTO AND DETALLE_PLAN_COMPRAS.AUXILIAR= :KEY_AUXILIAR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_RUBRO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_DEPENDENCIA" sqlType="STRING"/>
+		<param name="KEY_MES" sqlType="INTEGER"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+		<param name="KEY_FUENTE_DE_RECURSOS" sqlType="STRING"/>
+		<param name="KEY_REFERENCIA" sqlType="STRING"/>
+		<param name="KEY_CENTRO_COSTO" sqlType="STRING"/>
+		<param name="KEY_AUXILIAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="detallesplancompras">
+		<call-query href="deleteDetallesplancompras">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_RUBRO" query-param="KEY_RUBRO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_DEPENDENCIA" query-param="KEY_DEPENDENCIA"/>
+			<with-param name="KEY_MES" query-param="KEY_MES"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+			<with-param name="KEY_FUENTE_DE_RECURSOS" query-param="KEY_FUENTE_DE_RECURSOS"/>
+			<with-param name="KEY_REFERENCIA" query-param="KEY_REFERENCIA"/>
+			<with-param name="KEY_CENTRO_COSTO" query-param="KEY_CENTRO_COSTO"/>
+			<with-param name="KEY_AUXILIAR" query-param="KEY_AUXILIAR"/>
+
+		</call-query>
+	</resource>
+	<query id="getDetallesplancomprasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DETALLE_PLAN_COMPRAS.COMPANIA, DETALLE_PLAN_COMPRAS.ANO, DETALLE_PLAN_COMPRAS.RUBRO, DETALLE_PLAN_COMPRAS.DEPENDENCIA, DETALLE_PLAN_COMPRAS.CONSECUTIVO,DETALLE_PLAN_COMPRAS.FUENTE_DE_RECURSOS, DETALLE_PLAN_COMPRAS.REFERENCIA, DETALLE_PLAN_COMPRAS.CENTRO_COSTO, DETALLE_PLAN_COMPRAS.AUXILIAR, PCK_SYSMAN_UTL.FC_NOMBRE_MES(DETALLE_PLAN_COMPRAS.MES) NOMBREMES, DETALLE_PLAN_COMPRAS.TIPO_CONTRATACION, DETALLE_PLAN_COMPRAS.RESPONSABLE, DETALLE_PLAN_COMPRAS.SUCURSAL, DETALLE_PLAN_COMPRAS.MES, DETALLE_PLAN_COMPRAS.CODIGO, INVENTARIO.NOMBRELARGO, DETALLE_PLAN_COMPRAS.CANTIDAD, DETALLE_PLAN_COMPRAS.VALOR_UNITARIO, DETALLE_PLAN_COMPRAS.VALORACOMPRAR, DETALLE_PLAN_COMPRAS.COMPRADO, DETALLE_PLAN_COMPRAS.VALORTOTALCOMPRADO, DETALLE_PLAN_COMPRAS.ENTRADAS, DETALLE_PLAN_COMPRAS.SALIDAS, DETALLE_PLAN_COMPRAS.ESPECIFICACION, DETALLE_PLAN_COMPRAS.SALDO_CANTIDAD, DETALLE_PLAN_COMPRAS.SALDO_TOTALACOMPRAR, TIPOADJUDICACION.DESCRIPCION MODALIDAD_CONTRATACION, DETALLE_PLAN_COMPRAS.DURACION_ESTIMADA_DEL_CONTRATO, TRIM(TERCERO.NOMBRE) NOMBRE FROM DETALLE_PLAN_COMPRAS LEFT JOIN INVENTARIO ON DETALLE_PLAN_COMPRAS.COMPANIA = INVENTARIO.COMPANIA AND DETALLE_PLAN_COMPRAS.CODIGO = INVENTARIO.CODIGOELEMENTO LEFT JOIN TERCERO ON DETALLE_PLAN_COMPRAS.COMPANIA = TERCERO.COMPANIA AND DETALLE_PLAN_COMPRAS.RESPONSABLE = TERCERO.NIT AND DETALLE_PLAN_COMPRAS.SUCURSAL = TERCERO.SUCURSAL LEFT JOIN TIPOADJUDICACION ON DETALLE_PLAN_COMPRAS.COMPANIA = TIPOADJUDICACION.COMPANIA AND DETALLE_PLAN_COMPRAS.TIPO_CONTRATACION = TIPOADJUDICACION.CODIGO WHERE DETALLE_PLAN_COMPRAS.COMPANIA = :COMPANIA AND DETALLE_PLAN_COMPRAS.ANO = :ANO AND DETALLE_PLAN_COMPRAS.RUBRO = :RUBRO AND DETALLE_PLAN_COMPRAS.DEPENDENCIA = :DEPENDENCIA AND DETALLE_PLAN_COMPRAS.FUENTE_DE_RECURSOS = :FUENTE_RECURSO AND DETALLE_PLAN_COMPRAS.REFERENCIA = :REFERENCIA AND DETALLE_PLAN_COMPRAS.CENTRO_COSTO = :CENTRO_COSTO AND DETALLE_PLAN_COMPRAS.AUXILIAR = :AUXILIAR ORDER BY DETALLE_PLAN_COMPRAS.MES) INI WHERE (CASE WHEN MES IS NULL THEN ' ' ELSE UPPER(MES) END) LIKE UPPER(CONCAT(:MES, '%')) AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRELARGO IS NULL THEN ' ' ELSE UPPER(NOMBRELARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRELARGO), '%')) AND (CASE WHEN CANTIDAD IS NULL THEN ' ' ELSE UPPER(CANTIDAD) END) LIKE UPPER(CONCAT(:CANTIDAD, '%')) AND (CASE WHEN VALOR_UNITARIO IS NULL THEN ' ' ELSE UPPER(VALOR_UNITARIO) END) LIKE UPPER(CONCAT(:VALOR_UNITARIO, '%')) AND (CASE WHEN VALORACOMPRAR IS NULL THEN ' ' ELSE UPPER(VALORACOMPRAR) END) LIKE UPPER(CONCAT(:VALORACOMPRAR, '%')) AND (CASE WHEN COMPRADO IS NULL THEN ' ' ELSE UPPER(COMPRADO) END) LIKE UPPER(CONCAT(:COMPRADO, '%')) AND (CASE WHEN VALORTOTALCOMPRADO IS NULL THEN ' ' ELSE UPPER(VALORTOTALCOMPRADO) END) LIKE UPPER(CONCAT(:VALORTOTALCOMPRADO, '%')) AND (CASE WHEN ENTRADAS IS NULL THEN ' ' ELSE UPPER(ENTRADAS) END) LIKE UPPER(CONCAT(:ENTRADAS, '%')) AND (CASE WHEN SALIDAS IS NULL THEN ' ' ELSE UPPER(SALIDAS) END) LIKE UPPER(CONCAT(:SALIDAS, '%')) AND (CASE WHEN ESPECIFICACION IS NULL THEN ' ' ELSE UPPER(ESPECIFICACION) END) LIKE UPPER(CONCAT(CONCAT('%',:ESPECIFICACION), '%')) AND (CASE WHEN SALDO_CANTIDAD IS NULL THEN ' ' ELSE UPPER(SALDO_CANTIDAD) END) LIKE UPPER(CONCAT(:SALDO_CANTIDAD, '%')) AND (CASE WHEN SALDO_TOTALACOMPRAR IS NULL THEN ' ' ELSE UPPER(SALDO_TOTALACOMPRAR) END) LIKE UPPER(CONCAT(:SALDO_TOTALACOMPRAR, '%')) AND (CASE WHEN MODALIDAD_CONTRATACION IS NULL THEN ' ' ELSE UPPER(MODALIDAD_CONTRATACION) END) LIKE UPPER(CONCAT(CONCAT('%',:MODALIDAD_CONTRATACION), '%')) AND (CASE WHEN DURACION_ESTIMADA_DEL_CONTRATO IS NULL THEN ' ' ELSE UPPER(DURACION_ESTIMADA_DEL_CONTRATO) END) LIKE UPPER(CONCAT(CONCAT('%',:DURACION_ESTIMADA_DEL_CONTRATO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","RUBRO":"$RUBRO","DEPENDENCIA":"$DEPENDENCIA","CONSECUTIVO":"$CONSECUTIVO","FUENTE_DE_RECURSOS":"$FUENTE_DE_RECURSOS","REFERENCIA":"$REFERENCIA","CENTRO_COSTO":"$CENTRO_COSTO","AUXILIAR":"$AUXILIAR","NOMBREMES":"$NOMBREMES","TIPO_CONTRATACION":"$TIPO_CONTRATACION","RESPONSABLE":"$RESPONSABLE","SUCURSAL":"$SUCURSAL","MES":"$MES(type:integer)","CODIGO":"$CODIGO","NOMBRELARGO":"$NOMBRELARGO","CANTIDAD":"$CANTIDAD","VALOR_UNITARIO":"$VALOR_UNITARIO","VALORACOMPRAR":"$VALORACOMPRAR","COMPRADO":"$COMPRADO","VALORTOTALCOMPRADO":"$VALORTOTALCOMPRADO","ENTRADAS":"$ENTRADAS","SALIDAS":"$SALIDAS","ESPECIFICACION":"$ESPECIFICACION","SALDO_CANTIDAD":"$SALDO_CANTIDAD","SALDO_TOTALACOMPRAR":"$SALDO_TOTALACOMPRAR","MODALIDAD_CONTRATACION":"$MODALIDAD_CONTRATACION","DURACION_ESTIMADA_DEL_CONTRATO":"$DURACION_ESTIMADA_DEL_CONTRATO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="FUENTE_RECURSO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRELARGO" sqlType="STRING"/>
+		<param name="CANTIDAD" sqlType="STRING"/>
+		<param name="VALOR_UNITARIO" sqlType="STRING"/>
+		<param name="VALORACOMPRAR" sqlType="STRING"/>
+		<param name="COMPRADO" sqlType="STRING"/>
+		<param name="VALORTOTALCOMPRADO" sqlType="STRING"/>
+		<param name="ENTRADAS" sqlType="STRING"/>
+		<param name="SALIDAS" sqlType="STRING"/>
+		<param name="ESPECIFICACION" sqlType="STRING"/>
+		<param name="SALDO_CANTIDAD" sqlType="STRING"/>
+		<param name="SALDO_TOTALACOMPRAR" sqlType="STRING"/>
+		<param name="MODALIDAD_CONTRATACION" sqlType="STRING"/>
+		<param name="DURACION_ESTIMADA_DEL_CONTRATO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="detallesplancompras">
+		<call-query href="getDetallesplancomprasPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRELARGO" query-param="NOMBRELARGO"/>
+			<with-param name="CANTIDAD" query-param="CANTIDAD"/>
+			<with-param name="VALOR_UNITARIO" query-param="VALOR_UNITARIO"/>
+			<with-param name="VALORACOMPRAR" query-param="VALORACOMPRAR"/>
+			<with-param name="COMPRADO" query-param="COMPRADO"/>
+			<with-param name="VALORTOTALCOMPRADO" query-param="VALORTOTALCOMPRADO"/>
+			<with-param name="ENTRADAS" query-param="ENTRADAS"/>
+			<with-param name="SALIDAS" query-param="SALIDAS"/>
+			<with-param name="ESPECIFICACION" query-param="ESPECIFICACION"/>
+			<with-param name="SALDO_CANTIDAD" query-param="SALDO_CANTIDAD"/>
+			<with-param name="SALDO_TOTALACOMPRAR" query-param="SALDO_TOTALACOMPRAR"/>
+			<with-param name="MODALIDAD_CONTRATACION" query-param="MODALIDAD_CONTRATACION"/>
+			<with-param name="DURACION_ESTIMADA_DEL_CONTRATO" query-param="DURACION_ESTIMADA_DEL_CONTRATO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDetallesplancomprasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DETALLE_PLAN_COMPRAS.COMPANIA, DETALLE_PLAN_COMPRAS.ANO, DETALLE_PLAN_COMPRAS.RUBRO, DETALLE_PLAN_COMPRAS.DEPENDENCIA, DETALLE_PLAN_COMPRAS.CONSECUTIVO,DETALLE_PLAN_COMPRAS.FUENTE_DE_RECURSOS, DETALLE_PLAN_COMPRAS.REFERENCIA, DETALLE_PLAN_COMPRAS.CENTRO_COSTO, DETALLE_PLAN_COMPRAS.AUXILIAR, PCK_SYSMAN_UTL.FC_NOMBRE_MES(DETALLE_PLAN_COMPRAS.MES) NOMBREMES, DETALLE_PLAN_COMPRAS.TIPO_CONTRATACION, DETALLE_PLAN_COMPRAS.RESPONSABLE, DETALLE_PLAN_COMPRAS.SUCURSAL, DETALLE_PLAN_COMPRAS.MES, DETALLE_PLAN_COMPRAS.CODIGO, INVENTARIO.NOMBRELARGO, DETALLE_PLAN_COMPRAS.CANTIDAD, DETALLE_PLAN_COMPRAS.VALOR_UNITARIO, DETALLE_PLAN_COMPRAS.VALORACOMPRAR, DETALLE_PLAN_COMPRAS.COMPRADO, DETALLE_PLAN_COMPRAS.VALORTOTALCOMPRADO, DETALLE_PLAN_COMPRAS.ENTRADAS, DETALLE_PLAN_COMPRAS.SALIDAS, DETALLE_PLAN_COMPRAS.ESPECIFICACION, DETALLE_PLAN_COMPRAS.SALDO_CANTIDAD, DETALLE_PLAN_COMPRAS.SALDO_TOTALACOMPRAR, TIPOADJUDICACION.DESCRIPCION MODALIDAD_CONTRATACION, DETALLE_PLAN_COMPRAS.DURACION_ESTIMADA_DEL_CONTRATO, TRIM(TERCERO.NOMBRE) NOMBRE FROM DETALLE_PLAN_COMPRAS LEFT JOIN INVENTARIO ON DETALLE_PLAN_COMPRAS.COMPANIA = INVENTARIO.COMPANIA AND DETALLE_PLAN_COMPRAS.CODIGO = INVENTARIO.CODIGOELEMENTO LEFT JOIN TERCERO ON DETALLE_PLAN_COMPRAS.COMPANIA = TERCERO.COMPANIA AND DETALLE_PLAN_COMPRAS.RESPONSABLE = TERCERO.NIT AND DETALLE_PLAN_COMPRAS.SUCURSAL = TERCERO.SUCURSAL LEFT JOIN TIPOADJUDICACION ON DETALLE_PLAN_COMPRAS.COMPANIA = TIPOADJUDICACION.COMPANIA AND DETALLE_PLAN_COMPRAS.TIPO_CONTRATACION = TIPOADJUDICACION.CODIGO WHERE DETALLE_PLAN_COMPRAS.COMPANIA = :COMPANIA AND DETALLE_PLAN_COMPRAS.ANO = :ANO AND DETALLE_PLAN_COMPRAS.RUBRO = :RUBRO AND DETALLE_PLAN_COMPRAS.DEPENDENCIA = :DEPENDENCIA AND DETALLE_PLAN_COMPRAS.FUENTE_DE_RECURSOS = :FUENTE_RECURSO AND DETALLE_PLAN_COMPRAS.REFERENCIA = :REFERENCIA AND DETALLE_PLAN_COMPRAS.CENTRO_COSTO = :CENTRO_COSTO AND DETALLE_PLAN_COMPRAS.AUXILIAR = :AUXILIAR ORDER BY DETALLE_PLAN_COMPRAS.MES) INI WHERE (CASE WHEN MES IS NULL THEN ' ' ELSE UPPER(MES) END) LIKE UPPER(CONCAT(:MES, '%')) AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRELARGO IS NULL THEN ' ' ELSE UPPER(NOMBRELARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRELARGO), '%')) AND (CASE WHEN CANTIDAD IS NULL THEN ' ' ELSE UPPER(CANTIDAD) END) LIKE UPPER(CONCAT(:CANTIDAD, '%')) AND (CASE WHEN VALOR_UNITARIO IS NULL THEN ' ' ELSE UPPER(VALOR_UNITARIO) END) LIKE UPPER(CONCAT(:VALOR_UNITARIO, '%')) AND (CASE WHEN VALORACOMPRAR IS NULL THEN ' ' ELSE UPPER(VALORACOMPRAR) END) LIKE UPPER(CONCAT(:VALORACOMPRAR, '%')) AND (CASE WHEN COMPRADO IS NULL THEN ' ' ELSE UPPER(COMPRADO) END) LIKE UPPER(CONCAT(:COMPRADO, '%')) AND (CASE WHEN VALORTOTALCOMPRADO IS NULL THEN ' ' ELSE UPPER(VALORTOTALCOMPRADO) END) LIKE UPPER(CONCAT(:VALORTOTALCOMPRADO, '%')) AND (CASE WHEN ENTRADAS IS NULL THEN ' ' ELSE UPPER(ENTRADAS) END) LIKE UPPER(CONCAT(:ENTRADAS, '%')) AND (CASE WHEN SALIDAS IS NULL THEN ' ' ELSE UPPER(SALIDAS) END) LIKE UPPER(CONCAT(:SALIDAS, '%')) AND (CASE WHEN ESPECIFICACION IS NULL THEN ' ' ELSE UPPER(ESPECIFICACION) END) LIKE UPPER(CONCAT(CONCAT('%',:ESPECIFICACION), '%')) AND (CASE WHEN SALDO_CANTIDAD IS NULL THEN ' ' ELSE UPPER(SALDO_CANTIDAD) END) LIKE UPPER(CONCAT(:SALDO_CANTIDAD, '%')) AND (CASE WHEN SALDO_TOTALACOMPRAR IS NULL THEN ' ' ELSE UPPER(SALDO_TOTALACOMPRAR) END) LIKE UPPER(CONCAT(:SALDO_TOTALACOMPRAR, '%')) AND (CASE WHEN MODALIDAD_CONTRATACION IS NULL THEN ' ' ELSE UPPER(MODALIDAD_CONTRATACION) END) LIKE UPPER(CONCAT(CONCAT('%',:MODALIDAD_CONTRATACION), '%')) AND (CASE WHEN DURACION_ESTIMADA_DEL_CONTRATO IS NULL THEN ' ' ELSE UPPER(DURACION_ESTIMADA_DEL_CONTRATO) END) LIKE UPPER(CONCAT(CONCAT('%',:DURACION_ESTIMADA_DEL_CONTRATO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="FUENTE_RECURSO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRELARGO" sqlType="STRING"/>
+		<param name="CANTIDAD" sqlType="STRING"/>
+		<param name="VALOR_UNITARIO" sqlType="STRING"/>
+		<param name="VALORACOMPRAR" sqlType="STRING"/>
+		<param name="COMPRADO" sqlType="STRING"/>
+		<param name="VALORTOTALCOMPRADO" sqlType="STRING"/>
+		<param name="ENTRADAS" sqlType="STRING"/>
+		<param name="SALIDAS" sqlType="STRING"/>
+		<param name="ESPECIFICACION" sqlType="STRING"/>
+		<param name="SALDO_CANTIDAD" sqlType="STRING"/>
+		<param name="SALDO_TOTALACOMPRAR" sqlType="STRING"/>
+		<param name="MODALIDAD_CONTRATACION" sqlType="STRING"/>
+		<param name="DURACION_ESTIMADA_DEL_CONTRATO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="detallesplancompras/numero">
+		<call-query href="getDetallesplancomprasNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="FUENTE_RECURSO" query-param="FUENTE_RECURSO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRELARGO" query-param="NOMBRELARGO"/>
+			<with-param name="CANTIDAD" query-param="CANTIDAD"/>
+			<with-param name="VALOR_UNITARIO" query-param="VALOR_UNITARIO"/>
+			<with-param name="VALORACOMPRAR" query-param="VALORACOMPRAR"/>
+			<with-param name="COMPRADO" query-param="COMPRADO"/>
+			<with-param name="VALORTOTALCOMPRADO" query-param="VALORTOTALCOMPRADO"/>
+			<with-param name="ENTRADAS" query-param="ENTRADAS"/>
+			<with-param name="SALIDAS" query-param="SALIDAS"/>
+			<with-param name="ESPECIFICACION" query-param="ESPECIFICACION"/>
+			<with-param name="SALDO_CANTIDAD" query-param="SALDO_CANTIDAD"/>
+			<with-param name="SALDO_TOTALACOMPRAR" query-param="SALDO_TOTALACOMPRAR"/>
+			<with-param name="MODALIDAD_CONTRATACION" query-param="MODALIDAD_CONTRATACION"/>
+			<with-param name="DURACION_ESTIMADA_DEL_CONTRATO" query-param="DURACION_ESTIMADA_DEL_CONTRATO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDetallesplancompras" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE DETALLE_PLAN_COMPRAS SET FUENTE_DE_RECURSOS=:FUENTE_DE_RECURSOS, REFERENCIA=:REFERENCIA, CENTRO_COSTO=:CENTRO_COSTO, AUXILIAR=:AUXILIAR, MES=:MES, CANTIDAD=:CANTIDAD, VALOR_UNITARIO=:VALOR_UNITARIO, VALORACOMPRAR=:VALORACOMPRAR, COMPRADO=:COMPRADO, VALORTOTALCOMPRADO=:VALORTOTALCOMPRADO, ENTRADAS=:ENTRADAS, SALIDAS=:SALIDAS, ESPECIFICACION=:ESPECIFICACION, SALDO_CANTIDAD=:SALDO_CANTIDAD, SALDO_TOTALACOMPRAR=:SALDO_TOTALACOMPRAR, TIPO_CONTRATACION=:TIPO_CONTRATACION, DURACION_ESTIMADA_DEL_CONTRATO=:DURACION_ESTIMADA_DEL_CONTRATO, RESPONSABLE=:RESPONSABLE, SUCURSAL=:SUCURSAL, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE DETALLE_PLAN_COMPRAS.COMPANIA= :KEY_COMPANIA AND DETALLE_PLAN_COMPRAS.ANO= :KEY_ANO AND DETALLE_PLAN_COMPRAS.RUBRO= :KEY_RUBRO AND DETALLE_PLAN_COMPRAS.CODIGO= :KEY_CODIGO AND DETALLE_PLAN_COMPRAS.DEPENDENCIA= :KEY_DEPENDENCIA AND DETALLE_PLAN_COMPRAS.MES= :KEY_MES AND DETALLE_PLAN_COMPRAS.CONSECUTIVO= :KEY_CONSECUTIVO AND DETALLE_PLAN_COMPRAS.FUENTE_DE_RECURSOS= :KEY_FUENTE_DE_RECURSOS AND DETALLE_PLAN_COMPRAS.REFERENCIA= :KEY_REFERENCIA AND DETALLE_PLAN_COMPRAS.CENTRO_COSTO= :KEY_CENTRO_COSTO AND DETALLE_PLAN_COMPRAS.AUXILIAR= :KEY_AUXILIAR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="FUENTE_DE_RECURSOS" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="CANTIDAD" sqlType="STRING"/>
+		<param name="VALOR_UNITARIO" sqlType="STRING"/>
+		<param name="VALORACOMPRAR" sqlType="STRING"/>
+		<param name="COMPRADO" sqlType="STRING"/>
+		<param name="VALORTOTALCOMPRADO" sqlType="STRING"/>
+		<param name="ENTRADAS" sqlType="STRING"/>
+		<param name="SALIDAS" sqlType="STRING"/>
+		<param name="ESPECIFICACION" sqlType="STRING"/>
+		<param name="SALDO_CANTIDAD" sqlType="STRING"/>
+		<param name="SALDO_TOTALACOMPRAR" sqlType="STRING"/>
+		<param name="TIPO_CONTRATACION" sqlType="STRING"/>
+		<param name="DURACION_ESTIMADA_DEL_CONTRATO" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_RUBRO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_DEPENDENCIA" sqlType="STRING"/>
+		<param name="KEY_MES" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+		<param name="KEY_FUENTE_DE_RECURSOS" sqlType="STRING"/>
+		<param name="KEY_REFERENCIA" sqlType="STRING"/>
+		<param name="KEY_CENTRO_COSTO" sqlType="STRING"/>
+		<param name="KEY_AUXILIAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="detallesplancompras">
+		<call-query href="updateDetallesplancompras">
+			<with-param name="FUENTE_DE_RECURSOS" query-param="FUENTE_DE_RECURSOS"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="CANTIDAD" query-param="CANTIDAD"/>
+			<with-param name="VALOR_UNITARIO" query-param="VALOR_UNITARIO"/>
+			<with-param name="VALORACOMPRAR" query-param="VALORACOMPRAR"/>
+			<with-param name="COMPRADO" query-param="COMPRADO"/>
+			<with-param name="VALORTOTALCOMPRADO" query-param="VALORTOTALCOMPRADO"/>
+			<with-param name="ENTRADAS" query-param="ENTRADAS"/>
+			<with-param name="SALIDAS" query-param="SALIDAS"/>
+			<with-param name="ESPECIFICACION" query-param="ESPECIFICACION"/>
+			<with-param name="SALDO_CANTIDAD" query-param="SALDO_CANTIDAD"/>
+			<with-param name="SALDO_TOTALACOMPRAR" query-param="SALDO_TOTALACOMPRAR"/>
+			<with-param name="TIPO_CONTRATACION" query-param="TIPO_CONTRATACION"/>
+			<with-param name="DURACION_ESTIMADA_DEL_CONTRATO" query-param="DURACION_ESTIMADA_DEL_CONTRATO"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_RUBRO" query-param="KEY_RUBRO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_DEPENDENCIA" query-param="KEY_DEPENDENCIA"/>
+			<with-param name="KEY_MES" query-param="KEY_MES"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+			<with-param name="KEY_FUENTE_DE_RECURSOS" query-param="KEY_FUENTE_DE_RECURSOS"/>
+			<with-param name="KEY_REFERENCIA" query-param="KEY_REFERENCIA"/>
+			<with-param name="KEY_CENTRO_COSTO" query-param="KEY_CENTRO_COSTO"/>
+			<with-param name="KEY_AUXILIAR" query-param="KEY_AUXILIAR"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDetallesplancomprasDplancomprasupdate" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE DETALLE_PLAN_COMPRAS SET ENVIAR_CERT=:ENVIAR_CERT, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE DETALLE_PLAN_COMPRAS.COMPANIA= :KEY_COMPANIA AND DETALLE_PLAN_COMPRAS.ANO= :KEY_ANO AND DETALLE_PLAN_COMPRAS.RUBRO= :KEY_RUBRO AND DETALLE_PLAN_COMPRAS.CODIGO= :KEY_CODIGO AND DETALLE_PLAN_COMPRAS.DEPENDENCIA= :KEY_DEPENDENCIA AND DETALLE_PLAN_COMPRAS.MES= :KEY_MES</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ENVIAR_CERT" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_RUBRO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_DEPENDENCIA" sqlType="STRING"/>
+		<param name="KEY_MES" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="detallesplancompras/dplancomprasupdate">
+		<call-query href="updateDetallesplancomprasDplancomprasupdate">
+			<with-param name="ENVIAR_CERT" query-param="ENVIAR_CERT"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_RUBRO" query-param="KEY_RUBRO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_DEPENDENCIA" query-param="KEY_DEPENDENCIA"/>
+			<with-param name="KEY_MES" query-param="KEY_MES"/>
+
+		</call-query>
+	</resource>
+
+</data>

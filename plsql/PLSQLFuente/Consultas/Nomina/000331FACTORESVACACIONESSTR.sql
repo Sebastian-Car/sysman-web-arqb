@@ -1,0 +1,50 @@
+SELECT COMPANIA, 
+      ID_DE_PROCESO, 
+      ANO, 
+      MES, 
+      ID_DE_EMPLEADO, 
+      NOMBRECOMPLETO, 
+      NOMBRE_DEL_CARGO, 
+      NUMERO_DCTO, 
+      FECHA_DE_INGRESO, 
+      FECHA_INICIO, 
+      FECHA_FINAL, 
+      INICIO_DISFRUTE, 
+      FINAL_DISFRUTE, 
+      NOMBRE, 
+      NOMBRECIUDAD, 
+      ANTIGUEDAD, 
+      FACTOR2, 
+      FACTOR3, 
+      FACTOR7, 
+      FACTOR8, 
+      FACTOR9, 
+      FACTOR10, 
+      FACTOR11, 
+      FACTOR12, 
+      NUMPER, 
+      DIASVAC, 
+      DIASPRIMA, 
+      DIASCAL, 
+      DIASDINERO, 
+      BONRECRE, 
+      PRIMVAC, 
+      DIASHAB, 
+      PANTIGUEDAD, 
+      VACDINERO, 
+      EXTRASPV, 
+      SALVAC, 
+      TOTALFACTOR, 
+      TOTALPAGO, 
+      FECHA, 
+      DIASRECRE, 
+      ACTO, 
+	  /*CAMPO NUEVO
+*/
+      FECHA_ACTO 
+FROM V_FACTORESVACACIONES
+WHERE COMPANIA       = s$compania$s
+  AND ID_DE_PROCESO  = s$procesoNomina$s
+  AND ANO            = s$anioNomina$s
+  AND MES            = s$mesNomina$s
+  AND ID_DE_EMPLEADO = s$empleado$s

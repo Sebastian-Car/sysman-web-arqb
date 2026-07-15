@@ -1,0 +1,144 @@
+﻿<data name="sstdcronograma" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertSstdcronograma" keyColumns="COMPANIA,CONSECUTIVO,CODIGO_ACTIVIDAD,ID_EMPLEADO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SST_D_CRONOGRAMA (COMPANIA, CONSECUTIVO, CODIGO_ACTIVIDAD, ID_EMPLEADO, TIPO_RACI, CEDULA, SUCURSAL, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CONSECUTIVO, :CODIGO_ACTIVIDAD, :ID_EMPLEADO, :TIPO_RACI, :CEDULA, :SUCURSAL, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CONSECUTIVO":"$CONSECUTIVO(type:long)","KEY_CODIGO_ACTIVIDAD":"$CODIGO_ACTIVIDAD(type:integer)","KEY_ID_EMPLEADO":"$ID_EMPLEADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CODIGO_ACTIVIDAD" sqlType="STRING"/>
+		<param name="ID_EMPLEADO" sqlType="STRING"/>
+		<param name="TIPO_RACI" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="CEDULA" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="sstdcronograma">
+		<call-query href="insertSstdcronograma">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CODIGO_ACTIVIDAD" query-param="CODIGO_ACTIVIDAD"/>
+			<with-param name="ID_EMPLEADO" query-param="ID_EMPLEADO"/>
+			<with-param name="TIPO_RACI" query-param="TIPO_RACI"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSstdcronograma" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SST_D_CRONOGRAMA WHERE SST_D_CRONOGRAMA.COMPANIA= :KEY_COMPANIA AND SST_D_CRONOGRAMA.CONSECUTIVO= :KEY_CONSECUTIVO AND SST_D_CRONOGRAMA.CODIGO_ACTIVIDAD= :KEY_CODIGO_ACTIVIDAD AND SST_D_CRONOGRAMA.ID_EMPLEADO= :KEY_ID_EMPLEADO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+		<param name="KEY_CODIGO_ACTIVIDAD" sqlType="INTEGER"/>
+		<param name="KEY_ID_EMPLEADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="sstdcronograma">
+		<call-query href="deleteSstdcronograma">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+			<with-param name="KEY_CODIGO_ACTIVIDAD" query-param="KEY_CODIGO_ACTIVIDAD"/>
+			<with-param name="KEY_ID_EMPLEADO" query-param="KEY_ID_EMPLEADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSstdcronogramaPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT SST_D_CRONOGRAMA.COMPANIA, SST_D_CRONOGRAMA.CONSECUTIVO, SST_D_CRONOGRAMA.CODIGO_ACTIVIDAD, SST_D_CRONOGRAMA.CEDULA NUMERO_DCTO, SST_D_CRONOGRAMA.ID_EMPLEADO, CONCAT(PERSONAL.NOMBRES,CONCAT(' ',CONCAT(PERSONAL.APELLIDO1,CONCAT(' ',PERSONAL.APELLIDO2) ) ) ) NOMBRES, SST_D_CRONOGRAMA.SUCURSAL, SST_D_CRONOGRAMA.TIPO_RACI, SST_TIPORACI.NOMBRE FROM SST_D_CRONOGRAMA INNER JOIN PERSONAL ON SST_D_CRONOGRAMA.COMPANIA = PERSONAL.COMPANIA AND SST_D_CRONOGRAMA.SUCURSAL = PERSONAL.SUCURSAL AND SST_D_CRONOGRAMA.ID_EMPLEADO = PERSONAL.ID_DE_EMPLEADO INNER JOIN SST_TIPORACI ON SST_D_CRONOGRAMA.TIPO_RACI = SST_TIPORACI.CODIGO WHERE SST_D_CRONOGRAMA.COMPANIA =:COMPANIA AND SST_D_CRONOGRAMA.CONSECUTIVO =:NUMERO AND SST_D_CRONOGRAMA.CODIGO_ACTIVIDAD =:ACTIVIDAD) INI WHERE (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END) LIKE UPPER(CONCAT(CONCAT('%',:NUMERO_DCTO), '%')) AND (CASE WHEN ID_EMPLEADO IS NULL THEN ' ' ELSE UPPER(ID_EMPLEADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ID_EMPLEADO), '%')) AND (CASE WHEN NOMBRES IS NULL THEN ' ' ELSE UPPER(NOMBRES) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRES), '%')) AND (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END) LIKE UPPER(CONCAT(CONCAT('%',:SUCURSAL), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO(type:long)","CODIGO_ACTIVIDAD":"$CODIGO_ACTIVIDAD(type:integer)","NUMERO_DCTO":"$NUMERO_DCTO","ID_EMPLEADO":"$ID_EMPLEADO(type:integer)","NOMBRES":"$NOMBRES","SUCURSAL":"$SUCURSAL","TIPO_RACI":"$TIPO_RACI","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ACTIVIDAD" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="ID_EMPLEADO" sqlType="STRING"/>
+		<param name="NOMBRES" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sstdcronograma">
+		<call-query href="getSstdcronogramaPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ACTIVIDAD" query-param="ACTIVIDAD"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="ID_EMPLEADO" query-param="ID_EMPLEADO"/>
+			<with-param name="NOMBRES" query-param="NOMBRES"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSstdcronogramaNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT SST_D_CRONOGRAMA.COMPANIA, SST_D_CRONOGRAMA.CONSECUTIVO, SST_D_CRONOGRAMA.CODIGO_ACTIVIDAD, SST_D_CRONOGRAMA.CEDULA NUMERO_DCTO, SST_D_CRONOGRAMA.ID_EMPLEADO, CONCAT(PERSONAL.NOMBRES,CONCAT(' ',CONCAT(PERSONAL.APELLIDO1,CONCAT(' ',PERSONAL.APELLIDO2) ) ) ) NOMBRES, SST_D_CRONOGRAMA.SUCURSAL, SST_D_CRONOGRAMA.TIPO_RACI, SST_TIPORACI.NOMBRE FROM SST_D_CRONOGRAMA INNER JOIN PERSONAL ON SST_D_CRONOGRAMA.COMPANIA = PERSONAL.COMPANIA AND SST_D_CRONOGRAMA.SUCURSAL = PERSONAL.SUCURSAL AND SST_D_CRONOGRAMA.ID_EMPLEADO = PERSONAL.ID_DE_EMPLEADO INNER JOIN SST_TIPORACI ON SST_D_CRONOGRAMA.TIPO_RACI = SST_TIPORACI.CODIGO WHERE SST_D_CRONOGRAMA.COMPANIA =:COMPANIA AND SST_D_CRONOGRAMA.CONSECUTIVO =:NUMERO AND SST_D_CRONOGRAMA.CODIGO_ACTIVIDAD =:ACTIVIDAD) INI WHERE (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END) LIKE UPPER(CONCAT(CONCAT('%',:NUMERO_DCTO), '%')) AND (CASE WHEN ID_EMPLEADO IS NULL THEN ' ' ELSE UPPER(ID_EMPLEADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ID_EMPLEADO), '%')) AND (CASE WHEN NOMBRES IS NULL THEN ' ' ELSE UPPER(NOMBRES) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRES), '%')) AND (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END) LIKE UPPER(CONCAT(CONCAT('%',:SUCURSAL), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ACTIVIDAD" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="ID_EMPLEADO" sqlType="STRING"/>
+		<param name="NOMBRES" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sstdcronograma/numero">
+		<call-query href="getSstdcronogramaNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ACTIVIDAD" query-param="ACTIVIDAD"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="ID_EMPLEADO" query-param="ID_EMPLEADO"/>
+			<with-param name="NOMBRES" query-param="NOMBRES"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSstdcronograma" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SST_D_CRONOGRAMA SET ID_EMPLEADO=:ID_EMPLEADO, TIPO_RACI=:TIPO_RACI, CEDULA=:CEDULA, SUCURSAL=:SUCURSAL, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SST_D_CRONOGRAMA.COMPANIA= :KEY_COMPANIA AND SST_D_CRONOGRAMA.CONSECUTIVO= :KEY_CONSECUTIVO AND SST_D_CRONOGRAMA.CODIGO_ACTIVIDAD= :KEY_CODIGO_ACTIVIDAD AND SST_D_CRONOGRAMA.ID_EMPLEADO= :KEY_ID_EMPLEADO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ID_EMPLEADO" sqlType="STRING"/>
+		<param name="TIPO_RACI" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+		<param name="KEY_CODIGO_ACTIVIDAD" sqlType="STRING"/>
+		<param name="KEY_ID_EMPLEADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="sstdcronograma">
+		<call-query href="updateSstdcronograma">
+			<with-param name="ID_EMPLEADO" query-param="ID_EMPLEADO"/>
+			<with-param name="TIPO_RACI" query-param="TIPO_RACI"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+			<with-param name="KEY_CODIGO_ACTIVIDAD" query-param="KEY_CODIGO_ACTIVIDAD"/>
+			<with-param name="KEY_ID_EMPLEADO" query-param="KEY_ID_EMPLEADO"/>
+
+		</call-query>
+	</resource>
+
+</data>

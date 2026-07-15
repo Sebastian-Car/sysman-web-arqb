@@ -1,0 +1,157 @@
+SELECT   
+    TO_CHAR(PERSONAL_HISTORICO.INGRESO_DISTRITO, 'DD/MM/YYYY') INGRESO_DISTRITO,  
+    V_ACUMULADOS.ID_DE_EMPLEADO,   
+    V_ACUMULADOS.NOMBRECOMPLETO,   
+    V_ACUMULADOS.NUMERO_DCTO,   
+    V_ACUMULADOS.ID_DE_PROCESO,   
+    V_ACUMULADOS.ANO,   
+    PCK_SYSMAN_UTL.FC_NOMBRE_MES(V_ACUMULADOS.MES) NOMBREMES,   
+    V_ACUMULADOS.DEPENDENCIA,   
+    V_ACUMULADOS.NOMBRE_DEPENDENCIA,   
+    MAX(CASE WHEN   
+            V_ACUMULADOS.ID_DE_CONCEPTO = 910  
+        THEN   
+            V_ACUMULADOS.VALOR  
+        ELSE  
+            0  
+        END)   DIAST,   
+    SUM(CASE WHEN   
+            V_ACUMULADOS.ID_DE_CONCEPTO = 900  
+        THEN   
+            V_ACUMULADOS.VALOR  
+        ELSE  
+            0  
+        END )    SALARIO,   
+    SUM(CASE WHEN   
+            V_ACUMULADOS.ID_DE_CONCEPTO = 908  
+        THEN   
+            V_ACUMULADOS.VALOR  
+        ELSE  
+            0  
+        END)  GASTOSREP,   
+    SUM(CASE WHEN   
+            V_ACUMULADOS.ID_DE_CONCEPTO = 903  
+        THEN   
+            V_ACUMULADOS.VALOR  
+        ELSE  
+            0  
+        END)  TRANSP,   
+    SUM(CASE WHEN   
+            V_ACUMULADOS.ID_DE_CONCEPTO = 904  
+        THEN   
+            V_ACUMULADOS.VALOR  
+        ELSE  
+            0  
+        END)  ALIMENTACION,   
+    SUM(CASE WHEN   
+            V_ACUMULADOS.ID_DE_CONCEPTO = 909  
+        THEN   
+            V_ACUMULADOS.VALOR  
+        ELSE  
+            0  
+        END)  BONIFICACION,   
+    SUM(CASE WHEN   
+            V_ACUMULADOS.ID_DE_CONCEPTO = 906  
+        THEN   
+            V_ACUMULADOS.VALOR  
+        ELSE  
+            0  
+        END)  PSERVICIOS,   
+    SUM(CASE WHEN   
+            V_ACUMULADOS.ID_DE_CONCEPTO = 907  
+        THEN   
+            V_ACUMULADOS.VALOR  
+        ELSE  
+            0  
+        END)  PVAC,   
+    SUM(CASE WHEN   
+            V_ACUMULADOS.ID_DE_CONCEPTO = 905  
+        THEN   
+            V_ACUMULADOS.VALOR  
+        ELSE  
+            0  
+        END)  PNAVIDAD,   
+    SUM(CASE WHEN   
+            V_ACUMULADOS.ID_DE_CONCEPTO = 174  
+        THEN   
+            V_ACUMULADOS.VALOR  
+        ELSE  
+            0  
+        END) + SUM(CASE WHEN   
+                   V_ACUMULADOS.ID_DE_CONCEPTO = 175  
+               THEN   
+                   V_ACUMULADOS.VALOR  
+               ELSE  
+                   0  
+               END)  VAC,   
+      
+    SUM(CASE WHEN   
+            V_ACUMULADOS.ID_DE_CONCEPTO = 902  
+        THEN   
+            V_ACUMULADOS.VALOR  
+        ELSE  
+            0  
+        END)  EXTRAS,   
+    SUM(CASE WHEN   
+            V_ACUMULADOS.ID_DE_CONCEPTO = 913  
+        THEN   
+            V_ACUMULADOS.VALOR  
+        ELSE  
+            0  
+        END)  BASECES,      SUM(CASE WHEN   
+            V_ACUMULADOS.ID_DE_CONCEPTO = 483   
+        THEN   
+            V_ACUMULADOS.VALOR  
+        ELSE  
+            0  
+        END) + SUM(CASE WHEN   
+                   V_ACUMULADOS.ID_DE_CONCEPTO = 911  
+               THEN   
+                   V_ACUMULADOS.VALOR  
+               ELSE  
+                   0  
+               END) + SUM(CASE WHEN   
+                          V_ACUMULADOS.ID_DE_CONCEPTO = 278  
+                      THEN   
+                          V_ACUMULADOS.VALOR  
+                      ELSE  
+                          0  
+                      END) + SUM(CASE WHEN   
+                                 V_ACUMULADOS.ID_DE_CONCEPTO = 999  
+                             THEN   
+                                 V_ACUMULADOS.VALOR  
+                             ELSE  
+                                 0  
+                             END)  CONSOLIDADAS,   
+    V_ACUMULADOS.NOMBRE_FONDOCESANTIAS,   
+    V_ACUMULADOS.ID_CENTRO_DE_COSTO,   
+    V_ACUMULADOS.NOMBRE_CENTRO_DE_COSTO  
+FROM PERSONAL_HISTORICO
+INNER JOIN V_ACUMULADOS
+ON (PERSONAL_HISTORICO.COMPANIA        = V_ACUMULADOS.COMPANIA)
+AND (PERSONAL_HISTORICO.ID_DE_PROCESO  = V_ACUMULADOS.ID_DE_PROCESO)
+AND (PERSONAL_HISTORICO.ANO            = V_ACUMULADOS.ANO)
+AND (PERSONAL_HISTORICO.MES            = V_ACUMULADOS.MES)
+AND (PERSONAL_HISTORICO.PERIODO        = V_ACUMULADOS.PERIODO)
+AND (PERSONAL_HISTORICO.ID_DE_EMPLEADO = V_ACUMULADOS.ID_DE_EMPLEADO)    
+ WHERE   
+  V_ACUMULADOS.COMPANIA = s$compania$s 
+  AND V_ACUMULADOS.ANO = s$ano$s   
+  AND V_ACUMULADOS.MES = s$mes$s  
+  --AND V_ACUMULADOS.FONDO_CESANTIAS = 'CES58'  
+  AND V_ACUMULADOS.ID_DE_CONCEPTO IN(900,901,902,903,904,905,906,907,908,909,910,911,912,913,971,269,277,972,278,278,172,175,174,s$cptoDoceavasFNA$s)  
+ GROUP BY   
+    TO_CHAR(PERSONAL_HISTORICO.INGRESO_DISTRITO, 'DD/MM/YYYY'),   
+    V_ACUMULADOS.ID_DE_EMPLEADO,   
+    V_ACUMULADOS.NOMBRECOMPLETO,   
+    V_ACUMULADOS.NUMERO_DCTO,   
+    V_ACUMULADOS.ID_DE_PROCESO,   
+    V_ACUMULADOS.ANO,   
+    PCK_SYSMAN_UTL.FC_NOMBRE_MES(V_ACUMULADOS.MES),   
+    V_ACUMULADOS.DEPENDENCIA,   
+    V_ACUMULADOS.NOMBRE_DEPENDENCIA,   
+    V_ACUMULADOS.NOMBRE_FONDOCESANTIAS,   
+    V_ACUMULADOS.ID_CENTRO_DE_COSTO,   
+    V_ACUMULADOS.NOMBRE_CENTRO_DE_COSTO  
+ ORDER BY   
+    V_ACUMULADOS.NOMBRECOMPLETO

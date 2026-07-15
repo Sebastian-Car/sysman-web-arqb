@@ -1,0 +1,178 @@
+﻿<data name="virangoviaticos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getVirangoviaticosValoresPorSalarioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  VALOR_VIATICO_NACIONAL, VALOR_MANUAL, VALOR_VIATICO_ZONA1, VALOR_VIATICO_ZONA2, VALOR_VIATICO_ZONA3  FROM VI_RANGOS_VIATICOS WHERE COMPANIA = :COMPANIA AND :SALARIO BETWEEN LIMITE_INFERIOR AND LIMITE_SUPERIOR AND VIGENCIA = :VIGENCIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VALOR_VIATICO_NACIONAL":"$VALOR_VIATICO_NACIONAL","VALOR_MANUAL":"$VALOR_MANUAL","VALOR_VIATICO_ZONA1":"$VALOR_VIATICO_ZONA1","VALOR_VIATICO_ZONA2":"$VALOR_VIATICO_ZONA2","VALOR_VIATICO_ZONA3":"$VALOR_VIATICO_ZONA3"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SALARIO" sqlType="STRING"/>
+		<param name="VIGENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="virangoviaticos/valoresporsalario">
+		<call-query href="getVirangoviaticosValoresPorSalarioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SALARIO" query-param="SALARIO"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertVirangoviaticos" keyColumns="COMPANIA,CODIGO_RANGO,VIGENCIA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO VI_RANGOS_VIATICOS (COMPANIA, VIGENCIA, CODIGO_RANGO, LIMITE_INFERIOR, LIMITE_SUPERIOR, VALOR_VIATICO_NACIONAL, VALOR_MANUAL, VALOR_VIATICO_ZONA1, VALOR_VIATICO_ZONA2, VALOR_VIATICO_ZONA3, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :VIGENCIA, :CODIGO_RANGO, :LIMITE_INFERIOR, :LIMITE_SUPERIOR, :VALOR_VIATICO_NACIONAL, :VALOR_MANUAL, :VALOR_VIATICO_ZONA1, :VALOR_VIATICO_ZONA2, :VALOR_VIATICO_ZONA3, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO_RANGO":"$CODIGO_RANGO","KEY_VIGENCIA":"$VIGENCIA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="0" name="VIGENCIA" sqlType="STRING"/>
+		<param name="CODIGO_RANGO" sqlType="STRING"/>
+		<param name="LIMITE_INFERIOR" sqlType="STRING"/>
+		<param name="LIMITE_SUPERIOR" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_NACIONAL" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_MANUAL" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_ZONA1" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_VIATICO_ZONA2" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_VIATICO_ZONA3" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="virangoviaticos">
+		<call-query href="insertVirangoviaticos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="CODIGO_RANGO" query-param="CODIGO_RANGO"/>
+			<with-param name="LIMITE_INFERIOR" query-param="LIMITE_INFERIOR"/>
+			<with-param name="LIMITE_SUPERIOR" query-param="LIMITE_SUPERIOR"/>
+			<with-param name="VALOR_VIATICO_NACIONAL" query-param="VALOR_VIATICO_NACIONAL"/>
+			<with-param name="VALOR_MANUAL" query-param="VALOR_MANUAL"/>
+			<with-param name="VALOR_VIATICO_ZONA1" query-param="VALOR_VIATICO_ZONA1"/>
+			<with-param name="VALOR_VIATICO_ZONA2" query-param="VALOR_VIATICO_ZONA2"/>
+			<with-param name="VALOR_VIATICO_ZONA3" query-param="VALOR_VIATICO_ZONA3"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteVirangoviaticos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM VI_RANGOS_VIATICOS WHERE VI_RANGOS_VIATICOS.COMPANIA= :KEY_COMPANIA AND VI_RANGOS_VIATICOS.CODIGO_RANGO= :KEY_CODIGO_RANGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO_RANGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="virangoviaticos">
+		<call-query href="deleteVirangoviaticos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO_RANGO" query-param="KEY_CODIGO_RANGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getVirangoviaticosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA , VIGENCIA, CODIGO_RANGO , LIMITE_INFERIOR , LIMITE_SUPERIOR , VALOR_VIATICO_NACIONAL , VALOR_MANUAL, VALOR_VIATICO_ZONA1, VALOR_VIATICO_ZONA2, VALOR_VIATICO_ZONA3  FROM VI_RANGOS_VIATICOS WHERE COMPANIA = :COMPANIA AND VIGENCIA = :ANO ORDER BY LIMITE_INFERIOR , LIMITE_SUPERIOR) WHERE (CASE WHEN CODIGO_RANGO IS NULL THEN ' ' ELSE UPPER(CODIGO_RANGO) END)  LIKE UPPER(:CODIGO_RANGO || '%')  AND (CASE WHEN LIMITE_INFERIOR IS NULL THEN ' ' ELSE UPPER(LIMITE_INFERIOR) END)  LIKE UPPER( '%' || :LIMITE_INFERIOR || '%')  AND (CASE WHEN LIMITE_SUPERIOR IS NULL THEN ' ' ELSE UPPER(LIMITE_SUPERIOR) END)  LIKE UPPER( '%' || :LIMITE_SUPERIOR || '%')  AND (CASE WHEN VALOR_VIATICO_NACIONAL IS NULL THEN ' ' ELSE UPPER(VALOR_VIATICO_NACIONAL) END)  LIKE UPPER( '%' || :VALOR_VIATICO_NACIONAL || '%')  AND (CASE WHEN VALOR_MANUAL IS NULL THEN ' ' ELSE UPPER(VALOR_MANUAL) END)  LIKE UPPER( '%' || :VALOR_MANUAL || '%')  AND (CASE WHEN VALOR_VIATICO_ZONA1 IS NULL THEN ' ' ELSE UPPER(VALOR_VIATICO_ZONA1) END)  LIKE UPPER( '%' || :VALOR_VIATICO_ZONA1 || '%')  AND (CASE WHEN VALOR_VIATICO_ZONA2 IS NULL THEN ' ' ELSE UPPER(VALOR_VIATICO_ZONA2) END)  LIKE UPPER( '%' || :VALOR_VIATICO_ZONA2 || '%')  AND (CASE WHEN VALOR_VIATICO_ZONA3 IS NULL THEN ' ' ELSE UPPER(VALOR_VIATICO_ZONA3) END)  LIKE UPPER( '%' || :VALOR_VIATICO_ZONA3 || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","VIGENCIA":"$VIGENCIA(type:integer)","CODIGO_RANGO":"$CODIGO_RANGO","LIMITE_INFERIOR":"$LIMITE_INFERIOR","LIMITE_SUPERIOR":"$LIMITE_SUPERIOR","VALOR_VIATICO_NACIONAL":"$VALOR_VIATICO_NACIONAL","VALOR_MANUAL":"$VALOR_MANUAL","VALOR_VIATICO_ZONA1":"$VALOR_VIATICO_ZONA1","VALOR_VIATICO_ZONA2":"$VALOR_VIATICO_ZONA2","VALOR_VIATICO_ZONA3":"$VALOR_VIATICO_ZONA3"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO_RANGO" sqlType="STRING"/>
+		<param name="LIMITE_INFERIOR" sqlType="STRING"/>
+		<param name="LIMITE_SUPERIOR" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_NACIONAL" sqlType="STRING"/>
+		<param name="VALOR_MANUAL" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_ZONA1" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_ZONA2" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_ZONA3" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="virangoviaticos">
+		<call-query href="getVirangoviaticosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO_RANGO" query-param="CODIGO_RANGO"/>
+			<with-param name="LIMITE_INFERIOR" query-param="LIMITE_INFERIOR"/>
+			<with-param name="LIMITE_SUPERIOR" query-param="LIMITE_SUPERIOR"/>
+			<with-param name="VALOR_VIATICO_NACIONAL" query-param="VALOR_VIATICO_NACIONAL"/>
+			<with-param name="VALOR_MANUAL" query-param="VALOR_MANUAL"/>
+			<with-param name="VALOR_VIATICO_ZONA1" query-param="VALOR_VIATICO_ZONA1"/>
+			<with-param name="VALOR_VIATICO_ZONA2" query-param="VALOR_VIATICO_ZONA2"/>
+			<with-param name="VALOR_VIATICO_ZONA3" query-param="VALOR_VIATICO_ZONA3"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getVirangoviaticosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA , VIGENCIA, CODIGO_RANGO , LIMITE_INFERIOR , LIMITE_SUPERIOR , VALOR_VIATICO_NACIONAL , VALOR_MANUAL, VALOR_VIATICO_ZONA1, VALOR_VIATICO_ZONA2, VALOR_VIATICO_ZONA3  FROM VI_RANGOS_VIATICOS WHERE COMPANIA = :COMPANIA AND VIGENCIA = :ANO ORDER BY LIMITE_INFERIOR , LIMITE_SUPERIOR) WHERE (CASE WHEN CODIGO_RANGO IS NULL THEN ' ' ELSE UPPER(CODIGO_RANGO) END)  LIKE UPPER(:CODIGO_RANGO || '%')  AND (CASE WHEN LIMITE_INFERIOR IS NULL THEN ' ' ELSE UPPER(LIMITE_INFERIOR) END)  LIKE UPPER( '%' || :LIMITE_INFERIOR || '%')  AND (CASE WHEN LIMITE_SUPERIOR IS NULL THEN ' ' ELSE UPPER(LIMITE_SUPERIOR) END)  LIKE UPPER( '%' || :LIMITE_SUPERIOR || '%')  AND (CASE WHEN VALOR_VIATICO_NACIONAL IS NULL THEN ' ' ELSE UPPER(VALOR_VIATICO_NACIONAL) END)  LIKE UPPER( '%' || :VALOR_VIATICO_NACIONAL || '%')  AND (CASE WHEN VALOR_MANUAL IS NULL THEN ' ' ELSE UPPER(VALOR_MANUAL) END)  LIKE UPPER( '%' || :VALOR_MANUAL || '%')  AND (CASE WHEN VALOR_VIATICO_ZONA1 IS NULL THEN ' ' ELSE UPPER(VALOR_VIATICO_ZONA1) END)  LIKE UPPER( '%' || :VALOR_VIATICO_ZONA1 || '%')  AND (CASE WHEN VALOR_VIATICO_ZONA2 IS NULL THEN ' ' ELSE UPPER(VALOR_VIATICO_ZONA2) END)  LIKE UPPER( '%' || :VALOR_VIATICO_ZONA2 || '%')  AND (CASE WHEN VALOR_VIATICO_ZONA3 IS NULL THEN ' ' ELSE UPPER(VALOR_VIATICO_ZONA3) END)  LIKE UPPER( '%' || :VALOR_VIATICO_ZONA3 || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO_RANGO" sqlType="STRING"/>
+		<param name="LIMITE_INFERIOR" sqlType="STRING"/>
+		<param name="LIMITE_SUPERIOR" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_NACIONAL" sqlType="STRING"/>
+		<param name="VALOR_MANUAL" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_ZONA1" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_ZONA2" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_ZONA3" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="virangoviaticos/numero">
+		<call-query href="getVirangoviaticosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO_RANGO" query-param="CODIGO_RANGO"/>
+			<with-param name="LIMITE_INFERIOR" query-param="LIMITE_INFERIOR"/>
+			<with-param name="LIMITE_SUPERIOR" query-param="LIMITE_SUPERIOR"/>
+			<with-param name="VALOR_VIATICO_NACIONAL" query-param="VALOR_VIATICO_NACIONAL"/>
+			<with-param name="VALOR_MANUAL" query-param="VALOR_MANUAL"/>
+			<with-param name="VALOR_VIATICO_ZONA1" query-param="VALOR_VIATICO_ZONA1"/>
+			<with-param name="VALOR_VIATICO_ZONA2" query-param="VALOR_VIATICO_ZONA2"/>
+			<with-param name="VALOR_VIATICO_ZONA3" query-param="VALOR_VIATICO_ZONA3"/>
+
+		</call-query>
+	</resource>
+	<query id="updateVirangoviaticos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE VI_RANGOS_VIATICOS SET VIGENCIA=:VIGENCIA, CODIGO_RANGO=:CODIGO_RANGO, LIMITE_INFERIOR=:LIMITE_INFERIOR, LIMITE_SUPERIOR=:LIMITE_SUPERIOR, VALOR_VIATICO_NACIONAL=:VALOR_VIATICO_NACIONAL, VALOR_MANUAL=:VALOR_MANUAL, VALOR_VIATICO_ZONA1=:VALOR_VIATICO_ZONA1, VALOR_VIATICO_ZONA2=:VALOR_VIATICO_ZONA2, VALOR_VIATICO_ZONA3=:VALOR_VIATICO_ZONA3, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE VI_RANGOS_VIATICOS.COMPANIA= :KEY_COMPANIA AND VI_RANGOS_VIATICOS.CODIGO_RANGO= :KEY_CODIGO_RANGO AND VI_RANGOS_VIATICOS.VIGENCIA= :KEY_VIGENCIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VIGENCIA" sqlType="STRING"/>
+		<param name="CODIGO_RANGO" sqlType="STRING"/>
+		<param name="LIMITE_INFERIOR" sqlType="STRING"/>
+		<param name="LIMITE_SUPERIOR" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_NACIONAL" sqlType="STRING"/>
+		<param name="VALOR_MANUAL" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_ZONA1" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_ZONA2" sqlType="STRING"/>
+		<param name="VALOR_VIATICO_ZONA3" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO_RANGO" sqlType="STRING"/>
+		<param name="KEY_VIGENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="virangoviaticos">
+		<call-query href="updateVirangoviaticos">
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="CODIGO_RANGO" query-param="CODIGO_RANGO"/>
+			<with-param name="LIMITE_INFERIOR" query-param="LIMITE_INFERIOR"/>
+			<with-param name="LIMITE_SUPERIOR" query-param="LIMITE_SUPERIOR"/>
+			<with-param name="VALOR_VIATICO_NACIONAL" query-param="VALOR_VIATICO_NACIONAL"/>
+			<with-param name="VALOR_MANUAL" query-param="VALOR_MANUAL"/>
+			<with-param name="VALOR_VIATICO_ZONA1" query-param="VALOR_VIATICO_ZONA1"/>
+			<with-param name="VALOR_VIATICO_ZONA2" query-param="VALOR_VIATICO_ZONA2"/>
+			<with-param name="VALOR_VIATICO_ZONA3" query-param="VALOR_VIATICO_ZONA3"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO_RANGO" query-param="KEY_CODIGO_RANGO"/>
+			<with-param name="KEY_VIGENCIA" query-param="KEY_VIGENCIA"/>
+
+		</call-query>
+	</resource>
+
+</data>

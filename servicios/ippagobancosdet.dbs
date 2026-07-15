@@ -1,0 +1,199 @@
+﻿<data name="ippagobancosdet" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getIppagobancosdetPagNumFacturaSinPagarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_PAGO_BANCOSDET.PRECOD, IP_PAGO_BANCOSDET.NUMFACTURA, IP_PAGO_BANCOSDET.PREVAL, IP_PAGO_BANCOSDET.PAQUETE,(TO_CHAR(IP_PAGO_BANCOSDET.PREFEC,'DD/MM/YYYY HH24:MI:SS')) PREFEC, IP_PAGO_BANCOSDET.PAG_BAN, IP_PAGO_BANCOSDET.ANO  FROM IP_PAGO_BANCOSDET INNER JOIN IP_RECIBOS_DE_PAGO ON IP_PAGO_BANCOSDET.COMPANIA = IP_RECIBOS_DE_PAGO.COMPANIA AND IP_PAGO_BANCOSDET.NUMERO_ORDEN = IP_RECIBOS_DE_PAGO.NUMERO_ORDEN AND IP_PAGO_BANCOSDET.NUMFACTURA = IP_RECIBOS_DE_PAGO.DOCNUM AND IP_PAGO_BANCOSDET.PRECOD = IP_RECIBOS_DE_PAGO.PRECOD WHERE IP_PAGO_BANCOSDET.COMPANIA = :COMPANIA AND IP_PAGO_BANCOSDET.PRECOD = :CODIGO AND IP_RECIBOS_DE_PAGO.PAGO NOT IN (0) AND IP_RECIBOS_DE_PAGO.ANULADO = 0 ORDER BY IP_PAGO_BANCOSDET.ANO, IP_PAGO_BANCOSDET.PRECOD, IP_PAGO_BANCOSDET.NUMFACTURA) WHERE (CASE WHEN NUMFACTURA IS NULL THEN ' ' ELSE UPPER(NUMFACTURA) END)  LIKE UPPER(:NUMFACTURA || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PRECOD":"$PRECOD","NUMFACTURA":"$NUMFACTURA","PREVAL":"$PREVAL","PAQUETE":"$PAQUETE","PREFEC":"$PREFEC","PAG_BAN":"$PAG_BAN","ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ippagobancosdet/numfacturasinpagar/pag">
+		<call-query href="getIppagobancosdetPagNumFacturaSinPagarQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancosdetNumNumFacturaSinPagarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_PAGO_BANCOSDET.PRECOD, IP_PAGO_BANCOSDET.NUMFACTURA, IP_PAGO_BANCOSDET.PREVAL, IP_PAGO_BANCOSDET.PAQUETE,(TO_CHAR(IP_PAGO_BANCOSDET.PREFEC,'DD/MM/YYYY HH24:MI:SS')) PREFEC, IP_PAGO_BANCOSDET.PAG_BAN, IP_PAGO_BANCOSDET.ANO  FROM IP_PAGO_BANCOSDET INNER JOIN IP_RECIBOS_DE_PAGO ON IP_PAGO_BANCOSDET.COMPANIA = IP_RECIBOS_DE_PAGO.COMPANIA AND IP_PAGO_BANCOSDET.NUMERO_ORDEN = IP_RECIBOS_DE_PAGO.NUMERO_ORDEN AND IP_PAGO_BANCOSDET.NUMFACTURA = IP_RECIBOS_DE_PAGO.DOCNUM AND IP_PAGO_BANCOSDET.PRECOD = IP_RECIBOS_DE_PAGO.PRECOD WHERE IP_PAGO_BANCOSDET.COMPANIA = :COMPANIA AND IP_PAGO_BANCOSDET.PRECOD = :CODIGO AND IP_RECIBOS_DE_PAGO.PAGO NOT IN (0) AND IP_RECIBOS_DE_PAGO.ANULADO = 0 ORDER BY IP_PAGO_BANCOSDET.ANO, IP_PAGO_BANCOSDET.PRECOD, IP_PAGO_BANCOSDET.NUMFACTURA) WHERE (CASE WHEN NUMFACTURA IS NULL THEN ' ' ELSE UPPER(NUMFACTURA) END)  LIKE UPPER(:NUMFACTURA || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancosdet/numfacturasinpagar/num">
+		<call-query href="getIppagobancosdetNumNumFacturaSinPagarQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancosdetContarListaFacuraQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT (IP_PAGO_BANCOSDET.PRECOD) CANT  FROM IP_PAGO_BANCOSDET INNER JOIN IP_RECIBOS_DE_PAGO ON IP_PAGO_BANCOSDET.COMPANIA = IP_RECIBOS_DE_PAGO.COMPANIA AND IP_PAGO_BANCOSDET.NUMERO_ORDEN = IP_RECIBOS_DE_PAGO.NUMERO_ORDEN AND IP_PAGO_BANCOSDET.NUMFACTURA = IP_RECIBOS_DE_PAGO.DOCNUM AND IP_PAGO_BANCOSDET.PRECOD = IP_RECIBOS_DE_PAGO.PRECOD WHERE IP_PAGO_BANCOSDET.COMPANIA = :COMPANIA AND IP_PAGO_BANCOSDET.PRECOD = :CODIGO AND IP_RECIBOS_DE_PAGO.PAGO NOT IN (0) AND IP_RECIBOS_DE_PAGO.ANULADO IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CANT":"$CANT(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancosdet/contarlistafacura">
+		<call-query href="getIppagobancosdetContarListaFacuraQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancosdetContarDocnumPorPrecodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(DOCNUM) DNUM  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA AND NUMERO_ORDEN = :NUMERO_ORDEN AND PRECOD = :CODIGO AND ANULADO NOT IN (0) AND PAGO IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DNUM":"$DNUM(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancosdet/contardocnumporprecod">
+		<call-query href="getIppagobancosdetContarDocnumPorPrecodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancosdetCantidadPorNumOrFacYCodpreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  'X' CANTIDAD  FROM IP_PAGO_BANCOSDET WHERE IP_PAGO_BANCOSDET.COMPANIA = :COMPANIA AND IP_PAGO_BANCOSDET.NUMERO_ORDEN = :NUMERO_ORDEN AND IP_PAGO_BANCOSDET.NUMFACTURA = :NUMEROFACTURA AND IP_PAGO_BANCOSDET.PRECOD = :CODIGOPREDIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CANTIDAD":"$CANTIDAD"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="NUMEROFACTURA" sqlType="STRING"/>
+		<param name="CODIGOPREDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancosdet/cantidadpornumorfacycodpre">
+		<call-query href="getIppagobancosdetCantidadPorNumOrFacYCodpreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="NUMEROFACTURA" query-param="NUMEROFACTURA"/>
+			<with-param name="CODIGOPREDIO" query-param="CODIGOPREDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancosdetPagobancosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, PRECOD, NUMERO_ORDEN, PAG_BAN, :PREFEC PREFEC, PAQUETE, ANO, NUMFACTURA, PREVAL, BARRAS, USUARIO, PERANO1, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM IP_PAGO_BANCOSDET WHERE COMPANIA=:COMPANIA AND PREFEC = TO_DATE(:PREFEC,'DD/MM/YYYY HH24:MI:SS') AND PAQUETE = :PAQUETE AND PAG_BAN = :PAG_BAN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PRECOD":"$PRECOD","NUMERO_ORDEN":"$NUMERO_ORDEN","PAG_BAN":"$PAG_BAN","PREFEC":"$PREFEC","PAQUETE":"$PAQUETE","ANO":"$ANO(type:integer)","NUMFACTURA":"$NUMFACTURA","PREVAL":"$PREVAL","BARRAS":"$BARRAS","USUARIO":"$USUARIO","PERANO1":"$PERANO1(type:integer)","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="PREFEC" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PAQUETE" sqlType="STRING"/>
+		<param name="PAG_BAN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancosdet/pagobancos">
+		<call-query href="getIppagobancosdetPagobancosQuery">
+			<with-param name="PREFEC" query-param="PREFEC"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PAQUETE" query-param="PAQUETE"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+
+		</call-query>
+	</resource>
+	<query id="insertIppagobancosdetRegistropagoban" keyColumns="COMPANIA,PRECOD,NUMERO_ORDEN,PAG_BAN,PAQUETE,ANO,NUMFACTURA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_PAGO_BANCOSDET (COMPANIA, PREVAL, PAG_BAN, NUMERO_ORDEN, NUMFACTURA, PRECOD, PREFEC, ANO, PAQUETE, BARRAS, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :PREVAL, :PAG_BAN, :NUMERO_ORDEN, :NUMFACTURA, :PRECOD, TO_DATE(:PREFEC,'DD/MM/YYYY HH24:MI:SS'), :ANO, :PAQUETE, :BARRAS, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_PRECOD":"$PRECOD","KEY_NUMERO_ORDEN":"$NUMERO_ORDEN","KEY_PAG_BAN":"$PAG_BAN","KEY_PREFEC":"$PREFEC","KEY_PAQUETE":"$PAQUETE","KEY_ANO":"$ANO(type:integer)","KEY_NUMFACTURA":"$NUMFACTURA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="0" name="PREVAL" sqlType="STRING"/>
+		<param name="PAG_BAN" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+		<param name="PREFEC" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PAQUETE" sqlType="STRING"/>
+		<param defaultValue="" name="BARRAS" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="ippagobancosdet/registropagoban">
+		<call-query href="insertIppagobancosdetRegistropagoban">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+			<with-param name="PREFEC" query-param="PREFEC"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PAQUETE" query-param="PAQUETE"/>
+			<with-param name="BARRAS" query-param="BARRAS"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIppagobancosdetActregistro" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_PAGO_BANCOSDET SET COMPANIA=:COMPANIA, PREVAL=:PREVAL, PAG_BAN=:PAG_BAN, NUMERO_ORDEN=:NUMERO_ORDEN, NUMFACTURA=:NUMFACTURA, PRECOD=:PRECOD, PREFEC=TO_DATE(:PREFEC,'DD/MM/YYYY HH24:MI:SS'), ANO=:ANO, PAQUETE=:PAQUETE, BARRAS=:BARRAS, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE IP_PAGO_BANCOSDET.COMPANIA= :KEY_COMPANIA AND IP_PAGO_BANCOSDET.PRECOD= :KEY_PRECOD AND IP_PAGO_BANCOSDET.NUMERO_ORDEN= :KEY_NUMERO_ORDEN AND IP_PAGO_BANCOSDET.PAG_BAN= :KEY_PAG_BAN AND IP_PAGO_BANCOSDET.PREFEC= TO_DATE(:KEY_PREFEC,'DD/MM/YYYY HH24:MI:SS')  AND IP_PAGO_BANCOSDET.PAQUETE= :KEY_PAQUETE AND IP_PAGO_BANCOSDET.ANO= :KEY_ANO AND IP_PAGO_BANCOSDET.NUMFACTURA= :KEY_NUMFACTURA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="PAG_BAN" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+		<param name="PREFEC" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PAQUETE" sqlType="STRING"/>
+		<param name="BARRAS" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_PRECOD" sqlType="STRING"/>
+		<param name="KEY_NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="KEY_PAG_BAN" sqlType="STRING"/>
+		<param name="KEY_PREFEC" sqlType="STRING"/>
+		<param name="KEY_PAQUETE" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_NUMFACTURA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ippagobancosdet/actregistro">
+		<call-query href="updateIppagobancosdetActregistro">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+			<with-param name="PREFEC" query-param="PREFEC"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PAQUETE" query-param="PAQUETE"/>
+			<with-param name="BARRAS" query-param="BARRAS"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_PRECOD" query-param="KEY_PRECOD"/>
+			<with-param name="KEY_NUMERO_ORDEN" query-param="KEY_NUMERO_ORDEN"/>
+			<with-param name="KEY_PAG_BAN" query-param="KEY_PAG_BAN"/>
+			<with-param name="KEY_PREFEC" query-param="KEY_PREFEC"/>
+			<with-param name="KEY_PAQUETE" query-param="KEY_PAQUETE"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_NUMFACTURA" query-param="KEY_NUMFACTURA"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,33 @@
+MERGE INTO SECCIONES_CONCEPTOS tgt
+USING (
+    SELECT '001' AS COMPANIA, 15 AS CODIGO, 'Saldo al 31 de diciembre de' AS NOMBRE FROM DUAL
+) src
+ON (
+    tgt.COMPANIA = src.COMPANIA
+    AND tgt.CODIGO = src.CODIGO
+)
+WHEN NOT MATCHED THEN
+    INSERT (COMPANIA, CODIGO, NOMBRE, CREATED_BY, DATE_CREATED, MODIFIED_BY, DATE_MODIFIED)
+    VALUES (src.COMPANIA, src.CODIGO, src.NOMBRE, 'ADMIN', SYSDATE, NULL, NULL);
+COMMIT;
+MERGE INTO CONFIGURAR_CONCEPTOS tgt
+USING (
+    SELECT '001' AS COMPANIA, 2025 AS ANO, '050' AS CODIGO, 'Adquisiciones de acciones propias' AS NOMBRE, 15 AS SECCION, '002915EstadoCambiosPatrimonio' AS INFORME FROM DUAL UNION ALL
+    SELECT '001', 2024, '050', 'Adquisiciones de acciones propias', 15, '002915EstadoCambiosPatrimonio' FROM DUAL UNION ALL
+    SELECT '001', 2025, '051', 'Dividendos decretados', 15, '002915EstadoCambiosPatrimonio' FROM DUAL UNION ALL
+    SELECT '001', 2024, '051', 'Dividendos decretados', 15, '002915EstadoCambiosPatrimonio' FROM DUAL UNION ALL
+    SELECT '001', 2025, '052', 'Utilidad neta', 15, '002915EstadoCambiosPatrimonio' FROM DUAL UNION ALL
+    SELECT '001', 2024, '052', 'Utilidad neta', 15, '002915EstadoCambiosPatrimonio' FROM DUAL UNION ALL
+    SELECT '001', 2024, '053', 'Resultados ejercicios anteriores', 15, '002915EstadoCambiosPatrimonio' FROM DUAL UNION ALL
+    SELECT '001', 2025, '053', 'Resultados ejercicios anteriores', 15, '002915EstadoCambiosPatrimonio' FROM DUAL
+) src
+ON (
+    tgt.COMPANIA = src.COMPANIA
+    AND tgt.ANO    = src.ANO
+    AND tgt.CODIGO = src.CODIGO
+    AND tgt.INFORME = src.INFORME
+)
+WHEN NOT MATCHED THEN
+    INSERT (COMPANIA, ANO, CODIGO, NOMBRE, SECCION, INFORME, CREATED_BY, DATE_CREATED, MODIFIED_BY, DATE_MODIFIED)
+    VALUES (src.COMPANIA, src.ANO, src.CODIGO, src.NOMBRE, src.SECCION, src.INFORME, 'ADMIN', SYSDATE, NULL, NULL);
+COMMIT;

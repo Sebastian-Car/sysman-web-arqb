@@ -1,0 +1,25 @@
+SELECT 
+  PAGO.VALORPAGO,
+  DECODE(PAGO.OPERACION,'X','Borrar Pago'
+                       ,'1','Primer Pago'
+                       ,'2','Segundo Pago'
+                       ,'D','Pago Doble') OPERACION, 
+  PAGO.USUARIO, 
+  PRIMERAPELLIDO||' '||SEGUNDOAPELLIDO||' '||NOMBRES NOMBRECOMPLETO,
+  PAGO.CODIGORUTA, 
+  PAGO.COMPANIA,  
+  USUARIO.ANO,
+  USUARIO.PERIODO, 
+  PAGO.CODIGOINTERNO 
+FROM SP_PAGO PAGO
+  LEFT JOIN SP_USUARIO  
+ USUARIO  
+  ON  PAGO.COMPANIA   = USUARIO.COMPANIA 
+  AND PAGO.CICLO      = USUARIO.CICLO 
+  AND PAGO.CODIGORUTA = USUARIO.CODIGORUTA  
+WHERE PAGO.COMPANIA      = s$compania$s 
+  AND PAGO.BANCO         = 's$banco$s'
+  AND PAGO.NUMEROPAQUETE = 's$paquete$s'
+  AND TRUNC(FECHA)       = TO_DATE('s$fecha$s','DD/MM/YYYY')  
+ s$condCiclo$s  
+  

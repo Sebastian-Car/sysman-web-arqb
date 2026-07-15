@@ -1,0 +1,56 @@
+/**
+ * 
+ */
+package com.sysman.presupuesto.enums;
+
+/**
+ * @author dcastiblanco
+ *Enumeracion que permite clasificar cada uno de los identificadores
+ * geenerados en el refactoring y asociados al codigo legacy obtenido
+ * con patrones de busqueda.
+ */
+public enum FrpresupuestalgastosfuenteControladorUrlEnum {
+
+	
+	URL10036("FRPRESUPUESTALGASTOSFUENTECONTROLADORURL10036", "23019"),
+
+	URL9413("FRPRESUPUESTALGASTOSFUENTECONTROLADORURL9413", "23010"),
+
+	URL5600("FRPRESUPUESTALGASTOSFUENTECONTROLADORURL5600", "4001"),
+
+	URL4686("FRPRESUPUESTALGASTOSFUENTECONTROLADORURL4686", "7013"),
+
+	URL5111("FRPRESUPUESTALGASTOSFUENTECONTROLADORURL5111", "7004"),
+
+	URL5941("FRPRESUPUESTALGASTOSFUENTECONTROLADORURL5941", "94036"),
+
+	URL6882("FRPRESUPUESTALGASTOSFUENTECONTROLADORURL6882", "94034"),
+	
+	URL6883("FRPRESUPUESTALGASTOSFUENTECONTROLADORURL6883", "23048"),
+	
+    URL6884("FRPRESUPUESTALGASTOSFUENTECONTROLADORURL6884", "23050"),
+    
+    URL6885("FRPRESUPUESTALGASTOSFUENTECONTROLADORURL6885", "13035"),
+	
+	URL6886("FRPRESUPUESTALGASTOSFUENTECONTROLADORURL6886", "13039"),
+	
+	URL6887("FRPRESUPUESTALGASTOSFUENTECONTROLADORURL6887", "20013"),
+	
+	URL6888("FRPRESUPUESTALGASTOSFUENTECONTROLADORURL6888", "20015");
+
+	private final String key;
+	private final String value;
+
+	private FrpresupuestalgastosfuenteControladorUrlEnum(String key, String value) {
+		this.key = key;
+		this.value = value;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public String getValue() {
+		return value;
+	}
+}

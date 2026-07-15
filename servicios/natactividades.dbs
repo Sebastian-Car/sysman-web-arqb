@@ -1,0 +1,166 @@
+﻿<data name="natactividades" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertNatactividades" keyColumns="COMPANIA,AC_CONSECUTIVO,DP_NUMEDOCU,SUCURSAL" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO NAT_ACTIVIDADES (AC_CONSECUTIVO, DP_NUMEDOCU, AC_SECTOR, AC_CLASE, AC_NOMBENTI, AC_ANOS, AC_MESES, FECHAINICIO, FECHAFIN, SUCURSAL, COMPANIA, DATE_CREATED, CREATED_BY) VALUES (:AC_CONSECUTIVO, :DP_NUMEDOCU, :AC_SECTOR, :AC_CLASE, :AC_NOMBENTI, :AC_ANOS, :AC_MESES, TO_DATE(:FECHAINICIO,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHAFIN,'DD/MM/YYYY HH24:MI:SS'), :SUCURSAL, :COMPANIA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_AC_CONSECUTIVO":"$AC_CONSECUTIVO","KEY_DP_NUMEDOCU":"$DP_NUMEDOCU","KEY_SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="AC_CONSECUTIVO" sqlType="STRING"/>
+		<param name="DP_NUMEDOCU" sqlType="STRING"/>
+		<param defaultValue="" name="AC_SECTOR" sqlType="STRING"/>
+		<param defaultValue="" name="AC_CLASE" sqlType="STRING"/>
+		<param defaultValue="" name="AC_NOMBENTI" sqlType="STRING"/>
+		<param defaultValue="" name="AC_ANOS" sqlType="STRING"/>
+		<param defaultValue="" name="AC_MESES" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAINICIO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAFIN" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="natactividades">
+		<call-query href="insertNatactividades">
+			<with-param name="AC_CONSECUTIVO" query-param="AC_CONSECUTIVO"/>
+			<with-param name="DP_NUMEDOCU" query-param="DP_NUMEDOCU"/>
+			<with-param name="AC_SECTOR" query-param="AC_SECTOR"/>
+			<with-param name="AC_CLASE" query-param="AC_CLASE"/>
+			<with-param name="AC_NOMBENTI" query-param="AC_NOMBENTI"/>
+			<with-param name="AC_ANOS" query-param="AC_ANOS"/>
+			<with-param name="AC_MESES" query-param="AC_MESES"/>
+			<with-param name="FECHAINICIO" query-param="FECHAINICIO"/>
+			<with-param name="FECHAFIN" query-param="FECHAFIN"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteNatactividades" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM NAT_ACTIVIDADES WHERE NAT_ACTIVIDADES.COMPANIA= :KEY_COMPANIA AND NAT_ACTIVIDADES.AC_CONSECUTIVO= :KEY_AC_CONSECUTIVO AND NAT_ACTIVIDADES.DP_NUMEDOCU= :KEY_DP_NUMEDOCU AND NAT_ACTIVIDADES.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_AC_CONSECUTIVO" sqlType="STRING"/>
+		<param name="KEY_DP_NUMEDOCU" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="natactividades">
+		<call-query href="deleteNatactividades">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_AC_CONSECUTIVO" query-param="KEY_AC_CONSECUTIVO"/>
+			<with-param name="KEY_DP_NUMEDOCU" query-param="KEY_DP_NUMEDOCU"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatactividadesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NAT_ACTIVIDADES.AC_CONSECUTIVO, CASE NAT_ACTIVIDADES.AC_SECTOR WHEN '1' THEN 'Publico' WHEN '2' THEN 'Privado' WHEN '3' THEN 'No Aplica' END AC_SECTOR, NAT_ACTIVIDADES.AC_CLASE,(TO_CHAR(NAT_ACTIVIDADES.FECHAINICIO,'DD/MM/YYYY HH24:MI:SS')) FECHAINICIO,(TO_CHAR(NAT_ACTIVIDADES.FECHAFIN,'DD/MM/YYYY HH24:MI:SS')) FECHAFIN, NAT_ACTIVIDADES.AC_NOMBENTI, NAT_ACTIVIDADES.AC_ANOS, NAT_ACTIVIDADES.AC_MESES, NAT_ACTIVIDADES.SUCURSAL, NAT_ACTIVIDADES.COMPANIA, NAT_ACTIVIDADES.DP_NUMEDOCU  FROM NAT_ACTIVIDADES WHERE NAT_ACTIVIDADES.COMPANIA = :COMPANIA AND NAT_ACTIVIDADES.DP_NUMEDOCU = :DP_NUMEDOCU) WHERE (CASE WHEN AC_CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(AC_CONSECUTIVO) END)  LIKE UPPER(:AC_CONSECUTIVO || '%')  AND (CASE WHEN AC_SECTOR IS NULL THEN ' ' ELSE UPPER(AC_SECTOR) END)  LIKE UPPER( '%' || :AC_SECTOR || '%')  AND (CASE WHEN AC_CLASE IS NULL THEN ' ' ELSE UPPER(AC_CLASE) END)  LIKE UPPER( '%' || :AC_CLASE || '%')  AND (CASE WHEN FECHAINICIO IS NULL THEN ' ' ELSE UPPER(FECHAINICIO) END)  LIKE UPPER( '%' || :FECHAINICIO || '%')  AND (CASE WHEN FECHAFIN IS NULL THEN ' ' ELSE UPPER(FECHAFIN) END)  LIKE UPPER( '%' || :FECHAFIN || '%')  AND (CASE WHEN AC_NOMBENTI IS NULL THEN ' ' ELSE UPPER(AC_NOMBENTI) END)  LIKE UPPER( '%' || :AC_NOMBENTI || '%')  AND (CASE WHEN AC_ANOS IS NULL THEN ' ' ELSE UPPER(AC_ANOS) END)  LIKE UPPER(:AC_ANOS || '%')  AND (CASE WHEN AC_MESES IS NULL THEN ' ' ELSE UPPER(AC_MESES) END)  LIKE UPPER(:AC_MESES || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"AC_CONSECUTIVO":"$AC_CONSECUTIVO","AC_SECTOR":"$AC_SECTOR","AC_CLASE":"$AC_CLASE","FECHAINICIO":"$FECHAINICIO","FECHAFIN":"$FECHAFIN","AC_NOMBENTI":"$AC_NOMBENTI","AC_ANOS":"$AC_ANOS(type:integer)","AC_MESES":"$AC_MESES(type:integer)","SUCURSAL":"$SUCURSAL","COMPANIA":"$COMPANIA","DP_NUMEDOCU":"$DP_NUMEDOCU"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DP_NUMEDOCU" sqlType="STRING"/>
+		<param name="AC_CONSECUTIVO" sqlType="STRING"/>
+		<param name="AC_SECTOR" sqlType="STRING"/>
+		<param name="AC_CLASE" sqlType="STRING"/>
+		<param name="FECHAINICIO" sqlType="STRING"/>
+		<param name="FECHAFIN" sqlType="STRING"/>
+		<param name="AC_NOMBENTI" sqlType="STRING"/>
+		<param name="AC_ANOS" sqlType="STRING"/>
+		<param name="AC_MESES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="natactividades">
+		<call-query href="getNatactividadesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DP_NUMEDOCU" query-param="DP_NUMEDOCU"/>
+			<with-param name="AC_CONSECUTIVO" query-param="AC_CONSECUTIVO"/>
+			<with-param name="AC_SECTOR" query-param="AC_SECTOR"/>
+			<with-param name="AC_CLASE" query-param="AC_CLASE"/>
+			<with-param name="FECHAINICIO" query-param="FECHAINICIO"/>
+			<with-param name="FECHAFIN" query-param="FECHAFIN"/>
+			<with-param name="AC_NOMBENTI" query-param="AC_NOMBENTI"/>
+			<with-param name="AC_ANOS" query-param="AC_ANOS"/>
+			<with-param name="AC_MESES" query-param="AC_MESES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatactividadesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NAT_ACTIVIDADES.AC_CONSECUTIVO, CASE NAT_ACTIVIDADES.AC_SECTOR WHEN '1' THEN 'Publico' WHEN '2' THEN 'Privado' WHEN '3' THEN 'No Aplica' END AC_SECTOR, NAT_ACTIVIDADES.AC_CLASE,(TO_CHAR(NAT_ACTIVIDADES.FECHAINICIO,'DD/MM/YYYY HH24:MI:SS')) FECHAINICIO,(TO_CHAR(NAT_ACTIVIDADES.FECHAFIN,'DD/MM/YYYY HH24:MI:SS')) FECHAFIN, NAT_ACTIVIDADES.AC_NOMBENTI, NAT_ACTIVIDADES.AC_ANOS, NAT_ACTIVIDADES.AC_MESES, NAT_ACTIVIDADES.SUCURSAL, NAT_ACTIVIDADES.COMPANIA, NAT_ACTIVIDADES.DP_NUMEDOCU  FROM NAT_ACTIVIDADES WHERE NAT_ACTIVIDADES.COMPANIA = :COMPANIA AND NAT_ACTIVIDADES.DP_NUMEDOCU = :DP_NUMEDOCU) WHERE (CASE WHEN AC_CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(AC_CONSECUTIVO) END)  LIKE UPPER(:AC_CONSECUTIVO || '%')  AND (CASE WHEN AC_SECTOR IS NULL THEN ' ' ELSE UPPER(AC_SECTOR) END)  LIKE UPPER( '%' || :AC_SECTOR || '%')  AND (CASE WHEN AC_CLASE IS NULL THEN ' ' ELSE UPPER(AC_CLASE) END)  LIKE UPPER( '%' || :AC_CLASE || '%')  AND (CASE WHEN FECHAINICIO IS NULL THEN ' ' ELSE UPPER(FECHAINICIO) END)  LIKE UPPER( '%' || :FECHAINICIO || '%')  AND (CASE WHEN FECHAFIN IS NULL THEN ' ' ELSE UPPER(FECHAFIN) END)  LIKE UPPER( '%' || :FECHAFIN || '%')  AND (CASE WHEN AC_NOMBENTI IS NULL THEN ' ' ELSE UPPER(AC_NOMBENTI) END)  LIKE UPPER( '%' || :AC_NOMBENTI || '%')  AND (CASE WHEN AC_ANOS IS NULL THEN ' ' ELSE UPPER(AC_ANOS) END)  LIKE UPPER(:AC_ANOS || '%')  AND (CASE WHEN AC_MESES IS NULL THEN ' ' ELSE UPPER(AC_MESES) END)  LIKE UPPER(:AC_MESES || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DP_NUMEDOCU" sqlType="STRING"/>
+		<param name="AC_CONSECUTIVO" sqlType="STRING"/>
+		<param name="AC_SECTOR" sqlType="STRING"/>
+		<param name="AC_CLASE" sqlType="STRING"/>
+		<param name="FECHAINICIO" sqlType="STRING"/>
+		<param name="FECHAFIN" sqlType="STRING"/>
+		<param name="AC_NOMBENTI" sqlType="STRING"/>
+		<param name="AC_ANOS" sqlType="STRING"/>
+		<param name="AC_MESES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="natactividades/numero">
+		<call-query href="getNatactividadesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DP_NUMEDOCU" query-param="DP_NUMEDOCU"/>
+			<with-param name="AC_CONSECUTIVO" query-param="AC_CONSECUTIVO"/>
+			<with-param name="AC_SECTOR" query-param="AC_SECTOR"/>
+			<with-param name="AC_CLASE" query-param="AC_CLASE"/>
+			<with-param name="FECHAINICIO" query-param="FECHAINICIO"/>
+			<with-param name="FECHAFIN" query-param="FECHAFIN"/>
+			<with-param name="AC_NOMBENTI" query-param="AC_NOMBENTI"/>
+			<with-param name="AC_ANOS" query-param="AC_ANOS"/>
+			<with-param name="AC_MESES" query-param="AC_MESES"/>
+
+		</call-query>
+	</resource>
+	<query id="updateNatactividades" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE NAT_ACTIVIDADES SET AC_SECTOR=:AC_SECTOR, AC_CLASE=:AC_CLASE, AC_NOMBENTI=:AC_NOMBENTI, AC_ANOS=:AC_ANOS, AC_MESES=:AC_MESES, FECHAINICIO=TO_DATE(:FECHAINICIO,'DD/MM/YYYY HH24:MI:SS'), FECHAFIN=TO_DATE(:FECHAFIN,'DD/MM/YYYY HH24:MI:SS'), DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE NAT_ACTIVIDADES.COMPANIA= :KEY_COMPANIA AND NAT_ACTIVIDADES.AC_CONSECUTIVO= :KEY_AC_CONSECUTIVO AND NAT_ACTIVIDADES.DP_NUMEDOCU= :KEY_DP_NUMEDOCU AND NAT_ACTIVIDADES.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="AC_SECTOR" sqlType="STRING"/>
+		<param name="AC_CLASE" sqlType="STRING"/>
+		<param name="AC_NOMBENTI" sqlType="STRING"/>
+		<param name="AC_ANOS" sqlType="STRING"/>
+		<param name="AC_MESES" sqlType="STRING"/>
+		<param name="FECHAINICIO" sqlType="STRING"/>
+		<param name="FECHAFIN" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_AC_CONSECUTIVO" sqlType="STRING"/>
+		<param name="KEY_DP_NUMEDOCU" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="natactividades">
+		<call-query href="updateNatactividades">
+			<with-param name="AC_SECTOR" query-param="AC_SECTOR"/>
+			<with-param name="AC_CLASE" query-param="AC_CLASE"/>
+			<with-param name="AC_NOMBENTI" query-param="AC_NOMBENTI"/>
+			<with-param name="AC_ANOS" query-param="AC_ANOS"/>
+			<with-param name="AC_MESES" query-param="AC_MESES"/>
+			<with-param name="FECHAINICIO" query-param="FECHAINICIO"/>
+			<with-param name="FECHAFIN" query-param="FECHAFIN"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_AC_CONSECUTIVO" query-param="KEY_AC_CONSECUTIVO"/>
+			<with-param name="KEY_DP_NUMEDOCU" query-param="KEY_DP_NUMEDOCU"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+
+</data>

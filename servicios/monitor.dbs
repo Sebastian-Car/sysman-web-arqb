@@ -1,0 +1,85 @@
+﻿<data name="monitor" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="deleteMonitor" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM IG_DETALLE_INDICADORES_BASICOS WHERE IG_DETALLE_INDICADORES_BASICOS.COMPANIA= :KEY_COMPANIA AND IG_DETALLE_INDICADORES_BASICOS.ANO= :KEY_ANO AND IG_DETALLE_INDICADORES_BASICOS.MES= :KEY_MES AND IG_DETALLE_INDICADORES_BASICOS.DIA= :KEY_DIA AND IG_DETALLE_INDICADORES_BASICOS.CODIGO_INDICADOR= :KEY_CODIGO_INDICADOR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_MES" sqlType="INTEGER"/>
+		<param name="KEY_DIA" sqlType="INTEGER"/>
+		<param name="KEY_CODIGO_INDICADOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="monitor">
+		<call-query href="deleteMonitor">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_MES" query-param="KEY_MES"/>
+			<with-param name="KEY_DIA" query-param="KEY_DIA"/>
+			<with-param name="KEY_CODIGO_INDICADOR" query-param="KEY_CODIGO_INDICADOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getMonitorPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IG_DETALLE_INDICADORES_BASICOS.COMPANIA, IG_DETALLE_INDICADORES_BASICOS.ANO, IG_DETALLE_INDICADORES_BASICOS.MES, IG_DETALLE_INDICADORES_BASICOS.DIA, IG_DETALLE_INDICADORES_BASICOS.CODIGO_INDICADOR, IG_INDICADORES_BASICOS.DESCRIPCION, IG_DETALLE_INDICADORES_BASICOS.VALOR, IG_INDICADORES_BASICOS.TIPO  FROM IG_DETALLE_INDICADORES_BASICOS INNER JOIN IG_INDICADORES_BASICOS ON IG_DETALLE_INDICADORES_BASICOS.COMPANIA = IG_INDICADORES_BASICOS.COMPANIA AND IG_DETALLE_INDICADORES_BASICOS.CODIGO_INDICADOR = IG_INDICADORES_BASICOS.CODIGO WHERE IG_INDICADORES_BASICOS.COMPANIA =:COMPANIA ORDER BY IG_DETALLE_INDICADORES_BASICOS.CODIGO_INDICADOR ASC) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN MES IS NULL THEN ' ' ELSE UPPER(MES) END)  LIKE UPPER(:MES || '%')  AND (CASE WHEN DIA IS NULL THEN ' ' ELSE UPPER(DIA) END)  LIKE UPPER(:DIA || '%')  AND (CASE WHEN CODIGO_INDICADOR IS NULL THEN ' ' ELSE UPPER(CODIGO_INDICADOR) END)  LIKE UPPER(:CODIGO_INDICADOR || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER(:TIPO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","MES":"$MES(type:integer)","DIA":"$DIA(type:integer)","CODIGO_INDICADOR":"$CODIGO_INDICADOR","DESCRIPCION":"$DESCRIPCION","VALOR":"$VALOR","TIPO":"$TIPO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="DIA" sqlType="STRING"/>
+		<param name="CODIGO_INDICADOR" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="monitor">
+		<call-query href="getMonitorPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="DIA" query-param="DIA"/>
+			<with-param name="CODIGO_INDICADOR" query-param="CODIGO_INDICADOR"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getMonitorNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IG_DETALLE_INDICADORES_BASICOS.COMPANIA, IG_DETALLE_INDICADORES_BASICOS.ANO, IG_DETALLE_INDICADORES_BASICOS.MES, IG_DETALLE_INDICADORES_BASICOS.DIA, IG_DETALLE_INDICADORES_BASICOS.CODIGO_INDICADOR, IG_INDICADORES_BASICOS.DESCRIPCION, IG_DETALLE_INDICADORES_BASICOS.VALOR, IG_INDICADORES_BASICOS.TIPO  FROM IG_DETALLE_INDICADORES_BASICOS INNER JOIN IG_INDICADORES_BASICOS ON IG_DETALLE_INDICADORES_BASICOS.COMPANIA = IG_INDICADORES_BASICOS.COMPANIA AND IG_DETALLE_INDICADORES_BASICOS.CODIGO_INDICADOR = IG_INDICADORES_BASICOS.CODIGO WHERE IG_INDICADORES_BASICOS.COMPANIA =:COMPANIA ORDER BY IG_DETALLE_INDICADORES_BASICOS.CODIGO_INDICADOR ASC) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN MES IS NULL THEN ' ' ELSE UPPER(MES) END)  LIKE UPPER(:MES || '%')  AND (CASE WHEN DIA IS NULL THEN ' ' ELSE UPPER(DIA) END)  LIKE UPPER(:DIA || '%')  AND (CASE WHEN CODIGO_INDICADOR IS NULL THEN ' ' ELSE UPPER(CODIGO_INDICADOR) END)  LIKE UPPER(:CODIGO_INDICADOR || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER(:TIPO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="DIA" sqlType="STRING"/>
+		<param name="CODIGO_INDICADOR" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="monitor/numero">
+		<call-query href="getMonitorNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="DIA" query-param="DIA"/>
+			<with-param name="CODIGO_INDICADOR" query-param="CODIGO_INDICADOR"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+
+</data>

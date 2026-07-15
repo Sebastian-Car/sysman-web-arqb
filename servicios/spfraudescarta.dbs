@@ -1,0 +1,183 @@
+﻿<data name="spfraudescarta" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSpfraudescartaPorFraudeQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_FRAUDES_CARTA.COMPANIA, SP_FRAUDES_CARTA.FRAUDE, SP_FRAUDES_CARTA.CLASE, SP_FRAUDES_CARTA.SUBCLASE, ' ' NOMBRECLASE,  (TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, SP_FRAUDES_CARTA.OBSERVACION,(CASE SP_FRAUDES_CARTA.IMPRESA WHEN 0 THEN 'false' ELSE 'true' END) IMPRESA, (TO_CHAR(FECHAIMPRESION,'DD/MM/YYYY HH24:MI:SS')) FECHAIMPRESION , SP_FRAUDES_CARTA.CONSECUTIVO  FROM SP_FRAUDES_CARTA WHERE SP_FRAUDES_CARTA.COMPANIA= :COMPANIA AND SP_FRAUDES_CARTA.FRAUDE= :FRAUDE ORDER BY SP_FRAUDES_CARTA.SUBCLASE DESC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","FRAUDE":"$FRAUDE","CLASE":"$CLASE","SUBCLASE":"$SUBCLASE(type:integer)","NOMBRECLASE":"$NOMBRECLASE","FECHA":"$FECHA","OBSERVACION":"$OBSERVACION","IMPRESA":"$IMPRESA(type:boolean)","FECHAIMPRESION":"$FECHAIMPRESION","CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FRAUDE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfraudescarta/porfraude">
+		<call-query href="getSpfraudescartaPorFraudeQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FRAUDE" query-param="FRAUDE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpfraudescartaConsecutivo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_FRAUDES_CARTA SET SP_FRAUDES_CARTA.FECHAIMPRESION = SYSDATE,   SP_FRAUDES_CARTA.CONSECUTIVO      = :CONSECUTIVO ,   SP_FRAUDES_CARTA.IMPRESA          = -1 ,   SP_FRAUDES_CARTA.DATE_MODIFIED    = SYSDATE ,   SP_FRAUDES_CARTA.MODIFIED_BY      = :MODIFIED_BY WHERE SP_FRAUDES_CARTA.COMPANIA     = :COMPANIA AND SP_FRAUDES_CARTA.FRAUDE         = :FRAUDE AND SP_FRAUDES_CARTA.SUBCLASE       = :SUBCLASE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FRAUDE" sqlType="STRING"/>
+		<param name="SUBCLASE" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spfraudescarta/consecutivo">
+		<call-query href="updateSpfraudescartaConsecutivo">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FRAUDE" query-param="FRAUDE"/>
+			<with-param name="SUBCLASE" query-param="SUBCLASE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpfraudescartaCompararCartasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_FRAUDES_CARTA.COMPANIA,SP_FRAUDES_CARTA.FRAUDE, SP_FRAUDES_CARTA.ClASE, SP_FRAUDES_CARTA.SUBCLASE, SP_FRAUDES_CARTA.CONSECUTIVO,(CASE SP_FRAUDES_CARTA.IMPRESA WHEN 0 THEN 'false' ELSE 'true' END) IMPRESA,SP_FRAUDES_CARTA.OBSERVACION, SP_FRAUDES_CARTA.CREATED_BY,SP_FRAUDES_CARTA.MODIFIED_BY,(TO_CHAR(SP_FRAUDES_CARTA.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED,(TO_CHAR(SP_FRAUDES_CARTA.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED,(TO_CHAR(SP_FRAUDES_CARTA.FECHAIMPRESION,'DD/MM/YYYY HH24:MI:SS')) FECHAIMPRESION FROM SP_FRAUDES_CARTA WHERE SP_FRAUDES_CARTA.COMPANIA = :COMPANIA AND SP_FRAUDES_CARTA.FRAUDE = :FRAUDE AND SP_FRAUDES_CARTA.SUBCLASE = :SUBCLASE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","FRAUDE":"$FRAUDE","CLASE":"$CLASE","SUBCLASE":"$SUBCLASE(type:integer)","CONSECUTIVO":"$CONSECUTIVO","IMPRESA":"$IMPRESA(type:boolean)","OBSERVACION":"$OBSERVACION","CREATED_BY":"$CREATED_BY","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","DATE_CREATED":"$DATE_CREATED","FECHAIMPRESION":"$FECHAIMPRESION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FRAUDE" sqlType="STRING"/>
+		<param name="SUBCLASE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfraudescarta/compararcartas">
+		<call-query href="getSpfraudescartaCompararCartasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FRAUDE" query-param="FRAUDE"/>
+			<with-param name="SUBCLASE" query-param="SUBCLASE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpfraudescartaPorSubclaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_FRAUDES_CARTA.COMPANIA,SP_FRAUDES_CARTA.FRAUDE, SP_FRAUDES_CARTA.CLASE, SP_FRAUDES_CARTA.SUBCLASE, SP_FRAUDES_CARTA.CONSECUTIVO,(CASE SP_FRAUDES_CARTA.IMPRESA WHEN 0 THEN 'false' ELSE 'true' END) IMPRESA,SP_FRAUDES_CARTA.OBSERVACION, SP_FRAUDES_CARTA.CREATED_BY,SP_FRAUDES_CARTA.MODIFIED_BY,(TO_CHAR(SP_FRAUDES_CARTA.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED,(TO_CHAR(SP_FRAUDES_CARTA.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED,(TO_CHAR(SP_FRAUDES_CARTA.FECHAIMPRESION,'DD/MM/YYYY HH24:MI:SS')) FECHAIMPRESION FROM SP_FRAUDES_CARTA WHERE SP_FRAUDES_CARTA.COMPANIA = :COMPANIA AND SP_FRAUDES_CARTA.FRAUDE = :FRAUDE AND SP_FRAUDES_CARTA.SUBCLASE = :SUBCLASE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","FRAUDE":"$FRAUDE","CLASE":"$CLASE","SUBCLASE":"$SUBCLASE(type:integer)","CONSECUTIVO":"$CONSECUTIVO","IMPRESA":"$IMPRESA(type:boolean)","OBSERVACION":"$OBSERVACION","CREATED_BY":"$CREATED_BY","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","DATE_CREATED":"$DATE_CREATED","FECHAIMPRESION":"$FECHAIMPRESION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FRAUDE" sqlType="STRING"/>
+		<param name="SUBCLASE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfraudescarta/porsubclase">
+		<call-query href="getSpfraudescartaPorSubclaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FRAUDE" query-param="FRAUDE"/>
+			<with-param name="SUBCLASE" query-param="SUBCLASE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSpfraudescarta" keyColumns="COMPANIA,FRAUDE,CLASE,SUBCLASE" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_FRAUDES_CARTA (COMPANIA, FRAUDE, CLASE, SUBCLASE, FECHA, OBSERVACION, IMPRESA, FECHAIMPRESION, CONSECUTIVO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :FRAUDE, :CLASE, :SUBCLASE, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :OBSERVACION, :IMPRESA, TO_DATE(:FECHAIMPRESION,'DD/MM/YYYY HH24:MI:SS'), :CONSECUTIVO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_FRAUDE":"$FRAUDE","KEY_CLASE":"$CLASE","KEY_SUBCLASE":"$SUBCLASE(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FRAUDE" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="SUBCLASE" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACION" sqlType="STRING"/>
+		<param defaultValue="0" name="IMPRESA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAIMPRESION" sqlType="STRING"/>
+		<param defaultValue="" name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="spfraudescarta">
+		<call-query href="insertSpfraudescarta">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FRAUDE" query-param="FRAUDE"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="SUBCLASE" query-param="SUBCLASE"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="IMPRESA" query-param="IMPRESA"/>
+			<with-param name="FECHAIMPRESION" query-param="FECHAIMPRESION"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSpfraudescarta" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SP_FRAUDES_CARTA WHERE SP_FRAUDES_CARTA.COMPANIA= :KEY_COMPANIA AND SP_FRAUDES_CARTA.FRAUDE= :KEY_FRAUDE AND SP_FRAUDES_CARTA.CLASE= :KEY_CLASE AND SP_FRAUDES_CARTA.SUBCLASE= :KEY_SUBCLASE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_FRAUDE" sqlType="STRING"/>
+		<param name="KEY_CLASE" sqlType="STRING"/>
+		<param name="KEY_SUBCLASE" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="spfraudescarta">
+		<call-query href="deleteSpfraudescarta">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_FRAUDE" query-param="KEY_FRAUDE"/>
+			<with-param name="KEY_CLASE" query-param="KEY_CLASE"/>
+			<with-param name="KEY_SUBCLASE" query-param="KEY_SUBCLASE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpfraudescartaPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_FRAUDES_CARTA.COMPANIA, SP_FRAUDES_CARTA.FRAUDE, SP_FRAUDES_CARTA.CLASE, SP_FRAUDES_CARTA.SUBCLASE, ' ' NOMBRECLASE,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, SP_FRAUDES_CARTA.OBSERVACION,(CASE SP_FRAUDES_CARTA.IMPRESA WHEN 0 THEN 'false' ELSE 'true' END) IMPRESA,(TO_CHAR(FECHAIMPRESION,'DD/MM/YYYY HH24:MI:SS')) FECHAIMPRESION, SP_FRAUDES_CARTA.CONSECUTIVO  FROM SP_FRAUDES_CARTA WHERE SP_FRAUDES_CARTA.COMPANIA= :COMPANIA AND SP_FRAUDES_CARTA.FRAUDE = :FRAUDE ORDER BY SP_FRAUDES_CARTA.SUBCLASE DESC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","FRAUDE":"$FRAUDE","CLASE":"$CLASE","SUBCLASE":"$SUBCLASE(type:integer)","NOMBRECLASE":"$NOMBRECLASE","FECHA":"$FECHA","OBSERVACION":"$OBSERVACION","IMPRESA":"$IMPRESA(type:boolean)","FECHAIMPRESION":"$FECHAIMPRESION","CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FRAUDE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spfraudescarta">
+		<call-query href="getSpfraudescartaPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FRAUDE" query-param="FRAUDE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpfraudescarta" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_FRAUDES_CARTA SET FRAUDE=:FRAUDE, CLASE=:CLASE, SUBCLASE=:SUBCLASE, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), OBSERVACION=:OBSERVACION, IMPRESA=:IMPRESA, FECHAIMPRESION=TO_DATE(:FECHAIMPRESION,'DD/MM/YYYY HH24:MI:SS'), CONSECUTIVO=:CONSECUTIVO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SP_FRAUDES_CARTA.COMPANIA= :KEY_COMPANIA AND SP_FRAUDES_CARTA.FRAUDE= :KEY_FRAUDE AND SP_FRAUDES_CARTA.CLASE= :KEY_CLASE AND SP_FRAUDES_CARTA.SUBCLASE= :KEY_SUBCLASE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="FRAUDE" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="SUBCLASE" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="IMPRESA" sqlType="STRING"/>
+		<param name="FECHAIMPRESION" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_FRAUDE" sqlType="STRING"/>
+		<param name="KEY_CLASE" sqlType="STRING"/>
+		<param name="KEY_SUBCLASE" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spfraudescarta">
+		<call-query href="updateSpfraudescarta">
+			<with-param name="FRAUDE" query-param="FRAUDE"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="SUBCLASE" query-param="SUBCLASE"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="IMPRESA" query-param="IMPRESA"/>
+			<with-param name="FECHAIMPRESION" query-param="FECHAIMPRESION"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_FRAUDE" query-param="KEY_FRAUDE"/>
+			<with-param name="KEY_CLASE" query-param="KEY_CLASE"/>
+			<with-param name="KEY_SUBCLASE" query-param="KEY_SUBCLASE"/>
+
+		</call-query>
+	</resource>
+
+</data>

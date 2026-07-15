@@ -1,0 +1,218 @@
+﻿<data name="distribucionicld" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getDistribucionicldPagGetplanespresupuestalesxanoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, NOMBRE FROM V_PLAN_PRESUPUESTAL WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND NATURALEZA = 'C') INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="distribucionicld/getplanespresupuestalesxano/pag">
+		<call-query href="getDistribucionicldPagGetplanespresupuestalesxanoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDistribucionicldNumGetplanespresupuestalesxanoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, NOMBRE FROM V_PLAN_PRESUPUESTAL WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND NATURALEZA = 'C') INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="distribucionicld/getplanespresupuestalesxano/num">
+		<call-query href="getDistribucionicldNumGetplanespresupuestalesxanoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDistribucionicldGetsumaporcentajeQuery"  useConfig="sysmandsunist">
+		<sql>SELECT SUM(PORCENTAJE) SUMAPORCENTAJE FROM DISTRIBUCION_ICLD WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND RUBRO LIKE CONCAT(CONCAT('%',:RUBRO),'%')</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SUMAPORCENTAJE":"$SUMAPORCENTAJE(type:double)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="distribucionicld/getsumaporcentaje">
+		<call-query href="getDistribucionicldGetsumaporcentajeQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDistribucionicldGetsumaporcenajeQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COMPANIA,ANO,RUBRO,SUM(PORCENTAJE) SUMPORCENTA FROM DISTRIBUCION_ICLD WHERE COMPANIA = :COMPANIA AND ANO = :ANO GROUP BY COMPANIA,ANO,RUBRO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","RUBRO":"$RUBRO","SUMPORCENTA":"$SUMPORCENTA(type:double)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="distribucionicld/getsumaporcenaje">
+		<call-query href="getDistribucionicldGetsumaporcenajeQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertDistribucionicld" keyColumns="COMPANIA,ANO,RUBRO,FUENTE" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO DISTRIBUCION_ICLD (COMPANIA, ANO, RUBRO, FUENTE, PORCENTAJE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :RUBRO, :FUENTE, :PORCENTAJE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_RUBRO":"$RUBRO","KEY_FUENTE":"$FUENTE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="FUENTE" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="distribucionicld">
+		<call-query href="insertDistribucionicld">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="FUENTE" query-param="FUENTE"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteDistribucionicld" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM DISTRIBUCION_ICLD WHERE DISTRIBUCION_ICLD.COMPANIA= :KEY_COMPANIA AND DISTRIBUCION_ICLD.ANO= :KEY_ANO AND DISTRIBUCION_ICLD.RUBRO= :KEY_RUBRO AND DISTRIBUCION_ICLD.FUENTE= :KEY_FUENTE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_RUBRO" sqlType="STRING"/>
+		<param name="KEY_FUENTE" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="distribucionicld">
+		<call-query href="deleteDistribucionicld">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_RUBRO" query-param="KEY_RUBRO"/>
+			<with-param name="KEY_FUENTE" query-param="KEY_FUENTE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDistribucionicldPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, ANO, RUBRO, FUENTE, PORCENTAJE FROM DISTRIBUCION_ICLD) INI WHERE (CASE WHEN COMPANIA IS NULL THEN ' ' ELSE UPPER(COMPANIA) END) LIKE UPPER(CONCAT(CONCAT('%',:COMPANIA), '%')) AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(:ANO, '%')) AND (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END) LIKE UPPER(CONCAT(CONCAT('%',:RUBRO), '%')) AND (CASE WHEN FUENTE IS NULL THEN ' ' ELSE UPPER(FUENTE) END) LIKE UPPER(CONCAT(CONCAT('%',:FUENTE), '%')) AND (CASE WHEN PORCENTAJE IS NULL THEN ' ' ELSE UPPER(PORCENTAJE) END) LIKE UPPER(CONCAT(CONCAT('%',:PORCENTAJE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","RUBRO":"$RUBRO","FUENTE":"$FUENTE","PORCENTAJE":"$PORCENTAJE(type:double)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="FUENTE" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="distribucionicld">
+		<call-query href="getDistribucionicldPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="FUENTE" query-param="FUENTE"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDistribucionicldNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, ANO, RUBRO, FUENTE, PORCENTAJE FROM DISTRIBUCION_ICLD) INI WHERE (CASE WHEN COMPANIA IS NULL THEN ' ' ELSE UPPER(COMPANIA) END) LIKE UPPER(CONCAT(CONCAT('%',:COMPANIA), '%')) AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(:ANO, '%')) AND (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END) LIKE UPPER(CONCAT(CONCAT('%',:RUBRO), '%')) AND (CASE WHEN FUENTE IS NULL THEN ' ' ELSE UPPER(FUENTE) END) LIKE UPPER(CONCAT(CONCAT('%',:FUENTE), '%')) AND (CASE WHEN PORCENTAJE IS NULL THEN ' ' ELSE UPPER(PORCENTAJE) END) LIKE UPPER(CONCAT(CONCAT('%',:PORCENTAJE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="FUENTE" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="distribucionicld/numero">
+		<call-query href="getDistribucionicldNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="FUENTE" query-param="FUENTE"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDistribucionicldRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COMPANIA, ANO, RUBRO, FUENTE, PORCENTAJE FROM DISTRIBUCION_ICLD WHERE DISTRIBUCION_ICLD.COMPANIA= :KEY_COMPANIA AND DISTRIBUCION_ICLD.ANO= :KEY_ANO AND DISTRIBUCION_ICLD.RUBRO= :KEY_RUBRO AND DISTRIBUCION_ICLD.FUENTE= :KEY_FUENTE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","RUBRO":"$RUBRO","FUENTE":"$FUENTE","PORCENTAJE":"$PORCENTAJE(type:integer)"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_RUBRO" sqlType="STRING"/>
+		<param name="KEY_FUENTE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="distribucionicld/data">
+		<call-query href="getDistribucionicldRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_RUBRO" query-param="KEY_RUBRO"/>
+			<with-param name="KEY_FUENTE" query-param="KEY_FUENTE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDistribucionicld" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE DISTRIBUCION_ICLD SET COMPANIA=:COMPANIA, ANO=:ANO, RUBRO=:RUBRO, FUENTE=:FUENTE, PORCENTAJE=:PORCENTAJE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE DISTRIBUCION_ICLD.COMPANIA= :KEY_COMPANIA AND DISTRIBUCION_ICLD.ANO= :KEY_ANO AND DISTRIBUCION_ICLD.RUBRO= :KEY_RUBRO AND DISTRIBUCION_ICLD.FUENTE= :KEY_FUENTE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="FUENTE" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_RUBRO" sqlType="STRING"/>
+		<param name="KEY_FUENTE" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="distribucionicld">
+		<call-query href="updateDistribucionicld">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="FUENTE" query-param="FUENTE"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_RUBRO" query-param="KEY_RUBRO"/>
+			<with-param name="KEY_FUENTE" query-param="KEY_FUENTE"/>
+
+		</call-query>
+	</resource>
+
+</data>

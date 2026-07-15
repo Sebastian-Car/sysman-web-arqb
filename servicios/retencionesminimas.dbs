@@ -1,0 +1,167 @@
+﻿<data name="retencionesminimas" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getRetencionesminimasPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT RETENCIONES_MINIMAS.ANO  FROM RETENCIONES_MINIMAS WHERE COMPANIA = :COMPANIA ORDER BY RETENCIONES_MINIMAS.ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="retencionesminimas/porcompania">
+		<call-query href="getRetencionesminimasPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertRetencionesminimasAnioDestino" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO RETENCIONES_MINIMAS (COMPANIA, ANO, ID, LIMITE_INFERIOR, LIMITE_SUPERIOR, POR_APLICAR, TIPON)   SELECT         COMPANIA,         :ANIODEST,         ID,         LIMITE_INFERIOR,         LIMITE_SUPERIOR,         POR_APLICAR,         TIPON     FROM RETENCIONES_MINIMAS    WHERE         ANO =   :ANIOORGN</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ANIODEST" sqlType="STRING"/>
+		<param name="ANIOORGN" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="retencionesminimas/aniodestino">
+		<call-query href="insertRetencionesminimasAnioDestino">
+			<with-param name="ANIODEST" query-param="ANIODEST"/>
+			<with-param name="ANIOORGN" query-param="ANIOORGN"/>
+
+		</call-query>
+	</resource>
+	<query id="insertRetencionesminimas" keyColumns="COMPANIA,ANO,ID" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO RETENCIONES_MINIMAS (COMPANIA, ANO, ID, LIMITE_INFERIOR, LIMITE_SUPERIOR, POR_APLICAR, TIPON, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :ID, :LIMITE_INFERIOR, :LIMITE_SUPERIOR, :POR_APLICAR, :TIPON, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_ID":"$ID(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="LIMITE_INFERIOR" sqlType="STRING"/>
+		<param name="LIMITE_SUPERIOR" sqlType="STRING"/>
+		<param defaultValue="0" name="POR_APLICAR" sqlType="STRING"/>
+		<param defaultValue="" name="TIPON" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="retencionesminimas">
+		<call-query href="insertRetencionesminimas">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="LIMITE_INFERIOR" query-param="LIMITE_INFERIOR"/>
+			<with-param name="LIMITE_SUPERIOR" query-param="LIMITE_SUPERIOR"/>
+			<with-param name="POR_APLICAR" query-param="POR_APLICAR"/>
+			<with-param name="TIPON" query-param="TIPON"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteRetencionesminimas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM RETENCIONES_MINIMAS WHERE RETENCIONES_MINIMAS.COMPANIA= :KEY_COMPANIA AND RETENCIONES_MINIMAS.ANO= :KEY_ANO AND RETENCIONES_MINIMAS.ID= :KEY_ID</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_ID" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="retencionesminimas">
+		<call-query href="deleteRetencionesminimas">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_ID" query-param="KEY_ID"/>
+
+		</call-query>
+	</resource>
+	<query id="getRetencionesminimasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  RETENCIONES_MINIMAS.COMPANIA, RETENCIONES_MINIMAS.ANO, RETENCIONES_MINIMAS.ID, RETENCIONES_MINIMAS.LIMITE_INFERIOR, RETENCIONES_MINIMAS.LIMITE_SUPERIOR, RETENCIONES_MINIMAS.POR_APLICAR, RETENCIONES_MINIMAS.TIPON, (CASE RETENCIONES_MINIMAS.TIPON WHEN 'S' THEN 'IMAS' WHEN 'N' THEN 'IMAN' ELSE ' ' END) TIPON_LB  FROM RETENCIONES_MINIMAS WHERE COMPANIA = :COMPANIA ORDER BY RETENCIONES_MINIMAS.ANO DESC, RETENCIONES_MINIMAS.LIMITE_INFERIOR ASC) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN LIMITE_INFERIOR IS NULL THEN ' ' ELSE UPPER(LIMITE_INFERIOR) END)  LIKE UPPER( '%' || :LIMITE_INFERIOR || '%')  AND (CASE WHEN LIMITE_SUPERIOR IS NULL THEN ' ' ELSE UPPER(LIMITE_SUPERIOR) END)  LIKE UPPER( '%' || :LIMITE_SUPERIOR || '%')  AND (CASE WHEN POR_APLICAR IS NULL THEN ' ' ELSE UPPER(POR_APLICAR) END)  LIKE UPPER( '%' || :POR_APLICAR || '%')  AND (CASE WHEN TIPON_LB IS NULL THEN ' ' ELSE UPPER(TIPON_LB) END)  LIKE UPPER( '%' || :TIPON_LB || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","ID":"$ID(type:integer)","LIMITE_INFERIOR":"$LIMITE_INFERIOR","LIMITE_SUPERIOR":"$LIMITE_SUPERIOR","POR_APLICAR":"$POR_APLICAR","TIPON":"$TIPON","TIPON_LB":"$TIPON_LB"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="LIMITE_INFERIOR" sqlType="STRING"/>
+		<param name="LIMITE_SUPERIOR" sqlType="STRING"/>
+		<param name="POR_APLICAR" sqlType="STRING"/>
+		<param name="TIPON_LB" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="retencionesminimas">
+		<call-query href="getRetencionesminimasPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="LIMITE_INFERIOR" query-param="LIMITE_INFERIOR"/>
+			<with-param name="LIMITE_SUPERIOR" query-param="LIMITE_SUPERIOR"/>
+			<with-param name="POR_APLICAR" query-param="POR_APLICAR"/>
+			<with-param name="TIPON_LB" query-param="TIPON_LB"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getRetencionesminimasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  RETENCIONES_MINIMAS.COMPANIA, RETENCIONES_MINIMAS.ANO, RETENCIONES_MINIMAS.ID, RETENCIONES_MINIMAS.LIMITE_INFERIOR, RETENCIONES_MINIMAS.LIMITE_SUPERIOR, RETENCIONES_MINIMAS.POR_APLICAR, RETENCIONES_MINIMAS.TIPON, (CASE RETENCIONES_MINIMAS.TIPON WHEN 'S' THEN 'IMAS' WHEN 'N' THEN 'IMAN' ELSE ' ' END) TIPON_LB  FROM RETENCIONES_MINIMAS WHERE COMPANIA = :COMPANIA ORDER BY RETENCIONES_MINIMAS.ANO DESC, RETENCIONES_MINIMAS.LIMITE_INFERIOR ASC) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN LIMITE_INFERIOR IS NULL THEN ' ' ELSE UPPER(LIMITE_INFERIOR) END)  LIKE UPPER( '%' || :LIMITE_INFERIOR || '%')  AND (CASE WHEN LIMITE_SUPERIOR IS NULL THEN ' ' ELSE UPPER(LIMITE_SUPERIOR) END)  LIKE UPPER( '%' || :LIMITE_SUPERIOR || '%')  AND (CASE WHEN POR_APLICAR IS NULL THEN ' ' ELSE UPPER(POR_APLICAR) END)  LIKE UPPER( '%' || :POR_APLICAR || '%')  AND (CASE WHEN TIPON_LB IS NULL THEN ' ' ELSE UPPER(TIPON_LB) END)  LIKE UPPER( '%' || :TIPON_LB || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="LIMITE_INFERIOR" sqlType="STRING"/>
+		<param name="LIMITE_SUPERIOR" sqlType="STRING"/>
+		<param name="POR_APLICAR" sqlType="STRING"/>
+		<param name="TIPON_LB" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="retencionesminimas/numero">
+		<call-query href="getRetencionesminimasNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="LIMITE_INFERIOR" query-param="LIMITE_INFERIOR"/>
+			<with-param name="LIMITE_SUPERIOR" query-param="LIMITE_SUPERIOR"/>
+			<with-param name="POR_APLICAR" query-param="POR_APLICAR"/>
+			<with-param name="TIPON_LB" query-param="TIPON_LB"/>
+
+		</call-query>
+	</resource>
+	<query id="updateRetencionesminimas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE RETENCIONES_MINIMAS SET COMPANIA=:COMPANIA, ANO=:ANO, ID=:ID, LIMITE_INFERIOR=:LIMITE_INFERIOR, LIMITE_SUPERIOR=:LIMITE_SUPERIOR, POR_APLICAR=:POR_APLICAR, TIPON=:TIPON, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE RETENCIONES_MINIMAS.COMPANIA= :KEY_COMPANIA AND RETENCIONES_MINIMAS.ANO= :KEY_ANO AND RETENCIONES_MINIMAS.ID= :KEY_ID</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="LIMITE_INFERIOR" sqlType="STRING"/>
+		<param name="LIMITE_SUPERIOR" sqlType="STRING"/>
+		<param name="POR_APLICAR" sqlType="STRING"/>
+		<param name="TIPON" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_ID" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="retencionesminimas">
+		<call-query href="updateRetencionesminimas">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="LIMITE_INFERIOR" query-param="LIMITE_INFERIOR"/>
+			<with-param name="LIMITE_SUPERIOR" query-param="LIMITE_SUPERIOR"/>
+			<with-param name="POR_APLICAR" query-param="POR_APLICAR"/>
+			<with-param name="TIPON" query-param="TIPON"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_ID" query-param="KEY_ID"/>
+
+		</call-query>
+	</resource>
+
+</data>

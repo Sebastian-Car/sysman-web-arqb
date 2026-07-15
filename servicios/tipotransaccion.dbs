@@ -1,0 +1,212 @@
+﻿<data name="tipotransaccion" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTipotransaccionPagCodigoynombreporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TIPOTRANSACCION.CODIGO, TIPOTRANSACCION.NOMBRE  FROM TIPOTRANSACCION WHERE TIPOTRANSACCION.COMPANIA=:COMPANIA ORDER BY TIPOTRANSACCION.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipotransaccion/codigoynombreporcompania/pag">
+		<call-query href="getTipotransaccionPagCodigoynombreporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipotransaccionNumCodigoynombreporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TIPOTRANSACCION.CODIGO, TIPOTRANSACCION.NOMBRE  FROM TIPOTRANSACCION WHERE TIPOTRANSACCION.COMPANIA=:COMPANIA ORDER BY TIPOTRANSACCION.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipotransaccion/codigoynombreporcompania/num">
+		<call-query href="getTipotransaccionNumCodigoynombreporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipotransaccionTiposacopiarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TIPOTRANSACCION.CODIGO, TIPOTRANSACCION.NOMBRE  FROM TIPOTRANSACCION WHERE TIPOTRANSACCION.COMPANIA=:COMPANIA ORDER BY TIPOTRANSACCION.CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipotransaccion/tiposacopiar">
+		<call-query href="getTipotransaccionTiposacopiarQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertTipotransaccion" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TIPOTRANSACCION (COMPANIA, CODIGO, NOMBRE, TIPO, TIPO_DOCUMENTO, CODIGOAFECTAR, CLASEAFECTACION, PORCLASE, CLASE_PPTO, COMPRELACIONADOPPTO, CLASEAFECTACIONPPTO, RUTA_ARCHIVO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :NOMBRE, :TIPO, :TIPO_DOCUMENTO, :CODIGOAFECTAR, :CLASEAFECTACION, :PORCLASE, :CLASE_PPTO, :COMPRELACIONADOPPTO, :CLASEAFECTACIONPPTO, :RUTA_ARCHIVO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_DOCUMENTO" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOAFECTAR" sqlType="STRING"/>
+		<param defaultValue="P" name="CLASEAFECTACION" sqlType="STRING"/>
+		<param defaultValue="0" name="PORCLASE" sqlType="STRING"/>
+		<param defaultValue="" name="CLASE_PPTO" sqlType="STRING"/>
+		<param defaultValue="" name="COMPRELACIONADOPPTO" sqlType="STRING"/>
+		<param defaultValue="P" name="CLASEAFECTACIONPPTO" sqlType="STRING"/>
+		<param defaultValue="" name="RUTA_ARCHIVO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="tipotransaccion">
+		<call-query href="insertTipotransaccion">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="TIPO_DOCUMENTO" query-param="TIPO_DOCUMENTO"/>
+			<with-param name="CODIGOAFECTAR" query-param="CODIGOAFECTAR"/>
+			<with-param name="CLASEAFECTACION" query-param="CLASEAFECTACION"/>
+			<with-param name="PORCLASE" query-param="PORCLASE"/>
+			<with-param name="CLASE_PPTO" query-param="CLASE_PPTO"/>
+			<with-param name="COMPRELACIONADOPPTO" query-param="COMPRELACIONADOPPTO"/>
+			<with-param name="CLASEAFECTACIONPPTO" query-param="CLASEAFECTACIONPPTO"/>
+			<with-param name="RUTA_ARCHIVO" query-param="RUTA_ARCHIVO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTipotransaccion" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TIPOTRANSACCION WHERE TIPOTRANSACCION.COMPANIA= :KEY_COMPANIA AND TIPOTRANSACCION.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="tipotransaccion">
+		<call-query href="deleteTipotransaccion">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipotransaccionPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TIPOTRANSACCION.COMPANIA, TIPOTRANSACCION.CODIGO, TIPOTRANSACCION.NOMBRE, TIPOTRANSACCION.TIPO, TIPOTRANSACCION.TIPO_DOCUMENTO  FROM TIPOTRANSACCION WHERE TIPOTRANSACCION.COMPANIA=:COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER( '%' || :TIPO || '%')  AND (CASE WHEN TIPO_DOCUMENTO IS NULL THEN ' ' ELSE UPPER(TIPO_DOCUMENTO) END)  LIKE UPPER( '%' || :TIPO_DOCUMENTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","TIPO":"$TIPO","TIPO_DOCUMENTO":"$TIPO_DOCUMENTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="TIPO_DOCUMENTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipotransaccion">
+		<call-query href="getTipotransaccionPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="TIPO_DOCUMENTO" query-param="TIPO_DOCUMENTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipotransaccionNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TIPOTRANSACCION.COMPANIA, TIPOTRANSACCION.CODIGO, TIPOTRANSACCION.NOMBRE, TIPOTRANSACCION.TIPO, TIPOTRANSACCION.TIPO_DOCUMENTO  FROM TIPOTRANSACCION WHERE TIPOTRANSACCION.COMPANIA=:COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER( '%' || :TIPO || '%')  AND (CASE WHEN TIPO_DOCUMENTO IS NULL THEN ' ' ELSE UPPER(TIPO_DOCUMENTO) END)  LIKE UPPER( '%' || :TIPO_DOCUMENTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="TIPO_DOCUMENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipotransaccion/numero">
+		<call-query href="getTipotransaccionNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="TIPO_DOCUMENTO" query-param="TIPO_DOCUMENTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipotransaccionRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TIPOTRANSACCION.COMPANIA, TIPOTRANSACCION.CODIGO, TIPOTRANSACCION.NOMBRE, TIPOTRANSACCION.TIPO, TIPOTRANSACCION.TIPO_DOCUMENTO, TIPOTRANSACCION.CODIGOAFECTAR, TIPOTRANSACCION.PORCLASE, TIPOTRANSACCION.CLASEAFECTACION, TIPOTRANSACCION.CLASE_PPTO, TIPOTRANSACCION.COMPRELACIONADOPPTO, TIPOTRANSACCION.CLASEAFECTACIONPPTO, TIPOTRANSACCION.CREATED_BY,(TO_CHAR(TIPOTRANSACCION.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, TIPOTRANSACCION.RUTA_ARCHIVO, TIPO_DOCUMENTO.NOMBRE NOMBRETIPODOCUMENTO, TIPO_COMPROBPP.NOMBRE NOMBRECLASE, TIPO_COMPROBANTE.NOMBRE NOMBRETIPOMPROBANTE, COMPCONTABLE.NOMBRE NOMBRETIPOCONT, COMPPPTO.NOMBRE NOMBRETIPOPP  FROM TIPOTRANSACCION LEFT JOIN TIPO_COMPROBANTE ON TIPOTRANSACCION.COMPANIA = TIPO_COMPROBANTE.COMPANIA AND TIPOTRANSACCION.TIPO = TIPO_COMPROBANTE.CODIGO LEFT JOIN TIPO_DOCUMENTO ON TIPOTRANSACCION.TIPO_DOCUMENTO = TIPO_DOCUMENTO.CODIGO LEFT JOIN TIPO_COMPROBPP ON TIPOTRANSACCION.COMPANIA = TIPO_COMPROBPP.COMPANIA AND TIPOTRANSACCION.CLASE_PPTO = TIPO_COMPROBPP.CODIGO LEFT JOIN TIPO_COMPROBANTE COMPCONTABLE ON TIPOTRANSACCION.COMPANIA = COMPCONTABLE.COMPANIA AND TIPOTRANSACCION.CODIGOAFECTAR = COMPCONTABLE.CODIGO LEFT JOIN TIPO_COMPROBPP COMPPPTO ON TIPOTRANSACCION.COMPANIA = COMPPPTO.COMPANIA AND TIPOTRANSACCION.COMPRELACIONADOPPTO = COMPPPTO.CODIGO WHERE TIPOTRANSACCION.COMPANIA= :KEY_COMPANIA AND TIPOTRANSACCION.CODIGO= :KEY_CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","TIPO":"$TIPO","TIPO_DOCUMENTO":"$TIPO_DOCUMENTO","CODIGOAFECTAR":"$CODIGOAFECTAR","PORCLASE":"$PORCLASE(type:boolean)","CLASEAFECTACION":"$CLASEAFECTACION","CLASE_PPTO":"$CLASE_PPTO","COMPRELACIONADOPPTO":"$COMPRELACIONADOPPTO","CLASEAFECTACIONPPTO":"$CLASEAFECTACIONPPTO","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","RUTA_ARCHIVO":"$RUTA_ARCHIVO","NOMBRETIPODOCUMENTO":"$NOMBRETIPODOCUMENTO","NOMBRECLASE":"$NOMBRECLASE","NOMBRETIPOMPROBANTE":"$NOMBRETIPOMPROBANTE","NOMBRETIPOCONT":"$NOMBRETIPOCONT","NOMBRETIPOPP":"$NOMBRETIPOPP"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipotransaccion/data">
+		<call-query href="getTipotransaccionRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTipotransaccion" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TIPOTRANSACCION SET COMPANIA=:COMPANIA, CODIGO=:CODIGO, NOMBRE=:NOMBRE, TIPO=:TIPO, TIPO_DOCUMENTO=:TIPO_DOCUMENTO, CODIGOAFECTAR=:CODIGOAFECTAR, CLASEAFECTACION=:CLASEAFECTACION, PORCLASE=:PORCLASE, CLASE_PPTO=:CLASE_PPTO, COMPRELACIONADOPPTO=:COMPRELACIONADOPPTO, CLASEAFECTACIONPPTO=:CLASEAFECTACIONPPTO, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), RUTA_ARCHIVO=:RUTA_ARCHIVO WHERE TIPOTRANSACCION.COMPANIA= :KEY_COMPANIA AND TIPOTRANSACCION.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="TIPO_DOCUMENTO" sqlType="STRING"/>
+		<param name="CODIGOAFECTAR" sqlType="STRING"/>
+		<param name="CLASEAFECTACION" sqlType="STRING"/>
+		<param name="PORCLASE" sqlType="STRING"/>
+		<param name="CLASE_PPTO" sqlType="STRING"/>
+		<param name="COMPRELACIONADOPPTO" sqlType="STRING"/>
+		<param name="CLASEAFECTACIONPPTO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="RUTA_ARCHIVO" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tipotransaccion">
+		<call-query href="updateTipotransaccion">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="TIPO_DOCUMENTO" query-param="TIPO_DOCUMENTO"/>
+			<with-param name="CODIGOAFECTAR" query-param="CODIGOAFECTAR"/>
+			<with-param name="CLASEAFECTACION" query-param="CLASEAFECTACION"/>
+			<with-param name="PORCLASE" query-param="PORCLASE"/>
+			<with-param name="CLASE_PPTO" query-param="CLASE_PPTO"/>
+			<with-param name="COMPRELACIONADOPPTO" query-param="COMPRELACIONADOPPTO"/>
+			<with-param name="CLASEAFECTACIONPPTO" query-param="CLASEAFECTACIONPPTO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="RUTA_ARCHIVO" query-param="RUTA_ARCHIVO"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

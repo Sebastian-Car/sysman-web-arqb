@@ -1,0 +1,213 @@
+MERGE INTO CONSULTAS FIN USING (SELECT '800581PersonalyCostosPlantaDetallado' INFORME ,TO_CLOB(q'[SELECT             0                                  ID_CONCEPTO_SYSMAN
+                  ,''                                 CONCEPTO_SYSMAN
+                  ,0                                  ID_EMPLEADO
+                  ,''                                 ESCALAFON_SYSMAN
+                  ,''                                 NOMBRE_ESCALAFON_SYSMAN
+                  ,''                                 CATEGORIA_SYSMAN
+                  ,''                                 NOMBRE_CATEGORIA_SYSMAN
+                  ,''                                 FORMA_NOMBRAMIENTO_SYSMAN
+                 ,'90'                                CONCEPTO
+                 ,'000'                               CONSECUTIVO
+                 ,'D00'                               UNIDAD_EJECUTORA_DEPENDENCIA
+                 ,'NA'                                DENOMINACIÓN_DEL_CARGO
+                 ,'NA'                                GRADO
+                 ,SUM(PLAZAS)                         CARGOS_APROBADOS
+                 ,SUM(PROVISTOS.CARGOS_PROVISTOS)     CARGOS_PROVISTOS
+                 ,'V0'                                TIPO_DE_VINCULACION
+                 ,0                                   TOTAL_VALOR
+                 ,'OTRO'                              NOMBRE_CONCEPTO_CGR
+                
+FROM CARGOS LEFT JOIN
+            (SELECT DISTINCT COMPANIA,ID_DE_CARGO,COUNT(ID_DE_EMPLEADO) CARGOS_PROVISTOS
+               FROM PERSONAL
+               WHERE PERSONAL.COMPANIA=s$compania$s
+               AND ID_DE_EMPLEADO NOT IN(0)
+               AND ((PERSONAL.ESTADO_ACTUAL  IN(1) AND TO_CHAR(FECHA_DE_INGRESO,'YYYYMM')<=s$ano$s||s$mesFinal$s)
+                             OR (PERSONAL.ESTADO_ACTUAL  IN(3) AND FECHA_DE_RETIRO>=TO_DATE('01/' || s$mesInicial$s || '/' || s$ano$s, 'DD/MM/YYYY')))
+
+               GROUP BY COMPANIA,ID_DE_CARGO)PROVISTOS
+     ON  CARGOS.COMPANIA=PROVISTOS.COMPANIA
+     AND CARGOS.ID_DE_CARGO=PROVISTOS.ID_DE_CARGO 
+     WHERE CARGOS.COMPANIA=s$compania$s
+AND CARGOS.ESTADOCARGO  IN(1)
+
+UNION ALL
+
+SELECT  
+         ID_CONCEPTO_SYSMAN
+        ,CONCEPTO_SYSMAN
+        ,ID_EMPLEADO
+        ,ESCALAFON_SYSMAN
+        ,NOMBRE_ESCALAFON_SYSMAN
+        ,CATEGORIA_SYSMAN
+        ,NOMBRE_CATEGORIA_SYSMAN
+        ,FORMA_NOMBRAMIENTO_SYSMAN
+        ,CONCEPTO
+       ,LPAD(ROWNUM,3,'0') CONSECUTIVO
+       ,UNIDAD_EJECUTORA_DEPENDENCIA
+       ,DENOMINACIÓN_DEL_CARGO
+       ,GRADO
+       , CARGOS_APROBADOS
+       , CARGOS_APROBADOS               CARGOS_PROVISTOS
+       ,TIPO_DE_VINCULACION
+        ,TOTAL_VALOR
+       ,NOMBRE_CONCEPTO_CGR  
+FROM(
+  SELECT     
+             0                                  ID_CONCEPTO_SYSMAN
+            ,''                                 CONCEPTO_SYSMAN
+            ,0                                  ID_EMPLEADO
+            ,''                                 ESCALAFON_SYSMAN
+            ,''                                 NOMBRE_ESCALAFON_SYSMAN
+            ,''                                 CATEGORIA_SYSMAN
+       ]') || TO_CLOB(q'[     ,''                                 NOMBRE_CATEGORIA_SYSMAN
+            ,''                                 FORMA_NOMBRAMIENTO_SYSMAN
+            ,ESCALAFON.CGR_CODIGO                                CONCEPTO
+           ,'D07'                                               UNIDAD_EJECUTORA_DEPENDENCIA
+           , CARGOS.NOMBRE_DEL_CARGO                             DENOMINACIÓN_DEL_CARGO
+           , CARGOS.GRADO                                        GRADO
+           , PLAZAS                                             CARGOS_APROBADOS
+           , NVL(PROVISTOS.CARGOS_PROVISTOS,0)                                             CARGOS_PROVISTOS
+           ,CARGOS.CGR_TIPO_VINCULACION               TIPO_DE_VINCULACION
+           ,0                                   TOTAL_VALOR
+           ,'OTRO'                              NOMBRE_CONCEPTO_CGR
+                
+FROM CARGOS INNER JOIN ESCALAFON
+     ON CARGOS.COMPANIA  =ESCALAFON.COMPANIA
+     AND CARGOS.ESCALAFON=ESCALAFON.CODIGO
+LEFT JOIN
+        (SELECT DISTINCT COMPANIA,ID_DE_CARGO,COUNT(ID_DE_EMPLEADO) CARGOS_PROVISTOS
+               FROM PERSONAL
+               WHERE PERSONAL.COMPANIA=s$compania$s
+               AND ID_DE_EMPLEADO NOT IN(0)
+              AND ((PERSONAL.ESTADO_ACTUAL  IN(1) AND TO_CHAR(FECHA_DE_INGRESO,'YYYYMM')<=s$ano$s||s$mesFinal$s)
+                          OR (PERSONAL.ESTADO_ACTUAL  IN(3) AND FECHA_DE_RETIRO>=TO_DATE('01/' || s$mesInicial$s || '/' || s$ano$s, 'DD/MM/YYYY')))
+
+               GROUP BY COMPANIA,ID_DE_CARGO)PROVISTOS
+     ON  CARGOS.COMPANIA=PROVISTOS.COMPANIA
+     AND CARGOS.ID_DE_CARGO=PROVISTOS.ID_DE_CARGO 
+  WHERE CARGOS.COMPANIA=s$compania$s
+AND CARGOS.ESTADOCARGO  IN(1)
+AND PROVISTOS.COMPANIA IS NULL
+ 
+  UNION ALL
+          SELECT   
+                  HISTORICOS.ID_DE_CONCEPTO          ID_CONCEPTO_SYSMAN
+                 ,CONCEPTOS.NOMBRE_CONCEPTO          CONCEPTO_SYSMAN
+                 ,PERSONAL.ID_DE_EMPLEADO            ID_EMPLEADO
+                 ,PERSONAL.ESCALAFON                 ESCALAFON_SYSMAN
+                 ,ESCALAFON.NOMBRE                   NOMBRE_ESCALAFON_SYSMAN
+                 ,PERSONAL.ID_DE_CATEGORIA           CATEGORIA_SYSMAN
+                 ,CATEGORIA.NOMBRE_CATEGORIA         NOMBRE_CATEGORIA_SYSMAN
+                 ,FORMANOMBRAMIENTO.NOMBREFORMA      FORMA_NOMBRAMIENTO_SYSMAN
+                 ,ESCALAFON.CGR_CODIGO                                CONCEPTO
+                 , ESTABLECIMIENTOS_DOCENTES.CGR_DEPENDENCIA           UNIDAD_EJECUTORA_DEPENDENCIA
+                 , CARGOS.NOMBRE_DEL_CARGO                  DENOMINACIÓN_DEL_CARGO
+                 , CARGOS.GRADO                                        GRADO
+                 , CARGOS_APROBADOS
+                 , CARGOS_PROVISTOS
+                 ,FORMANOMBRAMIENTO.CGR_TIPO_VINCULACION               TIPO_DE_VINCULACION
+                 ,SUM(HISTORICOS.VALOR) AS TOTAL_VALOR
+                 ,CASE 
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '01' THEN 'ASIGNACIÓN_BÁSICA]') || TO_CLOB(q'[_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '02' THEN 'GASTOS_DE_REPRESENTACIÓN_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '03' THEN 'PRIMA_TÉCNICA_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '04' THEN 'PRIMA_DE_GESTIÓN_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '05' THEN 'PRIMA_DE_LOCALIZACIÓN_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '06' THEN 'PRIMA_DE_COORDINACIÓN_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '07' THEN 'PRIMA_DE_RIESGO_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '08' THEN 'PRIMA_EXTRAORDINARIA_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '09' THEN 'PRIMA_O_SUBSID_ALIMENTAC_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '10' THEN 'AUXILIO_DE_TRANSPORTE_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '11' THEN 'PRIMA_DE_ANTIGÜEDAD_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '12' THEN 'BONIFICACIÓN_DIRECCIÓN_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '13' THEN 'PRIMA_DE_SERVICIOS_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '14' THEN 'PRIMA_DE_NAVIDAD_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '15' THEN 'BONIFIC_POR_SERVICIOS_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '16' THEN 'BONIFIC_DE_RECREACIÓN_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '17' THEN 'BONIFIC_GESTIÓN_TER_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '18' THEN 'PRIMA_DE_VACACIONES_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '19' THEN 'OTRAS_PRIMAS_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '20' THEN 'CESANTÍAS_ANUAL'
+                        WHEN CONCEPTOS.CGR_CONCEPTO = '21' THEN 'INTERESES_CESANTÍAS_ANUAL'
+                        ELSE 'OTRO' 
+                    END AS NOMBRE_CONCEPTO_CGR
+          FROM CARGOS LEFT JOIN PERSONAL
+                  ON    CARGOS.COMPANIA=PERSONAL.COMPANIA 
+                   AND  CARGOS.ESCALAFON=PERSONAL.ESCALAFON 
+                   AND  CARGOS.ID_DE_CARGO=PERSONAL.ID_DE_CARGO
+             INNER JOIN  HISTORICOS 
+               ON PERSONAL.COMPANIA           =HISTORICOS.COMPANIA
+               AND PERSONAL.ID_DE_EMPLEADO    =HISTORICOS.ID_DE_EMPLEADO
+             INNER JOIN CONCEPTOS
+              ON HISTORICOS.COMPANIA      =CONCEPTOS.COMPANIA
+               AND HISTORICOS.ID_DE_CONCEPTO  =CONCEPTOS.ID_DE_CONCEPTO   
+             INNER JOIN PERIODOS
+                   ON  HISTORICOS.COMPANIA=PERIODOS.COMPANIA
+                   AND HISTORICOS.ID_DE_PROCESO=PERIODOS.ID_DE_PROCESO
+                   AND HISTORICOS.ANO=PERIODOS.ANO
+                   AND HISTORICOS.MES=PERIODOS.MES
+                   AND HISTORICOS.PERIODO=PERIODOS.PERIODO
+           INNER  JOIN ESCALAFON
+               ON PERSONAL.COMPANIA=ESCALAFON.COMPANIA
+               AND PERSONAL.ESCALAFON=ESCALAFON.CODIGO
+            INNER JOIN FORMANOMBRAMI]') || TO_CLOB(q'[ENTO
+                  ON  PERSONAL.COMPANIA   =FORMANOMBRAMIENTO.COMPANIA
+                  AND PERSONAL.DE_CARRERA  =FORMANOMBRAMIENTO.IDFORMA
+              LEFT JOIN ESTABLECIMIENTOS_DOCENTES
+                  ON  PERSONAL.COMPANIA   =ESTABLECIMIENTOS_DOCENTES.COMPANIA
+                  AND PERSONAL.CODIGO_ESTABLECIMIENTO  =ESTABLECIMIENTOS_DOCENTES.CODIGO
+            LEFT JOIN CATEGORIA 
+            ON  PERSONAL.COMPANIA       = CATEGORIA.COMPANIA
+            AND PERSONAL.ID_DE_CATEGORIA  = CATEGORIA.ID_DE_CATEGORIA
+            AND PERSONAL.ESCALAFON  = CATEGORIA.ESCALAFON
+            AND HISTORICOS.ANO = CATEGORIA.ANO
+              LEFT JOIN ( SELECT   CARGOS. COMPANIA
+                   ,CARGOS.ID_DE_CARGO
+                   ,CARGOS.CGR_TIPO_VINCULACION
+                   ,CARGOS.ESCALAFON
+                   ,SUM(PLAZAS)                             CARGOS_APROBADOS
+                   ,SUM(PROVISTOS.CARGOS_PROVISTOS)         CARGOS_PROVISTOS                      
+                    FROM CARGOS LEFT JOIN
+                      (SELECT  PERSONAL.COMPANIA,ID_DE_CARGO,CGR_TIPO_VINCULACION,ESCALAFON,COUNT(ID_DE_EMPLEADO) CARGOS_PROVISTOS
+                         FROM PERSONAL INNER JOIN FORMANOMBRAMIENTO
+                             ON  PERSONAL.COMPANIA=FORMANOMBRAMIENTO.COMPANIA
+                             AND PERSONAL.DE_CARRERA=FORMANOMBRAMIENTO.IDFORMA
+                         WHERE PERSONAL.COMPANIA=s$compania$s
+                         AND ID_DE_EMPLEADO NOT IN(0)
+                         AND ((PERSONAL.ESTADO_ACTUAL  IN(1) AND TO_CHAR(FECHA_DE_INGRESO,'YYYYMM')<=s$ano$s||s$mesFinal$s)
+                             OR (PERSONAL.ESTADO_ACTUAL  IN(3) AND FECHA_DE_RETIRO>=TO_DATE('01/' || s$mesInicial$s || '/' || s$ano$s, 'DD/MM/YYYY')))
+                             GROUP BY PERSONAL.COMPANIA,ID_DE_CARGO,ESCALAFON,CGR_TIPO_VINCULACION)PROVISTOS
+                                 ON  CARGOS.COMPANIA=PROVISTOS.COMPANIA
+                                 AND CARGOS.ID_DE_CARGO=PROVISTOS.ID_DE_CARGO 
+                                 AND CARGOS.ESCALAFON=PROVISTOS.ESCALAFON 
+                                 AND CARGOS.CGR_TIPO_VINCULACION=PROVISTOS.CGR_TIPO_VINCULACION
+                              WHERE CARGOS.COMPANIA=s$compania$s
+                            AND CARGOS.ESTADOCARGO IN(1)
+                            GROUP  BY CARGOS.COMPANIA,CARGOS.ID_DE_CARGO
+                            ,CARGOS.CGR_TIPO_VINCULACION ,CARGOS.ESCALAFON) CARGOS_INFORME
+                  ON CARGOS.COMPANIA                   = CARGOS_INFORME.COMPANIA 
+                   AND CARGOS.ID_DE_CARGO              = CARGOS_INFORME.ID_DE_CARGO 
+                   AND CARGOS.CGR_TIPO_VINCULACION     = CARGOS_INFORME.CGR_TIPO_VINCULACION 
+                   AND CARGOS.ESCALAFON                = CARGOS_INFORME.ESCALAFON 
+               
+WHERE CARGOS.COMPANIA= s$compania$s
+AND HISTORICOS.ANO=s$ano$s
+  AND HISTORICOS.MES BETWEEN  s$mesInicial$s AND s$mesFinal$s
+AND  CONCEPTOS.CLASE IN (3]') || TO_CLOB(q'[)
+  AND PERIODOS.ACUMULADO  NOT IN (0)
+  AND CARGOS.ESTADOCARGO  IN(1)
+  AND PERSONAL.ID_DE_EMPLEADO NOT IN(0)
+  AND CONCEPTOS.CGR_CONCEPTO IN ('01' ,'02' ,'03' ,'04' ,'05' ,'06' ,'07' ,'08' ,'09' ,'10' ,'11' ,'12' ,'13' ,'14' ,'15' ,'16' ,'17' ,'18' ,'19' ,'20' ,'21')
+GROUP BY 
+        HISTORICOS.ID_DE_CONCEPTO, PERSONAL.ID_DE_EMPLEADO, PERSONAL.ESCALAFON,
+        ESCALAFON.NOMBRE, PERSONAL.ID_DE_CATEGORIA, CATEGORIA.NOMBRE_CATEGORIA,
+        FORMANOMBRAMIENTO.NOMBREFORMA, ESCALAFON.CGR_CODIGO,
+        ESTABLECIMIENTOS_DOCENTES.CGR_DEPENDENCIA, CARGOS.NOMBRE_DEL_CARGO,
+        CARGOS.GRADO, CARGOS_APROBADOS, CARGOS_PROVISTOS,
+        FORMANOMBRAMIENTO.CGR_TIPO_VINCULACION, 
+        CONCEPTOS.CGR_CONCEPTO
+,CONCEPTOS.NOMBRE_CONCEPTO  
+ORDER BY ID_EMPLEADO, ESCALAFON_SYSMAN, CATEGORIA_SYSMAN, CONCEPTO, GRADO
+
+)INFORME]') CONSULTA, 6 APLICACION ,TO_CLOB(q'[]') CONSULTA_OPCIONAL, NULL CREATED_BY, NULL MODIFIED_BY  FROM DUAL ) INI ON (INI.INFORME = FIN.INFORME )  WHEN MATCHED THEN  UPDATE SET FIN.CONSULTA =  INI.CONSULTA, FIN.APLICACION =  INI.APLICACION, FIN.CONSULTA_OPCIONAL =  INI.CONSULTA_OPCIONAL, FIN.MODIFIED_BY = INI.MODIFIED_BY, FIN.DATE_MODIFIED = SYSDATE  WHEN NOT MATCHED THEN  INSERT (INFORME,CONSULTA, APLICACION,CONSULTA_OPCIONAL,CREATED_BY,DATE_CREATED)  VALUES (INI.INFORME,INI.CONSULTA, INI.APLICACION,INI.CONSULTA_OPCIONAL,INI.CREATED_BY,SYSDATE);

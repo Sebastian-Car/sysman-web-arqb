@@ -1,0 +1,23 @@
+	SELECT  	s$mes$s MES,
+					SUBSTR(CODIGO,1,1)  CLASE, 
+					SALDOs$mes$s  		NUEVOSALDO, 
+					COMPANIA, 
+					ANO,
+					CODIGO,
+					NOMBRE, 
+					AUXILIAR, 
+					NATURALEZA, 
+					DEBITOs$mes$s  		 DEBITO, 
+					CREDITOs$mes$s 		 CREDITO,  
+					SALDOs$mesAnterior$s   SALDOANTERIOR,   
+					CASE WHEN SUBSTR(CODIGO,1,1) = '0' THEN 'Z'||CODIGO ELSE CODIGO END ORDEN,
+					SUBSTR((CASE WHEN SUBSTR(CODIGO,1,1) = '0' THEN 'Z'||CODIGO ELSE CODIGO END),1,1) CLASEORDEN,
+					AUXILIAR_NOMBRE 					 NOMAUXILIAR,
+					NOMBRE 				 NOMBRECUENTA, 
+					(CODIGO
+					||''|| CASE WHEN AUXILIAR IS NULL THEN ' ' ELSE AUXILIAR_NOMBRE END
+					||''|| NOMBRE) ORDENCUENTAS
+		FROM  (s$consultaBase$s)
+		WHERE 	 	AUXILIAR BETWEEN  's$auxiliarInicial$s' AND 's$auxiliarFinal$s'
+		AND   		AUXILIAR IS NOT NULL
+				s$condicionSaldoCero$s

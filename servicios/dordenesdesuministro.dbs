@@ -1,0 +1,378 @@
+﻿<data name="dordenesdesuministro" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="updateDordenesdesuministroIndVaciaYCantidadporentregar" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE D_ORDENDESUMINISTRO SET VACIA = :VACIA,     CANTIDADPORENTREGAR = :CANTIDAD,     DATE_MODIFIED = TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'),     MODIFIED_BY = :MODIFIED_BY WHERE COMPANIA = :COMPANIA   AND ORDENDESUMINISTRO = :ORDEN   AND CODIGO = :CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VACIA" sqlType="STRING"/>
+		<param name="CANTIDAD" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="dordenesdesuministro/indvaciaycantidadporentregar">
+		<call-query href="updateDordenesdesuministroIndVaciaYCantidadporentregar">
+			<with-param name="VACIA" query-param="VACIA"/>
+			<with-param name="CANTIDAD" query-param="CANTIDAD"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ORDEN" query-param="ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDordenesdesuministroCantidadPorOrdenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NVL(CANTIDADTT - :NUEVACANTIDAD,0) CANTIDADT  FROM D_ORDENDESUMINISTRO WHERE D_ORDENDESUMINISTRO.COMPANIA = :COMPANIA AND D_ORDENDESUMINISTRO.CODIGO = :CODIGO AND D_ORDENDESUMINISTRO.ORDENDESUMINISTRO = :ORDENDESUMINISTRO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CANTIDADT":"$CANTIDADT(type:double)"}]}}		</result>
+		<param name="NUEVACANTIDAD" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ORDENDESUMINISTRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dordenesdesuministro/cantidadpororden">
+		<call-query href="getDordenesdesuministroCantidadPorOrdenQuery">
+			<with-param name="NUEVACANTIDAD" query-param="NUEVACANTIDAD"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ORDENDESUMINISTRO" query-param="ORDENDESUMINISTRO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDordenesdesuministroCantidadtt" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE D_ORDENDESUMINISTRO SET CANTIDADTT = :CANTIDAD, DATE_MODIFIED = TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY = :MODIFIED_BY WHERE CODIGO = :CODIGO AND COMPANIA = :COMPANIA AND ORDENDESUMINISTRO = :ORDENDESUMINISTRO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CANTIDAD" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ORDENDESUMINISTRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="dordenesdesuministro/cantidadtt">
+		<call-query href="updateDordenesdesuministroCantidadtt">
+			<with-param name="CANTIDAD" query-param="CANTIDAD"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ORDENDESUMINISTRO" query-param="ORDENDESUMINISTRO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDordenesdesuministroValorTotalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SUM(D_ORDENDECOMPRA.VLRTOTAL) VLRTOTALF  FROM D_ORDENDECOMPRA WHERE D_ORDENDECOMPRA.COMPANIA= :COMPANIA AND D_ORDENDECOMPRA.ORDENDECOMPRA = :NUMEROORDEN AND D_ORDENDECOMPRA.CLASEORDEN= :CLASEORDEN GROUP BY D_ORDENDECOMPRA.ORDENDECOMPRA, D_ORDENDECOMPRA.CLASEORDEN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VLRTOTALF":"$VLRTOTALF"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMEROORDEN" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dordenesdesuministro/valortotal">
+		<call-query href="getDordenesdesuministroValorTotalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMEROORDEN" query-param="NUMEROORDEN"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="getDordenesdesuministroCantidadesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  D_ORDENDESUMINISTRO.COMPANIA,D_ORDENDESUMINISTRO.ORDENDESUMINISTRO,D_ORDENDESUMINISTRO.CODIGO,D_ORDENDESUMINISTRO.CANTIDAD,D_ORDENDESUMINISTRO.CANTIDADAPROBADA,(CASE D_ORDENDESUMINISTRO.VACIA WHEN 0 THEN 'false' ELSE 'true' END) VACIA, D_ORDENDESUMINISTRO.CANTIDADPORENTREGAR  FROM D_ORDENDESUMINISTRO WHERE D_ORDENDESUMINISTRO.COMPANIA = :COMPANIA AND D_ORDENDESUMINISTRO.ORDENDESUMINISTRO = :ORDENDESUMINISTRO AND D_ORDENDESUMINISTRO.CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ORDENDESUMINISTRO":"$ORDENDESUMINISTRO(type:long)","CODIGO":"$CODIGO(type:long)","CANTIDAD":"$CANTIDAD(type:double)","CANTIDADAPROBADA":"$CANTIDADAPROBADA(type:double)","VACIA":"$VACIA(type:boolean)","CANTIDADPORENTREGAR":"$CANTIDADPORENTREGAR(type:double)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ORDENDESUMINISTRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dordenesdesuministro/cantidades">
+		<call-query href="getDordenesdesuministroCantidadesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ORDENDESUMINISTRO" query-param="ORDENDESUMINISTRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDordenesdesuministroVaciaYCantidadPorNumero" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE D_ORDENDESUMINISTRO SET VACIA = :VACIA, CANTIDADPORENTREGAR = :CANTIDAD, DATE_MODIFIED = TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY = :MODIFIED_BY WHERE COMPANIA = :COMPANIA  AND ORDENDESUMINISTRO = :NUMERO  AND CODIGO = :CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VACIA" sqlType="STRING"/>
+		<param name="CANTIDAD" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="dordenesdesuministro/vaciaycantidadpornumero">
+		<call-query href="updateDordenesdesuministroVaciaYCantidadPorNumero">
+			<with-param name="VACIA" query-param="VACIA"/>
+			<with-param name="CANTIDAD" query-param="CANTIDAD"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDordenesdesuministroTodosConCantidadPorEntregarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  D_ORDENDESUMINISTRO.COMPANIA,D_ORDENDESUMINISTRO.ORDENDESUMINISTRO,D_ORDENDESUMINISTRO.CODIGO,D_ORDENDESUMINISTRO.CANTIDAD,D_ORDENDESUMINISTRO.CANTIDADAPROBADA,(CASE D_ORDENDESUMINISTRO.VACIA WHEN 0 THEN 'false' ELSE 'true' END) VACIA, D_ORDENDESUMINISTRO.CANTIDADPORENTREGAR  FROM D_ORDENDESUMINISTRO WHERE D_ORDENDESUMINISTRO.COMPANIA = :COMPANIA AND D_ORDENDESUMINISTRO.ORDENDESUMINISTRO = :ORDENDESUMINISTRO AND D_ORDENDESUMINISTRO.CANTIDADPORENTREGAR &gt; 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ORDENDESUMINISTRO":"$ORDENDESUMINISTRO(type:long)","CODIGO":"$CODIGO(type:long)","CANTIDAD":"$CANTIDAD(type:double)","CANTIDADAPROBADA":"$CANTIDADAPROBADA(type:double)","VACIA":"$VACIA(type:boolean)","CANTIDADPORENTREGAR":"$CANTIDADPORENTREGAR(type:double)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ORDENDESUMINISTRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dordenesdesuministro/todosconcantidadporentregar">
+		<call-query href="getDordenesdesuministroTodosConCantidadPorEntregarQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ORDENDESUMINISTRO" query-param="ORDENDESUMINISTRO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDordenesdesuministroCantidadttPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CANTIDADTT CANTIDADT  FROM D_ORDENDESUMINISTRO WHERE COMPANIA= :COMPANIA AND CODIGO = :CODIGO AND ORDENDESUMINISTRO = :ORDENDESUMINISTRO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CANTIDADT":"$CANTIDADT(type:double)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ORDENDESUMINISTRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dordenesdesuministro/cantidadttporcodigo">
+		<call-query href="getDordenesdesuministroCantidadttPorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ORDENDESUMINISTRO" query-param="ORDENDESUMINISTRO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDordenesdesuministroPorIndicadorDeRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE IND_REG WHEN 0 THEN 'false' ELSE 'true' END) IND_REG FROM D_ORDENDESUMINISTRO WHERE COMPANIA = :COMPANIA AND ORDENDESUMINISTRO = :ORDENDESUMINISTRO AND ROWNUM = 1</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"IND_REG":"$IND_REG(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ORDENDESUMINISTRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dordenesdesuministro/porindicadorderegistro">
+		<call-query href="getDordenesdesuministroPorIndicadorDeRegistroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ORDENDESUMINISTRO" query-param="ORDENDESUMINISTRO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertDordenesdesuministro" keyColumns="COMPANIA,ORDENDESUMINISTRO,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO D_ORDENDESUMINISTRO (COMPANIA, ORDENDESUMINISTRO, CODIGO, ELEMENTO, ESPECIFICACION, CANTIDAD, CANTIDADAPROBADA, CANTIDADPORENTREGAR, EXISTENCIAALM, IND_REG, DEPENDENCIA, CODIGOCUBS, CANTIDADTT, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ORDENDESUMINISTRO, :CODIGO, :ELEMENTO, :ESPECIFICACION, :CANTIDAD, :CANTIDADAPROBADA, :CANTIDADPORENTREGAR, :EXISTENCIAALM, :IND_REG, :DEPENDENCIA, :CODIGOCUBS, :CANTIDADTT, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ORDENDESUMINISTRO":"$ORDENDESUMINISTRO(type:long)","KEY_CODIGO":"$CODIGO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ORDENDESUMINISTRO" sqlType="STRING"/>
+		<param defaultValue="0" name="CODIGO" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param defaultValue="" name="ESPECIFICACION" sqlType="STRING"/>
+		<param defaultValue="0" name="CANTIDAD" sqlType="STRING"/>
+		<param defaultValue="0" name="CANTIDADAPROBADA" sqlType="STRING"/>
+		<param defaultValue="0" name="CANTIDADPORENTREGAR" sqlType="STRING"/>
+		<param defaultValue="0" name="EXISTENCIAALM" sqlType="STRING"/>
+		<param defaultValue="0" name="IND_REG" sqlType="STRING"/>
+		<param defaultValue="999999999999" name="DEPENDENCIA" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOCUBS" sqlType="STRING"/>
+		<param defaultValue="0" name="CANTIDADTT" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="dordenesdesuministro">
+		<call-query href="insertDordenesdesuministro">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ORDENDESUMINISTRO" query-param="ORDENDESUMINISTRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="ESPECIFICACION" query-param="ESPECIFICACION"/>
+			<with-param name="CANTIDAD" query-param="CANTIDAD"/>
+			<with-param name="CANTIDADAPROBADA" query-param="CANTIDADAPROBADA"/>
+			<with-param name="CANTIDADPORENTREGAR" query-param="CANTIDADPORENTREGAR"/>
+			<with-param name="EXISTENCIAALM" query-param="EXISTENCIAALM"/>
+			<with-param name="IND_REG" query-param="IND_REG"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODIGOCUBS" query-param="CODIGOCUBS"/>
+			<with-param name="CANTIDADTT" query-param="CANTIDADTT"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteDordenesdesuministro" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM D_ORDENDESUMINISTRO WHERE D_ORDENDESUMINISTRO.COMPANIA= :KEY_COMPANIA AND D_ORDENDESUMINISTRO.ORDENDESUMINISTRO= :KEY_ORDENDESUMINISTRO AND D_ORDENDESUMINISTRO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ORDENDESUMINISTRO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="dordenesdesuministro">
+		<call-query href="deleteDordenesdesuministro">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ORDENDESUMINISTRO" query-param="KEY_ORDENDESUMINISTRO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDordenesdesuministroPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  D_ORDENDESUMINISTRO.COMPANIA, D_ORDENDESUMINISTRO.ORDENDESUMINISTRO, D_ORDENDESUMINISTRO.CODIGO, D_ORDENDESUMINISTRO.ELEMENTO, INVENTARIO.UNIDAD, D_ORDENDESUMINISTRO.ESPECIFICACION, D_ORDENDESUMINISTRO.CANTIDAD, D_ORDENDESUMINISTRO.CANTIDADAPROBADA, D_ORDENDESUMINISTRO.CANTIDADPORENTREGAR, D_ORDENDESUMINISTRO.EXISTENCIAALM,(CASE D_ORDENDESUMINISTRO.IND_REG WHEN 0 THEN 'false' ELSE 'true' END) IND_REG, D_ORDENDESUMINISTRO.DEPENDENCIA, D_ORDENDESUMINISTRO.CODIGOCUBS, D_ORDENDESUMINISTRO.CANTIDADTT, DEPENDENCIA.NOMBRE NOMBREDEPENDENCIA, INVENTARIO.NOMBRELARGO  FROM D_ORDENDESUMINISTRO INNER JOIN INVENTARIO ON D_ORDENDESUMINISTRO.COMPANIA = INVENTARIO.COMPANIA AND D_ORDENDESUMINISTRO.ELEMENTO = INVENTARIO.CODIGOELEMENTO INNER JOIN DEPENDENCIA ON D_ORDENDESUMINISTRO.COMPANIA = DEPENDENCIA.COMPANIA AND D_ORDENDESUMINISTRO.DEPENDENCIA = DEPENDENCIA.CODIGO WHERE D_ORDENDESUMINISTRO.COMPANIA = :COMPANIA AND ORDENDESUMINISTRO = :ORDEN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ORDENDESUMINISTRO":"$ORDENDESUMINISTRO(type:long)","CODIGO":"$CODIGO(type:long)","ELEMENTO":"$ELEMENTO","UNIDAD":"$UNIDAD","ESPECIFICACION":"$ESPECIFICACION","CANTIDAD":"$CANTIDAD(type:double)","CANTIDADAPROBADA":"$CANTIDADAPROBADA(type:double)","CANTIDADPORENTREGAR":"$CANTIDADPORENTREGAR(type:double)","EXISTENCIAALM":"$EXISTENCIAALM(type:double)","IND_REG":"$IND_REG(type:boolean)","DEPENDENCIA":"$DEPENDENCIA","CODIGOCUBS":"$CODIGOCUBS","CANTIDADTT":"$CANTIDADTT(type:double)","NOMBREDEPENDENCIA":"$NOMBREDEPENDENCIA","NOMBRELARGO":"$NOMBRELARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dordenesdesuministro">
+		<call-query href="getDordenesdesuministroPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ORDEN" query-param="ORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDordenesdesuministro" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE D_ORDENDESUMINISTRO SET COMPANIA=:COMPANIA, ORDENDESUMINISTRO=:ORDENDESUMINISTRO, CODIGO=:CODIGO, ELEMENTO=:ELEMENTO, ESPECIFICACION=:ESPECIFICACION, CANTIDAD=:CANTIDAD, CANTIDADAPROBADA=:CANTIDADAPROBADA, CANTIDADPORENTREGAR=:CANTIDADPORENTREGAR, EXISTENCIAALM=:EXISTENCIAALM, IND_REG=:IND_REG, DEPENDENCIA=:DEPENDENCIA, CODIGOCUBS=:CODIGOCUBS, CANTIDADTT=:CANTIDADTT, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE D_ORDENDESUMINISTRO.COMPANIA= :KEY_COMPANIA AND D_ORDENDESUMINISTRO.ORDENDESUMINISTRO= :KEY_ORDENDESUMINISTRO AND D_ORDENDESUMINISTRO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ORDENDESUMINISTRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="ESPECIFICACION" sqlType="STRING"/>
+		<param name="CANTIDAD" sqlType="STRING"/>
+		<param name="CANTIDADAPROBADA" sqlType="STRING"/>
+		<param name="CANTIDADPORENTREGAR" sqlType="STRING"/>
+		<param name="EXISTENCIAALM" sqlType="STRING"/>
+		<param name="IND_REG" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODIGOCUBS" sqlType="STRING"/>
+		<param name="CANTIDADTT" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ORDENDESUMINISTRO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="dordenesdesuministro">
+		<call-query href="updateDordenesdesuministro">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ORDENDESUMINISTRO" query-param="ORDENDESUMINISTRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="ESPECIFICACION" query-param="ESPECIFICACION"/>
+			<with-param name="CANTIDAD" query-param="CANTIDAD"/>
+			<with-param name="CANTIDADAPROBADA" query-param="CANTIDADAPROBADA"/>
+			<with-param name="CANTIDADPORENTREGAR" query-param="CANTIDADPORENTREGAR"/>
+			<with-param name="EXISTENCIAALM" query-param="EXISTENCIAALM"/>
+			<with-param name="IND_REG" query-param="IND_REG"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODIGOCUBS" query-param="CODIGOCUBS"/>
+			<with-param name="CANTIDADTT" query-param="CANTIDADTT"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ORDENDESUMINISTRO" query-param="KEY_ORDENDESUMINISTRO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDordenesdesuministroValorestimadoNsolicituddispon" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ORDENDESUMINISTRO SET VALORESTIMADO =:VALORESTIMADO,   NSOLICITUDDISPON=:NSOLICITUDDISPON , CONCEPTO = :CONCEPTO,MODIFIED_BY=:MODIFIED_BY,DATE_MODIFIED=:DATE_MODIFIED WHERE COMPANIA    = :COMPANIA AND NUMERO        = :NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VALORESTIMADO" sqlType="STRING"/>
+		<param name="NSOLICITUDDISPON" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="dordenesdesuministro/valorestimadonsolicituddispon">
+		<call-query href="updateDordenesdesuministroValorestimadoNsolicituddispon">
+			<with-param name="VALORESTIMADO" query-param="VALORESTIMADO"/>
+			<with-param name="NSOLICITUDDISPON" query-param="NSOLICITUDDISPON"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDordenesdesuministroCantentregaact" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE D_ORDENDESUMINISTRO SET VACIA = :VACIA, CANTIDADPORENTREGAR = :CANTIDAD, DATE_MODIFIED = TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY = :MODIFIED_BY WHERE ORDENDESUMINISTRO.COMPANIA = :KEY_COMPANIA AND ORDENDESUMINISTRO.NUMERO = :KEY_NUMERO AND D_ORDENDESUMINISTRO.CODIGO = :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VACIA" sqlType="STRING"/>
+		<param name="CANTIDAD" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="dordenesdesuministro/cantentregaact">
+		<call-query href="updateDordenesdesuministroCantentregaact">
+			<with-param name="VACIA" query-param="VACIA"/>
+			<with-param name="CANTIDAD" query-param="CANTIDAD"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDordenesdesuministroUpdatecantidadaprob" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE D_ORDENDESUMINISTRO SET CANTIDADAPROBADA = NVL(:CANTIDAD, CANTIDAD), USUARIO_MODIFICA_APROBACION = :USUARIO, FECHA_MODIFICA_APROBACION = SYSDATE WHERE COMPANIA = :COMPANIA AND ORDENDESUMINISTRO = :ORDENDESUMINISTRO AND (:CANTIDAD IS NULL OR CODIGO = :CODIGO)</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CANTIDAD" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ORDENDESUMINISTRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="dordenesdesuministro/updatecantidadaprob">
+		<call-query href="updateDordenesdesuministroUpdatecantidadaprob">
+			<with-param name="CANTIDAD" query-param="CANTIDAD"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ORDENDESUMINISTRO" query-param="ORDENDESUMINISTRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

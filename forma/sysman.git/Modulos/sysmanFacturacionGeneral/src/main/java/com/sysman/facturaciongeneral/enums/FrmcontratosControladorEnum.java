@@ -1,0 +1,92 @@
+package com.sysman.facturaciongeneral.enums;
+
+public enum FrmcontratosControladorEnum {
+
+    TIPOCOBRO("TIPOCOBRO"),
+
+    TIPO("TIPO"),
+
+    NUMERO("NUMERO"),
+
+    CODIGO("CODIGO"),
+
+    NIT("NIT"),
+
+    ANO_ACTUAL("ANO_ACTUAL"),
+
+    VALOR_UTILIDAD("VALOR_UTILIDAD"),
+
+    SUCURSAL("SUCURSAL"),
+
+    ANCHO("ANCHO"),
+
+    LARGO("LARGO"),
+
+    AREA("AREA"),
+
+    NOMBRE_ESTADO("NOMBRE_ESTADO"),
+
+    NOMBRE_LUGAR("NOMBRE_LUGAR"),
+
+    NOMBRE_UBICACION("NOMBRE_UBICACION"),
+
+    CODIGO_ANTERIOR("CODIGO_ANTERIOR"),
+
+    NOMBRETERCERO("NOMBRETERCERO"),
+    
+    NOMBREVENDEDOR("NOMBREVENDEDOR"),
+
+    LOCAL("LOCAL"),
+
+    TARIFA("TARIFA"),
+
+    BASE_FIJA("BASE_FIJA"),
+
+    VALOR_BASE("VALOR_BASE"),
+
+    VALOR_COMPRA("VALOR_COMPRA"),
+
+    VALOR_UNITARIO("VALOR_UNITARIO"),
+
+    VALOR_IVA("VALOR_IVA"),
+
+    VALOR_RETE("VALOR_RETE"),
+
+    VALOR_DESCUENTO("VALOR_DESCUENTO"),
+
+    VALOR_ICA("VALOR_ICA"),
+
+    VALOR_NETO("VALOR_NETO"),
+
+    VALOR_IMPOCONSUMO("VALOR_IMPOCONSUMO"),
+
+    NOMBRECONCEPTO("NOMBRECONCEPTO"),
+
+    VALOR_UNIDAD("VALOR_UNIDAD"),
+
+    TOMAR_VLR("TOMAR_VLR"),
+
+    APLICAFORMULA("APLICAFORMULA"),
+
+    APLICADESCUENTO("APLICADESCUENTO"),
+    
+    APLICARETEFUENTE("APLICARETEFUENTE"),
+    
+    APLICAIVA("APLICAIVA"),
+    
+    APLICAICA("APLICAICA"),
+    
+    CANTIDAD("CANTIDAD"),
+    
+    SALDO_ACTUAL("SALDO_ACTUAL");
+
+    private final String value;
+
+    private FrmcontratosControladorEnum(String value) {
+        this.value = value;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}

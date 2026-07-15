@@ -1,0 +1,140 @@
+﻿<data name="excepciones" transports="http https local">
+	<config enableOData="false" id="sysmanirisst">
+		<property name="carbon_datasource_name">SYSMANIRISST</property>
+	</config>
+	<query id="insertExcepciones" keyColumns="COMPANIA,CUENTA" returnGeneratedKeys="true" useConfig="sysmanirisst">
+		<sql>INSERT INTO EXCEPCIONES (COMPANIA, CUENTA, FECHA, HORA_INICIAL, HORA_FINAL, ACCESO, SIN_ACCESO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CUENTA, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:HORA_INICIAL,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:HORA_FINAL,'DD/MM/YYYY HH24:MI:SS'), :ACCESO, :SIN_ACCESO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CUENTA":"$CUENTA","KEY_FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="HORA_INICIAL" sqlType="STRING"/>
+		<param defaultValue="" name="HORA_FINAL" sqlType="STRING"/>
+		<param defaultValue="0" name="ACCESO" sqlType="STRING"/>
+		<param defaultValue="0" name="SIN_ACCESO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="excepciones">
+		<call-query href="insertExcepciones">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA_INICIAL" query-param="HORA_INICIAL"/>
+			<with-param name="HORA_FINAL" query-param="HORA_FINAL"/>
+			<with-param name="ACCESO" query-param="ACCESO"/>
+			<with-param name="SIN_ACCESO" query-param="SIN_ACCESO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteExcepciones" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>DELETE FROM EXCEPCIONES WHERE EXCEPCIONES.COMPANIA= :KEY_COMPANIA AND EXCEPCIONES.CUENTA= :KEY_CUENTA AND EXCEPCIONES.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CUENTA" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="excepciones">
+		<call-query href="deleteExcepciones">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CUENTA" query-param="KEY_CUENTA"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getExcepcionesPaginaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  EXCEPCIONES.COMPANIA, EXCEPCIONES.CUENTA,(TO_CHAR(EXCEPCIONES.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,(TO_CHAR(EXCEPCIONES.HORA_INICIAL,'DD/MM/YYYY HH24:MI:SS')) HORA_INICIAL,(TO_CHAR(EXCEPCIONES.HORA_FINAL,'DD/MM/YYYY HH24:MI:SS')) HORA_FINAL,(CASE EXCEPCIONES.ACCESO WHEN 0 THEN 'false' ELSE 'true' END) ACCESO,(CASE EXCEPCIONES.SIN_ACCESO WHEN 0 THEN 'false' ELSE 'true' END) SIN_ACCESO FROM EXCEPCIONES WHERE EXCEPCIONES.COMPANIA = :COMPANIA AND EXCEPCIONES.CUENTA = :CUENTA) WHERE (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN HORA_INICIAL IS NULL THEN ' ' ELSE UPPER(HORA_INICIAL) END)  LIKE UPPER( '%' || :HORA_INICIAL || '%')  AND (CASE WHEN HORA_FINAL IS NULL THEN ' ' ELSE UPPER(HORA_FINAL) END)  LIKE UPPER( '%' || :HORA_FINAL || '%')  AND (CASE WHEN ACCESO IS NULL THEN ' ' ELSE UPPER(ACCESO) END)  LIKE UPPER(:ACCESO || '%')  AND (CASE WHEN SIN_ACCESO IS NULL THEN ' ' ELSE UPPER(SIN_ACCESO) END)  LIKE UPPER(:SIN_ACCESO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CUENTA":"$CUENTA","FECHA":"$FECHA","HORA_INICIAL":"$HORA_INICIAL","HORA_FINAL":"$HORA_FINAL","ACCESO":"$ACCESO(type:boolean)","SIN_ACCESO":"$SIN_ACCESO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="HORA_INICIAL" sqlType="STRING"/>
+		<param name="HORA_FINAL" sqlType="STRING"/>
+		<param name="ACCESO" sqlType="STRING"/>
+		<param name="SIN_ACCESO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="excepciones">
+		<call-query href="getExcepcionesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA_INICIAL" query-param="HORA_INICIAL"/>
+			<with-param name="HORA_FINAL" query-param="HORA_FINAL"/>
+			<with-param name="ACCESO" query-param="ACCESO"/>
+			<with-param name="SIN_ACCESO" query-param="SIN_ACCESO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getExcepcionesNumeroQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  EXCEPCIONES.COMPANIA, EXCEPCIONES.CUENTA,(TO_CHAR(EXCEPCIONES.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,(TO_CHAR(EXCEPCIONES.HORA_INICIAL,'DD/MM/YYYY HH24:MI:SS')) HORA_INICIAL,(TO_CHAR(EXCEPCIONES.HORA_FINAL,'DD/MM/YYYY HH24:MI:SS')) HORA_FINAL,(CASE EXCEPCIONES.ACCESO WHEN 0 THEN 'false' ELSE 'true' END) ACCESO,(CASE EXCEPCIONES.SIN_ACCESO WHEN 0 THEN 'false' ELSE 'true' END) SIN_ACCESO FROM EXCEPCIONES WHERE EXCEPCIONES.COMPANIA = :COMPANIA AND EXCEPCIONES.CUENTA = :CUENTA) WHERE (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN HORA_INICIAL IS NULL THEN ' ' ELSE UPPER(HORA_INICIAL) END)  LIKE UPPER( '%' || :HORA_INICIAL || '%')  AND (CASE WHEN HORA_FINAL IS NULL THEN ' ' ELSE UPPER(HORA_FINAL) END)  LIKE UPPER( '%' || :HORA_FINAL || '%')  AND (CASE WHEN ACCESO IS NULL THEN ' ' ELSE UPPER(ACCESO) END)  LIKE UPPER(:ACCESO || '%')  AND (CASE WHEN SIN_ACCESO IS NULL THEN ' ' ELSE UPPER(SIN_ACCESO) END)  LIKE UPPER(:SIN_ACCESO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="HORA_INICIAL" sqlType="STRING"/>
+		<param name="HORA_FINAL" sqlType="STRING"/>
+		<param name="ACCESO" sqlType="STRING"/>
+		<param name="SIN_ACCESO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="excepciones/numero">
+		<call-query href="getExcepcionesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA_INICIAL" query-param="HORA_INICIAL"/>
+			<with-param name="HORA_FINAL" query-param="HORA_FINAL"/>
+			<with-param name="ACCESO" query-param="ACCESO"/>
+			<with-param name="SIN_ACCESO" query-param="SIN_ACCESO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateExcepciones" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>UPDATE EXCEPCIONES SET CUENTA=:CUENTA, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), HORA_INICIAL=TO_DATE(:HORA_INICIAL,'DD/MM/YYYY HH24:MI:SS'), HORA_FINAL=TO_DATE(:HORA_FINAL,'DD/MM/YYYY HH24:MI:SS'), ACCESO=:ACCESO, SIN_ACCESO=:SIN_ACCESO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE EXCEPCIONES.COMPANIA= :KEY_COMPANIA AND EXCEPCIONES.CUENTA= :KEY_CUENTA AND EXCEPCIONES.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="HORA_INICIAL" sqlType="STRING"/>
+		<param name="HORA_FINAL" sqlType="STRING"/>
+		<param name="ACCESO" sqlType="STRING"/>
+		<param name="SIN_ACCESO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CUENTA" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="excepciones">
+		<call-query href="updateExcepciones">
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA_INICIAL" query-param="HORA_INICIAL"/>
+			<with-param name="HORA_FINAL" query-param="HORA_FINAL"/>
+			<with-param name="ACCESO" query-param="ACCESO"/>
+			<with-param name="SIN_ACCESO" query-param="SIN_ACCESO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CUENTA" query-param="KEY_CUENTA"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+
+		</call-query>
+	</resource>
+
+</data>

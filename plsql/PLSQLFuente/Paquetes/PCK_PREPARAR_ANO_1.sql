@@ -1,0 +1,3886 @@
+create or replace PACKAGE BODY "PCK_PREPARAR_ANO" AS
+
+  PROCEDURE PR_COPIAR_AUXILIAR (
+  /*
+    NAME              : COPIAR_AUXILIAR
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ BLANCO
+    DATE MIGRADOR     : 05/02/2015
+    TIME              : 08:03 AM
+    MODIFIER          : JOSE PASCUAL GOMEZ BLANCO
+    DATE MODIFIED     : 05/02/2015
+    TIME              : 08:03 AM
+    DESCRIPTION       : Copia las auxiliares de un año a otro
+    @NAME: copiarAuxiliar
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_ANO_DESTINO 		  IN INTEGER,
+  UN_ANO_ORIGEN       IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ANO_INICIAL  INTEGER;
+BEGIN
+  PR_PREPARARAUXILIARFUT(UN_COMPANIA         => UN_COMPANIA,
+                         UN_ANO_DESTINO      => UN_ANO_DESTINO,
+                         UN_ANO_ORIGEN       => UN_ANO_ORIGEN,
+                         UN_COMPANIA_DESTINO => UN_COMPANIA_DESTINO);
+  MI_EXCLUIDOS:='COMPANIA,ANO,CODIGOBP';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('AUXILIAR',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''',' || UN_ANO_DESTINO ||','''''||
+               ' FROM AUXILIAR ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                 ' AND ORI.ANO     =' || UN_ANO_ORIGEN ||
+                 ' AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM AUXILIAR DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||
+                                         ''' AND DES.ANO     =' || UN_ANO_DESTINO ||
+                                        ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('AUXILIAR', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+END PR_COPIAR_AUXILIAR;
+
+PROCEDURE PR_COPIAR_CENTRO_COSTO (
+    /*
+    NAME              : COPIAR_CENTRO_COSTO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ BLANCO
+    DATE MIGRADOR     : 05/02/2015
+    TIME              : 08:23 AM
+    MODIFIER          : JOSE PASCUAL GOMEZ BLANCO
+    DATE MODIFIED     : 05/02/2015
+    TIME              : 08:23 AM
+    DESCRIPTION       : Copia los centros de costos de un año a otro
+    @NAME: copiarCentroCosto
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_ANO_DESTINO 		  IN INTEGER,
+  UN_ANO_ORIGEN       IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ANO_INICIAL  INTEGER;
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 14; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA,ANO';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('CENTRO_COSTO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''','  || UN_ANO_DESTINO ||
+               ' FROM CENTRO_COSTO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                 ' AND ORI.ANO     =' || UN_ANO_ORIGEN ||
+                 ' AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM CENTRO_COSTO DES ' ||
+                                       ' WHERE DES.COMPANIA= ''' || UN_COMPANIA_DESTINO ||
+                                         ''' AND DES.ANO=' || UN_ANO_DESTINO ||
+                                        ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('CENTRO_COSTO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+  /*  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Centros de costos';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'CENTRO_COSTO','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+END PR_COPIAR_CENTRO_COSTO;
+
+PROCEDURE PR_COPIAR_REFERENCIA (
+      /*
+    NAME              : COPIAR_REFERENCIA
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ BLANCO
+    DATE MIGRADOR     : 05/02/2015
+    TIME              : 08:43 AM
+    MODIFIER          : JOSE PASCUAL GOMEZ BLANCO
+    DATE MODIFIED     : 05/02/2015
+    TIME              : 08:43 AM
+    DESCRIPTION       : Copia las referencias de un año a otro
+    @NAME: copiarReferencia
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_ANO_DESTINO 		  IN INTEGER,
+  UN_ANO_ORIGEN       IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ANO_INICIAL  INTEGER;
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 15; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA,ANO';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('REFERENCIA',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''',' || UN_ANO_DESTINO ||
+               ' FROM REFERENCIA ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                 ' AND ORI.ANO     ='   || UN_ANO_ORIGEN ||
+                 ' AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM REFERENCIA DES ' ||
+                                       ' WHERE DES.COMPANIA=''' || UN_COMPANIA_DESTINO ||
+                                         ''' AND DES.ANO     =' || UN_ANO_DESTINO ||
+                                        ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('REFERENCIA', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Referencias';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'REFERENCIA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END PR_COPIAR_REFERENCIA;
+
+PROCEDURE PR_COPIAR_FUENTE_RECURSO (
+    /*
+    NAME              : COPIAR_REFERENCIA
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ BLANCO
+    DATE MIGRADOR     : 05/02/2015
+    TIME              : 09:13 AM
+    MODIFIER          : JOSE PASCUAL GOMEZ BLANCO
+    DATE MODIFIED     : 05/02/2015
+    TIME              : 09:13 AM
+    DESCRIPTION       : Copia las fuentes de recursos de un año a otro
+    @NAME: copiarFuenteRecurso
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_ANO_DESTINO 		  IN INTEGER,
+  UN_ANO_ORIGEN       IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ANO_INICIAL  INTEGER;
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 16; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA,ANO';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('FUENTE_RECURSOS',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''',' || UN_ANO_DESTINO ||
+               ' FROM FUENTE_RECURSOS ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                 ' AND ORI.ANO     =' || UN_ANO_ORIGEN ||
+                 ' AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM FUENTE_RECURSOS DES ' ||
+                                       ' WHERE DES.COMPANIA =''' || UN_COMPANIA_DESTINO ||
+                                         ''' AND DES.ANO      =' || UN_ANO_DESTINO ||
+                                        ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('FUENTE_RECURSOS', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Fuente de Recursos';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'FUENTE_RECURSOS','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END PR_COPIAR_FUENTE_RECURSO;
+
+PROCEDURE PR_COPIAR_DESTINORECURSOS (
+    /*
+    NAME              : COPIAR_REFERENCIA
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ BLANCO
+    DATE MIGRADOR     : 21/01/2019
+    TIME              : 09:01 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia los destinos de recursos de un año a otro
+    @NAME: copiarDestinoRecursos
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_ANO_DESTINO 		  IN INTEGER,
+  UN_ANO_ORIGEN       IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ANO_INICIAL  INTEGER;
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 16; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA,ANO';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('DESTINORECURSOS',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''',' || UN_ANO_DESTINO ||
+               ' FROM DESTINORECURSOS ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                 ' AND ORI.ANO     =' || UN_ANO_ORIGEN ||
+                 ' AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM DESTINORECURSOS DES ' ||
+                                       ' WHERE DES.COMPANIA =''' || UN_COMPANIA_DESTINO ||
+                                         ''' AND DES.ANO      =' || UN_ANO_DESTINO ||
+                                        ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('DESTINORECURSOS', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Fuente de Recursos';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'FUENTE_RECURSOS','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END PR_COPIAR_DESTINORECURSOS;
+
+
+PROCEDURE PR_PREPARA_ANO_SIGUIENTE (
+    /*
+    NAME              : COPIAR_REFERENCIA
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ BLANCO
+    DATE MIGRADOR     : 10/02/2015
+    TIME              : 02:13 PM
+    MODIFIER          : JOSE PASCUAL GOMEZ BLANCO
+    DATE MODIFIED     : 10/02/2015
+    TIME              : 02:13 PM
+    DESCRIPTION       : Copia los datos de un año a otro para iniciar año contable
+    @NAME: prepararAnoSiguiente
+  */
+  UN_COMPANIA	      IN VARCHAR2,
+  UN_ANO_DESTINO 	  IN INTEGER,
+  UN_ANO_ORIGEN       IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2,
+  UN_SOLOAUXILIAR     IN NUMBER DEFAULT 0
+)
+AS 
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_ANIO          NUMBER;
+  MI_REEMPLAZOS         PCK_SUBTIPOS.TI_CLAVEVALOR; 
+BEGIN
+  MI_ANIO :=0;
+  SELECT COUNT(NUMERO)
+  INTO MI_ANIO
+  FROM ANO
+  WHERE COMPANIA = UN_COMPANIA_DESTINO
+    AND NUMERO   = UN_ANO_DESTINO;
+  IF MI_ANIO=0 THEN
+    MI_REEMPLAZOS(1).CLAVE := 'ANIO';
+    MI_REEMPLAZOS(1).VALOR := UN_ANO_DESTINO;           
+    PCK_ERR_MSG.RAISE_WITH_MSG(
+      UN_EXC_COD    => -20000,
+      UN_ERROR_COD  => PCK_ERRORES.ERR_ANONOEXISTE,
+      UN_TABLAERROR => 'ANO',
+      UN_REEMPLAZOS => MI_REEMPLAZOS  
+    ); 
+  END IF;
+
+  MI_ANIO :=0;
+  SELECT COUNT(NUMERO)
+  INTO MI_ANIO
+  FROM ANO
+  WHERE COMPANIA = UN_COMPANIA
+    AND NUMERO   = UN_ANO_ORIGEN;
+  IF MI_ANIO=0 THEN
+    MI_REEMPLAZOS(1).CLAVE := 'ANIO';
+    MI_REEMPLAZOS(1).VALOR := UN_ANO_ORIGEN;           
+    PCK_ERR_MSG.RAISE_WITH_MSG(
+      UN_EXC_COD    => -20000,
+      UN_ERROR_COD  => PCK_ERRORES.ERR_ANONOEXISTE,
+      UN_TABLAERROR => 'ANO',
+      UN_REEMPLAZOS => MI_REEMPLAZOS  
+    ); 
+  END IF;
+  PCK_PREPARAR_ANO.PR_COPIAR_AUXILIAR       (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_CENTRO_COSTO   (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_REFERENCIA     (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_FUENTE_RECURSO (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_DESTINORECURSOS(UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);  
+  IF UN_SOLOAUXILIAR =0 THEN
+      -- Ticket#7724743  cuando las entidades manejan C�digo equivalente COD_EQUIV para el tema de conciliaciones bancarias o manejan ese c�digo para informes de cartera primero se debe copiar la tabla PLAN_CNT_EQUIVALENTE  
+      PCK_PREPARAR_ANO.PR_COPIAR_PLANCNTEQUIVALENTE (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+      PCK_PREPARAR_ANO.PR_COPIAR_PLAN_CONTABLE  (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+      PCK_PREPARAR_ANO.PR_COPIAR_CUENTA_BANCOS  (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+  END IF;
+END PR_PREPARA_ANO_SIGUIENTE; 
+
+
+PROCEDURE PR_COPIAR_PLAN_CONTABLE (
+    /*
+    NAME              : COPIAR_PLAN_CONTABLE
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ BLANCO
+    DATE MIGRADOR     : 10/02/2015
+    TIME              : 05:10 PM
+    MODIFIER          : JOSE PASCUAL GOMEZ BLANCO
+    DATE MODIFIED     : 10/02/2015
+    TIME              : 05:10 PM
+    DESCRIPTION       : Copia los datos del plan contable
+    @NAME: copiarPlanContable
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_ANO_DESTINO 		  IN INTEGER,
+  UN_ANO_ORIGEN       IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CAMPOSCLOB   VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ERROR        CLOB;
+  BEGIN
+    PCK_PREPARAR_ANO.PR_COPIAR_ANO            (UN_COMPANIA,UN_COMPANIA_DESTINO);
+    PCK_PREPARAR_ANO.PR_COPIAR_PLANCNTEQUIVALENTE (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+    PCK_PREPARAR_ANO.PR_COPIAR_CENTRO_COSTO   (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+    
+--28/11/2017 JP se agrega validacion de cuentas padres he hijas con movimiento
+  MI_ERROR :='';
+  <<ERRADAS>>
+  FOR RS IN (
+              WITH  BASE AS (
+                        SELECT 'EXISTE' ESTADO, COMPANIA,ANO,CODIGO,NOMBRE,
+                                SALDO0      ,
+                                MOVIMIENTO +  MAN_CEN_CTO + MAN_AUX_TER + MAN_AUX_GEN + MAN_AUX_REF + MAN_AUX_FUE MOV
+                        FROM PLAN_CONTABLE  
+                        WHERE COMPANIA = UN_COMPANIA_DESTINO 
+                         AND ANO       = UN_ANO_DESTINO 
+                        UNION ALL
+                         SELECT 'COPIA' ESTADO, PP.COMPANIA,UN_ANO_DESTINO + 0 ANO,CODIGO,NOMBRE,
+                                PP.SALDO13,
+                                MOVIMIENTO +  MAN_CEN_CTO + MAN_AUX_TER + MAN_AUX_GEN + MAN_AUX_REF + MAN_AUX_FUE MOV
+                         FROM PLAN_CONTABLE PP  
+                         WHERE PP.COMPANIA = UN_COMPANIA_DESTINO 
+                           AND PP.ANO      = UN_ANO_ORIGEN 
+                           --AND PP.SALDO13 NOT IN(0)  
+                           AND PP.CODIGO NOT IN(SELECT CODIGO      
+                                         FROM PLAN_CONTABLE  
+                                         WHERE COMPANIA = UN_COMPANIA_DESTINO 
+                                           AND ANO      = UN_ANO_DESTINO 
+                                           AND CODIGO   = PP.CODIGO) 
+                    )
+                SELECT *
+                FROM BASE INI
+                WHERE CODIGO IN( SELECT INI.CODIGO
+                                FROM BASE
+                                WHERE COMPANIA= INI.COMPANIA
+                                  AND ANO     = INI.ANO
+                                  AND CODIGO  = SUBSTR(INI.CODIGO, 1, LENGTH(CODIGO))
+                                  AND CODIGO  <> INI.CODIGO
+                                  AND MOV NOT IN(0)                  
+                                  )
+              )
+  LOOP
+    MI_ERROR := MI_ERROR || CHR(13) || CHR(10) || RS.CODIGO;    
+  END LOOP ERRADAS;
+  --IF LENGTH(TRIM(MI_ERROR))>0 THEN  
+  IF MI_ERROR IS NOT NULL THEN  
+    DECLARE
+        MI_MSGERROR  PCK_SUBTIPOS.TI_CLAVEVALOR; 
+    BEGIN
+      RAISE PCK_EXCEPCIONES.EXC_CONTABILIDAD;
+      EXCEPTION WHEN PCK_EXCEPCIONES.EXC_CONTABILIDAD THEN
+        MI_MSGERROR(1).CLAVE := 'CUENTAS';
+        MI_MSGERROR(1).VALOR := MI_ERROR;
+        PCK_ERR_MSG.RAISE_WITH_MSG(
+          UN_EXC_COD    => SQLCODE,
+          UN_ERROR_COD  => PCK_ERRORES.ERR_CONTAB_PASANDO_CUENTAS,
+          UN_REEMPLAZOS => MI_MSGERROR
+        );
+      END;
+  END IF;
+  -- SE AGREGAN CUENTAS DEL ANO ANTERIOR FALTANTES AL ANO DESTINO
+  MI_CAMPOSCLOB:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS(UN_TABLA      =>'PLAN_CONTABLE',
+                                                 UN_CAMPOSCLOB =>2);
+  IF SUBSTR(TRIM(MI_CAMPOSCLOB),0,1)=',' OR MI_CAMPOSCLOB IS NULL THEN 
+    MI_EXCLUIDOS:= 'COMPANIA ,ANO,SALDOINICIAL' || MI_CAMPOSCLOB;
+  ELSE 
+    MI_EXCLUIDOS:= 'COMPANIA ,ANO,SALDOINICIAL,' || MI_CAMPOSCLOB;
+  END IF;
+  FOR MI_I IN 0 .. 13 LOOP
+    MI_EXCLUIDOS:= MI_EXCLUIDOS || ',DEBITO' || MI_I || ',CREDITO' || MI_I || ',SALDO' || MI_I || ',NETO' || MI_I || ',AJUSTE' || MI_I ;
+  END LOOP;
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS(UN_TABLA      => 'PLAN_CONTABLE',
+                                             UN_EXCLUIDOS  => MI_EXCLUIDOS);
+  MI_VALORES :=' SELECT ''' || UN_COMPANIA_DESTINO || ''',' || UN_ANO_DESTINO || ',' || MI_CAMPOS ||
+               ' FROM PLAN_CONTABLE PP ' ||
+               ' WHERE PP.COMPANIA=''' || UN_COMPANIA || '''' ||
+                 ' AND PP.ANO=' || UN_ANO_ORIGEN   ||
+                 ' AND PP.CODIGO NOT IN(SELECT CODIGO     ' ||
+                                  ' FROM PLAN_CONTABLE ' ||
+                                  ' WHERE COMPANIA =''' ||  UN_COMPANIA_DESTINO || '''' ||
+                                    ' AND ANO      =' || UN_ANO_DESTINO ||
+                                    ' AND CODIGO   = PP.CODIGO) '
+               --20181003_1233:@pespitia, Cuentas sin indicadores activos, y mayores a 5 digitos                                    
+               ||' AND NOT (    LENGTH(PP.CODIGO) < 6 '
+               ||'          AND (PP.MOVIMIENTO + PP.MAN_CEN_CTO + PP.MAN_AUX_TER + PP.MAN_AUX_GEN + PP.MAN_AUX_REF + PP.MAN_AUX_FUE) NOT IN(0))'
+               --20181003_1234:@pespitia, Cuentas padre sin indicadores activos
+               ||' AND (SELECT COUNT(CODIGO) 
+                        FROM PLAN_CONTABLE 
+                        WHERE COMPANIA = PP.COMPANIA
+                          AND ANO      = PP.ANO
+                          AND CODIGO <> PP.CODIGO
+                          AND CODIGO BETWEEN PP.CODIGO AND PP.CODIGO || '||CHR(39)||PCK_DATOS.FC_CONS_MAX_ID||CHR(39)
+               ||'        AND PP.CODIGO = SUBSTR(CODIGO,1,LENGTH(PP.CODIGO))
+                          AND (PP.MOVIMIENTO 
+                             + PP.MAN_CEN_CTO 
+                             + PP.MAN_AUX_TER 
+                             + PP.MAN_AUX_GEN 
+                             + PP.MAN_AUX_REF 
+                             + PP.MAN_AUX_FUE) NOT IN(0)) IN (0)';
+
+  MI_CAMPOS:= 'COMPANIA,ANO,' || MI_CAMPOS;
+   BEGIN  
+    BEGIN
+      PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME(UN_TABLA => 'PLAN_CONTABLE PP', 
+                                            UN_ACCION => 'IS', 
+                                            UN_CAMPOS => MI_CAMPOS, 
+                                            UN_VALORES => MI_VALORES); 
+    EXCEPTION WHEN PCK_EXCEPCIONES.EXC_INSERTAR THEN
+      RAISE PCK_EXCEPCIONES.EXC_CONTABILIDAD;  
+    END;
+    EXCEPTION WHEN PCK_EXCEPCIONES.EXC_CONTABILIDAD THEN 
+      PCK_ERR_MSG.RAISE_WITH_MSG(
+        UN_EXC_COD   => SQLCODE,
+        UN_ERROR_COD => PCK_ERRORES.ERR_CONTAB_PASANDO_PLAN
+      );
+  END;
+  --Se agregan los campos CLOB por separados debido a que por cuestiones del trigger compound no permite ingresar los CLOB en el INSERT
+  IF MI_CAMPOSCLOB IS NOT NULL THEN
+    MI_CAMPOS:= ' (F.' || REPLACE(MI_CAMPOSCLOB,',',',F.') || ')=' ||
+                    ' (SELECT I.' || REPLACE(MI_CAMPOSCLOB,',',',I.') || 
+                     ' FROM PLAN_CONTABLE I ' ||
+                     ' WHERE I.COMPANIA= F.COMPANIA ' ||
+                       ' AND I.ANO     =' || UN_ANO_ORIGEN ||  
+                       ' AND I.CODIGO  = F.CODIGO ' ||
+                      ' )';
+    MI_CONDICION:= ' COMPANIA=''' || UN_COMPANIA_DESTINO    || '''' ||
+               ' AND ANO     ='   || UN_ANO_DESTINO ||
+               ' AND CODIGO IN(SELECT CODIGO '          ||
+                         ' FROM PLAN_CONTABLE ' ||
+                         ' WHERE COMPANIA =F.COMPANIA ' ||
+                           ' AND ANO      =' || UN_ANO_ORIGEN ||
+                           ' AND CODIGO   =F.CODIGO ' ||
+                         ') ';
+    BEGIN
+      BEGIN
+        PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME(UN_TABLA => 'PLAN_CONTABLE F', 
+                                              UN_ACCION => 'M', 
+                                              UN_CAMPOS => MI_CAMPOS, 
+                                              UN_CONDICION => MI_CONDICION);                       
+       EXCEPTION WHEN PCK_EXCEPCIONES.EXC_INSERTAR THEN
+          RAISE PCK_EXCEPCIONES.EXC_CONTABILIDAD;  
+        END;
+        EXCEPTION WHEN PCK_EXCEPCIONES.EXC_CONTABILIDAD THEN 
+          PCK_ERR_MSG.RAISE_WITH_MSG(
+            UN_EXC_COD   => SQLCODE,
+            UN_ERROR_COD => PCK_ERRORES.ERR_CONTAB_PASANDO_PLAN_CLOB
+          );
+      END;
+  END IF;
+END PR_COPIAR_PLAN_CONTABLE;
+
+PROCEDURE PR_COPIAR_CUENTA_BANCOS (
+    /*
+    NAME              : COPIAR_PLAN_CONTABLE
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ BLANCO
+    DATE MIGRADOR     : 10/02/2015
+    TIME              : 05:10 PM
+    MODIFIER          : JOSE PASCUAL GOMEZ BLANCO
+    DATE MODIFIED     : 10/02/2015
+    TIME              : 05:10 PM
+    DESCRIPTION       : Copia los datos del plan contable
+    @NAME: copiarCuentaBanco
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_ANO_DESTINO 		  IN INTEGER,
+  UN_ANO_ORIGEN 		  IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CAMPOSCLOB   VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 19; 
+BEGIN
+   -- SE AGREGAN CUENTAS DEL ANO ANTERIOR FALTANTES AL ANO DESTINO
+  MI_CAMPOSCLOB:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('CUENTABANCOS',NULL,2);
+  MI_EXCLUIDOS:= 'COMPANIA,ANO ';
+  IF MI_CAMPOSCLOB IS NOT NULL THEN
+    MI_EXCLUIDOS:= MI_EXCLUIDOS || ',' || MI_CAMPOSCLOB;
+  END IF;
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('CUENTABANCOS',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ''' || UN_COMPANIA_DESTINO || ''',' || UN_ANO_DESTINO || ',' || MI_CAMPOS ||
+               ' FROM CUENTABANCOS F ' ||
+               ' WHERE F.COMPANIA=''' || UN_COMPANIA || '''' ||
+                 ' AND F.ANO=' || UN_ANO_ORIGEN   ||
+                 ' AND F.ESTADO IN(''A'') ' || 
+                 ' AND F.IDCONTABLE NOT IN(SELECT I.IDCONTABLE ' ||
+                                         ' FROM CUENTABANCOS I ' ||
+                                         ' WHERE I.COMPANIA =''' ||  UN_COMPANIA_DESTINO || '''' ||
+                                           ' AND I.ANO =' || UN_ANO_DESTINO ||
+                                           ' AND I.IDCONTABLE = F.IDCONTABLE) ' || 
+                 ' AND F.IDCONTABLE IN(SELECT P.CODIGO ' || 
+                                     ' FROM PLAN_CONTABLE P ' ||
+                                     ' WHERE P.COMPANIA=''' || UN_COMPANIA_DESTINO || ''' ' ||
+                                       ' AND P.ANO     =' || UN_ANO_DESTINO ||
+                                       ' AND P.CODIGO  =F.IDCONTABLE)';
+  MI_CAMPOS:= 'COMPANIA,ANO,' || MI_CAMPOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('CUENTABANCOS', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL);
+
+  --Se agregan los campos CLOB por separados debido a que por cuestiones del trigger compound no permite ingresar los CLOB en el INSERT
+
+  IF PCK_DATOS.GL_RTA =0 THEN 
+    IF MI_CAMPOSCLOB IS NOT NULL THEN
+      MI_CAMPOS:= ' (F.' || REPLACE(MI_CAMPOSCLOB,',',',F.') || ')=' ||
+                      ' (SELECT I.' || REPLACE(MI_CAMPOSCLOB,',',',I.') || 
+                       ' FROM CUENTABANCOS I ' ||
+                       ' WHERE I.COMPANIA   = F.COMPANIA ' ||
+                         ' AND I.ANO        =' || UN_ANO_ORIGEN ||  
+                         ' AND I.IDCONTABLE = F.IDCONTABLE ' ||
+                        ' )';
+      MI_CONDICION:= ' COMPANIA=''' || UN_COMPANIA_DESTINO    || '''' ||
+                 ' AND ANO     ='   || UN_ANO_DESTINO ||
+                 ' AND ESTADO IN(''A'') ' || 
+                 ' AND IDCONTABLE IN(SELECT IDCONTABLE '          ||
+                                   ' FROM CUENTABANCOS ' ||
+                                   ' WHERE COMPANIA =F.COMPANIA ' ||
+                                     ' AND ANO      =' || UN_ANO_ORIGEN ||
+                                     ' AND IDCONTABLE       =F.IDCONTABLE ' ||
+                                   ') ';
+      PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('CUENTABANCOS F', 'M', MI_CAMPOS, NULL, NULL, MI_CONDICION);                       
+
+    END IF;
+  END IF;
+/*  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Cuenta Bancos';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'CUENTABANCOS','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG ); */
+END PR_COPIAR_CUENTA_BANCOS;
+
+PROCEDURE PR_COPIAR_PARAMETRO (
+  /*
+    NAME              : PR_COPIAR_PARAMETRO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : YESIKA PAOLA BECERRA CASTRO
+    DATE MIGRADOR     : 27/04/2016
+    TIME              : 12:20 PM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia los parámetros de una compañia a otra
+    @NAME: copiarParametro
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ANO_INICIAL  INTEGER;
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('PARAMETRO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''''||
+               ' FROM PARAMETRO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                  ' AND ORI.NOMBRE NOT IN(SELECT NOMBRE ' ||
+                                       ' FROM PARAMETRO DES ' ||
+                                       ' WHERE DES.COMPANIA= ''' || UN_COMPANIA_DESTINO ||''''||
+                                       ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('PARAMETRO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Parámetro';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'PARAMETRO','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END PR_COPIAR_PARAMETRO;
+
+PROCEDURE PR_COPIAR_TIPO_COMPROBANTE (
+  /*
+    NAME              : PR_COPIAR_TIPO_COMPROBANTE 
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : YESIKA PAOLA BECERRA CASTRO
+    DATE MIGRADOR     : 27/04/2016
+    TIME              : 02:26 PM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia los Tipos de Comprobantes de una compañia a otra
+    @NAME: copiarTipoComprobante
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ANO_INICIAL  INTEGER;
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('TIPO_COMPROBANTE',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''''||
+               ' FROM TIPO_COMPROBANTE ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                  ' AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM TIPO_COMPROBANTE DES ' ||
+                                       ' WHERE DES.COMPANIA=''' || UN_COMPANIA_DESTINO ||''''||
+                                       ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TIPO_COMPROBANTE', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Tipo de Comprobante';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPO_COMPROBANTE','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END PR_COPIAR_TIPO_COMPROBANTE;
+
+PROCEDURE PR_COPIAR_CONSECUTIVOTC (
+  /*
+    NAME              : PR_COPIAR_CONSECUTIVOTC 
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : YESIKA PAOLA BECERRA CASTRO
+    DATE MIGRADOR     : 27/04/2016
+    TIME              : 02:49 PM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia los Consecutivos de los Tipos de Comprobantes de una compañia a otra
+    @NAME: copiarConsecutivoTc
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_ANIO             IN NUMBER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ANO_INICIAL  INTEGER;
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA,ANO';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('CONSECUTIVOTC',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO || ''',' || UN_ANIO || 
+               ' FROM CONSECUTIVOTC ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                 ' AND ORI.ANO = ' || UN_ANIO || '' || 
+                  ' AND ORI.TIPOCOMPROBANTE NOT IN(SELECT TIPOCOMPROBANTE ' ||
+                                       ' FROM CONSECUTIVOTC DES ' ||
+                                       ' WHERE DES.COMPANIA=''' || UN_COMPANIA_DESTINO ||''''||
+                                        ' AND DES.ANO = ' || UN_ANIO || '' || 
+                                       ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('CONSECUTIVOTC', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando  Consecutivo de Tipo de Comprobante';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'CONSECUTIVOTC','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END PR_COPIAR_CONSECUTIVOTC;
+
+PROCEDURE PR_COPIAR_TERCERO (
+  /*
+    NAME              : PR_COPIAR_CONSECUTIVOTC 
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : YESIKA PAOLA BECERRA CASTRO
+    DATE MIGRADOR     : 27/04/2016
+    TIME              : 05:51 PM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia los Terceros de una compañia a otra
+    @NAME: copiarTercero
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+ )
+AS
+  MI_CAMPOS           VARCHAR2(32000);
+  MI_CONDICION        VARCHAR2(32000);
+  MI_VALORES          VARCHAR2(32000);
+  MI_EXCLUIDOS        VARCHAR2(32000);
+  MI_ANO_INICIAL      INTEGER;
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA,DIGITOVERIFICACION,EDAD,NOMBRE';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('TERCERO',MI_EXCLUIDOS);
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''''||
+               ' FROM TERCERO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                  ' AND ORI.NIT NOT IN(SELECT NIT ' ||
+                                       ' FROM TERCERO DES ' ||
+                                       ' WHERE DES.COMPANIA=''' || UN_COMPANIA_DESTINO ||''''||
+                                       ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',COMPANIA' ;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TERCERO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando  Tercero';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TERCERO','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END PR_COPIAR_TERCERO;
+
+PROCEDURE PR_COPIAR_TIPOCOMPROBANTEPP (
+  /*
+    NAME              : PR_COPIAR_TIPOCOMPROBANTEPP 
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : YESIKA PAOLA BECERRA CASTRO
+    DATE MIGRADOR     : 28/04/2016
+    TIME              : 08:34 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia los Comprobantes presupuestales
+    @NAME: copiarTipoComprobantePptal
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS           VARCHAR2(32000);
+  MI_CONDICION        VARCHAR2(32000);
+  MI_VALORES          VARCHAR2(32000);
+  MI_EXCLUIDOS        VARCHAR2(32000);
+  MI_ANO_INICIAL      INTEGER;
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('TIPO_COMPROBPP',MI_EXCLUIDOS );
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''''||
+               ' FROM TIPO_COMPROBPP ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                    ' AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM TIPO_COMPROBPP DES ' ||
+                                       ' WHERE DES.COMPANIA=''' || UN_COMPANIA_DESTINO ||''''||
+                                       ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TIPO_COMPROBPP', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando  Tipos de Comprobantes presupuestales';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPO_COMPROBPP','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END PR_COPIAR_TIPOCOMPROBANTEPP;
+
+PROCEDURE PR_COPIAR_CONSECUTIVOTCP (
+  /*
+    NAME              : PR_COPIAR_CONSECUTIVOTCP 
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : YESIKA PAOLA BECERRA CASTRO
+    DATE MIGRADOR     : 28/04/2016
+    TIME              : 08:39 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia los Tipos de Comprobantes presupuestales
+    @NAME: copiarConsecutivoTcp
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_ANIO             IN NUMBER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS           VARCHAR2(32000);
+  MI_CONDICION        VARCHAR2(32000);
+  MI_VALORES          VARCHAR2(32000);
+  MI_EXCLUIDOS        VARCHAR2(32000);
+  MI_COMPANIA_DESTINO VARCHAR2(30);
+  MI_ANO_INICIAL      INTEGER;
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA , ANO';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('CONSECUTIVOTCP',MI_EXCLUIDOS);
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||''',' || UN_ANIO || 
+               ' FROM CONSECUTIVOTCP ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                   ' AND ORI.ANO = ' || UN_ANIO || '' ||
+                  ' AND ORI.TIPOCOMPROBANTE NOT IN(SELECT TIPOCOMPROBANTE ' ||
+                                       ' FROM CONSECUTIVOTCP DES ' ||
+                                       ' WHERE DES.COMPANIA=''' || UN_COMPANIA_DESTINO ||''''||
+                                           ' AND DES.ANO = ' || UN_ANIO || '' || 
+                                       ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('CONSECUTIVOTCP', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando  Tipos de Comprobantes presupuestales';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'CONSECUTIVOTCP','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END PR_COPIAR_CONSECUTIVOTCP;
+
+PROCEDURE PR_CREAR_DATOS_CONTABLES (
+  /*
+    NAME              : PR_CREAR_DATOS_CONTABLES 
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : YESIKA PAOLA BECERRA CASTRO
+    DATE MIGRADOR     : 28/04/2016
+    TIME              : 08:17 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia plan contable,saldos y tipos de comprobantes para una nueva compañía de una compañía indicada como base
+    @NAME: crearDatosContables
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_ANO              IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS           VARCHAR2(32000);
+  MI_CONDICION        VARCHAR2(32000);
+  MI_VALORES          VARCHAR2(32000);
+  MI_EXCLUIDOS        VARCHAR2(32000);
+  MI_COMPANIA_DESTINO VARCHAR2(300);
+  MI_APLICA_NIFF      VARCHAR2(300);
+  MI_ANIO              INTEGER;
+  MI_COMP             VARCHAR2(3);
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_COMPANIA_DESTINO:= PCK_SYSMAN_UTL.FC_PAR(UN_COMPANIA ,'COMPAÑIA EQUIVALENTE NIIF' , PCK_DATOS.FC_MODULOCONTABILIDAD ,SYSDATE);
+  MI_ANIO :=0;
+  SELECT (NUMERO)
+  INTO MI_ANIO
+  FROM ANO
+  WHERE COMPANIA = UN_COMPANIA_DESTINO
+    AND NUMERO   = UN_ANO;
+  IF MI_ANIO=0 THEN
+    PCK_DATOS.GL_ERROR_MSG := 'No existe el año';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG, 'ANO','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+  END IF;
+   PCK_PREPARAR_ANO.PR_COPIAR_PLAN_CONTABLE  (UN_COMPANIA, UN_ANO, UN_ANO, UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_PARAMETRO  (UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_TIPOCOMPROBANTEPP(UN_COMPANIA , UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_TIPO_COMPROBANTE(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_CONSECUTIVOTC(UN_COMPANIA,UN_ANO,UN_COMPANIA_DESTINO );
+   PCK_PREPARAR_ANO.PR_COPIAR_TIPOS_DOCUMENTOS(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_TIPOORDENDECOMPRA(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_ANO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_ESTADO_CIVIL(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_UNIDAD_AV(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_GASTOS_DE_INVERSION(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_CLASE_GASTOINVERSION(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_BP_ACTIVIDADES(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_BP_TIPOSCOMPONENTES(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_UNIDAD_PROYECTOS(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_SERCTORDNP(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_SP_CLASEPROBLEMA(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_SP_SERVICIO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_SP_CODIGOSCIIU(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIA_SP_ESTADOSCOBRO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIA_SOLICITUDPORSERVICIO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_SERVICIOS_PUBLICOS(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_BANCO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_TIPOS_DE_EMPLEADO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_CAUSARETIRO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_FESTIVOS(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_PARENTESCO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_PROCESOS_DE_NOMINA(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_IP_REPORTE_FORMA(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_TIPO_ACTIVO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_BPTIPONOVEDAD(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_JUZGADOS(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_PREPARAR_ANO.PR_COPIAR_RETEFUENTEUVT(UN_COMPANIA,UN_COMPANIA_DESTINO);
+   PCK_SYSMAN_UTL.PR_INSERTA_FALTANTES('CONCEPTOS','COMPANIA',UN_COMPANIA_DESTINO,UN_COMPANIA) ;
+
+   MI_APLICA_NIFF := PCK_SYSMAN_UTL.FC_PAR(UN_COMPANIA ,'EDNTIDA APLICA NIIF' , PCK_DATOS.FC_MODULOCONTABILIDAD ,SYSDATE);
+   IF MI_APLICA_NIFF = 'SI' AND MI_COMPANIA_DESTINO = UN_COMPANIA THEN 
+    PCK_PREPARAR_ANO.PR_COPIAR_TERCERO(UN_COMPANIA,MI_COMPANIA_DESTINO);
+    PCK_PREPARAR_ANO.PR_COPIAR_CENTRO_COSTO(UN_COMPANIA , UN_ANO , UN_ANO , MI_COMPANIA_DESTINO);
+    PCK_PREPARAR_ANO.PR_COPIAR_AUXILIAR(UN_COMPANIA , UN_ANO , UN_ANO , MI_COMPANIA_DESTINO);
+    PCK_PREPARAR_ANO.PR_COPIAR_REFERENCIA(UN_COMPANIA , UN_ANO , UN_ANO , MI_COMPANIA_DESTINO);
+    PCK_PREPARAR_ANO.PR_COPIAR_FUENTE_RECURSO(UN_COMPANIA , UN_ANO , UN_ANO , MI_COMPANIA_DESTINO);
+   END IF;
+
+
+   PCK_PREPARAR_ANO.PR_COPIAR_CONSECUTIVOTCP(UN_COMPANIA , UN_COMPANIA_DESTINO , UN_ANO);
+   /*
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Preparando Datos de Compañia';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'PREPARANDO','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG ); */
+
+END PR_CREAR_DATOS_CONTABLES;
+
+PROCEDURE PR_CREAR_REGISTROS_BASICOS
+(
+
+/*
+    NAME              : CREAR_REGISTROS_BASICOS
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : YESIKA PAOLA BECERRA CASTRO
+    DATE MIGRADOR     : 26/04/2016
+    TIME              : 12:57 PM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Crea todos los registros que el sistema necesita para funcionar correctamente
+    @NAME: crearRegistrosBasicos
+  */
+  UN_COMPANIA IN VARCHAR2,
+  UN_ANIO     IN NUMBER
+)
+AS 
+  MI_STRSQL    VARCHAR2(32000);
+  MI_CAMPOS    VARCHAR2(32000);
+  MI_VALORES   VARCHAR2(32000);
+  MI_RES       NUMBER;
+  MI_ANOAUX       VARCHAR2(1 CHAR);
+  MI_ANIO      VARCHAR2(300);
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 19; 
+BEGIN 
+  --Crear Bodega de Almacén 
+  BEGIN 
+    SELECT  COUNT(*)
+    INTO MI_RES
+    FROM DEPENDENCIA
+    WHERE COMPANIA = UN_COMPANIA
+      AND CODIGO = '000000000000';
+   EXCEPTION WHEN NO_DATA_FOUND THEN 
+   MI_RES := 0;
+  END;   
+    IF MI_RES = 0 THEN   
+      MI_CAMPOS := 'COMPANIA,CODIGO,NOMBRE,MOVIMIENTO,SIGLA';
+      MI_VALORES := ''''||UN_COMPANIA||''', ''000000000000'',''BODEGA DE ALMACEN'',-1,''BOD''';
+      PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('DEPENDENCIA', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+    END IF;
+--Crea el Tercero de la Bodega 
+    BEGIN 
+     SELECT COUNT(*)
+     INTO MI_RES
+     FROM TERCERO 
+     WHERE COMPANIA = UN_COMPANIA 
+       AND NIT = '000000000000000000';
+
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      MI_RES := 0;
+  END;
+    IF MI_RES = 0 THEN 
+      MI_CAMPOS := 'COMPANIA, NIT , REGIMEN , SUCURSAL ,NOMBRE1';
+      MI_VALORES := ''''||UN_COMPANIA||''',''000000000000000000'',''C'',''001'',''RESPONSABLE DE BODEGA''';
+      PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TERCERO', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+    END IF; 
+  --Crea Responsable de Bodega 
+
+  BEGIN 
+     SELECT COUNT(*)
+     INTO MI_RES
+     FROM RESPONSABLE 
+     WHERE COMPANIA = UN_COMPANIA 
+       AND CEDULA = '000000000000000000';
+
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      MI_RES := 0;
+  END;
+    IF MI_RES = 0 THEN 
+      MI_CAMPOS := 'COMPANIA, CEDULA , SUCURSAL, CARGO';
+      MI_VALORES := ''''||UN_COMPANIA||''',''000000000000000000'',''001'',''JEFE BODEGA''';
+      PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('RESPONSABLE', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+    END IF; 
+  --Crea el responsable de Almacén en la dependencia de almacén
+    BEGIN
+      SELECT COUNT(*)
+      INTO MI_RES
+      FROM DEPENDENCIA_RESPONSABLE
+      WHERE COMPANIA = UN_COMPANIA
+        AND DEPENDENCIA = '000000000000'
+        AND RESPONSABLE = '000000000000000000';
+      EXCEPTION WHEN NO_DATA_FOUND THEN 
+      MI_RES :=0 ;
+    END;
+    IF MI_RES = 0 THEN 
+      MI_CAMPOS := 'COMPANIA , DEPENDENCIA , RESPONSABLE, CARGO , SUCURSAL';
+      MI_VALORES := ''''||UN_COMPANIA||''', ''000000000000'',''000000000000000000'',''RESPONSABLE DE BODEGA'' , ''001''';
+      PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('DEPENDENCIA_RESPONSABLE', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+    END IF;
+   --Crear Bodega de Inservibles 
+    BEGIN
+      SELECT COUNT(*)
+      INTO MI_RES
+      FROM DEPENDENCIA
+      WHERE COMPANIA = UN_COMPANIA
+        AND CODIGO = '999999999999';
+      EXCEPTION WHEN NO_DATA_FOUND THEN 
+        MI_RES:=0;
+    END;
+    IF MI_RES  = 0 THEN 
+      MI_CAMPOS := 'COMPANIA , CODIGO , NOMBRE ,  MOVIMIENTO , SIGLA' ;
+      MI_VALORES := ''''||UN_COMPANIA||''', ''999999999999'', ''BODEGA DE INSERVIBLES'', -1 , ''INS''';
+      PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('DEPENDENCIA', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+    END IF;
+    --Crea tercero de inservibles
+    BEGIN 
+     SELECT COUNT(*)
+     INTO MI_RES
+     FROM TERCERO 
+     WHERE COMPANIA = UN_COMPANIA 
+       AND NIT = '999999999999999999';
+
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      MI_RES := 0;
+  END;
+    IF MI_RES = 0 THEN 
+      MI_CAMPOS := 'COMPANIA, NIT , REGIMEN , SUCURSAL ,NOMBRE1';
+      MI_VALORES := ''''||UN_COMPANIA||''',''999999999999999999'',''C'',''999'',''RESPONSABLE DE INSERVIBLES''';
+      PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TERCERO', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+    END IF; 
+    --Crea responsables de inservibles 
+    BEGIN
+      SELECT COUNT(*)
+      INTO MI_RES
+      FROM RESPONSABLE
+      WHERE COMPANIA = UN_COMPANIA
+        AND CEDULA = '999999999999999999';
+      EXCEPTION WHEN NO_DATA_FOUND THEN 
+        MI_RES := 0;
+    END;
+    IF MI_RES = 0 THEN 
+      MI_CAMPOS := 'COMPANIA , CEDULA ,SUCURSAL , CARGO';
+      MI_VALORES := ''''||UN_COMPANIA||''', ''999999999999999999'', ''999'', ''JEFE BODEGA''';
+      PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('RESPONSABLE', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+    END IF;
+    --Crea el responsable de Inservibles en la dependencia de Inservibles 
+    BEGIN
+      SELECT COUNT(*)
+      INTO MI_RES 
+      FROM DEPENDENCIA_RESPONSABLE 
+      WHERE COMPANIA = UN_COMPANIA 
+        AND DEPENDENCIA = '999999999999'
+        AND RESPONSABLE = '999999999999999999';
+      EXCEPTION WHEN NO_DATA_FOUND THEN 
+        MI_RES := 0;
+    END;
+    IF MI_RES = 0 THEN 
+      MI_CAMPOS := 'COMPANIA , DEPENDENCIA , RESPONSABLE , CARGO , SUCURSAL';
+      MI_VALORES:= ''''||UN_COMPANIA||''',''999999999999'',''999999999999999999'',''RESPONSABLE DE BODEGA'', ''999''';
+      PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('DEPENDENCIA_RESPONSABLE', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+    END IF;
+    --Crea tercero varios
+     BEGIN
+      SELECT COUNT(*)
+      INTO MI_RES 
+      FROM TERCERO 
+      WHERE COMPANIA = UN_COMPANIA
+        AND NIT = '999999999999999999'
+        AND SUCURSAL = '999';
+      EXCEPTION WHEN NO_DATA_FOUND THEN 
+        MI_RES := 0;
+      END;
+      IF MI_RES = 0 THEN 
+        MI_CAMPOS := 'COMPANIA , NIT, SUCURSAL, NOMBRE';
+        MI_VALORES := ''''||UN_COMPANIA||''', ''999999999999999999'',''999'',''VARIOS''';
+        PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TERCERO', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+      END IF;
+       --Crea Año de trabajo por defecto el año del sistema
+      BEGIN 
+      SELECT 'X' INTO MI_ANOAUX
+                    FROM ANO 
+                    WHERE COMPANIA= UN_COMPANIA
+                      AND NUMERO = UN_ANIO;
+
+     EXCEPTION 
+      WHEN NO_DATA_FOUND THEN 
+          MI_CAMPOS := 'COMPANIA , NUMERO';
+          MI_VALORES := ''''||UN_COMPANIA||''','||UN_ANIO;
+          PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('ANO', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+      WHEN OTHERS THEN
+      PCK_DATOS.GL_ERROR_MSG := 'El año no fue insertado';
+      PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'PROCESO','',SQLERRM );
+      RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+       END;
+
+      --Crea Centro de Costos Varios
+      BEGIN
+        SELECT COUNT(*)
+        INTO MI_RES 
+        FROM CENTRO_COSTO
+        WHERE COMPANIA = UN_COMPANIA
+          AND ANO      = UN_ANIO
+          AND CODIGO = '99999999999999999999';
+        EXCEPTION WHEN NO_DATA_FOUND THEN 
+          MI_RES := 0;
+      END;
+      IF MI_RES = 0 THEN 
+        MI_CAMPOS := 'COMPANIA , CODIGO , NOMBRE , TIPO , MOVIMIENTO , ANO';
+        MI_VALORES := ''''||UN_COMPANIA||''', ''99999999999999999999'',''VARIOS'',''D'', -1 , '||UN_ANIO||'';
+        PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('CENTRO_COSTO', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+      END IF;
+      --Crea auxiliares varios 
+      BEGIN
+        SELECT COUNT(*)
+        INTO MI_RES
+        FROM AUXILIAR 
+        WHERE COMPANIA = UN_COMPANIA
+          AND ANO      = UN_ANIO
+          AND CODIGO = '99999999999999999999';
+        EXCEPTION WHEN NO_DATA_FOUND THEN 
+          MI_RES := 0;
+      END;
+      IF MI_RES = 0 THEN 
+        MI_CAMPOS := 'COMPANIA , CODIGO , NOMBRE , MOVIMIENTO , ANO ';
+        MI_VALORES := ''''||UN_COMPANIA||''', ''99999999999999999999'',''VARIOS'', -1 ,  '||UN_ANIO||'';
+        PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('AUXILIAR', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+      END IF;
+
+     --Crea REFERENCIA varios 
+      BEGIN
+        SELECT COUNT(*)
+        INTO MI_RES
+        FROM REFERENCIA 
+        WHERE COMPANIA = UN_COMPANIA
+          AND ANO      = UN_ANIO
+          AND CODIGO = '99999999999999999999';
+        EXCEPTION WHEN NO_DATA_FOUND THEN 
+          MI_RES := 0;
+      END;
+      IF MI_RES = 0 THEN 
+        MI_CAMPOS := 'COMPANIA , CODIGO , NOMBRE ,  ANO ';
+        MI_VALORES := ''''||UN_COMPANIA||''', ''99999999999999999999'',''VARIOS'', '||UN_ANIO||'';
+        PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('REFERENCIA', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+      END IF;
+      --Crea FUENTE_RECURSOS varios 
+      BEGIN
+        SELECT COUNT(*)
+        INTO MI_RES
+        FROM FUENTE_RECURSOS 
+        WHERE COMPANIA = UN_COMPANIA
+          AND ANO      = UN_ANIO
+          AND CODIGO = '99999999999999999999';
+        EXCEPTION WHEN NO_DATA_FOUND THEN 
+          MI_RES := 0;
+      END;
+      IF MI_RES = 0 THEN 
+        MI_CAMPOS := 'COMPANIA , CODIGO , NOMBRE ,  ANO ';
+        MI_VALORES := ''''||UN_COMPANIA||''', ''99999999999999999999'',''VARIOS'', '||UN_ANIO||'';
+        PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('FUENTE_RECURSOS', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+      END IF;
+END PR_CREAR_REGISTROS_BASICOS; 
+
+PROCEDURE  PR_COPIAR_TIPOS_DOCUMENTOS (
+ /*
+    NAME              : COPIAR_TIPOS_DOCUMENTOS
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 11/10/2016
+    TIME              : 02:00 PM
+    DESCRIPTION       : Copia las tipos de documentos de una compañia a otra
+    @NAME:  copiarTiposDocumentos
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('TIPOS_DOCUMENTOS',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM TIPOS_DOCUMENTOS ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.DCTO_IDENTIDAD NOT IN(SELECT DCTO_IDENTIDAD ' ||
+                                       ' FROM TIPOS_DOCUMENTOS DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TIPOS_DOCUMENTOS', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+ /* 
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOS_DOCUMENTOS','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+    */
+
+END  PR_COPIAR_TIPOS_DOCUMENTOS;
+
+
+PROCEDURE  PR_COPIAR_TIPOORDENDECOMPRA (
+ /*
+    NAME              : COPIAR_TIPOS_DOCUMENTOS
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 11/10/2016
+    TIME              : 02:00 PM
+    DESCRIPTION       : Copia las tipos de documentos de una compañia a otra
+    @NAME:  copiarTipoOrdenDeCompra
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('TIPOCONTRATOS',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM TIPOCONTRATOS ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM TIPOCONTRATOS DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TIPOCONTRATOS', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('TIPOCONTRATO_FUT',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM TIPOCONTRATO_FUT ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM TIPOCONTRATO_FUT DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TIPOCONTRATO_FUT', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+
+   MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('TIPOCONTRATO_SIA',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM TIPOCONTRATO_SIA ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM TIPOCONTRATO_SIA DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TIPOCONTRATO_SIA', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('TIPOCONTRATO_CGR',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM TIPOCONTRATO_CGR ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM TIPOCONTRATO_CGR DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TIPOCONTRATO_CGR', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('TIPOORDENDECOMPRA',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM TIPOORDENDECOMPRA ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM TIPOORDENDECOMPRA DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TIPOORDENDECOMPRA', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+
+END  PR_COPIAR_TIPOORDENDECOMPRA;
+
+PROCEDURE  PR_COPIAR_ANO (
+/*
+    NAME              : COPIAR_TIPOS_DOCUMENTOS
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 11/10/2016
+    TIME              : 05:15 PM
+    DESCRIPTION       : Copia las tipos de documentos de una compañia a otra
+    @NAME:  copiarAno
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('ANO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM ANO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.NUMERO NOT IN(SELECT NUMERO ' ||
+                                       ' FROM ANO DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('ANO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+
+END  PR_COPIAR_ANO;
+
+
+
+PROCEDURE  PR_COPIAR_ESTADO_CIVIL (
+/*
+    NAME              : COPIAR_TIPOS_DOCUMENTOS
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 11/10/2016
+    TIME              : 05:45 PM
+    DESCRIPTION       : Copia las tipos de documentos de una compañia a otra
+    @NAME:  copiarEstadoCivil
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('ESTADO_CIVIL',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM ESTADO_CIVIL ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.ESTADO_CIVIL NOT IN(SELECT ESTADO_CIVIL ' ||
+                                       ' FROM ESTADO_CIVIL DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('ESTADO_CIVIL', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+
+END  PR_COPIAR_ESTADO_CIVIL;
+
+PROCEDURE  PR_COPIAR_UNIDAD_AV (
+/*
+    NAME              : PR_COPIAR_PARAMETRO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 08:10 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia la tabla UNIDAD_AV de una compañia a otra
+    @NAME:  coipiarUnidadAv
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ANO_INICIAL  INTEGER;
+ -- MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('UNIDAD_AV',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''''||
+               ' FROM UNIDAD_AV ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                  ' AND ORI.NUMEROUNIDAD NOT IN(SELECT NUMEROUNIDAD ' ||
+                                       ' FROM UNIDAD_AV DES ' ||
+                                       ' WHERE DES.COMPANIA= ''' || UN_COMPANIA_DESTINO ||''''||
+                                       ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('UNIDAD_AV', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+    /*EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'COPIANDO UNIDAD_AV';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'UNIDAD_AV','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+END  PR_COPIAR_UNIDAD_AV;
+
+PROCEDURE  PR_COPIAR_GASTOS_DE_INVERSION (
+ /*
+    NAME              : COPIAR_BPGASTOSDEINVERSION
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 08:40 AM
+    DESCRIPTION       : Copia los datos de la tabla BPGASTOSDEINVERSION de una compañia a otra del modulo de banco de proyectos
+    @NAME:  copiarGastoDeInversion
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('BP_CLASEGASTOINVERSION',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM BP_CLASEGASTOINVERSION ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM BP_CLASEGASTOINVERSION DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('BP_CLASEGASTOINVERSION', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('BPGASTOSDEINVERSION',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM BPGASTOSDEINVERSION ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM BPGASTOSDEINVERSION DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('BPGASTOSDEINVERSION', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+END  PR_COPIAR_GASTOS_DE_INVERSION;
+
+
+
+
+PROCEDURE  PR_COPIAR_CLASE_GASTOINVERSION (
+/*
+    NAME              : COPIAR_BP_CLASE_GASTO_INVERSION
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 9:10 AM
+    DESCRIPTION       : Copia los datos de la tabla BP_CLASEGASTOINVERSION de una compañia a otra del modulo de banco de proyectos
+    @NAME:  copiarClaseGastoInversion
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('BP_CLASEGASTOINVERSION',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM BP_CLASEGASTOINVERSION ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM BP_CLASEGASTOINVERSION DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('BP_CLASEGASTOINVERSION', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL);
+
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+END  PR_COPIAR_CLASE_GASTOINVERSION;
+
+
+
+PROCEDURE  PR_COPIAR_BP_ACTIVIDADES (
+/*
+    NAME              : COPIAR_BP_ACTIVIDADES
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 09:10 AM
+    DESCRIPTION       : Copia los datos de la tabla BP_ACTIVIDADES de una compañia a otra del modulo de banco de proyectos
+    @NAME:  copiaBpActividades
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('BP_ACTIVIDADES',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM BP_ACTIVIDADES ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM BP_ACTIVIDADES DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('BP_ACTIVIDADES', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+END  PR_COPIAR_BP_ACTIVIDADES;
+
+
+PROCEDURE  PR_COPIAR_BP_TIPOSCOMPONENTES (
+ /*
+    NAME              : COPIAR_TIPOS_COMPONENTES
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 09:16 AM
+    DESCRIPTION       : Copia las tipos de componentes de una compañia a otra del modulo de Banco de Proyectos
+    @NAME:  copiarTiposComponentes
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('BP_TIPOSCOMPONENTES',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM BP_TIPOSCOMPONENTES ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM BP_TIPOSCOMPONENTES DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('BP_TIPOSCOMPONENTES', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+END  PR_COPIAR_BP_TIPOSCOMPONENTES;
+
+PROCEDURE  PR_COPIAR_UNIDAD_PROYECTOS (
+ /*
+    NAME              : PR_COPIAR_UNIDAD_PROYECTOS
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 09:20 AM
+    DESCRIPTION       : Copia los datos de la tabla UNIDADPROYECTOS de una compañia a otra 
+    @NAME:  copiarUnidadProyectos
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('UNIDADPROYECTOS',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM UNIDADPROYECTOS ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.UNIDAD NOT IN(SELECT UNIDAD ' ||
+                                       ' FROM UNIDADPROYECTOS DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('UNIDADPROYECTOS', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+END  PR_COPIAR_UNIDAD_PROYECTOS;
+
+
+PROCEDURE  PR_COPIAR_SERCTORDNP (
+ /*
+    NAME              : PR_COPIAR_SERCTORDNP
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 09:30 AM
+    DESCRIPTION       : Copia los datos de la tabla SERCTORDNP de una compañia a otra del modulo de Banco de Proyectos
+    @NAME:  copiarSerctorDnp
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('SECTORDNP',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM SECTORDNP ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGODNP NOT IN(SELECT CODIGODNP ' ||
+                                       ' FROM SECTORDNP DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('SECTORDNP', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+END  PR_COPIAR_SERCTORDNP;
+
+
+
+PROCEDURE  PR_COPIAR_SP_CLASEPROBLEMA (
+ /*
+    NAME              : PR_COPIAR_CLASEPROBLEMA
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 09:45 AM
+    DESCRIPTION       : Copia los datos de la tabla SP_CLASEPROBLEMA de una compañia a otra del modulo de SERVICIOS PUBLICOS
+    @NAME:  copiarClaseProblema
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('SP_SERVICIO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM SP_SERVICIO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM SP_SERVICIO DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('SP_SERVICIO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('SP_CLASEPROBLEMA',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM SP_CLASEPROBLEMA ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CLASEPROBLEMA NOT IN(SELECT CLASEPROBLEMA ' ||
+                                       ' FROM SP_CLASEPROBLEMA DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('SP_CLASEPROBLEMA', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+END  PR_COPIAR_SP_CLASEPROBLEMA;
+
+
+PROCEDURE  PR_COPIAR_SP_SERVICIO (
+ /*
+    NAME              : PR_COPIAR_SP_SERVICIO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 09:50 AM
+    DESCRIPTION       : Copia los datos de la tabla SP_SERVICIO de una compañia a otra del modulo de SERVICIOS PUBLICOS
+    @NAME:  copìarServicio
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('SP_SERVICIO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM SP_SERVICIO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM SP_SERVICIO DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('SP_SERVICIO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+END  PR_COPIAR_SP_SERVICIO;
+
+
+PROCEDURE  PR_COPIAR_SP_CODIGOSCIIU (
+ /*
+    NAME              : PR_COPIAR_SP_SERVICIO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 09:50 AM
+    DESCRIPTION       : Copia los datos de la tabla SP_CODIGOSCIIU de una compañia a otra del modulo de SERVICIOS PUBLICOS
+    @NAME:  CopiarCodigosCiiu
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('SP_CODIGOSCIIU',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM SP_CODIGOSCIIU ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM SP_CODIGOSCIIU DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('SP_CODIGOSCIIU', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+END  PR_COPIAR_SP_CODIGOSCIIU;
+
+
+PROCEDURE  PR_COPIA_SP_ESTADOSCOBRO (
+ /*
+    NAME              : PR_COPIAR_SP_SERVICIO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 10:05 AM
+    DESCRIPTION       : Copia los datos de la tabla SP_ESTADOSCOBRO de una compañia a otra del modulo de SERVICIOS PUBLICOS
+    @NAME:  copiarEstadosCobro
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('SP_ESTADOSCOBRO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM SP_ESTADOSCOBRO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM SP_ESTADOSCOBRO DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('SP_ESTADOSCOBRO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+END  PR_COPIA_SP_ESTADOSCOBRO;
+
+
+
+PROCEDURE  PR_COPIA_SOLICITUDPORSERVICIO (
+  /*
+    NAME              : PR_COPIAR_SP_SERVICIO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 10:20 AM
+    DESCRIPTION       : Copia los datos de la tabla SP_SOLICITUDPORSERVICIO de una compañia a otra del modulo de SERVICIOS PUBLICOS
+    @NAME:  copiaSolicitudServicio
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('SP_SOLICITUDPORSERVICIO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM SP_SOLICITUDPORSERVICIO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM SP_SOLICITUDPORSERVICIO DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('SP_SOLICITUDPORSERVICIO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+END  PR_COPIA_SOLICITUDPORSERVICIO;
+
+
+
+PROCEDURE  PR_COPIAR_SERVICIOS_PUBLICOS (
+ /*
+    NAME              : PR_COPIAR_SP_SERVICIO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 10:30 AM
+    DESCRIPTION       : Copia los datos de la tabla SERVICIOS_PUBLICOS de una compañia a otra del modulo de SERVICIOS PUBLICOS
+    @NAME:  copiarServiciosPublicos
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('SERVICIOS_PUBLICOS',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM SERVICIOS_PUBLICOS ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO_SERVICIO NOT IN(SELECT CODIGO_SERVICIO ' ||
+                                       ' FROM SERVICIOS_PUBLICOS DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('SERVICIOS_PUBLICOS', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+END  PR_COPIAR_SERVICIOS_PUBLICOS;
+
+
+PROCEDURE  PR_COPIAR_BANCO (
+/*
+    NAME              : PR_COPIAR_BANCO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 10:41 AM
+    DESCRIPTION       : Copia los datos de la tabla BANCO de una compañia a otra 
+    @NAME:  copiarBanco
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('BANCO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM BANCO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.BANCO NOT IN(SELECT BANCO ' ||
+                                       ' FROM BANCO DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('BANCO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+END  PR_COPIAR_BANCO;
+
+PROCEDURE  PR_COPIAR_TIPOS_DE_EMPLEADO (
+ /*
+    NAME              : PR_COPIAR_SP_SERVICIO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 10:50 AM
+    DESCRIPTION       : Copia los datos de la tabla TIPOS_DE_EMPLEADO de una compañia a otra del modulo de SERVICIOS PUBLICOS
+    @NAME:  copiarTiposEmpleados
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('TIPOS_DE_EMPLEADO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM TIPOS_DE_EMPLEADO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.ID_DE_TIPO NOT IN(SELECT ID_DE_TIPO ' ||
+                                       ' FROM TIPOS_DE_EMPLEADO DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TIPOS_DE_EMPLEADO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+END  PR_COPIAR_TIPOS_DE_EMPLEADO;
+
+
+
+PROCEDURE  PR_COPIAR_CAUSARETIRO (
+ /*
+    NAME              : PR_COPIAR_CAUSARETIRO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 10:09 AM
+    DESCRIPTION       : Copia los datos de la tabla CAUSARETIRO de una compañia a otra 
+    @NAME:  copiarCausaRetiro
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('CAUSARETIRO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM CAUSARETIRO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM CAUSARETIRO DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('CAUSARETIRO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+END  PR_COPIAR_CAUSARETIRO;
+
+
+PROCEDURE  PR_COPIAR_FESTIVOS (
+  /*
+    NAME              : PR_COPIAR_SP_SERVICIO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 09:45 AM
+    DESCRIPTION       : Copia los datos de la tabla SP_ESTADOSCOBRO de una compañia a otra del modulo de SERVICIOS PUBLICOS
+    @NAME:  copiarFestivos
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('FESTIVOS',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM FESTIVOS ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.ID_DE_FESTIVO NOT IN(SELECT ID_DE_FESTIVO ' ||
+                                       ' FROM FESTIVOS DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('FESTIVOS', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+END  PR_COPIAR_FESTIVOS;
+
+
+PROCEDURE  PR_COPIAR_PARENTESCO (
+ /*
+    NAME              : PR_COPIAR_SP_SERVICIO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 10:15 AM
+    DESCRIPTION       : Copia los datos de la tabla PARENTESCO de una compañia a otra 
+    @NAME:  copiarParentesco
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('PARENTESCO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM PARENTESCO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.PARENTESCO NOT IN(SELECT PARENTESCO ' ||
+                                       ' FROM PARENTESCO DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('PARENTESCO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+   /* EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando Auxiliares';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPOORDENDECOMPRA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );*/
+END  PR_COPIAR_PARENTESCO;
+
+
+
+PROCEDURE  PR_COPIAR_PROCESOS_DE_NOMINA (
+ /*
+    NAME              : PR_COPIAR_SP_SERVICIO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 10:20 AM
+    DESCRIPTION       : Copia los datos de la tabla PROCESOS_DE_NOMINA de una compañia a otra 
+    @NAME:  copiarProcesosNomina
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('PROCESOS_DE_NOMINA',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM PROCESOS_DE_NOMINA ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.ID_DE_PROCESO NOT IN(SELECT ID_DE_PROCESO ' ||
+                                       ' FROM PROCESOS_DE_NOMINA DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('PROCESOS_DE_NOMINA', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+END  PR_COPIAR_PROCESOS_DE_NOMINA;
+
+
+
+PROCEDURE  PR_COPIAR_IP_REPORTE_FORMA (
+/*
+    NAME              : PR_COPIAR_SP_SERVICIO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 11:30 AM
+    DESCRIPTION       : Copia los datos de la tabla IP_REPORTE_FORMATEADO de una compañia 
+    @NAME:  copiarReporteFormateado
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('IP_REPORTE_FORMATEADO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM IP_REPORTE_FORMATEADO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.FORMATO NOT IN(SELECT FORMATO ' ||
+                                       ' FROM IP_REPORTE_FORMATEADO DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('IP_REPORTE_FORMATEADO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+END  PR_COPIAR_IP_REPORTE_FORMA;
+
+
+PROCEDURE  PR_COPIAR_TIPO_ACTIVO (
+/*
+    NAME              : PR_COPIAR_SP_SERVICIO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 12:20 PM
+    DESCRIPTION       : Copia los datos de la tabla TIPO_ACTIVO  de una compañia a otra 
+    @NAME:  copiarTipoActivo
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('TIPO_ACTIVO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM TIPO_ACTIVO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.CODIGO_TIPOACTIVO NOT IN(SELECT CODIGO_TIPOACTIVO ' ||
+                                       ' FROM TIPO_ACTIVO DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TIPO_ACTIVO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+END PR_COPIAR_TIPO_ACTIVO;
+
+
+PROCEDURE  PR_COPIAR_BPTIPONOVEDAD (
+/*
+    NAME              : PR_COPIAR_SP_SERVICIO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 13:35 PM
+    DESCRIPTION       : Copia los datos de la tabla BPTIPONOVEDAD de una compañia a otra 
+    @NAME:  copiarTipoNovedad
+    @METHOD:  POST   
+    */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+    MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('BPTIPONOVEDAD',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM BPTIPONOVEDAD ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.TIPOT NOT IN(SELECT TIPOT ' ||
+                                       ' FROM BPTIPONOVEDAD DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')
+               AND ORI.CLASET NOT IN(SELECT CLASET ' ||
+                                       ' FROM BPTIPONOVEDAD DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('BPTIPONOVEDAD', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+END PR_COPIAR_BPTIPONOVEDAD;
+
+PROCEDURE  PR_COPIAR_JUZGADOS (
+/*
+    NAME              : PR_COPIAR_SP_SERVICIO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 12:46 PM
+    DESCRIPTION       : Copia los datos de la tabla JUZGADOS de una compañia a otra 
+    @NAME:  copiarJuzgados
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+
+
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('JUZGADOS',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM JUZGADOS ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.ID_JUZGADO NOT IN(SELECT ID_JUZGADO ' ||
+                                       ' FROM JUZGADOS DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('JUZGADOS', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+END PR_COPIAR_JUZGADOS;
+
+
+PROCEDURE  PR_COPIAR_RETEFUENTEUVT (
+/*
+    NAME              : PR_COPIAR_SP_SERVICIO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO T
+    DATE MIGRADOR     : 12/10/2016
+    TIME              : 02:20 PM
+    DESCRIPTION       : Copia los datos de la tabla RETEFUENTEUVT de una compañia a otra del modulo de SERVICIOS PUBLICOS
+    @NAME:  copiarRetefuenteUvt
+    @METHOD:  POST   
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('ANO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM ANO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.NUMERO NOT IN(SELECT NUMERO ' ||
+                                       ' FROM ANO DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('ANO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+
+
+
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('RETEFUENTEUVT',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  '''
+                FROM RETEFUENTEUVT ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''
+               AND ORI.ANO NOT IN(SELECT ANO ' ||
+                                       ' FROM RETEFUENTEUVT DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')
+               AND ORI.LIMITE_INFERIOR NOT IN(SELECT LIMITE_INFERIOR ' ||
+                                       ' FROM RETEFUENTEUVT DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')
+               AND ORI.LIMITE_SUPERIOR NOT IN(SELECT LIMITE_SUPERIOR ' ||
+                                       ' FROM RETEFUENTEUVT DES ' ||
+                                       ' WHERE DES.COMPANIA='''|| UN_COMPANIA_DESTINO ||''')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('RETEFUENTEUVT', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+END PR_COPIAR_RETEFUENTEUVT;
+
+PROCEDURE PR_PREPARARAUXILIARFUT
+  /*
+    NAME              : PR_PREPARARAUXILIARFUT
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : JESSICA LISSETH RAMIREZ BRICEÑO
+    DATE MIGRADOR     : 25/04/2017
+    TIME              : 03:08 PM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia las fuentes fut de un año a otro
+    @NAME: copiarAuxiliarFut
+    */ 
+  (
+    UN_COMPANIA	        IN PCK_SUBTIPOS.TI_COMPANIA
+   ,UN_ANO_DESTINO 		  IN PCK_SUBTIPOS.TI_ANIO
+   ,UN_ANO_ORIGEN       IN PCK_SUBTIPOS.TI_ANIO
+   ,UN_COMPANIA_DESTINO IN PCK_SUBTIPOS.TI_COMPANIA
+  )
+  AS
+    MI_CAMPOS       PCK_SUBTIPOS.TI_CAMPOS;
+    MI_CONDICION    PCK_SUBTIPOS.TI_CONDICION;
+    MI_VALORES      PCK_SUBTIPOS.TI_VALORES;
+    MI_EXCLUIDOS    PCK_SUBTIPOS.TI_EXCLUIDOS;
+    MI_MSGERROR     PCK_SUBTIPOS.TI_CLAVEVALOR;
+  BEGIN
+    BEGIN
+      MI_EXCLUIDOS:='COMPANIA,ANO';
+      MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('FUENTESFUTCATEGORIAS',MI_EXCLUIDOS);
+      MI_VALORES :=' SELECT '||MI_CAMPOS||','''||UN_COMPANIA_DESTINO||''','||UN_ANO_DESTINO||'
+                     FROM FUENTESFUTCATEGORIAS ORI
+                     WHERE ORI.COMPANIA = '''||UN_COMPANIA||''' 
+                       AND ORI.ANO      = '  ||UN_ANO_ORIGEN||'
+                       AND ORI.CODIGO_FUT NOT IN(SELECT CODIGO_FUT 
+                                                 FROM   FUENTESFUTCATEGORIAS DES 
+                                                 WHERE  DES.COMPANIA = '''|| UN_COMPANIA_DESTINO ||'''
+                                                   AND  DES.ANO      = '  || UN_ANO_DESTINO ||')'; 
+      MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+      PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME(UN_TABLA   =>'FUENTESFUTCATEGORIAS', 
+                                            UN_ACCION  => 'IS', 
+                                            UN_CAMPOS  => MI_CAMPOS, 
+                                            UN_VALORES => MI_VALORES); 
+      EXCEPTION WHEN PCK_EXCEPCIONES.EXC_INSERTAR THEN
+        RAISE PCK_EXCEPCIONES.EXC_PRESUPUESTO;
+    END;
+    EXCEPTION WHEN PCK_EXCEPCIONES.EXC_PRESUPUESTO THEN
+      MI_MSGERROR(1).CLAVE := 'ANO';
+      MI_MSGERROR(1).VALOR := UN_ANO_ORIGEN;
+      MI_MSGERROR(2).CLAVE := 'ANODES';
+      MI_MSGERROR(2).VALOR := UN_ANO_DESTINO;
+      PCK_ERR_MSG.RAISE_WITH_MSG(
+        UN_EXC_COD    => SQLCODE,
+        UN_ERROR_COD  => PCK_ERRORES.ERR_PPTO_ACTUALIZARAUXFUT,
+        UN_REEMPLAZOS  => MI_MSGERROR
+      );
+  END PR_PREPARARAUXILIARFUT;
+
+PROCEDURE PR_COPIAR_CONCEPTO_NOMINA (
+    /*
+    NAME              : PR_COPIAR_CONCEPTO_NOMINA
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : ELKIN GEOVANNY AMAYA SILVA
+    DATE MIGRADOR     : 28/02/2020
+    TIME              : 10:13 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia los datos de un año a otro para iniciar año para nomina
+                        
+    @NAME: copiarConceptoNomina
+  */
+  UN_COMPANIA	      IN VARCHAR2,
+  UN_ANO_DESTINO 	  IN INTEGER,
+  UN_ANO_ORIGEN       IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2  
+)
+AS 
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_ANIO         NUMBER;
+  MI_REEMPLAZOS   PCK_SUBTIPOS.TI_CLAVEVALOR; 
+BEGIN
+  
+  MI_EXCLUIDOS:='COMPANIA,ANO';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('CONCEPTOS_ANO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''','  || UN_ANO_DESTINO ||
+               ' FROM CONCEPTOS_ANO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                 ' AND ORI.ANO     =' || UN_ANO_ORIGEN ||
+                 ' AND ORI.ID_DE_CONCEPTO NOT IN(SELECT ID_DE_CONCEPTO ' ||
+                                       ' FROM CONCEPTOS_ANO DES ' ||
+                                       ' WHERE DES.COMPANIA= ''' || UN_COMPANIA_DESTINO ||
+                                         ''' AND DES.ANO=' || UN_ANO_DESTINO ||
+                                        ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('CONCEPTOS_ANO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL);  
+
+END PR_COPIAR_CONCEPTO_NOMINA; 
+
+PROCEDURE PR_COPIAR_RETENCIONES (
+    /*
+    NAME              : PR_COPIAR_RETENCIONES
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : ELKIN GEOVANNY AMAYA SILVA
+    DATE MIGRADOR     : 02/03/2020
+    TIME              : 08:23 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia los datos de retenciones de un año a otro para iniciar contabilidad
+                        
+    @NAME: copiarRetenciones
+  */
+  UN_COMPANIA	      IN VARCHAR2,
+  UN_ANO_DESTINO 	  IN INTEGER,
+  UN_ANO_ORIGEN       IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2  
+)
+AS 
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_ANIO         NUMBER;
+  MI_REEMPLAZOS   PCK_SUBTIPOS.TI_CLAVEVALOR; 
+BEGIN
+  
+  MI_EXCLUIDOS:='COMPANIA,ANO';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('RETENCIONES',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''','  || UN_ANO_DESTINO ||
+               ' FROM RETENCIONES ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                 ' AND ORI.ANO     =' || UN_ANO_ORIGEN ||
+                 ' AND ORI.TIPO||CODIGO   NOT IN (SELECT TIPO||CODIGO '||
+                                       ' FROM RETENCIONES DES ' ||
+                                       ' WHERE DES.COMPANIA= ''' || UN_COMPANIA_DESTINO ||
+                                       ''' AND DES.ANO=' || UN_ANO_DESTINO ||
+                                       ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('RETENCIONES', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL);  
+
+END PR_COPIAR_RETENCIONES;
+
+PROCEDURE PR_COPIAR_CONFIGURACIONEXOGENA (
+    /*
+    NAME              : PR_COPIAR_CONFIGURACIONEXOGENA
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : ELKIN GEOVANNY AMAYA SILVA
+    DATE MIGRADOR     : 02/03/2020
+    TIME              : 11:43 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia los datos de la tabla configuracion exogena de un año a otro 
+                        para iniciar contabilidad
+                        
+    @NAME: copiarConfiguracionExogena
+  */
+  UN_COMPANIA	      IN VARCHAR2,
+  UN_ANO_DESTINO 	  IN INTEGER,
+  UN_ANO_ORIGEN       IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2  
+)
+AS 
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_ANIO         NUMBER;
+  MI_REEMPLAZOS   PCK_SUBTIPOS.TI_CLAVEVALOR; 
+BEGIN
+  
+  MI_EXCLUIDOS:='COMPANIA,ANO';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('CONFIGURACION_EXOGENA',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''','  || UN_ANO_DESTINO ||
+               ' FROM CONFIGURACION_EXOGENA ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                 ' AND ORI.ANO     =' || UN_ANO_ORIGEN ||
+                 ' AND ORI.FORMATO||CONCEPTO||CUENTA   NOT IN (SELECT FORMATO||CONCEPTO||CUENTA '||
+                                       ' FROM CONFIGURACION_EXOGENA DES ' ||
+                                       ' WHERE DES.COMPANIA= ''' || UN_COMPANIA_DESTINO ||
+                                       ''' AND DES.ANO=' || UN_ANO_DESTINO ||
+                                       ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('CONFIGURACION_EXOGENA', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL);  
+
+END PR_COPIAR_CONFIGURACIONEXOGENA;
+
+PROCEDURE PR_COPIAR_PLANCNTEQUIVALENTE(
+    /*
+    NAME              : PR_COPIAR_PLANCNTEQUIVALENTE
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : ELKIN GEOVANNY AMAYA SILVA
+    DATE MIGRADOR     : 04/03/2020
+    TIME              : 08:00 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia los datos de la tabla PLAN_CNT_EQUIVALENTE de un año a otro 
+                        para iniciar contabilidad
+                        
+    @NAME: copiarConfiguracionExogena
+  */
+  UN_COMPANIA	      IN VARCHAR2,
+  UN_ANO_DESTINO 	  IN INTEGER,
+  UN_ANO_ORIGEN       IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2  
+)
+AS 
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_ANIO         NUMBER;
+  MI_REEMPLAZOS   PCK_SUBTIPOS.TI_CLAVEVALOR; 
+BEGIN
+  
+  MI_EXCLUIDOS:='COMPANIA,ANO';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('PLAN_CNT_EQUIVALENTE',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''','  || UN_ANO_DESTINO ||
+               ' FROM PLAN_CNT_EQUIVALENTE ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                 ' AND ORI.ANO     =' || UN_ANO_ORIGEN ||
+                 ' AND ORI.CODIGO   NOT IN (SELECT CODIGO '||
+                                       ' FROM PLAN_CNT_EQUIVALENTE DES ' ||
+                                       ' WHERE DES.COMPANIA= ''' || UN_COMPANIA_DESTINO ||
+                                       ''' AND DES.ANO=' || UN_ANO_DESTINO ||
+                                       ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('PLAN_CNT_EQUIVALENTE', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL);  
+
+END PR_COPIAR_PLANCNTEQUIVALENTE;
+
+
+PROCEDURE PR_INICIO_VIGENCIA (
+    /*
+    NAME              : PR_INICIO_VIGENCIA
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : ELKIN GEOVANNY AMAYA SILVA
+    DATE MIGRADOR     : 28/02/2020
+    TIME              : 10:13 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia los datos de un año a otro para iniciar año para nomina
+                        ,contabilidad,presupuesta y facturacion general
+    @NAME: prepararInicioVigencia
+  */
+  UN_COMPANIA	        IN VARCHAR2,
+  UN_ANO_DESTINO 	    IN INTEGER,
+  UN_ANO_ORIGEN         IN INTEGER,
+  UN_COMPANIA_DESTINO   IN VARCHAR2,
+  UN_COPIARNOMINA       IN NUMBER DEFAULT 0,
+  UN_COPIARCONTABILIDAD IN NUMBER DEFAULT 0,
+  UN_COPIARFACTGENERAL  IN NUMBER DEFAULT 0
+  
+)
+AS 
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_ANIO          NUMBER;
+  MI_REEMPLAZOS         PCK_SUBTIPOS.TI_CLAVEVALOR; 
+BEGIN
+  MI_ANIO :=0;
+  SELECT COUNT(NUMERO)
+  INTO MI_ANIO
+  FROM ANO
+  WHERE COMPANIA = UN_COMPANIA_DESTINO
+    AND NUMERO   = UN_ANO_DESTINO;
+  IF MI_ANIO=0 THEN
+    MI_REEMPLAZOS(1).CLAVE := 'ANIO';
+    MI_REEMPLAZOS(1).VALOR := UN_ANO_DESTINO;           
+    PCK_ERR_MSG.RAISE_WITH_MSG(
+      UN_EXC_COD    => -20000,
+      UN_ERROR_COD  => PCK_ERRORES.ERR_ANONOEXISTE,
+      UN_TABLAERROR => 'ANO',
+      UN_REEMPLAZOS => MI_REEMPLAZOS  
+    ); 
+  END IF;
+
+  MI_ANIO :=0;
+  SELECT COUNT(NUMERO)
+  INTO MI_ANIO
+  FROM ANO
+  WHERE COMPANIA = UN_COMPANIA
+    AND NUMERO   = UN_ANO_ORIGEN;
+  IF MI_ANIO=0 THEN
+    MI_REEMPLAZOS(1).CLAVE := 'ANIO';
+    MI_REEMPLAZOS(1).VALOR := UN_ANO_ORIGEN;           
+    PCK_ERR_MSG.RAISE_WITH_MSG(
+      UN_EXC_COD    => -20000,
+      UN_ERROR_COD  => PCK_ERRORES.ERR_ANONOEXISTE,
+      UN_TABLAERROR => 'ANO',
+      UN_REEMPLAZOS => MI_REEMPLAZOS  
+    ); 
+  END IF;
+  
+  PCK_PREPARAR_ANO.PR_COPIAR_ANO            (UN_COMPANIA,UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_AUXILIAR       (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_CENTRO_COSTO   (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_REFERENCIA     (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_FUENTE_RECURSO (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_DESTINORECURSOS(UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);  
+  
+  IF UN_COPIARNOMINA NOT IN (0) THEN     
+    PR_COPIAR_CONCEPTO_NOMINA (UN_COMPANIA,UN_ANO_DESTINO,UN_ANO_ORIGEN,UN_COMPANIA_DESTINO);
+  END IF;
+  
+  IF UN_COPIARCONTABILIDAD NOT IN (0) THEN  
+      PCK_PREPARAR_ANO.PR_COPIAR_PLANCNTEQUIVALENTE   (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+      PCK_PREPARAR_ANO.PR_COPIAR_PLAN_CONTABLE 		  (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+      PCK_PREPARAR_ANO.PR_COPIAR_CUENTA_BANCOS 		  (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+      PCK_PREPARAR_ANO.PR_COPIAR_RETENCIONES  		  (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+      PCK_PREPARAR_ANO.PR_COPIAR_CONFIGURACIONEXOGENA (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+  END IF; 
+  
+ IF UN_COPIARFACTGENERAL NOT IN(0) THEN
+	  PCK_FACT_GENERAL_COM1.PR_PREPARA_CONF_ANIO_SIG(UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+  END IF;  
+
+END PR_INICIO_VIGENCIA; 
+
+PROCEDURE PR_COPIAR_PLAN_FLUJO_EFECTIVO (
+    /*
+    NAME              : PR_COPIAR_PLAN_FLUJO_EFECTIVO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : MARIA ALEJANDRA PEREZ SALAZAR
+    DATE MIGRADOR     : 05/10/2022
+    TIME              : 09:13 AM
+    DESCRIPTION       : Copia la configuración de plan de flujo efectivo de un año a otro
+  */
+  UN_COMPANIA       IN VARCHAR2,
+  UN_ANO_DESTINO    IN INTEGER,
+  UN_ANO_ORIGEN       IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 16; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA,ANO';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('PLAN_FLUJO_EFECTIVO',MI_EXCLUIDOS);
+
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''',' || UN_ANO_DESTINO ||
+               ' FROM PLAN_FLUJO_EFECTIVO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                 ' AND ORI.ANO     =' || UN_ANO_ORIGEN ||
+                 ' AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM PLAN_FLUJO_EFECTIVO DES ' ||
+                                       ' WHERE DES.COMPANIA =''' || UN_COMPANIA_DESTINO ||
+                                         ''' AND DES.ANO      =' || UN_ANO_DESTINO ||
+                                        ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('PLAN_FLUJO_EFECTIVO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando configuración de plan de flujo efectivo';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'PLAN_FLUJO_EFECTIVO','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END PR_COPIAR_PLAN_FLUJO_EFECTIVO;
+
+PROCEDURE PR_COPIAR_ZONA (
+  /*
+    NAME              : PR_COPIAR_ZONA 
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : MARIA ALEJANDRA PEREZ SALAZAR
+    DATE MIGRADOR     : 7/11/2023
+    TIME              : 05:51 PM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia las zonas de una compañia a otra
+    @NAME: copiarZona
+  */
+  UN_COMPANIA         IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+ )
+AS
+  MI_CAMPOS           VARCHAR2(32000);
+  MI_CONDICION        VARCHAR2(32000);
+  MI_VALORES          VARCHAR2(32000);
+  MI_EXCLUIDOS        VARCHAR2(32000);
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('ZONA',MI_EXCLUIDOS);
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''''||
+               ' FROM ZONA ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                  ' AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM ZONA DES ' ||
+                                       ' WHERE DES.COMPANIA=''' || UN_COMPANIA_DESTINO ||''''||
+                                       ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',COMPANIA' ;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('ZONA', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando  Zona';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'ZONA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END PR_COPIAR_ZONA;
+
+PROCEDURE PR_COPIAR_TIPO_EMBARGO (
+  /*
+    NAME              : PR_COPIAR_TIPO_EMBARGO 
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : MARIA ALEJANDRA PEREZ SALAZAR
+    DATE MIGRADOR     : 7/11/2023
+    TIME              : 05:51 PM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia los tipos de embargo de una compañia a otra
+    @NAME: copiarTipoEmbargo
+  */
+  UN_COMPANIA         IN VARCHAR2,
+  UN_COMPANIA_DESTINO   IN VARCHAR2
+ )
+AS
+  MI_CAMPOS           VARCHAR2(32000);
+  MI_CONDICION        VARCHAR2(32000);
+  MI_VALORES          VARCHAR2(32000);
+  MI_EXCLUIDOS        VARCHAR2(32000);
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('TIPO_EMBARGO',MI_EXCLUIDOS);
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''''||
+               ' FROM TIPO_EMBARGO ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                  ' AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM TIPO_EMBARGO DES ' ||
+                                       ' WHERE DES.COMPANIA=''' || UN_COMPANIA_DESTINO ||''''||
+                                       ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',COMPANIA' ;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('TIPO_EMBARGO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando  tipos de embargo';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'TIPO_EMBARGO','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END PR_COPIAR_TIPO_EMBARGO;
+
+PROCEDURE PR_COPIAR_GRADOS_AV (
+  /*
+    NAME              : PR_COPIAR_GRADOS_AV 
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : MARIA ALEJANDRA PEREZ SALAZAR
+    DATE MIGRADOR     : 7/11/2023
+    TIME              : 05:51 PM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia los grados AV de una compania a otra
+    @NAME: copiarGradosAV
+  */
+  UN_COMPANIA         IN VARCHAR2,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+ )
+AS
+  MI_CAMPOS           VARCHAR2(32000);
+  MI_CONDICION        VARCHAR2(32000);
+  MI_VALORES          VARCHAR2(32000);
+  MI_EXCLUIDOS        VARCHAR2(32000);
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13; 
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('GRADOS_AV',MI_EXCLUIDOS);
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''''||
+               ' FROM GRADOS_AV ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                  ' AND ORI.GRADO NOT IN(SELECT GRADO ' ||
+                                       ' FROM GRADOS_AV DES ' ||
+                                       ' WHERE DES.COMPANIA=''' || UN_COMPANIA_DESTINO ||''''||
+                                       ')'; 
+
+  MI_CAMPOS:= MI_CAMPOS || ',COMPANIA' ;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('GRADOS_AV', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL); 
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando  grados AV';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'GRADOS_AV','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END PR_COPIAR_GRADOS_AV;
+
+PROCEDURE PR_INST_TABLAS_NOM(
+ /*
+    NAME              : PR_INST_TABLAS_NOM
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  :
+    DATE MIGRADOR     :
+    TIME              :
+    MODIFIER          :
+    DATE MODIFIED     :
+    TIME              :
+    DESCRIPTION       : 
+    --NAME: copiarTipoEmbargo
+  */
+
+  UN_COMPANIA	      IN VARCHAR2,
+  UN_ANIO_DESTINO      IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+  )AS 
+  MI_SUB_SELECT   VARCHAR2(32000) := '';
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_WHERE_PRIN   VARCHAR2(32000);
+  MI_WHERE_SUB    VARCHAR2(32000);
+  MI_LLAVES       VARCHAR2(32000);
+  MI_RTA2         CLOB;
+  MI_REEMPLAZOS   PCK_SUBTIPOS.TI_CLAVEVALOR;
+  MI_ERROR_FUN    NUMBER:=GL_ERROR_NUM + 13;
+  BEGIN
+
+  FOR RS IN (SELECT 'BANCOS_NOMINA' AS TABLA FROM DUAL
+                  UNION ALL
+             SELECT 'MES'FROM DUAL
+                  UNION ALL
+            SELECT 'ESCALAFON'FROM DUAL
+                  UNION ALL
+            SELECT 'CARGOS'FROM DUAL
+                  UNION ALL
+            SELECT 'CIIU'FROM DUAL
+                  UNION ALL
+            SELECT 'CATEGORIA' FROM DUAL
+                  UNION ALL
+            SELECT 'CLASE_APORTES' FROM DUAL
+                  UNION ALL
+            SELECT 'CLASE_DEMANDANTE' FROM DUAL
+                  UNION ALL
+            SELECT 'TERCERO' FROM DUAL
+                  UNION ALL
+            SELECT 'FONDO' FROM DUAL
+                  UNION ALL
+            SELECT 'CLASEFONDO' FROM DUAL
+                  UNION ALL
+            SELECT 'DEPENDENCIA' FROM DUAL
+                  UNION ALL
+            SELECT 'CONCEPTOS' FROM DUAL
+                  UNION ALL
+            SELECT 'CONCEPTO_CENTROCOSTO' FROM DUAL
+                  UNION ALL
+            SELECT 'CONCEPTOS_BASE_APORTE' FROM DUAL
+                  UNION ALL
+            SELECT 'CONCEPTOS_CN_UGPP' FROM DUAL
+                  UNION ALL
+            SELECT 'CONCEPTOS_FAVIDI' FROM DUAL
+                  UNION ALL
+            SELECT 'ESTABLECIMIENTOS_DOCENTES' FROM DUAL
+                  UNION ALL
+            SELECT 'ESTRUCTURA_SOI' FROM DUAL
+                  UNION ALL
+            SELECT 'FESTIVOS' FROM DUAL
+                  UNION ALL
+            SELECT 'FORMANOMBRAMIENTO' FROM DUAL
+                  UNION ALL
+            SELECT 'IPCANUAL' FROM DUAL
+                  UNION ALL
+            SELECT 'LOCALIZACION' FROM DUAL
+                  UNION ALL
+            SELECT 'LUGAR' FROM DUAL
+                  UNION ALL
+            SELECT 'LUGAR_PARQUEO' FROM DUAL
+                  UNION ALL
+            SELECT 'MEDIOS_DE_PAGO' FROM DUAL
+                  UNION ALL
+            SELECT 'MODALIDAD_PRESTAMO' FROM DUAL
+                  UNION ALL
+            SELECT 'MODELO_PLANTILLA' FROM DUAL
+                  UNION ALL
+            SELECT 'MRESOLUCION' FROM DUAL
+                  UNION ALL
+            SELECT 'OFICINA_BANCO_AGRARIO' FROM DUAL
+                  UNION ALL
+            SELECT 'ORGANIGRAMA' FROM DUAL
+                  UNION ALL
+            SELECT 'PARAMETROS_DE_ENTRADA' FROM DUAL
+                  UNION ALL
+            SELECT 'PATRONALES' FROM DUAL
+                  UNION ALL
+            SELECT 'PERIODOS' FROM DUAL
+                  UNION ALL
+            SELECT 'PROCESOS' FROM DUAL
+                  UNION ALL
+            SELECT 'SALARIOS_MINIMOS' FROM DUAL
+                  UNION ALL
+            SELECT 'SEDES' FROM DUAL
+                  UNION ALL
+            SELECT 'SERVICIO_ASOCIADO' FROM DUAL
+                  UNION ALL
+            SELECT 'TIPO_APORTANTE_SOI' FROM DUAL
+                  UNION ALL
+            SELECT 'TIPO_INCAPACIDAD' FROM DUAL
+                  UNION ALL
+            SELECT 'TIPO_NOVEDADES' FROM DUAL
+                  UNION ALL
+            SELECT 'TIPO_PLANILLA_SOI' FROM DUAL
+                  UNION ALL
+            SELECT 'TIPO_RETENCIONES' FROM DUAL
+                  UNION ALL
+            SELECT 'TIPO_SERV_MEDICO' FROM DUAL
+                  UNION ALL
+            SELECT 'TIPOCAMPO_SIA' FROM DUAL
+                  UNION ALL
+            SELECT 'TIPOS_LICENCIA' FROM DUAL
+                  UNION ALL
+            SELECT 'UBICACION' FROM DUAL
+                  UNION ALL
+            SELECT 'VARIABLE' FROM DUAL
+                  UNION ALL
+            SELECT 'PERSONAL' FROM DUAL
+                  UNION ALL
+            SELECT 'NOVEDADES' FROM DUAL)
+            LOOP
+      MI_SUB_SELECT := NULL;
+      FOR RS1 IN (SELECT USER_CONS_COLUMNS.COLUMN_NAME
+                FROM USER_CONSTRAINTS INNER JOIN USER_CONS_COLUMNS
+                  ON USER_CONSTRAINTS.OWNER=USER_CONS_COLUMNS.OWNER
+                AND USER_CONSTRAINTS.CONSTRAINT_NAME=USER_CONS_COLUMNS.CONSTRAINT_NAME
+                WHERE USER_CONSTRAINTS.OWNER = (SELECT USER
+                                                FROM DUAL)
+                 AND USER_CONSTRAINTS.TABLE_NAME = RS.TABLA
+                 AND USER_CONSTRAINTS.CONSTRAINT_TYPE='P' )
+               LOOP
+             
+             MI_SUB_SELECT := MI_SUB_SELECT || RS1.COLUMN_NAME ||'||';
+                
+     END LOOP;
+     IF MI_SUB_SELECT IS NULL THEN
+        BEGIN
+         MI_RTA2 := ('La tabla '|| RS.TABLA ||' no tiene una llave principal asignada.');
+         MI_REEMPLAZOS(1).CLAVE := 'MENSAJE';
+         MI_REEMPLAZOS(1).VALOR := SUBSTR(MI_RTA2,1,1000);
+       RAISE PCK_EXCEPCIONES.EXC_NOMINA;
+        EXCEPTION  WHEN OTHERS THEN
+            PCK_ERR_MSG.RAISE_WITH_MSG(
+                                       UN_EXC_COD => SQLCODE,
+                                       UN_ERROR_COD => PCK_ERRORES.ERRR_PERSONALIZADO,
+                                       UN_REEMPLAZOS => MI_REEMPLAZOS
+                                       );
+          END;
+      RETURN;
+     END IF;
+     MI_SUB_SELECT := SUBSTR(MI_SUB_SELECT, 1, LENGTH(MI_SUB_SELECT)-2);
+     
+     
+     
+     IF MI_SUB_SELECT LIKE ('%ANO%') THEN
+     MI_EXCLUIDOS:='COMPANIA,ANO';
+     MI_SUB_SELECT := TRIM(BOTH '|' FROM REGEXP_REPLACE(MI_SUB_SELECT, 'COMPANIA\|\||ANO\|\|', '', 1, 0, 'i'));
+     MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS(RS.TABLA,MI_EXCLUIDOS);
+     MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''','  || UN_ANIO_DESTINO;
+     IF RS.TABLA IN ('NOVEDADES') THEN
+     MI_WHERE_PRIN := 'COMPANIA= ''' || UN_COMPANIA || ''' 
+                   AND ID_DE_PROCESO IN (0)
+                   AND ID_DE_EMPLEADO IN (0)';
+     MI_WHERE_SUB := 'COMPANIA= ''' || UN_COMPANIA_DESTINO || ''' 
+                   AND ID_DE_PROCESO IN (0)
+                   AND ID_DE_EMPLEADO IN (0)';
+     ELSE
+     MI_WHERE_PRIN := 'COMPANIA= ''' || UN_COMPANIA || ''' ' ||
+                 CASE WHEN RS.TABLA IN ('PERIODOS') THEN  ' AND ANO IN ( ' || UN_ANIO_DESTINO ||' ,0)' ELSE   ' AND ANO = ' || UN_ANIO_DESTINO END;
+     MI_WHERE_SUB := 'COMPANIA= ''' || UN_COMPANIA_DESTINO || ''' ' ||
+                 CASE WHEN RS.TABLA IN ('PERIODOS') THEN  ' AND ANO IN ( ' || UN_ANIO_DESTINO ||' ,0)' ELSE   ' AND ANO = ' || UN_ANIO_DESTINO END;
+     END IF;
+     ELSE 
+     MI_EXCLUIDOS:='COMPANIA';
+     MI_SUB_SELECT := TRIM(BOTH '|' FROM REGEXP_REPLACE(MI_SUB_SELECT, 'COMPANIA\|\||ANO\|\|', '', 1, 0, 'i'));
+     MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS(RS.TABLA,MI_EXCLUIDOS);
+     MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO||''' ';
+     IF RS.TABLA IN ('PERSONAL') THEN
+     MI_WHERE_PRIN := 'COMPANIA= ''' || UN_COMPANIA || ''' 
+                   AND ID_DE_EMPLEADO IN (0)';
+     MI_WHERE_SUB  := 'COMPANIA= ''' || UN_COMPANIA_DESTINO || ''' 
+                   AND ID_DE_EMPLEADO IN (0)';
+     ELSE
+     MI_WHERE_PRIN := 'COMPANIA= ''' || UN_COMPANIA || ''' ';
+     MI_WHERE_SUB  := 'COMPANIA= ''' || UN_COMPANIA_DESTINO || ''' ';
+
+     END IF;
+     
+     END IF;
+
+    MI_VALORES := MI_VALORES ||
+                 ' FROM '|| RS.TABLA ||
+                 ' WHERE ' || MI_WHERE_PRIN ||
+               ' AND ' || MI_SUB_SELECT ||' NOT IN(SELECT ' || MI_SUB_SELECT ||
+                                       ' FROM '|| RS.TABLA ||
+                                       ' WHERE '|| MI_WHERE_SUB ||' )';
+                                       
+    MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+    PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME(RS.TABLA, 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL);
+  
+    END LOOP;
+END PR_INST_TABLAS_NOM;
+
+PROCEDURE PR_CREAR_DATOS_NOMINA (
+ /*
+    NAME              : PR_CREAR_DATOS_NOMINA
+    AUTHORS           : SYSMAN
+    AUTHOR MIGRACION  :
+    DATE MIGRADOR     :
+    TIME              :
+    DESCRIPTION       : Copia los datos de la tabla UNIDADPROYECTOS de una compa¿¿ia a otra
+    @NAME:  crearDatosNomina
+    @METHOD:  POST
+  */
+  UN_COMPANIA	      IN VARCHAR2,
+  UN_ANIO_DESTINO     IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_USERNAME     VARCHAR2(100);
+  MI_SUB_SELECT   VARCHAR2(32000) := '';
+  --MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 13;
+BEGIN
+  
+  PCK_PREPARAR_ANO.PR_COPIAR_ANO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_AUXILIAR(UN_COMPANIA , UN_ANIO_DESTINO , UN_ANIO_DESTINO , UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_CENTRO_COSTO(UN_COMPANIA , UN_ANIO_DESTINO , UN_ANIO_DESTINO , UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_REFERENCIA(UN_COMPANIA , UN_ANIO_DESTINO , UN_ANIO_DESTINO , UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_TIPOS_DOCUMENTOS(UN_COMPANIA,UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_ZONA(UN_COMPANIA,UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_BANCO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_CAUSARETIRO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_JUZGADOS(UN_COMPANIA,UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_ESTADO_CIVIL(UN_COMPANIA,UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_PARAMETRO  (UN_COMPANIA,UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_PARENTESCO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_PROCESOS_DE_NOMINA(UN_COMPANIA,UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_RETEFUENTEUVT(UN_COMPANIA,UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_TIPO_EMBARGO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_TIPOS_DE_EMPLEADO(UN_COMPANIA,UN_COMPANIA_DESTINO);
+  
+  EXECUTE IMMEDIATE 'ALTER TRIGGER BIU_CONCEPTOS DISABLE';
+  PCK_PREPARAR_ANO.PR_INST_TABLAS_NOM(UN_COMPANIA, UN_ANIO_DESTINO, UN_COMPANIA_DESTINO);
+  EXECUTE IMMEDIATE 'ALTER TRIGGER BIU_CONCEPTOS ENABLE';
+  
+  PCK_PREPARAR_ANO.PR_COPIAR_CONCEPTO_NOMINA (UN_COMPANIA,UN_ANIO_DESTINO,UN_ANIO_DESTINO,UN_COMPANIA_DESTINO);
+
+END PR_CREAR_DATOS_NOMINA;
+
+PROCEDURE PR_COPIAR_CPTO_CENTROCOSTO (
+    /*
+    NAME              : PR_COPIAR_CPTO_CENTROCOSTO
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : MARIA ALEJANDRA PEREZ SALAZAR
+    DATE MIGRADOR     : 19/12/2024
+    TIME              : 09:13 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia de los centros de costos de los conceptos de nómina de un año a otro
+    --NAME: copiarFuenteRecurso
+  */
+  UN_COMPANIA         IN VARCHAR2,
+  UN_ANO_DESTINO      IN INTEGER,
+  UN_ANO_ORIGEN       IN INTEGER,
+  UN_CONCEPTO         IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ANO_INICIAL  INTEGER;
+  MI_ERROR_FUN    NUMBER:=GL_ERROR_NUM + 16;
+BEGIN  
+  MI_EXCLUIDOS:='COMPANIA,ANO';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('CONCEPTO_CENTROCOSTO',MI_EXCLUIDOS);
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''',' || UN_ANO_DESTINO ||
+               ' FROM CONCEPTO_CENTROCOSTO ORI ' ||
+               ' WHERE ORI.COMPANIA         =''' || UN_COMPANIA || '''' ||
+                 ' AND ORI.ANO              =' || UN_ANO_ORIGEN ||
+                 ' AND ORI.ID_DE_CONCEPTO   =' || UN_CONCEPTO ||
+                 ' AND ORI.ID_CENTRO_DE_COSTO NOT IN(SELECT ID_CENTRO_DE_COSTO ' ||
+                                       ' FROM CONCEPTO_CENTROCOSTO DES ' ||
+                                       ' WHERE DES.COMPANIA =''' || UN_COMPANIA_DESTINO ||
+                                         ''' AND DES.ANO      =' || UN_ANO_DESTINO ||
+                                         ' AND DES.ID_DE_CONCEPTO   =' || UN_CONCEPTO ||
+                                        ')';
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_PREPARAR_ANO.PR_COPIAR_AUXILIAR(UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);
+  PCK_PREPARAR_ANO.PR_COPIAR_CENTRO_COSTO   (UN_COMPANIA, UN_ANO_DESTINO, UN_ANO_ORIGEN, UN_COMPANIA_DESTINO);  
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('CONCEPTO_CENTROCOSTO', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL);  
+END PR_COPIAR_CPTO_CENTROCOSTO;
+
+FUNCTION FC_VALIDAR_REFCC(
+    /*
+        NAME              : FC_VALIDAR_REFCC
+        AUTHORS           : SYSMAN  SAS, JM CC 3295
+        DESCRIPTION       : validar Referencia y Centro Costo antes de copiarlos para el siguiente año  
+        --NAME: validarRefyCC
+    */
+   UN_COMPANIA         IN PCK_SUBTIPOS.TI_COMPANIA
+  ,UN_ANO_I            IN PCK_SUBTIPOS.TI_ANIO
+  ,UN_ANO_F            IN PCK_SUBTIPOS.TI_ANIO
+
+)
+RETURN CLOB AS
+ MI_RTA           CLOB DEFAULT '';
+ MI_CON           NUMBER DEFAULT 0;
+ BEGIN
+
+  ---VALIDAR LAS REFERENCIAS 
+    <<REFERENCIAS>>
+    FOR RS1 IN (SELECT CODIGO, MOVIMIENTO 
+            FROM REFERENCIA
+            WHERE COMPANIA = UN_COMPANIA
+            AND ANO = UN_ANO_I
+            AND CODIGO NOT IN (SELECT CODIGO FROM REFERENCIA WHERE COMPANIA = UN_COMPANIA AND ANO = UN_ANO_F ))
+    LOOP
+
+     BEGIN
+        --controlar que las cuentas padres no tengan movimientos (detalles) o saldos iniciales
+        MI_CON := 0;
+        
+        SELECT COUNT(COMPANIA)
+          INTO MI_CON
+          FROM DETALLE_COMPROBANTE_CNT
+         WHERE COMPANIA = UN_COMPANIA
+           AND ANO = UN_ANO_I
+           AND REFERENCIA NOT IN( RS1.CODIGO)
+           AND ((REFERENCIA  BETWEEN SUBSTR(RS1.CODIGO, 1,1) AND RS1.CODIGO
+                 AND REFERENCIA = SUBSTR(RS1.CODIGO,1,LENGTH(REFERENCIA))
+                 AND REFERENCIA IN(RS1.CODIGO)
+                )
+                OR
+                (REFERENCIA  BETWEEN RS1.CODIGO AND RS1.CODIGO || PCK_DATOS.CONS_REFERENCIA
+                 AND RS1.CODIGO = SUBSTR(REFERENCIA,1,LENGTH(RS1.CODIGO))
+                 AND RS1.MOVIMIENTO NOT IN(0)
+                )
+               );
+      EXCEPTION WHEN NO_DATA_FOUND THEN
+        MI_CON := 0;
+      END;
+      
+      IF MI_CON > 0 THEN 
+        MI_RTA := MI_RTA ||'REFERENCIA: '|| RS1.CODIGO || ' Existen movimientos para las referencias padres o hijas a la que se desea crear. \n '||CHR(13)||CHR(10);
+      END IF;
+  
+       BEGIN
+            -- validar si tiene saldos iniciales
+            MI_CON:=0;
+            
+            SELECT COUNT(COMPANIA)
+            INTO   MI_CON
+            FROM   SALDOSINICIALES
+            WHERE COMPANIA = UN_COMPANIA
+              AND ANO = UN_ANO_I
+              AND REFERENCIA NOT IN( RS1.CODIGO)
+              AND ((REFERENCIA  BETWEEN SUBSTR(RS1.CODIGO, 1,1) AND RS1.CODIGO
+              AND REFERENCIA = SUBSTR(RS1.CODIGO,1,LENGTH(REFERENCIA))
+              ) OR
+              (
+              REFERENCIA  BETWEEN RS1.CODIGO AND RS1.CODIGO || PCK_DATOS.CONS_REFERENCIA
+              AND RS1.CODIGO = SUBSTR(REFERENCIA,1,LENGTH(RS1.CODIGO))
+              AND RS1.MOVIMIENTO NOT IN(0)
+              ))
+              AND CONTABILIZADO NOT IN(0);
+          EXCEPTION WHEN NO_DATA_FOUND THEN
+            MI_CON := 0;
+          END;
+          
+      IF MI_CON > 0 THEN 
+        MI_RTA := MI_RTA ||'REFERENCIA: '|| RS1.CODIGO || ' Existen saldos iniciales para las referencias padres o hijas a la que se desea crear. \n '||CHR(13)||CHR(10);
+      END IF;
+      
+     IF RS1.MOVIMIENTO NOT IN(0) THEN
+     
+        --que no permita movimiento o auxiliares a cuentas padres
+        MI_CON:=0;
+        
+        BEGIN
+          SELECT COUNT(CODIGO)
+            INTO MI_CON
+            FROM REFERENCIA
+           WHERE COMPANIA    =  UN_COMPANIA
+             AND ANO         =  UN_ANO_I
+             AND CODIGO      <> RS1.CODIGO
+             AND CODIGO      BETWEEN RS1.CODIGO AND RS1.CODIGO || PCK_DATOS.CONS_REFERENCIA
+             AND RS1.CODIGO = SUBSTR(CODIGO,1,LENGTH(RS1.CODIGO));
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+          MI_CON := 0;
+        END;
+        
+        IF MI_CON > 0 THEN 
+         MI_RTA := MI_RTA ||'REFERENCIA: '|| RS1.CODIGO || ' No se puede crear teniendo referencias a nivel inferior con movimiento. \n '||CHR(13)||CHR(10);
+        END IF;
+      
+      END IF;    
+      
+      BEGIN
+        --que no permita ingresar hijas si hay padres con indicadores
+        MI_CON:=0;
+        
+        SELECT COUNT(CODIGO)
+          INTO MI_CON
+          FROM REFERENCIA
+         WHERE COMPANIA   =  UN_COMPANIA
+           AND ANO        =  UN_ANO_I
+           AND CODIGO     <> RS1.CODIGO
+           AND CODIGO     BETWEEN SUBSTR(RS1.CODIGO,1,1) AND RS1.CODIGO
+           AND CODIGO     = SUBSTR(RS1.CODIGO,1,LENGTH(CODIGO))
+           AND MOVIMIENTO NOT IN(0);
+      EXCEPTION WHEN NO_DATA_FOUND THEN
+        MI_CON := 0;
+      END;
+  
+        IF MI_CON > 0 THEN 
+         MI_RTA := MI_RTA ||'REFERENCIA: '|| RS1.CODIGO || ' No se permite tener movimiento teniendo referencias a nivel superior con movimiento. \n '||CHR(13)||CHR(10);
+        END IF;
+  
+    END LOOP REFERENCIAS;
+    
+    ---VALIDAR LOS CENTROS COSTOS 
+    <<CENTROCOSTO>>
+    FOR RS2 IN (SELECT CODIGO, MOVIMIENTO 
+            FROM CENTRO_COSTO
+            WHERE COMPANIA = UN_COMPANIA
+            AND ANO = UN_ANO_I
+            AND CODIGO NOT IN (SELECT CODIGO FROM CENTRO_COSTO WHERE COMPANIA = UN_COMPANIA AND ANO = UN_ANO_F ))
+    LOOP
+    
+    BEGIN 
+     --controlar que las cuentas padres no tengan movimientos (detalles) o saldos iniciales
+     MI_CON := 0;
+    
+    SELECT COUNT(COMPANIA)
+      INTO MI_CON
+      FROM DETALLE_COMPROBANTE_CNT
+     WHERE COMPANIA = UN_COMPANIA
+       AND ANO = UN_ANO_I
+       AND CENTRO_COSTO NOT IN( RS2.CODIGO)
+       AND ((CENTRO_COSTO  BETWEEN SUBSTR(RS2.CODIGO, 1,1) AND RS2.CODIGO
+           AND CENTRO_COSTO = SUBSTR(RS2.CODIGO,1,LENGTH(CENTRO_COSTO))
+       AND CENTRO_COSTO IN(RS2.CODIGO)
+       )
+        OR
+        (
+        CENTRO_COSTO  BETWEEN RS2.CODIGO AND RS2.CODIGO || PCK_DATOS.CONS_CENTRO
+        AND RS2.CODIGO = SUBSTR(CENTRO_COSTO,1,LENGTH(RS2.CODIGO))
+        AND RS2.MOVIMIENTO NOT IN(0)
+    ));
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+        MI_CON := 0;
+      END;
+    
+    IF MI_CON > 0 THEN 
+         MI_RTA := MI_RTA ||'CENTRO COSTO: '|| RS2.CODIGO || ' Existen movimientos para los centro de costo padres o hijos del que se desea crear. \n '||CHR(13)||CHR(10);
+    END IF;
+    
+   
+  
+  BEGIN
+   
+    -- validar si tiene saldos iniciales
+     MI_CON:=0;
+     
+    SELECT COUNT(COMPANIA)
+      INTO MI_CON
+      FROM SALDOSINICIALES
+     WHERE COMPANIA = UN_COMPANIA
+       AND ANO = UN_ANO_I
+       AND CENTRO_COSTO NOT IN( RS2.CODIGO)
+       AND ((CENTRO_COSTO  BETWEEN SUBSTR(RS2.CODIGO, 1,1) AND RS2.CODIGO
+       AND CENTRO_COSTO = SUBSTR(RS2.CODIGO,1,LENGTH(CENTRO_COSTO))
+      ) OR
+      (
+      CENTRO_COSTO  BETWEEN RS2.CODIGO AND RS2.CODIGO || PCK_DATOS.CONS_CENTRO
+      AND RS2.CODIGO = SUBSTR(CENTRO_COSTO,1,LENGTH(RS2.CODIGO))
+      AND RS2.MOVIMIENTO NOT IN(0)
+      ))
+      AND CONTABILIZADO NOT IN(0);
+     EXCEPTION WHEN NO_DATA_FOUND THEN
+        MI_CON := 0;
+      END;
+      
+     IF MI_CON > 0 THEN 
+         MI_RTA := MI_RTA ||'CENTRO COSTO: '|| RS2.CODIGO || ' Existen saldos iniciales para los centros de costo padres o hijos  del que se desea crear. \n '||CHR(13)||CHR(10);
+     END IF;
+     
+    IF RS2.MOVIMIENTO NOT IN(0) THEN
+     
+     BEGIN
+     --que no permita movimiento o auxiliares a cuentas padres
+     MI_CON:=0;
+     
+      SELECT COUNT(CODIGO)
+      INTO MI_CON
+      FROM CENTRO_COSTO
+      WHERE COMPANIA    =  UN_COMPANIA
+        AND ANO         =  UN_ANO_I
+        AND CODIGO      <> RS2.CODIGO
+        AND CODIGO      BETWEEN RS2.CODIGO AND RS2.CODIGO || PCK_DATOS.CONS_CENTRO
+        AND RS2.CODIGO = SUBSTR(CODIGO,1,LENGTH(RS2.CODIGO));
+        
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+            MI_CON := 0;
+        END;
+      
+        IF MI_CON > 0 THEN 
+         MI_RTA := MI_RTA ||'CENTRO COSTO: '|| RS2.CODIGO || ' No se puede crear teniendo centros de costo a nivel inferior con movimiento. \n '||CHR(13)||CHR(10);
+        END IF;
+    
+    END IF;
+    
+  
+  BEGIN
+    --que no permita ingresar hijas si hay padres con indicadores
+    MI_CON:=0;
+     SELECT COUNT(CODIGO)
+       INTO MI_CON
+       FROM CENTRO_COSTO
+      WHERE COMPANIA   =  UN_COMPANIA
+        AND ANO        =  UN_ANO_I
+        AND CODIGO     <> RS2.CODIGO
+        AND CODIGO     BETWEEN SUBSTR(RS2.CODIGO,1,1) AND RS2.CODIGO
+        AND CODIGO     = SUBSTR(RS2.CODIGO,1,LENGTH(CODIGO))
+        AND MOVIMIENTO NOT IN(0);
+        
+        EXCEPTION WHEN NO_DATA_FOUND THEN
+            MI_CON := 0;
+        END;
+        
+        IF MI_CON > 0 THEN 
+         MI_RTA := MI_RTA ||'CENTRO COSTO: '|| RS2.CODIGO || ' No se permite tener movimiento teniendo centros de costo a nivel superior con movimiento. \n '||CHR(13)||CHR(10);
+        END IF;
+    
+    END LOOP CENTROCOSTO;
+    
+    RETURN 'Es necesario verificar las siguientes inconsistencias antes de continuar con el proceso: \n '||CHR(10)||CHR(10)||CHR(10)||CHR(10)||MI_RTA;
+    
+END FC_VALIDAR_REFCC;
+
+PROCEDURE PR_COPIAR_UNIDAD_EJECUTORA (
+    /*
+    NAME              : COPIAR_UNIDAD_EJECUTORA
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : NYDIA KATHERINE CARDENAS MONGUI
+    DATE MIGRADOR     : 15/01/2026
+    TIME              : 4:48PM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Copia las unidad ejecutora para el siguiente año
+    --NAME: copiarUnidadEjecutora
+  */
+  UN_COMPANIA         IN VARCHAR2,
+  UN_ANO_DESTINO      IN INTEGER,
+  UN_ANO_ORIGEN       IN INTEGER,
+  UN_COMPANIA_DESTINO IN VARCHAR2
+)
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_CONDICION    VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ANO_INICIAL  INTEGER;
+  MI_ERROR_FUN NUMBER:=GL_ERROR_NUM + 16;
+BEGIN
+  MI_EXCLUIDOS:='COMPANIA,ANO';
+  MI_CAMPOS:= PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('UNIDAD_EJECUTORA',MI_EXCLUIDOS);
+  MI_VALORES :=' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO ||  ''',' || UN_ANO_DESTINO ||
+               ' FROM UNIDAD_EJECUTORA ORI ' ||
+               ' WHERE ORI.COMPANIA=''' || UN_COMPANIA || '''' ||
+                 ' AND ORI.ANO     =' || UN_ANO_ORIGEN ||
+                 ' AND ORI.CODIGO NOT IN(SELECT CODIGO ' ||
+                                       ' FROM UNIDAD_EJECUTORA DES ' ||
+                                       ' WHERE DES.COMPANIA =''' || UN_COMPANIA_DESTINO ||
+                                         ''' AND DES.ANO      =' || UN_ANO_DESTINO ||
+                                        ')';
+  MI_CAMPOS:= MI_CAMPOS || ',' || MI_EXCLUIDOS;
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('UNIDAD_EJECUTORA', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL);
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Copiando UNIDAD EJECUTORA';
+    PCK_DATOS.GL_ERROR_RTA := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'UNIDAD_EJECUTORA','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_RTA || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END PR_COPIAR_UNIDAD_EJECUTORA;
+
+FUNCTION FC_COPIAR_PPTAL_CTA_CNT(
+    /*
+    NAME              : FC_COPIAR_PPTAL_CTA_CNT
+    AUTHORS           : CRISTIAN FERNEY SUESCUN BARRERA
+    DATE              : 04/02/2026
+    MODIFIER          :
+    DATE MODIFIED     :
+    TIME              :
+    DESCRIPTION       : Copia de los equivalentes presupuestales de un año a otro
+    --NAME: obtenerEquivalencias
+  */
+  UN_COMPANIA          IN  VARCHAR2,
+  UN_ANO_DESTINO       IN  INTEGER,
+  UN_ANO_ORIGEN        IN  INTEGER,
+  UN_COMPANIA_DESTINO  IN  VARCHAR2
+)
+RETURN CLOB
+AS
+  MI_CAMPOS       VARCHAR2(32000);
+  MI_VALORES      VARCHAR2(32000);
+  MI_EXCLUIDOS    VARCHAR2(32000);
+  MI_ERROR_FUN    NUMBER := GL_ERROR_NUM + 16;
+  MI_TEXTO_SALIDA CLOB            := '';
+  MI_MENSAJE      CLOB            := '';
+  MI_STRSQL       VARCHAR2(32000);
+  MI_POS          NUMBER := 0;
+  MI_MANEJA_AUX   VARCHAR2(2);
+
+  -- Variables para el FETCH
+  MI_RUBRO           PLAN_PPTAL_CUENTACNT.RUBRO%TYPE;
+  MI_CUENTA_CONTABLE PLAN_PPTAL_CUENTACNT.CUENTA_CONTABLE%TYPE;
+  MI_CENTRO_COSTO    PLAN_PPTAL_CUENTACNT.CENTRO_COSTO%TYPE;
+  MI_FUENTE_RECURSO  PLAN_PPTAL_CUENTACNT.FUENTE_RECURSO%TYPE;
+  MI_REFERENCIA      PLAN_PPTAL_CUENTACNT.REFERENCIA%TYPE;
+  MI_AUXILIAR        PLAN_PPTAL_CUENTACNT.AUXILIAR%TYPE;
+
+  -- Variables para las validaciones dentro del loop
+  MI_SUMA_IND      NUMBER;
+  MI_EXISTE_RUBRO  NUMBER;
+  MI_EXISTE_CUENTA NUMBER;
+  MI_EXISTE_AUX    NUMBER;
+
+  -- Ref cursor para el loop principal
+  RSRUBRO SYS_REFCURSOR;
+
+BEGIN
+
+  -- ============================================================
+  -- 0) Determina si maneja auxiliares
+  -- ============================================================
+  MI_MANEJA_AUX := NVL(PCK_SYSMAN_UTL.FC_PAR(UN_COMPANIA  =>  UN_COMPANIA,
+                                                      UN_NOMBRE    => 'MANEJA EQUIVALENTE PRESUPUESTAL FIJO AUTOMATICO',
+                                                      UN_MODULO    =>  PCK_DATOS.MODULOCONTABILIDAD,
+                                                      UN_FECHA_PAR =>  SYSDATE),'NO');
+  -- ============================================================
+  -- 1) Abre el cursor con los registros del origen
+  -- ============================================================
+  IF MI_MANEJA_AUX = 'NO' THEN
+    -- Consulta sin los campos auxuliares
+    MI_STRSQL := ' SELECT ORI.RUBRO, ORI.CUENTA_CONTABLE, NULL, NULL, NULL, NULL ' ||
+                 ' FROM PLAN_PPTAL_CUENTACNT ORI ' ||
+                 ' JOIN PLAN_PRESUPUESTAL PP ' ||
+                 '   ON PP.COMPANIA = ORI.COMPANIA ' ||
+                 '  AND PP.ANO      = ORI.ANO ' ||
+                 '  AND PP.CODIGO   = ORI.RUBRO ' ||
+                 ' WHERE ORI.COMPANIA = ''' || UN_COMPANIA || '''' ||
+                   ' AND ORI.ANO      = ' || UN_ANO_ORIGEN;
+  ELSE
+    -- Consulta con todos los auxiliares
+    MI_STRSQL := ' SELECT ORI.RUBRO, ORI.CUENTA_CONTABLE, ' ||
+                 '        ORI.CENTRO_COSTO, ORI.FUENTE_RECURSO, ' ||
+                 '        ORI.REFERENCIA, ORI.AUXILIAR ' ||
+                 ' FROM PLAN_PPTAL_CUENTACNT ORI ' ||
+                 ' JOIN PLAN_PRESUPUESTAL PP ' ||
+                 '   ON PP.COMPANIA = ORI.COMPANIA ' ||
+                 '  AND PP.ANO      = ORI.ANO ' ||
+                 '  AND PP.CODIGO   = ORI.RUBRO ' ||
+                 ' WHERE ORI.COMPANIA = ''' || UN_COMPANIA || '''' ||
+                   ' AND ORI.ANO      = ' || UN_ANO_ORIGEN;
+  END IF;
+
+  OPEN RSRUBRO FOR MI_STRSQL;
+  LOOP
+    FETCH RSRUBRO INTO MI_RUBRO, MI_CUENTA_CONTABLE, 
+                       MI_CENTRO_COSTO, MI_FUENTE_RECURSO, 
+                       MI_REFERENCIA, MI_AUXILIAR;
+    EXIT WHEN RSRUBRO%NOTFOUND;
+    BEGIN
+
+      -- ============================================================
+      -- 2) Valida si el rubro existe en PLAN_PRESUPUESTAL destino
+      -- ============================================================
+      MI_STRSQL := ' SELECT COUNT(1) ' ||
+                   ' FROM PLAN_PRESUPUESTAL PPD ' ||
+                   ' WHERE PPD.COMPANIA = ''' || UN_COMPANIA_DESTINO || '''' ||
+                     ' AND PPD.ANO      = ' || UN_ANO_DESTINO ||
+                     ' AND PPD.CODIGO   = ''' || MI_RUBRO || '''';
+      EXECUTE IMMEDIATE MI_STRSQL INTO MI_EXISTE_RUBRO;
+
+      IF MI_EXISTE_RUBRO = 0 THEN
+        MI_POS := MI_POS + 1;
+        MI_TEXTO_SALIDA := MI_TEXTO_SALIDA
+          || CHR(10) || CHR(13)
+          || 'El código ' || MI_RUBRO
+          || ' no se encuentra en el año ' || UN_ANO_DESTINO || '.';
+        CONTINUE;
+      END IF;
+
+      -- ============================================================
+      -- 3) Valida si es padre en el año DESTINO (suma de indicadores = 0)
+      -- ============================================================
+      MI_STRSQL := ' SELECT (PP.MOVIMIENTO ' ||
+                       '+ PP.MAN_CEN_CTO ' ||
+                       '+ PP.MAN_AUX_TER ' ||
+                       '+ PP.MAN_AUX_GEN ' ||
+                       '+ PP.MAN_AUX_REF ' ||
+                       '+ PP.MAN_AUX_FUE) ' ||
+                   ' FROM PLAN_PRESUPUESTAL PP ' ||
+                   ' WHERE PP.COMPANIA = ''' || UN_COMPANIA_DESTINO || '''' ||
+                     ' AND PP.ANO      = ' || UN_ANO_DESTINO ||
+                     ' AND PP.CODIGO   = ''' || MI_RUBRO || '''';
+      EXECUTE IMMEDIATE MI_STRSQL INTO MI_SUMA_IND;
+      
+      -- Si la suma = 0 es padre, no se inserta
+      IF MI_SUMA_IND = 0 THEN
+        MI_POS := MI_POS + 1;
+        MI_TEXTO_SALIDA := MI_TEXTO_SALIDA
+          || CHR(10) || CHR(13)
+          || 'El código ' || MI_RUBRO
+          || ' para el año ' || UN_ANO_DESTINO
+          || ' se encuentra registrado como rubro padre.';
+        CONTINUE;
+      END IF;
+
+      -- ============================================================
+      -- 4) Valida si la cuenta contable existe en PLAN_CONTABLE destino
+      -- ============================================================
+      MI_STRSQL := ' SELECT COUNT(1) ' ||
+                   ' FROM PLAN_CONTABLE PPC ' ||
+                   ' WHERE PPC.COMPANIA = ''' || UN_COMPANIA_DESTINO || '''' ||
+                     ' AND PPC.ANO      = ' || UN_ANO_DESTINO ||
+                     ' AND PPC.CODIGO   = ''' || MI_CUENTA_CONTABLE || '''';
+      EXECUTE IMMEDIATE MI_STRSQL INTO MI_EXISTE_CUENTA;
+
+      IF MI_EXISTE_CUENTA = 0 THEN
+        MI_POS := MI_POS + 1;
+        MI_TEXTO_SALIDA := MI_TEXTO_SALIDA
+          || CHR(10) || CHR(13)
+          || 'El auxiliar ' || MI_CUENTA_CONTABLE
+          || ' asociado al rubro ' || MI_RUBRO
+          || ' no existe en el año ' || UN_ANO_DESTINO || '.';
+        CONTINUE;
+      END IF;
+
+      -- ============================================================
+      -- 5) VALIDACION  DE AUXILIARES (parametro MANEJA EQUIVALENTE PRESUPUESTAL FIJO AUTOMATICO = SI)
+      -- ============================================================
+      IF MI_MANEJA_AUX = 'SI' THEN
+      
+        -- 5.1) Valida CENTRO DE COSTO
+        IF MI_CENTRO_COSTO IS NOT NULL THEN
+          MI_STRSQL := ' SELECT COUNT(1) ' ||
+                       ' FROM CENTRO_COSTO CC ' ||
+                       ' WHERE CC.COMPANIA = ''' || UN_COMPANIA_DESTINO || '''' ||
+                         ' AND CC.ANO      = ' || UN_ANO_DESTINO ||
+                         ' AND CC.CODIGO   = ''' || MI_CENTRO_COSTO || '''';
+          EXECUTE IMMEDIATE MI_STRSQL INTO MI_EXISTE_AUX;
+          
+          IF MI_EXISTE_AUX = 0 THEN
+            MI_POS := MI_POS + 1;
+            MI_TEXTO_SALIDA := MI_TEXTO_SALIDA
+              || CHR(10) || CHR(13)
+              || 'El Centro de Costo ' || MI_CENTRO_COSTO
+              || ' asociado al rubro ' || MI_RUBRO
+              || ' no existe en el año ' || UN_ANO_DESTINO || '.';
+            CONTINUE;
+          END IF;
+        END IF;
+
+        -- 5.2) Valida FUENTE DE RECURSO
+        IF MI_FUENTE_RECURSO IS NOT NULL THEN
+          MI_STRSQL := ' SELECT COUNT(1) ' ||
+                       ' FROM FUENTE_RECURSOS FR ' ||
+                       ' WHERE FR.COMPANIA = ''' || UN_COMPANIA_DESTINO || '''' ||
+                         ' AND FR.ANO      = ' || UN_ANO_DESTINO ||
+                         ' AND FR.CODIGO   = ''' || MI_FUENTE_RECURSO || '''';
+          EXECUTE IMMEDIATE MI_STRSQL INTO MI_EXISTE_AUX;
+          
+          IF MI_EXISTE_AUX = 0 THEN
+            MI_POS := MI_POS + 1;
+            MI_TEXTO_SALIDA := MI_TEXTO_SALIDA
+              || CHR(10) || CHR(13)
+              || 'La Fuente de Recurso ' || MI_FUENTE_RECURSO
+              || ' asociada al rubro ' || MI_RUBRO
+              || ' no existe en el año ' || UN_ANO_DESTINO || '.';
+            CONTINUE;
+          END IF;
+        END IF;
+
+        -- 5.3) Valida REFERENCIA
+        IF MI_REFERENCIA IS NOT NULL THEN
+          MI_STRSQL := ' SELECT COUNT(1) ' ||
+                       ' FROM REFERENCIA REF ' ||
+                       ' WHERE REF.COMPANIA = ''' || UN_COMPANIA_DESTINO || '''' ||
+                         ' AND REF.ANO      = ' || UN_ANO_DESTINO ||
+                         ' AND REF.CODIGO   = ''' || MI_REFERENCIA || '''';
+          EXECUTE IMMEDIATE MI_STRSQL INTO MI_EXISTE_AUX;
+          
+          IF MI_EXISTE_AUX = 0 THEN
+            MI_POS := MI_POS + 1;
+            MI_TEXTO_SALIDA := MI_TEXTO_SALIDA
+              || CHR(10) || CHR(13)
+              || 'La Referencia ' || MI_REFERENCIA
+              || ' asociada al rubro ' || MI_RUBRO
+              || ' no existe en el año ' || UN_ANO_DESTINO || '.';
+            CONTINUE;
+          END IF;
+        END IF;
+
+        -- 5.4) Valida AUXILIAR (si aplica según tu modelo de datos)
+        IF MI_AUXILIAR IS NOT NULL THEN
+          MI_STRSQL := ' SELECT COUNT(1) ' ||
+                       ' FROM AUXILIAR AUX ' ||
+                       ' WHERE AUX.COMPANIA = ''' || UN_COMPANIA_DESTINO || '''' ||
+                         ' AND AUX.ANO      = ' || UN_ANO_DESTINO ||
+                         ' AND AUX.CODIGO   = ''' || MI_AUXILIAR || '''';
+          EXECUTE IMMEDIATE MI_STRSQL INTO MI_EXISTE_AUX;
+          
+          IF MI_EXISTE_AUX = 0 THEN
+            MI_POS := MI_POS + 1;
+            MI_TEXTO_SALIDA := MI_TEXTO_SALIDA
+              || CHR(10) || CHR(13)
+              || 'El Auxiliar ' || MI_AUXILIAR
+              || ' asociado al rubro ' || MI_RUBRO
+              || ' no existe en el año ' || UN_ANO_DESTINO || '.';
+            CONTINUE;
+          END IF;
+        END IF;
+
+      END IF; 
+
+    END;
+  END LOOP;
+  CLOSE RSRUBRO;
+
+  -- ============================================================
+  -- 6) Copiar solo los que pasan todas las validaciones
+  -- ============================================================
+  IF MI_MANEJA_AUX = 'NO' THEN
+    MI_EXCLUIDOS := 'COMPANIA,ANO,AUXILIAR,CENTRO_COSTO,FUENTE_RECURSO,REFERENCIA';
+  ELSE
+    MI_EXCLUIDOS := 'COMPANIA,ANO';
+  END IF;
+
+  MI_CAMPOS := PCK_SYSMAN_UTL.FC_LISTA_CAMPOS('PLAN_PPTAL_CUENTACNT', MI_EXCLUIDOS);
+  MI_CAMPOS := 'ORI.' || REPLACE(MI_CAMPOS, ',', ',ORI.');
+
+  -- Construccion de los datos a insertar
+  MI_VALORES :=
+' SELECT ' || MI_CAMPOS || ',''' || UN_COMPANIA_DESTINO || ''',' || UN_ANO_DESTINO ||
+' FROM PLAN_PPTAL_CUENTACNT ORI ' ||
+' JOIN PLAN_PRESUPUESTAL PP ' ||
+'   ON PP.COMPANIA = ORI.COMPANIA ' ||
+'  AND PP.ANO      = ORI.ANO ' ||
+'  AND PP.CODIGO   = ORI.RUBRO ' ||
+' WHERE ORI.COMPANIA = ''' || UN_COMPANIA || '''' ||
+' AND ORI.ANO      = ' || UN_ANO_ORIGEN ||
+
+-- No duplicar registros existentes
+' AND NOT EXISTS (SELECT 1 ' ||
+'   FROM PLAN_PPTAL_CUENTACNT DES ' ||
+'   WHERE DES.COMPANIA        = ''' || UN_COMPANIA_DESTINO || '''' ||
+'     AND DES.ANO             = ' || UN_ANO_DESTINO ||
+'     AND DES.RUBRO           = ORI.RUBRO ' ||
+'     AND DES.CUENTA_CONTABLE = ORI.CUENTA_CONTABLE) ' ||
+
+-- Cuenta contable exista en el anio origen
+' AND ORI.CUENTA_CONTABLE IN (SELECT P.CODIGO ' ||
+'   FROM PLAN_CONTABLE P ' ||
+'   WHERE P.COMPANIA = ''' || UN_COMPANIA_DESTINO || '''' ||
+'     AND P.ANO      = ' || UN_ANO_DESTINO || ') ' ||
+
+-- Rubro existe en destino Y NO es padre (padre = 0, no es padre <> 0)
+' AND EXISTS (SELECT 1 ' ||
+'   FROM PLAN_PRESUPUESTAL PPD ' ||
+'   WHERE PPD.COMPANIA = ''' || UN_COMPANIA_DESTINO || '''' ||
+'     AND PPD.ANO      = ' || UN_ANO_DESTINO ||
+'     AND PPD.CODIGO   = ORI.RUBRO ' ||
+'     AND (PPD.MOVIMIENTO + PPD.MAN_CEN_CTO + PPD.MAN_AUX_TER + ' ||
+'          PPD.MAN_AUX_GEN + PPD.MAN_AUX_REF + PPD.MAN_AUX_FUE) <> 0) ';
+
+  -- Si maneja auxiliares, validar que existan en anio destino
+  IF MI_MANEJA_AUX = 'SI' THEN
+    MI_VALORES := MI_VALORES ||
+    -- Centro de Costo válido (si no es NULL)
+    ' AND (ORI.CENTRO_COSTO IS NULL OR EXISTS (SELECT 1 ' ||
+    '   FROM CENTRO_COSTO CC ' ||
+    '   WHERE CC.COMPANIA = ''' || UN_COMPANIA_DESTINO || '''' ||
+    '     AND CC.ANO      = ' || UN_ANO_DESTINO ||
+    '     AND CC.CODIGO   = ORI.CENTRO_COSTO)) ' ||
+    
+    -- Fuente de Recurso valida (si no es NULL)
+    ' AND (ORI.FUENTE_RECURSO IS NULL OR EXISTS (SELECT 1 ' ||
+    '   FROM FUENTE_RECURSOS FR ' ||
+    '   WHERE FR.COMPANIA = ''' || UN_COMPANIA_DESTINO || '''' ||
+    '     AND FR.ANO      = ' || UN_ANO_DESTINO ||
+    '     AND FR.CODIGO   = ORI.FUENTE_RECURSO)) ' ||
+    
+    -- Referencia valida (si no es NULL)
+    ' AND (ORI.REFERENCIA IS NULL OR EXISTS (SELECT 1 ' ||
+    '   FROM REFERENCIA REF ' ||
+    '   WHERE REF.COMPANIA = ''' || UN_COMPANIA_DESTINO || '''' ||
+    '     AND REF.ANO      = ' || UN_ANO_DESTINO ||
+    '     AND REF.CODIGO   = ORI.REFERENCIA)) ' ||
+    
+    -- Auxiliar valido (si no es NULL)
+    ' AND (ORI.AUXILIAR IS NULL OR EXISTS (SELECT 1 ' ||
+    '   FROM AUXILIAR AUX ' ||
+    '   WHERE AUX.COMPANIA = ''' || UN_COMPANIA_DESTINO || '''' ||
+    '     AND AUX.ANO      = ' || UN_ANO_DESTINO ||
+    '     AND AUX.CODIGO   = ORI.AUXILIAR)) ';
+  END IF;
+
+  MI_CAMPOS := REPLACE(MI_CAMPOS, 'ORI.', '');
+  MI_CAMPOS := MI_CAMPOS || ', COMPANIA, ANO';
+
+  -- Se reliza inserccion 
+  PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME('PLAN_PPTAL_CUENTACNT', 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL);
+
+  -- ============================================================
+  -- 7) Construccion archivo txt
+  -- ============================================================
+  MI_MENSAJE := '============================================================'|| CHR(10) ||
+                'ACTUALIZACIÓN DE EQUIVALENCIAS PRESUPUESTALES'               || CHR(10) ||
+                'Fecha de Proceso: ' || TO_CHAR(SYSDATE, 'DD/MM/YYYY')        || CHR(10) ||
+                'Año Origen: '       || UN_ANO_ORIGEN                         ||
+                ' | Año Destino: '   || UN_ANO_DESTINO                        || CHR(10) ||
+                'Compañía Origen: '  || UN_COMPANIA                           ||
+                ' | Compañía Destino: ' || UN_COMPANIA_DESTINO                || CHR(10) ||
+                'Parámetro MANEJA EQUIVALENTE PRESUPUESTAL FIJO AUTOMATICO: ' || MI_MANEJA_AUX || CHR(10) ||
+                '============================================================' || CHR(10);
+
+  -- ============================================================
+  -- 8) Mostrar la cantidad de registros no porcesados
+  -- ============================================================
+  IF MI_POS > 0 THEN
+    MI_MENSAJE := MI_MENSAJE
+      || CHR(10) || 'Registros NO procesados:'
+      || MI_TEXTO_SALIDA
+      || CHR(10) || CHR(13)
+      || '============================================================'
+      || CHR(10) || 'Total de registros no procesados: ' || MI_POS
+      || CHR(10) || '============================================================';
+    RETURN MI_MENSAJE;
+  ELSE
+    MI_MENSAJE := MI_MENSAJE
+      || CHR(10) || 'Todos los registros fueron procesados correctamente.'
+      || CHR(10) || '============================================================';
+    RETURN MI_MENSAJE;
+  END IF;
+  
+RETURN MI_MENSAJE;
+END FC_COPIAR_PPTAL_CTA_CNT;
+
+END PCK_PREPARAR_ANO;

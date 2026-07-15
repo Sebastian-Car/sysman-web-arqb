@@ -1,0 +1,1140 @@
+﻿<data name="spconceptos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSpconceptosExisteporcodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(1) CUENTA  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND CODIGO = :CONCEPTO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTA":"$CUENTA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/existeporcodigo">
+		<call-query href="getSpconceptosExisteporcodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO, NOMBRE  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA ORDER BY CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporcompania">
+		<call-query href="getSpconceptosTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagTodosPorConceptosEspecificosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_CONCEPTOS.CODIGO, SP_CONCEPTOS.NOMBRE,(CASE SP_CONCEPTOS.FINANCIAR WHEN 0 THEN 'false' ELSE 'true' END) FINANCIAR FROM SP_CONCEPTOS WHERE (SP_CONCEPTOS.FINANCIAR IN (0) AND SP_CONCEPTOS.COMPANIA = :COMPANIA AND (SP_CONCEPTOS.CODIGO BETWEEN 6 AND 16 OR SP_CONCEPTOS.CODIGO BETWEEN 25 AND 29 OR SP_CONCEPTOS.CODIGO BETWEEN 34 AND 46 OR SP_CONCEPTOS.CODIGO = CASE WHEN PCK_SYSMAN_UTL.FC_PAR(:COMPANIA,'PERMITE FINANCIAR CONCEPTO 32', PCK_DATOS.FC_MODULOSERVICIOSPUBLICOS, SYSDATE) = 'SI' THEN 32 ELSE 0 END )) OR (SP_CONCEPTOS.COMPANIA = :COMPANIA AND SP_CONCEPTOS.CODIGO IN (247, 47)) ORDER BY SP_CONCEPTOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","FINANCIAR":"$FINANCIAR(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporconceptosespecificos/pag">
+		<call-query href="getSpconceptosPagTodosPorConceptosEspecificosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumTodosPorConceptosEspecificosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_CONCEPTOS.CODIGO, SP_CONCEPTOS.NOMBRE,(CASE SP_CONCEPTOS.FINANCIAR WHEN 0 THEN 'false' ELSE 'true' END) FINANCIAR FROM SP_CONCEPTOS WHERE (SP_CONCEPTOS.FINANCIAR IN (0) AND SP_CONCEPTOS.COMPANIA = :COMPANIA AND (SP_CONCEPTOS.CODIGO BETWEEN 6 AND 16 OR SP_CONCEPTOS.CODIGO BETWEEN 25 AND 29 OR SP_CONCEPTOS.CODIGO BETWEEN 34 AND 46 OR SP_CONCEPTOS.CODIGO = CASE WHEN PCK_SYSMAN_UTL.FC_PAR(:COMPANIA,'PERMITE FINANCIAR CONCEPTO 32', PCK_DATOS.FC_MODULOSERVICIOSPUBLICOS, SYSDATE) = 'SI' THEN 32 ELSE 0 END )) OR (SP_CONCEPTOS.COMPANIA = :COMPANIA AND SP_CONCEPTOS.CODIGO IN (247, 47)) ORDER BY SP_CONCEPTOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporconceptosespecificos/num">
+		<call-query href="getSpconceptosNumTodosPorConceptosEspecificosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagConceptosFinanciablesRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE, NVL(VALOR,0) VALOR, NVL(INTERES,0) PORCINTERES  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND NVL(FINANCIAR,0) IN(0) AND (CODIGO BETWEEN 6 AND 16 OR CODIGO BETWEEN 25 AND 29 OR CODIGO BETWEEN 34 AND 46 OR CODIGO IN (32, 247,47) OR INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(:CONCEPTOS), CODIGO, 1) &gt; 0 ) ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","VALOR":"$VALOR(type:integer)","PORCINTERES":"$PORCINTERES(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONCEPTOS" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/conceptosfinanciablesregistro/pag">
+		<call-query href="getSpconceptosPagConceptosFinanciablesRegistroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONCEPTOS" query-param="CONCEPTOS"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumConceptosFinanciablesRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE, NVL(VALOR,0) VALOR, NVL(INTERES,0) PORCINTERES  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND NVL(FINANCIAR,0) IN(0) AND (CODIGO BETWEEN 6 AND 16 OR CODIGO BETWEEN 25 AND 29 OR CODIGO BETWEEN 34 AND 46 OR CODIGO IN (32, 247,47) OR INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(:CONCEPTOS), CODIGO, 1) &gt; 0 ) ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONCEPTOS" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/conceptosfinanciablesregistro/num">
+		<call-query href="getSpconceptosNumConceptosFinanciablesRegistroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONCEPTOS" query-param="CONCEPTOS"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagFinanciaConceptosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE, NVL(VALOR,0) VALOR, NVL(INTERES,0) PORCINTERES  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND NVL(FINANCIAR,0) IN(0) AND (CODIGO BETWEEN 6 AND 16 OR CODIGO BETWEEN 25 AND 29 OR CODIGO BETWEEN 34 AND 46 OR CODIGO IN (32, 247,47)) ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","VALOR":"$VALOR(type:integer)","PORCINTERES":"$PORCINTERES(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/financiaconceptos/pag">
+		<call-query href="getSpconceptosPagFinanciaConceptosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumFinanciaConceptosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE, NVL(VALOR,0) VALOR, NVL(INTERES,0) PORCINTERES  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND NVL(FINANCIAR,0) IN(0) AND (CODIGO BETWEEN 6 AND 16 OR CODIGO BETWEEN 25 AND 29 OR CODIGO BETWEEN 34 AND 46 OR CODIGO IN (32, 247,47)) ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/financiaconceptos/num">
+		<call-query href="getSpconceptosNumFinanciaConceptosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagConceptosFinanciablesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE, NVL(VALOR,0) VALOR, NVL(INTERES,0) PORCINTERES  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND NVL(FINANCIAR,0) IN(0) AND (CODIGO BETWEEN 6 AND 16 OR CODIGO BETWEEN 25 AND 29 OR CODIGO BETWEEN 34 AND 46 OR CODIGO IN (247,47) OR INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(:CONCEPTOS), CODIGO, 1) &gt; 0) ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","VALOR":"$VALOR(type:integer)","PORCINTERES":"$PORCINTERES(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONCEPTOS" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/conceptosfinanciables/pag">
+		<call-query href="getSpconceptosPagConceptosFinanciablesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONCEPTOS" query-param="CONCEPTOS"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSpconceptos" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_CONCEPTOS (CUENTACRABONO, ACUMFIN, CODIGO, CTADBRECFINANCIACIONPERIODO, CUENTACRSALDOCREDITO, CUENTADBRECAUDADOFAC, CUENTACRRECAUDADOFAC, DESCRIPCIONINTERFACE, CUENTACRFINANCIACIONPERIODO, CUENTACRRECAUDADOPERIODO, CUENTADBRECAUDADODEUDA, AUTORETENCION, CUENTACRFACTURADO, CUENTADBFINANCIACIONPERIODO, CUENTACRDEUDA, CUENTACRRECAUDADO, CTACRRECABONODEUDA, IVA, CUENTADBFACTURADO, CTACRRECFINANCIACIONDEUDA, CTACRRECFINANCIACIONPERIODO, FINANCIAR, CTACRRECABONOPERIODO, CUENTACRRECAUDADODEUDA, PORC_DESCUENTO, CUENTADBRECAUDADOPERIODO, NOMBRE, CUENTADBDEUDA, CUENTADBPAGOSDOBLES, CUENTADBABONO, CUENTADBSALDOCREDITO, CTADBRECABONODEUDA, RECARGO, COMPANIA, INTERES, SERVICIO, CENTROCOSTO, CTADBRECABONOPERIODO, CTADBRECFINANCIACIONDEUDA, CUENTACRPAGOSDOBLES, VALOR, CUENTADBRECAUDADO, CREATED_BY, DATE_CREATED) VALUES (:CUENTACRABONO, :ACUMFIN, :CODIGO, :CTADBRECFINANCIACIONPERIODO, :CUENTACRSALDOCREDITO, :CUENTADBRECAUDADOFAC, :CUENTACRRECAUDADOFAC, :DESCRIPCIONINTERFACE, :CUENTACRFINANCIACIONPERIODO, :CUENTACRRECAUDADOPERIODO, :CUENTADBRECAUDADODEUDA, :AUTORETENCION, :CUENTACRFACTURADO, :CUENTADBFINANCIACIONPERIODO, :CUENTACRDEUDA, :CUENTACRRECAUDADO, :CTACRRECABONODEUDA, :IVA, :CUENTADBFACTURADO, :CTACRRECFINANCIACIONDEUDA, :CTACRRECFINANCIACIONPERIODO, :FINANCIAR, :CTACRRECABONOPERIODO, :CUENTACRRECAUDADODEUDA, :PORC_DESCUENTO, :CUENTADBRECAUDADOPERIODO, :NOMBRE, :CUENTADBDEUDA, :CUENTADBPAGOSDOBLES, :CUENTADBABONO, :CUENTADBSALDOCREDITO, :CTADBRECABONODEUDA, :RECARGO, :COMPANIA, :INTERES, :SERVICIO, :CENTROCOSTO, :CTADBRECABONOPERIODO, :CTADBRECFINANCIACIONDEUDA, :CUENTACRPAGOSDOBLES, :VALOR, :CUENTADBRECAUDADO, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO(type:integer)"}]}}		</result>
+		<param defaultValue="" name="CUENTACRABONO" sqlType="STRING"/>
+		<param defaultValue="0" name="ACUMFIN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="CTADBRECFINANCIACIONPERIODO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTACRSALDOCREDITO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTADBRECAUDADOFAC" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTACRRECAUDADOFAC" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCIONINTERFACE" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTACRFINANCIACIONPERIODO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTACRRECAUDADOPERIODO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTADBRECAUDADODEUDA" sqlType="STRING"/>
+		<param defaultValue="0" name="AUTORETENCION" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTACRFACTURADO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTADBFINANCIACIONPERIODO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTACRDEUDA" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTACRRECAUDADO" sqlType="STRING"/>
+		<param defaultValue="" name="CTACRRECABONODEUDA" sqlType="STRING"/>
+		<param defaultValue="0" name="IVA" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTADBFACTURADO" sqlType="STRING"/>
+		<param defaultValue="" name="CTACRRECFINANCIACIONDEUDA" sqlType="STRING"/>
+		<param defaultValue="" name="CTACRRECFINANCIACIONPERIODO" sqlType="STRING"/>
+		<param defaultValue="0" name="FINANCIAR" sqlType="STRING"/>
+		<param defaultValue="" name="CTACRRECABONOPERIODO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTACRRECAUDADODEUDA" sqlType="STRING"/>
+		<param defaultValue="0" name="PORC_DESCUENTO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTADBRECAUDADOPERIODO" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTADBDEUDA" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTADBPAGOSDOBLES" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTADBABONO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTADBSALDOCREDITO" sqlType="STRING"/>
+		<param defaultValue="" name="CTADBRECABONODEUDA" sqlType="STRING"/>
+		<param defaultValue="0" name="RECARGO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="0" name="INTERES" sqlType="STRING"/>
+		<param name="SERVICIO" sqlType="STRING"/>
+		<param defaultValue="99999999999999999999" name="CENTROCOSTO" sqlType="STRING"/>
+		<param defaultValue="" name="CTADBRECABONOPERIODO" sqlType="STRING"/>
+		<param defaultValue="" name="CTADBRECFINANCIACIONDEUDA" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTACRPAGOSDOBLES" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTADBRECAUDADO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="spconceptos">
+		<call-query href="insertSpconceptos">
+			<with-param name="CUENTACRABONO" query-param="CUENTACRABONO"/>
+			<with-param name="ACUMFIN" query-param="ACUMFIN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CTADBRECFINANCIACIONPERIODO" query-param="CTADBRECFINANCIACIONPERIODO"/>
+			<with-param name="CUENTACRSALDOCREDITO" query-param="CUENTACRSALDOCREDITO"/>
+			<with-param name="CUENTADBRECAUDADOFAC" query-param="CUENTADBRECAUDADOFAC"/>
+			<with-param name="CUENTACRRECAUDADOFAC" query-param="CUENTACRRECAUDADOFAC"/>
+			<with-param name="DESCRIPCIONINTERFACE" query-param="DESCRIPCIONINTERFACE"/>
+			<with-param name="CUENTACRFINANCIACIONPERIODO" query-param="CUENTACRFINANCIACIONPERIODO"/>
+			<with-param name="CUENTACRRECAUDADOPERIODO" query-param="CUENTACRRECAUDADOPERIODO"/>
+			<with-param name="CUENTADBRECAUDADODEUDA" query-param="CUENTADBRECAUDADODEUDA"/>
+			<with-param name="AUTORETENCION" query-param="AUTORETENCION"/>
+			<with-param name="CUENTACRFACTURADO" query-param="CUENTACRFACTURADO"/>
+			<with-param name="CUENTADBFINANCIACIONPERIODO" query-param="CUENTADBFINANCIACIONPERIODO"/>
+			<with-param name="CUENTACRDEUDA" query-param="CUENTACRDEUDA"/>
+			<with-param name="CUENTACRRECAUDADO" query-param="CUENTACRRECAUDADO"/>
+			<with-param name="CTACRRECABONODEUDA" query-param="CTACRRECABONODEUDA"/>
+			<with-param name="IVA" query-param="IVA"/>
+			<with-param name="CUENTADBFACTURADO" query-param="CUENTADBFACTURADO"/>
+			<with-param name="CTACRRECFINANCIACIONDEUDA" query-param="CTACRRECFINANCIACIONDEUDA"/>
+			<with-param name="CTACRRECFINANCIACIONPERIODO" query-param="CTACRRECFINANCIACIONPERIODO"/>
+			<with-param name="FINANCIAR" query-param="FINANCIAR"/>
+			<with-param name="CTACRRECABONOPERIODO" query-param="CTACRRECABONOPERIODO"/>
+			<with-param name="CUENTACRRECAUDADODEUDA" query-param="CUENTACRRECAUDADODEUDA"/>
+			<with-param name="PORC_DESCUENTO" query-param="PORC_DESCUENTO"/>
+			<with-param name="CUENTADBRECAUDADOPERIODO" query-param="CUENTADBRECAUDADOPERIODO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CUENTADBDEUDA" query-param="CUENTADBDEUDA"/>
+			<with-param name="CUENTADBPAGOSDOBLES" query-param="CUENTADBPAGOSDOBLES"/>
+			<with-param name="CUENTADBABONO" query-param="CUENTADBABONO"/>
+			<with-param name="CUENTADBSALDOCREDITO" query-param="CUENTADBSALDOCREDITO"/>
+			<with-param name="CTADBRECABONODEUDA" query-param="CTADBRECABONODEUDA"/>
+			<with-param name="RECARGO" query-param="RECARGO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="INTERES" query-param="INTERES"/>
+			<with-param name="SERVICIO" query-param="SERVICIO"/>
+			<with-param name="CENTROCOSTO" query-param="CENTROCOSTO"/>
+			<with-param name="CTADBRECABONOPERIODO" query-param="CTADBRECABONOPERIODO"/>
+			<with-param name="CTADBRECFINANCIACIONDEUDA" query-param="CTADBRECFINANCIACIONDEUDA"/>
+			<with-param name="CUENTACRPAGOSDOBLES" query-param="CUENTACRPAGOSDOBLES"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="CUENTADBRECAUDADO" query-param="CUENTADBRECAUDADO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSpconceptos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SP_CONCEPTOS WHERE SP_CONCEPTOS.COMPANIA= :KEY_COMPANIA AND SP_CONCEPTOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="spconceptos">
+		<call-query href="deleteSpconceptos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CODIGO, NOMBRE, VALOR, INTERES, CENTROCOSTO  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%')  AND (CASE WHEN INTERES IS NULL THEN ' ' ELSE UPPER(INTERES) END)  LIKE UPPER(:INTERES || '%')  AND (CASE WHEN CENTROCOSTO IS NULL THEN ' ' ELSE UPPER(CENTROCOSTO) END)  LIKE UPPER(:CENTROCOSTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","VALOR":"$VALOR","INTERES":"$INTERES","CENTROCOSTO":"$CENTROCOSTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="INTERES" sqlType="STRING"/>
+		<param name="CENTROCOSTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos">
+		<call-query href="getSpconceptosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="INTERES" query-param="INTERES"/>
+			<with-param name="CENTROCOSTO" query-param="CENTROCOSTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CODIGO, NOMBRE, VALOR, INTERES, CENTROCOSTO  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN INTERES IS NULL THEN ' ' ELSE UPPER(INTERES) END)  LIKE UPPER( '%' || :INTERES || '%')  AND (CASE WHEN CENTROCOSTO IS NULL THEN ' ' ELSE UPPER(CENTROCOSTO) END)  LIKE UPPER( '%' || :CENTROCOSTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="INTERES" sqlType="STRING"/>
+		<param name="CENTROCOSTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/numero">
+		<call-query href="getSpconceptosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="INTERES" query-param="INTERES"/>
+			<with-param name="CENTROCOSTO" query-param="CENTROCOSTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_CONCEPTOS.COMPANIA, SP_CONCEPTOS.CODIGO, SP_CONCEPTOS.VALOR, SP_CONCEPTOS.INTERES, SP_CONCEPTOS.CENTROCOSTO, SP_CONCEPTOS.DESCRIPCIONINTERFACE, SP_CONCEPTOS.CUENTADBDEUDA, SP_CONCEPTOS.CUENTACRDEUDA, SP_CONCEPTOS.CUENTADBFACTURADO, SP_CONCEPTOS.CUENTACRFACTURADO, SP_CONCEPTOS.CUENTADBRECAUDADO, SP_CONCEPTOS.CUENTACRRECAUDADO, SP_CONCEPTOS.CUENTADBRECAUDADOFAC, SP_CONCEPTOS.CUENTACRRECAUDADOFAC, SP_CONCEPTOS.SERVICIO, SP_CONCEPTOS.IVA, SP_CONCEPTOS.RECARGO, SP_CONCEPTOS.AUTORETENCION, SP_CONCEPTOS.CUENTADBSALDOCREDITO, SP_CONCEPTOS.CUENTACRSALDOCREDITO, SP_CONCEPTOS.CUENTADBABONO, SP_CONCEPTOS.CUENTACRABONO, SP_CONCEPTOS.CUENTADBRECAUDADODEUDA, SP_CONCEPTOS.CUENTACRRECAUDADODEUDA, SP_CONCEPTOS.CUENTADBRECAUDADOPERIODO, SP_CONCEPTOS.CUENTACRRECAUDADOPERIODO, SP_CONCEPTOS.CUENTADBPAGOSDOBLES, SP_CONCEPTOS.CUENTACRPAGOSDOBLES, SP_CONCEPTOS.CUENTADBFINANCIACIONPERIODO, SP_CONCEPTOS.CUENTACRFINANCIACIONPERIODO, SP_CONCEPTOS.CTADBRECABONODEUDA, SP_CONCEPTOS.CTACRRECABONODEUDA, SP_CONCEPTOS.CTADBRECABONOPERIODO, SP_CONCEPTOS.CTACRRECABONOPERIODO, SP_CONCEPTOS.CTADBRECFINANCIACIONDEUDA, SP_CONCEPTOS.CTACRRECFINANCIACIONDEUDA, SP_CONCEPTOS.CTADBRECFINANCIACIONPERIODO, SP_CONCEPTOS.CTACRRECFINANCIACIONPERIODO, SP_CONCEPTOS.ORDENABONAR,(CASE SP_CONCEPTOS.NOREPORTAR WHEN 0 THEN 'false' ELSE 'true' END) NOREPORTAR,(CASE SP_CONCEPTOS.FINANCIAR WHEN 0 THEN 'false' ELSE 'true' END) FINANCIAR, SP_CONCEPTOS.NOMBRE,(CASE SP_CONCEPTOS.ACUMFIN WHEN 0 THEN 'false' ELSE 'true' END) ACUMFIN, SP_CONCEPTOS.AUXILIAR, SP_CONCEPTOS.PORC_DESCUENTO, SP_CONCEPTOS.CREATED_BY,(TO_CHAR(SP_CONCEPTOS.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, SP_CONCEPTOS.MODIFIED_BY,(TO_CHAR(SP_CONCEPTOS.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, CENTRO_COSTO.NOMBRE NOMBRECENTROCOSTO  FROM SP_CONCEPTOS INNER JOIN CENTRO_COSTO ON SP_CONCEPTOS.COMPANIA = CENTRO_COSTO.COMPANIA AND EXTRACT(YEAR FROM SYSDATE) = CENTRO_COSTO.ANO AND SP_CONCEPTOS.CENTROCOSTO = CENTRO_COSTO.CODIGO WHERE SP_CONCEPTOS.COMPANIA= :KEY_COMPANIA AND SP_CONCEPTOS.CODIGO= :KEY_CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO(type:integer)","VALOR":"$VALOR","INTERES":"$INTERES","CENTROCOSTO":"$CENTROCOSTO","DESCRIPCIONINTERFACE":"$DESCRIPCIONINTERFACE","CUENTADBDEUDA":"$CUENTADBDEUDA","CUENTACRDEUDA":"$CUENTACRDEUDA","CUENTADBFACTURADO":"$CUENTADBFACTURADO","CUENTACRFACTURADO":"$CUENTACRFACTURADO","CUENTADBRECAUDADO":"$CUENTADBRECAUDADO","CUENTACRRECAUDADO":"$CUENTACRRECAUDADO","CUENTADBRECAUDADOFAC":"$CUENTADBRECAUDADOFAC","CUENTACRRECAUDADOFAC":"$CUENTACRRECAUDADOFAC","SERVICIO":"$SERVICIO","IVA":"$IVA","RECARGO":"$RECARGO","AUTORETENCION":"$AUTORETENCION","CUENTADBSALDOCREDITO":"$CUENTADBSALDOCREDITO","CUENTACRSALDOCREDITO":"$CUENTACRSALDOCREDITO","CUENTADBABONO":"$CUENTADBABONO","CUENTACRABONO":"$CUENTACRABONO","CUENTADBRECAUDADODEUDA":"$CUENTADBRECAUDADODEUDA","CUENTACRRECAUDADODEUDA":"$CUENTACRRECAUDADODEUDA","CUENTADBRECAUDADOPERIODO":"$CUENTADBRECAUDADOPERIODO","CUENTACRRECAUDADOPERIODO":"$CUENTACRRECAUDADOPERIODO","CUENTADBPAGOSDOBLES":"$CUENTADBPAGOSDOBLES","CUENTACRPAGOSDOBLES":"$CUENTACRPAGOSDOBLES","CUENTADBFINANCIACIONPERIODO":"$CUENTADBFINANCIACIONPERIODO","CUENTACRFINANCIACIONPERIODO":"$CUENTACRFINANCIACIONPERIODO","CTADBRECABONODEUDA":"$CTADBRECABONODEUDA","CTACRRECABONODEUDA":"$CTACRRECABONODEUDA","CTADBRECABONOPERIODO":"$CTADBRECABONOPERIODO","CTACRRECABONOPERIODO":"$CTACRRECABONOPERIODO","CTADBRECFINANCIACIONDEUDA":"$CTADBRECFINANCIACIONDEUDA","CTACRRECFINANCIACIONDEUDA":"$CTACRRECFINANCIACIONDEUDA","CTADBRECFINANCIACIONPERIODO":"$CTADBRECFINANCIACIONPERIODO","CTACRRECFINANCIACIONPERIODO":"$CTACRRECFINANCIACIONPERIODO","ORDENABONAR":"$ORDENABONAR","NOREPORTAR":"$NOREPORTAR(type:boolean)","FINANCIAR":"$FINANCIAR(type:boolean)","NOMBRE":"$NOMBRE","ACUMFIN":"$ACUMFIN(type:boolean)","AUXILIAR":"$AUXILIAR","PORC_DESCUENTO":"$PORC_DESCUENTO","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","NOMBRECENTROCOSTO":"$NOMBRECENTROCOSTO"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/data">
+		<call-query href="getSpconceptosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpconceptos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_CONCEPTOS SET CUENTACRABONO=:CUENTACRABONO, CTADBRECFINANCIACIONPERIODO=:CTADBRECFINANCIACIONPERIODO, CUENTACRSALDOCREDITO=:CUENTACRSALDOCREDITO, CUENTACRRECAUDADOFAC=:CUENTACRRECAUDADOFAC, CUENTACRFINANCIACIONPERIODO=:CUENTACRFINANCIACIONPERIODO, CUENTADBRECAUDADODEUDA=:CUENTADBRECAUDADODEUDA, CUENTACRFACTURADO=:CUENTACRFACTURADO, CUENTADBFINANCIACIONPERIODO=:CUENTADBFINANCIACIONPERIODO, CUENTACRDEUDA=:CUENTACRDEUDA, CTACRRECFINANCIACIONDEUDA=:CTACRRECFINANCIACIONDEUDA, CTACRRECFINANCIACIONPERIODO=:CTACRRECFINANCIACIONPERIODO, FINANCIAR=:FINANCIAR, CTACRRECABONOPERIODO=:CTACRRECABONOPERIODO, NOMBRE=:NOMBRE, CUENTADBSALDOCREDITO=:CUENTADBSALDOCREDITO, RECARGO=:RECARGO, SERVICIO=:SERVICIO, ORDENABONAR=:ORDENABONAR, VALOR=:VALOR, CUENTADBRECAUDADO=:CUENTADBRECAUDADO, ACUMFIN=:ACUMFIN, CODIGO=:CODIGO, CUENTADBRECAUDADOFAC=:CUENTADBRECAUDADOFAC, NOREPORTAR=:NOREPORTAR, DESCRIPCIONINTERFACE=:DESCRIPCIONINTERFACE, CUENTACRRECAUDADOPERIODO=:CUENTACRRECAUDADOPERIODO, AUTORETENCION=:AUTORETENCION, CUENTACRRECAUDADO=:CUENTACRRECAUDADO, CTACRRECABONODEUDA=:CTACRRECABONODEUDA, IVA=:IVA, CUENTADBFACTURADO=:CUENTADBFACTURADO, CUENTACRRECAUDADODEUDA=:CUENTACRRECAUDADODEUDA, PORC_DESCUENTO=:PORC_DESCUENTO, AUXILIAR=:AUXILIAR, CUENTADBRECAUDADOPERIODO=:CUENTADBRECAUDADOPERIODO, CUENTADBDEUDA=:CUENTADBDEUDA, CUENTADBPAGOSDOBLES=:CUENTADBPAGOSDOBLES, CUENTADBABONO=:CUENTADBABONO, CTADBRECABONODEUDA=:CTADBRECABONODEUDA, INTERES=:INTERES, CENTROCOSTO=:CENTROCOSTO, CTADBRECABONOPERIODO=:CTADBRECABONOPERIODO, CTADBRECFINANCIACIONDEUDA=:CTADBRECFINANCIACIONDEUDA, CUENTACRPAGOSDOBLES=:CUENTACRPAGOSDOBLES, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE SP_CONCEPTOS.COMPANIA= :KEY_COMPANIA AND SP_CONCEPTOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CUENTACRABONO" sqlType="STRING"/>
+		<param name="CTADBRECFINANCIACIONPERIODO" sqlType="STRING"/>
+		<param name="CUENTACRSALDOCREDITO" sqlType="STRING"/>
+		<param name="CUENTACRRECAUDADOFAC" sqlType="STRING"/>
+		<param name="CUENTACRFINANCIACIONPERIODO" sqlType="STRING"/>
+		<param name="CUENTADBRECAUDADODEUDA" sqlType="STRING"/>
+		<param name="CUENTACRFACTURADO" sqlType="STRING"/>
+		<param name="CUENTADBFINANCIACIONPERIODO" sqlType="STRING"/>
+		<param name="CUENTACRDEUDA" sqlType="STRING"/>
+		<param name="CTACRRECFINANCIACIONDEUDA" sqlType="STRING"/>
+		<param name="CTACRRECFINANCIACIONPERIODO" sqlType="STRING"/>
+		<param name="FINANCIAR" sqlType="STRING"/>
+		<param name="CTACRRECABONOPERIODO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CUENTADBSALDOCREDITO" sqlType="STRING"/>
+		<param name="RECARGO" sqlType="STRING"/>
+		<param name="SERVICIO" sqlType="STRING"/>
+		<param name="ORDENABONAR" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="CUENTADBRECAUDADO" sqlType="STRING"/>
+		<param name="ACUMFIN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CUENTADBRECAUDADOFAC" sqlType="STRING"/>
+		<param name="NOREPORTAR" sqlType="STRING"/>
+		<param name="DESCRIPCIONINTERFACE" sqlType="STRING"/>
+		<param name="CUENTACRRECAUDADOPERIODO" sqlType="STRING"/>
+		<param name="AUTORETENCION" sqlType="STRING"/>
+		<param name="CUENTACRRECAUDADO" sqlType="STRING"/>
+		<param name="CTACRRECABONODEUDA" sqlType="STRING"/>
+		<param name="IVA" sqlType="STRING"/>
+		<param name="CUENTADBFACTURADO" sqlType="STRING"/>
+		<param name="CUENTACRRECAUDADODEUDA" sqlType="STRING"/>
+		<param name="PORC_DESCUENTO" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="CUENTADBRECAUDADOPERIODO" sqlType="STRING"/>
+		<param name="CUENTADBDEUDA" sqlType="STRING"/>
+		<param name="CUENTADBPAGOSDOBLES" sqlType="STRING"/>
+		<param name="CUENTADBABONO" sqlType="STRING"/>
+		<param name="CTADBRECABONODEUDA" sqlType="STRING"/>
+		<param name="INTERES" sqlType="STRING"/>
+		<param name="CENTROCOSTO" sqlType="STRING"/>
+		<param name="CTADBRECABONOPERIODO" sqlType="STRING"/>
+		<param name="CTADBRECFINANCIACIONDEUDA" sqlType="STRING"/>
+		<param name="CUENTACRPAGOSDOBLES" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spconceptos">
+		<call-query href="updateSpconceptos">
+			<with-param name="CUENTACRABONO" query-param="CUENTACRABONO"/>
+			<with-param name="CTADBRECFINANCIACIONPERIODO" query-param="CTADBRECFINANCIACIONPERIODO"/>
+			<with-param name="CUENTACRSALDOCREDITO" query-param="CUENTACRSALDOCREDITO"/>
+			<with-param name="CUENTACRRECAUDADOFAC" query-param="CUENTACRRECAUDADOFAC"/>
+			<with-param name="CUENTACRFINANCIACIONPERIODO" query-param="CUENTACRFINANCIACIONPERIODO"/>
+			<with-param name="CUENTADBRECAUDADODEUDA" query-param="CUENTADBRECAUDADODEUDA"/>
+			<with-param name="CUENTACRFACTURADO" query-param="CUENTACRFACTURADO"/>
+			<with-param name="CUENTADBFINANCIACIONPERIODO" query-param="CUENTADBFINANCIACIONPERIODO"/>
+			<with-param name="CUENTACRDEUDA" query-param="CUENTACRDEUDA"/>
+			<with-param name="CTACRRECFINANCIACIONDEUDA" query-param="CTACRRECFINANCIACIONDEUDA"/>
+			<with-param name="CTACRRECFINANCIACIONPERIODO" query-param="CTACRRECFINANCIACIONPERIODO"/>
+			<with-param name="FINANCIAR" query-param="FINANCIAR"/>
+			<with-param name="CTACRRECABONOPERIODO" query-param="CTACRRECABONOPERIODO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CUENTADBSALDOCREDITO" query-param="CUENTADBSALDOCREDITO"/>
+			<with-param name="RECARGO" query-param="RECARGO"/>
+			<with-param name="SERVICIO" query-param="SERVICIO"/>
+			<with-param name="ORDENABONAR" query-param="ORDENABONAR"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="CUENTADBRECAUDADO" query-param="CUENTADBRECAUDADO"/>
+			<with-param name="ACUMFIN" query-param="ACUMFIN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CUENTADBRECAUDADOFAC" query-param="CUENTADBRECAUDADOFAC"/>
+			<with-param name="NOREPORTAR" query-param="NOREPORTAR"/>
+			<with-param name="DESCRIPCIONINTERFACE" query-param="DESCRIPCIONINTERFACE"/>
+			<with-param name="CUENTACRRECAUDADOPERIODO" query-param="CUENTACRRECAUDADOPERIODO"/>
+			<with-param name="AUTORETENCION" query-param="AUTORETENCION"/>
+			<with-param name="CUENTACRRECAUDADO" query-param="CUENTACRRECAUDADO"/>
+			<with-param name="CTACRRECABONODEUDA" query-param="CTACRRECABONODEUDA"/>
+			<with-param name="IVA" query-param="IVA"/>
+			<with-param name="CUENTADBFACTURADO" query-param="CUENTADBFACTURADO"/>
+			<with-param name="CUENTACRRECAUDADODEUDA" query-param="CUENTACRRECAUDADODEUDA"/>
+			<with-param name="PORC_DESCUENTO" query-param="PORC_DESCUENTO"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="CUENTADBRECAUDADOPERIODO" query-param="CUENTADBRECAUDADOPERIODO"/>
+			<with-param name="CUENTADBDEUDA" query-param="CUENTADBDEUDA"/>
+			<with-param name="CUENTADBPAGOSDOBLES" query-param="CUENTADBPAGOSDOBLES"/>
+			<with-param name="CUENTADBABONO" query-param="CUENTADBABONO"/>
+			<with-param name="CTADBRECABONODEUDA" query-param="CTADBRECABONODEUDA"/>
+			<with-param name="INTERES" query-param="INTERES"/>
+			<with-param name="CENTROCOSTO" query-param="CENTROCOSTO"/>
+			<with-param name="CTADBRECABONOPERIODO" query-param="CTADBRECABONOPERIODO"/>
+			<with-param name="CTADBRECFINANCIACIONDEUDA" query-param="CTADBRECFINANCIACIONDEUDA"/>
+			<with-param name="CUENTACRPAGOSDOBLES" query-param="CUENTACRPAGOSDOBLES"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumConceptosFinanciablesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE, NVL(VALOR,0) VALOR, NVL(INTERES,0) PORCINTERES  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND NVL(FINANCIAR,0) IN(0) AND (CODIGO BETWEEN 6 AND 16 OR CODIGO BETWEEN 25 AND 29 OR CODIGO BETWEEN 34 AND 46 OR CODIGO IN (247,47) OR INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(:CONCEPTOS), CODIGO, 1) &gt; 0) ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONCEPTOS" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/conceptosfinanciables/num">
+		<call-query href="getSpconceptosNumConceptosFinanciablesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONCEPTOS" query-param="CONCEPTOS"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagFinanciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE, NVL(VALOR,0) VALOR, NVL(INTERES,0) PORCINTERES  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND NVL(FINANCIAR,0) IN(0) AND (CODIGO BETWEEN 6 AND 16 OR CODIGO BETWEEN 25 AND 29 OR CODIGO BETWEEN 34 AND 46 OR CODIGO IN (247,47)) ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","VALOR":"$VALOR(type:integer)","PORCINTERES":"$PORCINTERES(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/financia/pag">
+		<call-query href="getSpconceptosPagFinanciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumFinanciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE, NVL(VALOR,0) VALOR, NVL(INTERES,0) PORCINTERES  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND NVL(FINANCIAR,0) IN(0) AND (CODIGO BETWEEN 6 AND 16 OR CODIGO BETWEEN 25 AND 29 OR CODIGO BETWEEN 34 AND 46 OR CODIGO IN (247,47)) ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/financia/num">
+		<call-query href="getSpconceptosNumFinanciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagTodosPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_CONCEPTOS.CODIGO, SP_CONCEPTOS.NOMBRE, NVL(SP_CONCEPTOS.VALOR,0) VALOR, SP_CONCEPTOS.INTERES  FROM SP_CONCEPTOS WHERE SP_CONCEPTOS.COMPANIA = :COMPANIA ORDER BY SP_CONCEPTOS.COMPANIA, SP_CONCEPTOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","VALOR":"$VALOR(type:integer)","INTERES":"$INTERES"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporcodigo/pag">
+		<call-query href="getSpconceptosPagTodosPorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumTodosPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_CONCEPTOS.CODIGO, SP_CONCEPTOS.NOMBRE, NVL(SP_CONCEPTOS.VALOR,0) VALOR, SP_CONCEPTOS.INTERES  FROM SP_CONCEPTOS WHERE SP_CONCEPTOS.COMPANIA = :COMPANIA ORDER BY SP_CONCEPTOS.COMPANIA, SP_CONCEPTOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporcodigo/num">
+		<call-query href="getSpconceptosNumTodosPorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporcompania/pag">
+		<call-query href="getSpconceptosPagTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporcompania/num">
+		<call-query href="getSpconceptosNumTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagTodosPorConceptosManualesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, NOMBRE FROM SP_CONCEPTOS WHERE COMPANIA =:COMPANIA AND INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE(:CONCEPTO,' ','') ),CONCAT( '', CONCAT(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE(CODIGO,' ','') ), '')),1) &gt; 0 ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporconceptosmanuales/pag">
+		<call-query href="getSpconceptosPagTodosPorConceptosManualesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumTodosPorConceptosManualesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, NOMBRE FROM SP_CONCEPTOS WHERE COMPANIA =:COMPANIA AND INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE(:CONCEPTO,' ','') ),CONCAT( '', CONCAT(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE(CODIGO,' ','') ), '')),1) &gt; 0 ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporconceptosmanuales/num">
+		<call-query href="getSpconceptosNumTodosPorConceptosManualesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagPorNombreYValoresFacturadosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT SP_FACTURADO.CONCEPTO, SP_CONCEPTOS.NOMBRE, SP_FACTURADO.VALOR_FACTURADO, SP_FACTURADO.DEUDA  FROM SP_CONCEPTOS INNER JOIN SP_FACTURADO ON SP_CONCEPTOS.COMPANIA = SP_FACTURADO.COMPANIA AND SP_CONCEPTOS.CODIGO = SP_FACTURADO.CONCEPTO WHERE ((SP_FACTURADO.CONCEPTO BETWEEN 0 AND 11 OR SP_FACTURADO.CONCEPTO BETWEEN 13 AND 49 OR SP_FACTURADO.CONCEPTO IN (246, 247, 248, 249)) AND SP_FACTURADO.COMPANIA = :COMPANIA AND SP_FACTURADO.CICLO = :CICLO AND SP_FACTURADO.ANO = :ANO AND SP_FACTURADO.PERIODO = :PERIODO AND SP_FACTURADO.CODIGORUTA = :CODIGORUTA AND VALOR_FACTURADO + DEUDA NOT IN (0))) WHERE (CASE WHEN CONCEPTO IS NULL THEN ' ' ELSE UPPER(CONCEPTO) END)  LIKE UPPER( '%' || :CONCEPTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR_FACTURADO IS NULL THEN ' ' ELSE UPPER(VALOR_FACTURADO) END)  LIKE UPPER(:VALOR_FACTURADO || '%')  AND (CASE WHEN DEUDA IS NULL THEN ' ' ELSE UPPER(DEUDA) END)  LIKE UPPER(:DEUDA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONCEPTO":"$CONCEPTO(type:integer)","NOMBRE":"$NOMBRE","VALOR_FACTURADO":"$VALOR_FACTURADO","DEUDA":"$DEUDA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR_FACTURADO" sqlType="STRING"/>
+		<param name="DEUDA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/pornombreyvaloresfacturados/pag">
+		<call-query href="getSpconceptosPagPorNombreYValoresFacturadosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR_FACTURADO" query-param="VALOR_FACTURADO"/>
+			<with-param name="DEUDA" query-param="DEUDA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumPorNombreYValoresFacturadosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT SP_FACTURADO.CONCEPTO, SP_CONCEPTOS.NOMBRE, SP_FACTURADO.VALOR_FACTURADO, SP_FACTURADO.DEUDA  FROM SP_CONCEPTOS INNER JOIN SP_FACTURADO ON SP_CONCEPTOS.COMPANIA = SP_FACTURADO.COMPANIA AND SP_CONCEPTOS.CODIGO = SP_FACTURADO.CONCEPTO WHERE ((SP_FACTURADO.CONCEPTO BETWEEN 0 AND 11 OR SP_FACTURADO.CONCEPTO BETWEEN 13 AND 49 OR SP_FACTURADO.CONCEPTO IN (246, 247, 248, 249)) AND SP_FACTURADO.COMPANIA = :COMPANIA AND SP_FACTURADO.CICLO = :CICLO AND SP_FACTURADO.ANO = :ANO AND SP_FACTURADO.PERIODO = :PERIODO AND SP_FACTURADO.CODIGORUTA = :CODIGORUTA AND VALOR_FACTURADO + DEUDA NOT IN (0))) WHERE (CASE WHEN CONCEPTO IS NULL THEN ' ' ELSE UPPER(CONCEPTO) END)  LIKE UPPER( '%' || :CONCEPTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR_FACTURADO IS NULL THEN ' ' ELSE UPPER(VALOR_FACTURADO) END)  LIKE UPPER(:VALOR_FACTURADO || '%')  AND (CASE WHEN DEUDA IS NULL THEN ' ' ELSE UPPER(DEUDA) END)  LIKE UPPER(:DEUDA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR_FACTURADO" sqlType="STRING"/>
+		<param name="DEUDA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/pornombreyvaloresfacturados/num">
+		<call-query href="getSpconceptosNumPorNombreYValoresFacturadosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR_FACTURADO" query-param="VALOR_FACTURADO"/>
+			<with-param name="DEUDA" query-param="DEUDA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagCodynomyvaloreinteresconfinanciarycodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, NOMBRE, VALOR, INTERES FROM SP_CONCEPTOS WHERE COMPANIA =:COMPANIA AND FINANCIAR IN ( 0 ) AND ( CODIGO BETWEEN 6 AND 16 OR CODIGO BETWEEN 25 AND 29 OR CODIGO BETWEEN 34 AND 46 OR INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE(:CONCEPTO,' ','') ),CONCAT('',CONCAT(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS (REPLACE(CODIGO,' ','') ),'') ),1) &gt; 0 ) ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END) LIKE UPPER(CONCAT(:VALOR, '%')) AND (CASE WHEN INTERES IS NULL THEN ' ' ELSE UPPER(INTERES) END) LIKE UPPER(CONCAT(:INTERES, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","VALOR":"$VALOR","INTERES":"$INTERES"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="INTERES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/codynomyvaloreinteresconfinanciarycod/pag">
+		<call-query href="getSpconceptosPagCodynomyvaloreinteresconfinanciarycodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="INTERES" query-param="INTERES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumCodynomyvaloreinteresconfinanciarycodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, NOMBRE, VALOR, INTERES FROM SP_CONCEPTOS WHERE COMPANIA =:COMPANIA AND FINANCIAR IN ( 0 ) AND ( CODIGO BETWEEN 6 AND 16 OR CODIGO BETWEEN 25 AND 29 OR CODIGO BETWEEN 34 AND 46 OR INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE(:CONCEPTO,' ','') ),CONCAT('',CONCAT(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS (REPLACE(CODIGO,' ','') ),'') ),1) &gt; 0 ) ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END) LIKE UPPER(CONCAT(:VALOR, '%')) AND (CASE WHEN INTERES IS NULL THEN ' ' ELSE UPPER(INTERES) END) LIKE UPPER(CONCAT(:INTERES, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="INTERES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/codynomyvaloreinteresconfinanciarycod/num">
+		<call-query href="getSpconceptosNumCodynomyvaloreinteresconfinanciarycodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="INTERES" query-param="INTERES"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagNombreValorPorConceptosCicloRutaPeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  FACTURADO.CONCEPTO CODIGO, CONCEPTOS.NOMBRE, FACTURADO.VALOR_FACTURADO  FROM SP_CONCEPTOS CONCEPTOS INNER JOIN SP_FACTURADO FACTURADO ON CONCEPTOS.COMPANIA = FACTURADO.COMPANIA AND CONCEPTOS.CODIGO = FACTURADO.CONCEPTO WHERE FACTURADO.CONCEPTO NOT IN (12,250,17,49) AND FACTURADO.COMPANIA = :COMPANIA AND FACTURADO.CICLO = :CICLO AND FACTURADO.CODIGORUTA = :CODIGORUTA AND FACTURADO.ANO = :ANO AND FACTURADO.PERIODO = :PERIODO AND FACTURADO.VALOR_FACTURADO+FACTURADO.DEUDA &lt;&gt;0 ORDER BY FACTURADO.CONCEPTO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","VALOR_FACTURADO":"$VALOR_FACTURADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/nombrevalorporconceptosciclorutaperiodo/pag">
+		<call-query href="getSpconceptosPagNombreValorPorConceptosCicloRutaPeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumNombreValorPorConceptosCicloRutaPeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  FACTURADO.CONCEPTO CODIGO, CONCEPTOS.NOMBRE, FACTURADO.VALOR_FACTURADO  FROM SP_CONCEPTOS CONCEPTOS INNER JOIN SP_FACTURADO FACTURADO ON CONCEPTOS.COMPANIA = FACTURADO.COMPANIA AND CONCEPTOS.CODIGO = FACTURADO.CONCEPTO WHERE FACTURADO.CONCEPTO NOT IN (12,250,17,49) AND FACTURADO.COMPANIA = :COMPANIA AND FACTURADO.CICLO = :CICLO AND FACTURADO.CODIGORUTA = :CODIGORUTA AND FACTURADO.ANO = :ANO AND FACTURADO.PERIODO = :PERIODO AND FACTURADO.VALOR_FACTURADO+FACTURADO.DEUDA &lt;&gt;0 ORDER BY FACTURADO.CONCEPTO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/nombrevalorporconceptosciclorutaperiodo/num">
+		<call-query href="getSpconceptosNumNombreValorPorConceptosCicloRutaPeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagNombreValorEntreConceptosCicloRutaPeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  FACTURADO.CONCEPTO CODIGO, CONCEPTOS.NOMBRE, FACTURADO.VALOR_FACTURADO  FROM SP_CONCEPTOS CONCEPTOS INNER JOIN SP_FACTURADO FACTURADO ON CONCEPTOS.COMPANIA = FACTURADO.COMPANIA AND CONCEPTOS.CODIGO = FACTURADO.CONCEPTO WHERE (FACTURADO.CONCEPTO BETWEEN 6 AND 11 OR FACTURADO.CONCEPTO BETWEEN 13 AND 17 OR FACTURADO.CONCEPTO BETWEEN 23 AND 31 OR FACTURADO.CONCEPTO BETWEEN 34 AND 46 OR FACTURADO.CONCEPTO IN (47,247,249)) AND FACTURADO.COMPANIA = :COMPANIA AND FACTURADO.CICLO = :CICLO AND FACTURADO.CODIGORUTA = :CODIGORUTA AND FACTURADO.ANO = :ANO AND FACTURADO.PERIODO = :PERIODO AND FACTURADO.VALOR_FACTURADO+FACTURADO.DEUDA &lt;&gt;0 ORDER BY FACTURADO.CONCEPTO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","VALOR_FACTURADO":"$VALOR_FACTURADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/nombrevalorentreconceptosciclorutaperiodo/pag">
+		<call-query href="getSpconceptosPagNombreValorEntreConceptosCicloRutaPeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumNombreValorEntreConceptosCicloRutaPeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  FACTURADO.CONCEPTO CODIGO, CONCEPTOS.NOMBRE, FACTURADO.VALOR_FACTURADO  FROM SP_CONCEPTOS CONCEPTOS INNER JOIN SP_FACTURADO FACTURADO ON CONCEPTOS.COMPANIA = FACTURADO.COMPANIA AND CONCEPTOS.CODIGO = FACTURADO.CONCEPTO WHERE (FACTURADO.CONCEPTO BETWEEN 6 AND 11 OR FACTURADO.CONCEPTO BETWEEN 13 AND 17 OR FACTURADO.CONCEPTO BETWEEN 23 AND 31 OR FACTURADO.CONCEPTO BETWEEN 34 AND 46 OR FACTURADO.CONCEPTO IN (47,247,249)) AND FACTURADO.COMPANIA = :COMPANIA AND FACTURADO.CICLO = :CICLO AND FACTURADO.CODIGORUTA = :CODIGORUTA AND FACTURADO.ANO = :ANO AND FACTURADO.PERIODO = :PERIODO AND FACTURADO.VALOR_FACTURADO+FACTURADO.DEUDA &lt;&gt;0 ORDER BY FACTURADO.CONCEPTO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/nombrevalorentreconceptosciclorutaperiodo/num">
+		<call-query href="getSpconceptosNumNombreValorEntreConceptosCicloRutaPeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagTodosPorConceptoMenorA49Query"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND CODIGO &lt; 49 ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporconceptomenora49/pag">
+		<call-query href="getSpconceptosPagTodosPorConceptoMenorA49Query">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumTodosPorConceptoMenorA49Query"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND CODIGO &lt; 49 ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporconceptomenora49/num">
+		<call-query href="getSpconceptosNumTodosPorConceptoMenorA49Query">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagTodosPorCodigoFinalCompaniaInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT CODIGO, NOMBRE  FROM SP_CONCEPTOS WHERE CODIGO &gt;= :CODIGOINICIAL AND COMPANIA = :COMPANIA ORDER BY CODIGO ASC) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporcodigofinalcompaniainicial/pag">
+		<call-query href="getSpconceptosPagTodosPorCodigoFinalCompaniaInicialQuery">
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumTodosPorCodigoFinalCompaniaInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT CODIGO, NOMBRE  FROM SP_CONCEPTOS WHERE CODIGO &gt;= :CODIGOINICIAL AND COMPANIA = :COMPANIA ORDER BY CODIGO ASC) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporcodigofinalcompaniainicial/num">
+		<call-query href="getSpconceptosNumTodosPorCodigoFinalCompaniaInicialQuery">
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNombrePorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NOMBRE  FROM SP_CONCEPTOS WHERE COMPANIA= :COMPANIA AND CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/nombreporcodigo">
+		<call-query href="getSpconceptosNombrePorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagConceptossubfacturadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CONCEPTOS.CODIGO, CONCEPTOS.NOMBRE, CONCEPTOS.VALOR  FROM SP_CONCEPTOS CONCEPTOS WHERE CONCEPTOS.COMPANIA = :COMPANIA AND CONCEPTOS.CODIGO NOT IN (1,2,3,4,5,10,12,14,17,18,20,21,22,23,33,49,TO_NUMBER(:NUMERO),TO_NUMBER(:NUMERO)-1) ORDER BY CONCEPTOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","VALOR":"$VALOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/conceptossubfacturado/pag">
+		<call-query href="getSpconceptosPagConceptossubfacturadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumConceptossubfacturadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CONCEPTOS.CODIGO, CONCEPTOS.NOMBRE, CONCEPTOS.VALOR  FROM SP_CONCEPTOS CONCEPTOS WHERE CONCEPTOS.COMPANIA = :COMPANIA AND CONCEPTOS.CODIGO NOT IN (1,2,3,4,5,10,12,14,17,18,20,21,22,23,33,49,TO_NUMBER(:NUMERO),TO_NUMBER(:NUMERO)-1) ORDER BY CONCEPTOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/conceptossubfacturado/num">
+		<call-query href="getSpconceptosNumConceptossubfacturadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagNombreYCodigoInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/nombreycodigoinicial/pag">
+		<call-query href="getSpconceptosPagNombreYCodigoInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumNombreYCodigoInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/nombreycodigoinicial/num">
+		<call-query href="getSpconceptosNumNombreYCodigoInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagNombreYCodigoFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NVL(NOMBRE,' ') NOMBRE  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND CODIGO &gt;= :CODIGOINICIAL ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/nombreycodigofinal/pag">
+		<call-query href="getSpconceptosPagNombreYCodigoFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumNombreYCodigoFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NVL(NOMBRE,' ') NOMBRE  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND CODIGO &gt;= :CODIGOINICIAL ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/nombreycodigofinal/num">
+		<call-query href="getSpconceptosNumNombreYCodigoFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagTodosPorCodigoYValorFacturadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_CONCEPTOS.CODIGO, SP_CONCEPTOS.NOMBRE, SP_FACTURADO.VALOR_FACTURADO  FROM SP_CONCEPTOS INNER JOIN SP_FACTURADO ON SP_CONCEPTOS.COMPANIA = SP_FACTURADO.COMPANIA AND SP_CONCEPTOS.CODIGO = SP_FACTURADO.CONCEPTO WHERE SP_FACTURADO.COMPANIA = :COMPANIA AND SP_FACTURADO.CICLO = :CICLO AND SP_FACTURADO.CODIGORUTA = :CODIGORUTA AND SP_FACTURADO.ANO = :ANO AND SP_FACTURADO.PERIODO = :PERIODO ORDER BY SP_CONCEPTOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","VALOR_FACTURADO":"$VALOR_FACTURADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporcodigoyvalorfacturado/pag">
+		<call-query href="getSpconceptosPagTodosPorCodigoYValorFacturadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumTodosPorCodigoYValorFacturadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_CONCEPTOS.CODIGO, SP_CONCEPTOS.NOMBRE, SP_FACTURADO.VALOR_FACTURADO  FROM SP_CONCEPTOS INNER JOIN SP_FACTURADO ON SP_CONCEPTOS.COMPANIA = SP_FACTURADO.COMPANIA AND SP_CONCEPTOS.CODIGO = SP_FACTURADO.CONCEPTO WHERE SP_FACTURADO.COMPANIA = :COMPANIA AND SP_FACTURADO.CICLO = :CICLO AND SP_FACTURADO.CODIGORUTA = :CODIGORUTA AND SP_FACTURADO.ANO = :ANO AND SP_FACTURADO.PERIODO = :PERIODO ORDER BY SP_CONCEPTOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/todosporcodigoyvalorfacturado/num">
+		<call-query href="getSpconceptosNumTodosPorCodigoYValorFacturadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosPagCodNombreEntre1A48CodsQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, + NVL( NOMBRE,'SIN NOMBRE') AS NOMBRE  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND CODIGO BETWEEN 1 AND 48 AND CODIGO NOT IN(1, 2, 3, 4, 5, 16, 17, 18, 19, 20, 21, 22, 23, 24, 31, 33)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/codnombreentre1a48cods/pag">
+		<call-query href="getSpconceptosPagCodNombreEntre1A48CodsQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpconceptosNumCodNombreEntre1A48CodsQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, + NVL( NOMBRE,'SIN NOMBRE') AS NOMBRE  FROM SP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND CODIGO BETWEEN 1 AND 48 AND CODIGO NOT IN(1, 2, 3, 4, 5, 16, 17, 18, 19, 20, 21, 22, 23, 24, 31, 33)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spconceptos/codnombreentre1a48cods/num">
+		<call-query href="getSpconceptosNumCodNombreEntre1A48CodsQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+
+</data>

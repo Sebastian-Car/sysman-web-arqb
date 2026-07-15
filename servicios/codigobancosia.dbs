@@ -1,0 +1,38 @@
+﻿<data name="codigobancosia" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getCodigobancosiaPagListacodigobancoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO,BANCO FROM COD_BANCO_SIA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END) LIKE UPPER(CONCAT(CONCAT('%',:BANCO), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","BANCO":"$BANCO"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="codigobancosia/listacodigobanco/pag">
+		<call-query href="getCodigobancosiaPagListacodigobancoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCodigobancosiaNumListacodigobancoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO,BANCO FROM COD_BANCO_SIA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END) LIKE UPPER(CONCAT(CONCAT('%',:BANCO), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="codigobancosia/listacodigobanco/num">
+		<call-query href="getCodigobancosiaNumListacodigobancoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+
+		</call-query>
+	</resource>
+
+</data>

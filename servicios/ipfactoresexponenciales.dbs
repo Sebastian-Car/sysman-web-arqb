@@ -1,0 +1,116 @@
+﻿<data name="ipfactoresexponenciales" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertIpfactoresexponenciales" keyColumns="COMPANIA,ANO,FACTOR" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_FACTOR_EXPONENCIAL (COMPANIA, ANO, FACTOR, INCREMENTO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :FACTOR, :INCREMENTO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_FACTOR":"$FACTOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="FACTOR" sqlType="STRING"/>
+		<param defaultValue="0" name="INCREMENTO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="ipfactoresexponenciales">
+		<call-query href="insertIpfactoresexponenciales">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="FACTOR" query-param="FACTOR"/>
+			<with-param name="INCREMENTO" query-param="INCREMENTO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteIpfactoresexponenciales" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM IP_FACTOR_EXPONENCIAL WHERE IP_FACTOR_EXPONENCIAL.COMPANIA= :KEY_COMPANIA AND IP_FACTOR_EXPONENCIAL.ANO= :KEY_ANO AND IP_FACTOR_EXPONENCIAL.FACTOR= :KEY_FACTOR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_FACTOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="ipfactoresexponenciales">
+		<call-query href="deleteIpfactoresexponenciales">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_FACTOR" query-param="KEY_FACTOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfactoresexponencialesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_FACTOR_EXPONENCIAL.COMPANIA ,IP_FACTOR_EXPONENCIAL.ANO ,IP_FACTOR_EXPONENCIAL.FACTOR ,IP_FACTOR_EXPONENCIAL.INCREMENTO  FROM IP_FACTOR_EXPONENCIAL WHERE IP_FACTOR_EXPONENCIAL.COMPANIA = :COMPANIA ORDER BY IP_FACTOR_EXPONENCIAL.ANO) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN FACTOR IS NULL THEN ' ' ELSE UPPER(FACTOR) END)  LIKE UPPER(:FACTOR || '%')  AND (CASE WHEN INCREMENTO IS NULL THEN ' ' ELSE UPPER(INCREMENTO) END)  LIKE UPPER(:INCREMENTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","FACTOR":"$FACTOR","INCREMENTO":"$INCREMENTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="FACTOR" sqlType="STRING"/>
+		<param name="INCREMENTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ipfactoresexponenciales">
+		<call-query href="getIpfactoresexponencialesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="FACTOR" query-param="FACTOR"/>
+			<with-param name="INCREMENTO" query-param="INCREMENTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpfactoresexponencialesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_FACTOR_EXPONENCIAL.COMPANIA ,IP_FACTOR_EXPONENCIAL.ANO ,IP_FACTOR_EXPONENCIAL.FACTOR ,IP_FACTOR_EXPONENCIAL.INCREMENTO  FROM IP_FACTOR_EXPONENCIAL WHERE IP_FACTOR_EXPONENCIAL.COMPANIA = :COMPANIA ORDER BY IP_FACTOR_EXPONENCIAL.ANO) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN FACTOR IS NULL THEN ' ' ELSE UPPER(FACTOR) END)  LIKE UPPER( '%' || :FACTOR || '%')  AND (CASE WHEN INCREMENTO IS NULL THEN ' ' ELSE UPPER(INCREMENTO) END)  LIKE UPPER( '%' || :INCREMENTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="FACTOR" sqlType="STRING"/>
+		<param name="INCREMENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipfactoresexponenciales/numero">
+		<call-query href="getIpfactoresexponencialesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="FACTOR" query-param="FACTOR"/>
+			<with-param name="INCREMENTO" query-param="INCREMENTO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpfactoresexponenciales" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_FACTOR_EXPONENCIAL SET ANO=:ANO, FACTOR=:FACTOR, INCREMENTO=:INCREMENTO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE IP_FACTOR_EXPONENCIAL.COMPANIA= :KEY_COMPANIA AND IP_FACTOR_EXPONENCIAL.ANO= :KEY_ANO AND IP_FACTOR_EXPONENCIAL.FACTOR= :KEY_FACTOR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ANO" sqlType="STRING"/>
+		<param name="FACTOR" sqlType="STRING"/>
+		<param name="INCREMENTO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_FACTOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipfactoresexponenciales">
+		<call-query href="updateIpfactoresexponenciales">
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="FACTOR" query-param="FACTOR"/>
+			<with-param name="INCREMENTO" query-param="INCREMENTO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_FACTOR" query-param="KEY_FACTOR"/>
+
+		</call-query>
+	</resource>
+
+</data>

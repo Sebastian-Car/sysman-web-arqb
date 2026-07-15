@@ -1,0 +1,112 @@
+﻿<data name="retencionespersonal" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertRetencionespersonal" keyColumns="COMPANIA,ID_RETETIPO,ID_DE_EMPLEADO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO RETENCIONPERSONAL (COMPANIA, ID_RETETIPO, ID_DE_EMPLEADO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ID_RETETIPO, :ID_DE_EMPLEADO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_RETETIPO":"$ID_RETETIPO","KEY_ID_DE_EMPLEADO":"$ID_DE_EMPLEADO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_RETETIPO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="retencionespersonal">
+		<call-query href="insertRetencionespersonal">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_RETETIPO" query-param="ID_RETETIPO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteRetencionespersonal" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM RETENCIONPERSONAL WHERE RETENCIONPERSONAL.COMPANIA= :KEY_COMPANIA AND RETENCIONPERSONAL.ID_RETETIPO= :KEY_ID_RETETIPO AND RETENCIONPERSONAL.ID_DE_EMPLEADO= :KEY_ID_DE_EMPLEADO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_RETETIPO" sqlType="STRING"/>
+		<param name="KEY_ID_DE_EMPLEADO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="retencionespersonal">
+		<call-query href="deleteRetencionespersonal">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_RETETIPO" query-param="KEY_ID_RETETIPO"/>
+			<with-param name="KEY_ID_DE_EMPLEADO" query-param="KEY_ID_DE_EMPLEADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getRetencionespersonalPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  RETENCIONPERSONAL.COMPANIA, RETENCIONPERSONAL.ID_RETETIPO, RETENCIONPERSONAL.ID_DE_EMPLEADO , RETENCIONTIPO.NOMBRE NOMBRE_RETENCION  FROM RETENCIONPERSONAL LEFT JOIN RETENCIONTIPO ON RETENCIONPERSONAL.COMPANIA = RETENCIONTIPO.COMPANIA AND RETENCIONPERSONAL.ID_RETETIPO = RETENCIONTIPO.ID_RETETIPO WHERE RETENCIONPERSONAL.COMPANIA = :COMPANIA AND RETENCIONPERSONAL.ID_DE_EMPLEADO = :ID_DE_EMPLEADO) WHERE (CASE WHEN ID_RETETIPO IS NULL THEN ' ' ELSE UPPER(ID_RETETIPO) END)  LIKE UPPER(:ID_RETETIPO || '%')  AND (CASE WHEN NOMBRE_RETENCION IS NULL THEN ' ' ELSE UPPER(NOMBRE_RETENCION) END)  LIKE UPPER( '%' || :NOMBRE_RETENCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_RETETIPO":"$ID_RETETIPO","ID_DE_EMPLEADO":"$ID_DE_EMPLEADO(type:integer)","NOMBRE_RETENCION":"$NOMBRE_RETENCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="ID_RETETIPO" sqlType="STRING"/>
+		<param name="NOMBRE_RETENCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="retencionespersonal">
+		<call-query href="getRetencionespersonalPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="ID_RETETIPO" query-param="ID_RETETIPO"/>
+			<with-param name="NOMBRE_RETENCION" query-param="NOMBRE_RETENCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getRetencionespersonalNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  RETENCIONPERSONAL.COMPANIA, RETENCIONPERSONAL.ID_RETETIPO, RETENCIONPERSONAL.ID_DE_EMPLEADO , RETENCIONTIPO.NOMBRE NOMBRE_RETENCION  FROM RETENCIONPERSONAL LEFT JOIN RETENCIONTIPO ON RETENCIONPERSONAL.COMPANIA = RETENCIONTIPO.COMPANIA AND RETENCIONPERSONAL.ID_RETETIPO = RETENCIONTIPO.ID_RETETIPO WHERE RETENCIONPERSONAL.COMPANIA = :COMPANIA AND RETENCIONPERSONAL.ID_DE_EMPLEADO = :ID_DE_EMPLEADO) WHERE (CASE WHEN ID_RETETIPO IS NULL THEN ' ' ELSE UPPER(ID_RETETIPO) END)  LIKE UPPER(:ID_RETETIPO || '%')  AND (CASE WHEN NOMBRE_RETENCION IS NULL THEN ' ' ELSE UPPER(NOMBRE_RETENCION) END)  LIKE UPPER( '%' || :NOMBRE_RETENCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="ID_RETETIPO" sqlType="STRING"/>
+		<param name="NOMBRE_RETENCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="retencionespersonal/numero">
+		<call-query href="getRetencionespersonalNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="ID_RETETIPO" query-param="ID_RETETIPO"/>
+			<with-param name="NOMBRE_RETENCION" query-param="NOMBRE_RETENCION"/>
+
+		</call-query>
+	</resource>
+	<query id="updateRetencionespersonal" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE RETENCIONPERSONAL SET ID_RETETIPO=:ID_RETETIPO, ID_DE_EMPLEADO=:ID_DE_EMPLEADO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE RETENCIONPERSONAL.COMPANIA= :KEY_COMPANIA AND RETENCIONPERSONAL.ID_RETETIPO= :KEY_ID_RETETIPO AND RETENCIONPERSONAL.ID_DE_EMPLEADO= :KEY_ID_DE_EMPLEADO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ID_RETETIPO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_RETETIPO" sqlType="STRING"/>
+		<param name="KEY_ID_DE_EMPLEADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="retencionespersonal">
+		<call-query href="updateRetencionespersonal">
+			<with-param name="ID_RETETIPO" query-param="ID_RETETIPO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_RETETIPO" query-param="KEY_ID_RETETIPO"/>
+			<with-param name="KEY_ID_DE_EMPLEADO" query-param="KEY_ID_DE_EMPLEADO"/>
+
+		</call-query>
+	</resource>
+
+</data>

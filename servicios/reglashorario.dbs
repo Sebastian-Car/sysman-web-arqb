@@ -1,0 +1,140 @@
+﻿<data name="reglashorario" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertReglashorario" keyColumns="COMPANIA,REGLA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO REGLAHORARIO (COMPANIA, REGLA, ELEMENTO_DEVOLUTIVO, SERIE_DEVOLUTIVO, DIA, FECHA_INICIO, FECHA_FINAL, HORA_INICIO, HORA_FINAL, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :REGLA, :ELEMENTO_DEVOLUTIVO, :SERIE_DEVOLUTIVO, :DIA, TO_DATE(:FECHA_INICIO,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHA_FINAL,'DD/MM/YYYY HH24:MI:SS'), :HORA_INICIO, :HORA_FINAL, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_REGLA":"$REGLA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="REGLA" sqlType="STRING"/>
+		<param name="ELEMENTO_DEVOLUTIVO" sqlType="STRING"/>
+		<param name="SERIE_DEVOLUTIVO" sqlType="STRING"/>
+		<param name="DIA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_INICIO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_FINAL" sqlType="STRING"/>
+		<param defaultValue="" name="HORA_INICIO" sqlType="STRING"/>
+		<param defaultValue="" name="HORA_FINAL" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="reglashorario">
+		<call-query href="insertReglashorario">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="REGLA" query-param="REGLA"/>
+			<with-param name="ELEMENTO_DEVOLUTIVO" query-param="ELEMENTO_DEVOLUTIVO"/>
+			<with-param name="SERIE_DEVOLUTIVO" query-param="SERIE_DEVOLUTIVO"/>
+			<with-param name="DIA" query-param="DIA"/>
+			<with-param name="FECHA_INICIO" query-param="FECHA_INICIO"/>
+			<with-param name="FECHA_FINAL" query-param="FECHA_FINAL"/>
+			<with-param name="HORA_INICIO" query-param="HORA_INICIO"/>
+			<with-param name="HORA_FINAL" query-param="HORA_FINAL"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteReglashorario" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM REGLAHORARIO WHERE REGLAHORARIO.COMPANIA= :KEY_COMPANIA AND REGLAHORARIO.REGLA= :KEY_REGLA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_REGLA" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="reglashorario">
+		<call-query href="deleteReglashorario">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_REGLA" query-param="KEY_REGLA"/>
+
+		</call-query>
+	</resource>
+	<query id="getReglashorarioPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, REGLA, ELEMENTO_DEVOLUTIVO, SERIE_DEVOLUTIVO, DIA, CASE WHEN DIA = 0 THEN 'Todos los Días' WHEN DIA = 1 THEN 'Lunes' WHEN DIA = 2 THEN 'Martes' WHEN DIA = 3 THEN 'Miercoles' WHEN DIA = 4 THEN 'Jueves' WHEN DIA = 5 THEN 'Viernes' WHEN DIA = 6 THEN 'Sabado' WHEN DIA = 7 THEN 'Domingo' WHEN DIA = 8 THEN 'Festivos' WHEN DIA = 9 THEN 'Día Específico(Prima)' END NOMBRE_DIA,(TO_CHAR(FECHA_INICIO,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIO,(TO_CHAR(FECHA_FINAL,'DD/MM/YYYY HH24:MI:SS')) FECHA_FINAL, TO_CHAR(HORA_INICIO,'HH24:MI') HORA_INICIO, TO_CHAR(HORA_FINAL,'HH24:MI') HORA_FINAL  FROM REGLAHORARIO WHERE REGLAHORARIO.COMPANIA = :COMPANIA AND REGLAHORARIO.ELEMENTO_DEVOLUTIVO = :ELEMENTODEVOLUTIVO AND REGLAHORARIO.SERIE_DEVOLUTIVO = :SERIEDEVOLUTIVO) WHERE (CASE WHEN NOMBRE_DIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_DIA) END)  LIKE UPPER( '%' || :NOMBRE_DIA || '%')  AND (CASE WHEN FECHA_INICIO IS NULL THEN ' ' ELSE UPPER(FECHA_INICIO) END)  LIKE UPPER( '%' || :FECHA_INICIO || '%')  AND (CASE WHEN FECHA_FINAL IS NULL THEN ' ' ELSE UPPER(FECHA_FINAL) END)  LIKE UPPER( '%' || :FECHA_FINAL || '%')  AND (CASE WHEN HORA_INICIO IS NULL THEN ' ' ELSE UPPER(HORA_INICIO) END)  LIKE UPPER( '%' || :HORA_INICIO || '%')  AND (CASE WHEN HORA_FINAL IS NULL THEN ' ' ELSE UPPER(HORA_FINAL) END)  LIKE UPPER( '%' || :HORA_FINAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","REGLA":"$REGLA(type:integer)","ELEMENTO_DEVOLUTIVO":"$ELEMENTO_DEVOLUTIVO","SERIE_DEVOLUTIVO":"$SERIE_DEVOLUTIVO","DIA":"$DIA(type:integer)","NOMBRE_DIA":"$NOMBRE_DIA","FECHA_INICIO":"$FECHA_INICIO","FECHA_FINAL":"$FECHA_FINAL","HORA_INICIO":"$HORA_INICIO","HORA_FINAL":"$HORA_FINAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTODEVOLUTIVO" sqlType="STRING"/>
+		<param name="SERIEDEVOLUTIVO" sqlType="STRING"/>
+		<param name="NOMBRE_DIA" sqlType="STRING"/>
+		<param name="FECHA_INICIO" sqlType="STRING"/>
+		<param name="FECHA_FINAL" sqlType="STRING"/>
+		<param name="HORA_INICIO" sqlType="STRING"/>
+		<param name="HORA_FINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="reglashorario">
+		<call-query href="getReglashorarioPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTODEVOLUTIVO" query-param="ELEMENTODEVOLUTIVO"/>
+			<with-param name="SERIEDEVOLUTIVO" query-param="SERIEDEVOLUTIVO"/>
+			<with-param name="NOMBRE_DIA" query-param="NOMBRE_DIA"/>
+			<with-param name="FECHA_INICIO" query-param="FECHA_INICIO"/>
+			<with-param name="FECHA_FINAL" query-param="FECHA_FINAL"/>
+			<with-param name="HORA_INICIO" query-param="HORA_INICIO"/>
+			<with-param name="HORA_FINAL" query-param="HORA_FINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getReglashorarioNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, REGLA, ELEMENTO_DEVOLUTIVO, SERIE_DEVOLUTIVO, DIA, CASE WHEN DIA = 0 THEN 'Todos los Días' WHEN DIA = 1 THEN 'Lunes' WHEN DIA = 2 THEN 'Martes' WHEN DIA = 3 THEN 'Miercoles' WHEN DIA = 4 THEN 'Jueves' WHEN DIA = 5 THEN 'Viernes' WHEN DIA = 6 THEN 'Sabado' WHEN DIA = 7 THEN 'Domingo' WHEN DIA = 8 THEN 'Festivos' WHEN DIA = 9 THEN 'Día Específico(Prima)' END NOMBRE_DIA,(TO_CHAR(FECHA_INICIO,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIO,(TO_CHAR(FECHA_FINAL,'DD/MM/YYYY HH24:MI:SS')) FECHA_FINAL, TO_CHAR(HORA_INICIO,'HH24:MI') HORA_INICIO, TO_CHAR(HORA_FINAL,'HH24:MI') HORA_FINAL  FROM REGLAHORARIO WHERE REGLAHORARIO.COMPANIA = :COMPANIA AND REGLAHORARIO.ELEMENTO_DEVOLUTIVO = :ELEMENTODEVOLUTIVO AND REGLAHORARIO.SERIE_DEVOLUTIVO = :SERIEDEVOLUTIVO) WHERE (CASE WHEN NOMBRE_DIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_DIA) END)  LIKE UPPER( '%' || :NOMBRE_DIA || '%')  AND (CASE WHEN FECHA_INICIO IS NULL THEN ' ' ELSE UPPER(FECHA_INICIO) END)  LIKE UPPER( '%' || :FECHA_INICIO || '%')  AND (CASE WHEN FECHA_FINAL IS NULL THEN ' ' ELSE UPPER(FECHA_FINAL) END)  LIKE UPPER( '%' || :FECHA_FINAL || '%')  AND (CASE WHEN HORA_INICIO IS NULL THEN ' ' ELSE UPPER(HORA_INICIO) END)  LIKE UPPER( '%' || :HORA_INICIO || '%')  AND (CASE WHEN HORA_FINAL IS NULL THEN ' ' ELSE UPPER(HORA_FINAL) END)  LIKE UPPER( '%' || :HORA_FINAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTODEVOLUTIVO" sqlType="STRING"/>
+		<param name="SERIEDEVOLUTIVO" sqlType="STRING"/>
+		<param name="NOMBRE_DIA" sqlType="STRING"/>
+		<param name="FECHA_INICIO" sqlType="STRING"/>
+		<param name="FECHA_FINAL" sqlType="STRING"/>
+		<param name="HORA_INICIO" sqlType="STRING"/>
+		<param name="HORA_FINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="reglashorario/numero">
+		<call-query href="getReglashorarioNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTODEVOLUTIVO" query-param="ELEMENTODEVOLUTIVO"/>
+			<with-param name="SERIEDEVOLUTIVO" query-param="SERIEDEVOLUTIVO"/>
+			<with-param name="NOMBRE_DIA" query-param="NOMBRE_DIA"/>
+			<with-param name="FECHA_INICIO" query-param="FECHA_INICIO"/>
+			<with-param name="FECHA_FINAL" query-param="FECHA_FINAL"/>
+			<with-param name="HORA_INICIO" query-param="HORA_INICIO"/>
+			<with-param name="HORA_FINAL" query-param="HORA_FINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="updateReglashorario" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE REGLAHORARIO SET FECHA_INICIO=TO_DATE(:FECHA_INICIO,'DD/MM/YYYY HH24:MI:SS'), FECHA_FINAL=TO_DATE(:FECHA_FINAL,'DD/MM/YYYY HH24:MI:SS'), HORA_INICIO=:HORA_INICIO, HORA_FINAL=:HORA_FINAL, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE REGLAHORARIO.COMPANIA= :KEY_COMPANIA AND REGLAHORARIO.REGLA= :KEY_REGLA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="FECHA_INICIO" sqlType="STRING"/>
+		<param name="FECHA_FINAL" sqlType="STRING"/>
+		<param name="HORA_INICIO" sqlType="STRING"/>
+		<param name="HORA_FINAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_REGLA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="reglashorario">
+		<call-query href="updateReglashorario">
+			<with-param name="FECHA_INICIO" query-param="FECHA_INICIO"/>
+			<with-param name="FECHA_FINAL" query-param="FECHA_FINAL"/>
+			<with-param name="HORA_INICIO" query-param="HORA_INICIO"/>
+			<with-param name="HORA_FINAL" query-param="HORA_FINAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_REGLA" query-param="KEY_REGLA"/>
+
+		</call-query>
+	</resource>
+
+</data>

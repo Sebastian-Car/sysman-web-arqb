@@ -1,0 +1,718 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+                if("#{claseproblemasControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TT_FR1026}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{claseproblemasControlador.cargarLista}" />
+		<section class="radius">
+			<h:form id="FR1026">
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="lista" widgetVar="lista"
+					visible="#{claseproblemasControlador.accion==null}">
+					<p:confirmDialog global="true" showEffect="fade" id="confFR1026"
+						widgetVar="confFR1026"
+						rendered="#{claseproblemasControlador.permisos[1]}">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:dataTable id="TBFR1026" widgetVar="TBFR1026" var="reg"
+						value="#{claseproblemasControlador.listaInicial}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" paginator="true" lazy="true">
+						<f:facet name="{Exporters}"
+							rendered="#{claseproblemasControlador.permisos[4] }">
+							<h:commandLink
+								rendered="#{claseproblemasControlador.permisos[4] }"
+								title="#{idm.TI_VER_EXCEL}">
+								<p:graphicImage name="/images/general/excel.png" width="24" />
+								<p:dataExporter type="xls" target="TBFR1026" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+							<h:commandLink
+								rendered="#{claseproblemasControlador.permisos[4] }"
+								title="#{idm.TI_VER_PDF}">
+								<p:graphicImage name="/images/general/pdf.png" width="24" />
+								<p:dataExporter type="pdf" target="TBFR1026" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+						</f:facet>
+						<f:facet name="header">
+							<div style="position: relative; height: 50px">
+								<h:panelGroup class="acme"
+									rendered="#{claseproblemasControlador.permisos[0] }">
+									<p:commandLink
+										action="#{claseproblemasControlador.cargarRegistroNuevo}"
+										update=":FR1026_nuevo:nuevoPanel"
+										rendered="#{claseproblemasControlador.permisos[0]}"
+										onclick="try { PF('blockLista').show(); } catch (e) { }"
+										oncomplete="try{   PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+										title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+										id="btNuevo">
+										<center>
+											<p:graphicImage name="/images/menus/32/add.png" />
+											<div>#{idm.TI_NUEVO}</div>
+										</center>
+									</p:commandLink>
+								</h:panelGroup>
+								<div class="acme">
+									<h:outputLink value="#{request.contextPath}/menu.sysman"
+										title="#{idm.TI_VOLVER}" style="padding-top: 10px;">
+										<center>
+											<p:graphicImage name="/images/menus/32/close.png" />
+											<div>#{idm.TI_CERRAR}</div>
+										</center>
+									</h:outputLink>
+								</div>
+							</div>
+                            #{idm.TT_FR1026}
+                        </f:facet>
+						<p:column headerText="#{idm.TG_CLASE4}"
+							filterBy="#{reg.campos['CLASEPROBLEMA']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['CLASEPROBLEMA']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_NOMBRE3}"
+							filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+							style="text-align:center; " filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_SERVICIO}"
+							filterBy="#{reg.campos['SERVICIO_EQUIVALENTE']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['SERVICIO_EQUIVALENTE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column width="150" headerText="Acciones"
+							style="text-align: center" exportable="false">
+							<p:commandButton icon="ui-icon-search"
+								title="#{idm.TI_VER_REGISTRO}"
+								action="#{claseproblemasControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+								update=":FR1026_nuevo"
+								onclick="try{ PF('blockLista').show();     }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{claseproblemasControlador.permisos[3]}"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-document-b"
+								title="#{idm.TI_EDITAR_REGISTRO}"
+								action="#{claseproblemasControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+								update=":FR1026_nuevo"
+								onclick="try{ PF('blockLista').show();     }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{claseproblemasControlador.permisos[2] }"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-trash"
+								title="#{idm.TI_ELIMINAR_REGISTRO}"
+								onclick="PF('blockListaGuardar').show()"
+								action="#{claseproblemasControlador.eliminarReg(reg)}"
+								update=":FR1026:TBFR1026,:FR1026:alert"
+								rendered="#{claseproblemasControlador.permisos[1] }"
+								oncomplete=" PF('blockListaGuardar').hide();">
+								<p:confirm header="#{sessionBean.tituloMensajes}"
+									message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR1026">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+			<h:form id="FR1026_nuevo" style="margin-top: -20px;">
+				<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA"
+					my="left bottom" at="left bottom" for="BTBUSQUEDA"
+					hideEffect="fade"
+					rendered="#{claseproblemasControlador.accion!='i'}"
+					style="width: 500px">
+					<p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA" var="reg"
+						value="#{claseproblemasControlador.listaInicialF}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" selectionMode="single"
+						rowKey="#{reg.llave}" paginator="true" lazy="true">
+						<p:ajax event="rowSelect"
+							listener="#{claseproblemasControlador.seleccionarFilaBusqueda}"
+							onstart="PF('blockNuevo').show()"
+							oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();    "
+							update="@form" />
+						<p:column headerText="#{idm.TG_CLASE4}"
+							filterBy="#{reg.campos['CLASEPROBLEMA']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['CLASEPROBLEMA']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_NOMBRE3}"
+							filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+							style="text-align:center; " filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_SERVICIO}"
+							filterBy="#{reg.campos['SERVICIO_EQUIVALENTE']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['SERVICIO_EQUIVALENTE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+					</p:dataTable>
+				</p:overlayPanel>
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="nuevoPanel"
+					visible="#{claseproblemasControlador.accion!=null}"
+					widgetVar="nuevoPanel">
+					<div
+						style="position: relative; height: 50px; padding-bottom: 80px;">
+						<div class="acme"
+							style="display:#{claseproblemasControlador.accion=='v'?'none':'block'}">
+							<p:commandLink
+								action="#{claseproblemasControlador.agregarRegistroNuevo(false)}"
+								rendered="#{claseproblemasControlador.accion!='v'}"
+								update=":FR1026_nuevo,#{!claseproblemasControlador.permisos[2]?':FR1026':'' }"
+								onclick="if (!validarVacios(['CB3396','CP30569'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+								title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+								oncomplete="asignarEventoContGrande(); validarCargaGrandes(); ">
+								<center>
+									<p:graphicImage name="/images/menus/32/save.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{claseproblemasControlador.accion=='v' or !claseproblemasControlador.permisos[0]?'none':'block'}">
+							<p:commandLink action="#{claseproblemasControlador.guardarNuevo}"
+								rendered="#{claseproblemasControlador.accion!='v' and claseproblemasControlador.permisos[0]}"
+								update=":FR1026_nuevo"
+								onclick="if (!validarVacios(['CB3396','CP30569'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{claseproblemasControlador.accion!='i'  and claseproblemasControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+								oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+								title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}"
+								style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/savenew.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{claseproblemasControlador.accion=='i' or !claseproblemasControlador.permisos[0]?'none':'block'}">
+							<p:commandLink id="BTBUSQUEDA"
+								rendered="#{claseproblemasControlador.accion!='i' and claseproblemasControlador.permisos[0]}"
+								title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/search.png" />
+									<div style="height: 30px">#{idm.TI_BUSCAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme">
+							<p:commandLink update=":FR1026:TBFR1026"
+								onclick="try {
+		           PF('TBFR1026').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+								title="#{idm.TI_ATRAS}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/back.png" />
+									<div style="height: 30px">#{idm.TI_VOLVER}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<p:panel
+							rendered="#{claseproblemasControlador.accion!='i'  and claseproblemasControlador.rid==null }"
+							styleClass="acme"
+							style="min-width: 350px; width:30%; padding: 10px;">
+							<center style="margin: 2px;">
+								<p:commandButton icon="ui-icon-seek-first"
+									action="#{claseproblemasControlador.irPrimero()}"
+									title="#{idm.TI_PRIMER_REGISTRO}" update=":FR1026_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-prev"
+									action="#{claseproblemasControlador.irAnterior()}"
+									title="#{idm.TI_REGISTRO_ANTERIOR}" update=":FR1026_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:outputLabel
+									value="#{idm.TI_REGISTRO} #{claseproblemasControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{claseproblemasControlador.listaInicial.rowCount} " />
+								<p:commandButton icon="ui-icon-seek-next"
+									title="#{idm.TI_REGISTRO_SIGUIENTE}"
+									action="#{claseproblemasControlador.irSiguiente()}"
+									update=":FR1026_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-end"
+									title="#{idm.TI_ULTIMO_REGISTRO}"
+									action="#{claseproblemasControlador.irUltimo()}"
+									update=":FR1026_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+							</center>
+						</p:panel>
+						<p:panel styleClass="acme" style="width:21%;">
+							<h:panelGrid columns="3"
+								style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+								<h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}" />
+								<p:inputText id="CPCREADO" readonly="true" widgetVar="CPCREADO"
+									value="#{claseproblemasControlador.registro.campos['CREATED_BY']}"
+									placeholder="#{idm.TI_CREADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPCREADOF" widgetVar="CPCREADOF"
+									value="#{claseproblemasControlador.registro.campos['DATE_CREATED']}"
+									disabled="true" />
+								<h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+								<p:inputText id="CPMODIFICADO" readonly="true"
+									widgetVar="CPMODIFICADO"
+									value="#{claseproblemasControlador.registro.campos['MODIFIED_BY']}"
+									placeholder="#{idm.TI_MODIFICADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPMODIFICADOF" widgetVar="CPMODIFICADOF"
+									value="#{claseproblemasControlador.registro.campos['DATE_MODIFIED']}"
+									disabled="true" />
+							</h:panelGrid>
+						</p:panel>
+					</div>
+					<div id="PL1976" class="
+"
+						style="position: relative; height: 34px;">
+						<h:outputLabel id="LB24598" value="#{idm.TT_LB24598}"
+							style="position: absolute; width:669px; height: 24px; left: 9px;   top: 5px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<div id="PL1977" class="
+"
+						style="position: relative; height: 700px;">
+						<p:inputText id="CP30569" widgetVar="CP30569"
+							styleClass="inputTab"
+							value="#{claseproblemasControlador.registro.campos['CLASEPROBLEMA']}"
+							readonly="#{claseproblemasControlador.accion=='v'?true:false}"
+							tabindex="1" maxlength="3"
+							style="position: absolute; width:87px; height: 20px; text-decoration:none; left: 92px;   top: 5px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:selectOneMenu filter="true" editable="false" effect="fade"
+							id="CB3396" widgetVar="CB3396"
+							value="#{claseproblemasControlador.registro.campos['SERVICIO_EQUIVALENTE']}"
+							disabled="#{claseproblemasControlador.accion=='v'?true:false}"
+							tabindex="3"
+							style="position: absolute; width:144px; height: 20px; left: 542px;   top: 34px; text-align: left; font-weight: normal; font-style: normal; font-family: MS Sans Serif; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+							<f:selectItem />
+							<f:selectItems
+								value="#{claseproblemasControlador.listaSERVICIOEQUIVALENTE}"
+								var="regc" itemLabel="#{regc.campos['EXPR2']}"
+								itemValue="#{regc.campos['EXPR1']}" />
+						</p:selectOneMenu>
+						<h:outputLabel id="LB24599" value="#{idm.TG_NOMBRE4}"
+							style="position: absolute; width:78px; height: 20px; left: 10px;   top: 34px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB24601" value="#{idm.TT_LB24601}"
+							style="position: absolute; width:67px; height: 20px; left: 471px;   top: 33px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<p:inputText id="CP30559" widgetVar="CP30559"
+							styleClass="inputTab"
+							value="#{claseproblemasControlador.registro.campos['NOMBRE']}"
+							placeholder="#{idm.AC_CP30559}"
+							readonly="#{claseproblemasControlador.accion=='v'?true:false}"
+							tabindex="2"
+							style="position: absolute; width:365px; height: 22px; text-decoration:none; left: 92px;   top: 34px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<h:panelGroup id="SF119"
+							style="position: absolute; width:1000px; height: auto; left: 10px;   top: 67px; ">
+							<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}"
+								id="dlg119" widgetVar="dlg119" resizable="false" modal="true"
+								rendered="#{claseproblemasControlador.permisos[0]}"
+								onHide="restaurarCampos(['CP30560'])">
+								<h:panelGrid columns="2" cellpadding="2">
+									<h:outputLabel value="#{idm.TG_CODIGO7}:" id="LCP30560"
+										style="display:block;" />
+									<p:inputText id="CP30560" widgetVar="CP30560"
+										styleClass="inputTab"
+										value="#{claseproblemasControlador.registroSub.campos['CODIGO']}"
+										label="LCP30560"
+										style="display:block; width: 95%; float: left;" maxlength="3">
+									</p:inputText>
+									<h:outputLabel value="#{idm.TG_NOMBRE3}:" id="LCP30561"
+										style="display:block;" />
+									<p:inputText id="CP30561" widgetVar="CP30561"
+										styleClass="inputTab"
+										value="#{claseproblemasControlador.registroSub.campos['NOMBRE']}"
+										label="LCP30561"
+										style="display:block; width: 95%; float: left;" maxlength="45">
+									</p:inputText>
+									<h:outputLabel value="#{idm.TG_DESCRIPCION7}:" id="LCP30562"
+										style="display:block;" />
+									<p:inputText id="CP30562" widgetVar="CP30562"
+										styleClass="inputTab"
+										value="#{claseproblemasControlador.registroSub.campos['SOLUCION']}"
+										label="LCP30562"
+										style="display:block; width: 95%; float: left;" maxlength="50">
+									</p:inputText>
+									<h:outputLabel value="#{idm.TC_CK883}:" id="LCK883"
+										style="display:block" />
+									<p:selectBooleanCheckbox id="CK883" widgetVar="CK883"
+										value="#{claseproblemasControlador.registroSub.campos['INDFAVOREMPRESA']}"
+										label="LCK883" style="min-width: 80px; display:block">
+									</p:selectBooleanCheckbox>
+									<h:outputLabel value="#{idm.TC_CP30563}:" id="LCP30563"
+										rendered="#{claseproblemasControlador.cargarSuiEquivReclamaciones}"
+										style="display:block;" />
+									<p:inputText id="CP30563" widgetVar="CP30563"
+										styleClass="inputTab"
+										rendered="#{claseproblemasControlador.cargarSuiEquivReclamaciones}"
+										value="#{claseproblemasControlador.registroSub.campos['COD_EQUIVALENTE_SUI']}"
+										label="LCP30563"
+										style="display:block; width: 95%; float: left;" maxlength="20">
+										<pe:keyFilter regEx="/[\d]/" />
+									</p:inputText>
+									<h:outputLabel value="#{idm.TC_CP30564}:" id="LCP30564"
+										rendered="#{claseproblemasControlador.cargarSuiEquivReclamaciones}"
+										style="display:block;" />
+									<p:inputText id="CP30564" widgetVar="CP30564"
+										styleClass="inputTab"
+										rendered="#{claseproblemasControlador.cargarSuiEquivReclamaciones}"
+										value="#{claseproblemasControlador.registroSub.campos['COD_EQUIVALENTE_SUIPETICIONES']}"
+										label="LCP30564"
+										style="display:block; width: 95%; float: left;" maxlength="22">
+									</p:inputText>
+									<h:outputLabel value="#{idm.TC_CP30577}:" id="LCP30577"
+										rendered="#{claseproblemasControlador.cargarCodEquivSuiPyre}"
+										style="display:true;" />
+									<p:inputText id="CP30577" widgetVar="CP30577"
+										styleClass="inputTab"
+										rendered="#{claseproblemasControlador.cargarCodEquivSuiPyre}"
+										value="#{claseproblemasControlador.registroSub.campos['COD_EQUIVALENTE_SUI_PYRE']}"
+										label="LCP30577"
+										style="display:true; width: 95%; float: left;" maxlength="20">
+										<pe:keyFilter regEx="/[\d]/" />
+									</p:inputText>
+									<h:outputLabel value="#{idm.TC_CK884}:" id="LCK884"
+										style="display:block"
+										rendered="#{claseproblemasControlador.cargaDeshabitado}" />
+									<p:selectBooleanCheckbox id="CK884" widgetVar="CK884"
+										value="#{claseproblemasControlador.registroSub.campos['ACTIVA_DESHABITADO']}"
+										rendered="#{claseproblemasControlador.cargaDeshabitado}"
+										label="LCK884" style="min-width: 80px; display:block">
+										<p:ajax event="change"
+											listener="#{claseproblemasControlador.cambiarACTIVADESHABITADO}"
+											update="alert,@this" process="@this,CK885" />
+									</p:selectBooleanCheckbox>
+									<h:outputLabel value="#{idm.TC_CK885}:" id="LCK885"
+										style="display:block"
+										rendered="#{claseproblemasControlador.cargaHabitado}" />
+									<p:selectBooleanCheckbox id="CK885" widgetVar="CK885"
+										value="#{claseproblemasControlador.registroSub.campos['ACTIVA_HABITADO']}"
+										rendered="#{claseproblemasControlador.cargaHabitado}"
+										label="LCK885" style="min-width: 80px; display:block">
+										<p:ajax event="change"
+											listener="#{claseproblemasControlador.cambiarACTIVAHABITADO}"
+											update="alert,@this" process="@this,CK884" />
+									</p:selectBooleanCheckbox>
+									<f:facet name="footer">
+										<center>
+											<p:commandButton value="#{idm.TI_GUARDAR}"
+												style="padding:10px;"
+												update=":FR1026_nuevo:alert,tablePL1978,dlg119,"
+												actionListener="#{claseproblemasControlador.agregarRegistroSubSubproblema}"
+												oncomplete="PF('dlg119').hide();PF('blockNuevoGuardar').hide();"
+												onclick="    if (!validarVaciosModal(['CP30560'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockNuevoGuardar').show();" />
+											<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+												href="#" onclick="PF('dlg119').hide();" />
+										</center>
+									</f:facet>
+								</h:panelGrid>
+							</p:dialog>
+							<div id="PL1978" class="
+"
+								style="position: relative; height: 500px;">
+								<p:remoteCommand name="refreshTabPL1978" update="tablePL1978" />
+								<p:dataTable id="tablePL1978" var="reg"
+									value="#{claseproblemasControlador.listaSubproblema}"
+									emptyMessage="#{idm.TI_EMPTY_MESSAGE}" scrollable="true"
+									scrollHeight="500" scrollWidth="1067" rowIndexVar="rowNun"
+									editable="true" widgetVar="tablePL1978" tabindex="4">
+									<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+									<p:ajax event="rowEdit"
+										update=":FR1026_nuevo:alert,tablePL1978,"
+										onstart="PF('blockNuevoGuardar').show()"
+										oncomplete="refreshTabPL1978(); PF('blockNuevoGuardar').hide();  mostarEditor();"
+										listener="#{claseproblemasControlador.editarRegSubSubproblema}" />
+									<p:ajax event="rowEditCancel" update="tablePL1978
+"
+										listener="#{claseproblemasControlador.cancelarEdicionSubproblema}"
+										oncomplete="refreshTabPL1978(); mostarEditor();" />
+									<f:facet name="header">
+										<div style="position: relative; height: 50px">
+											<h:panelGroup class="acme" style="width: 50px;"
+												rendered="#{claseproblemasControlador.accion=='m' 
+}">
+												<h:outputLink value="javascript:void(0)"
+													onclick=" PF('dlg119').show();"
+													title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+													tabindex="4">
+													<center>
+														<p:graphicImage name="/images/menus/32/adds.png" />
+														<div style="font-size: 12px">#{idm.TI_NUEVO}</div>
+													</center>
+												</h:outputLink>
+											</h:panelGroup>
+										</div>    
+			#{idm.TT_SF119}
+                                            </f:facet>
+									<p:column headerText="#{idm.TG_CODIGO7}" width="73"
+										rendered="true" style="
+" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['CODIGO']}" />
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="CP30560" styleClass="inputTab"
+													value="#{reg.campos['CODIGO']}" style="width:100%"
+													maxlength="3">
+												</p:inputText>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TG_NOMBRE3}" width="184"
+										rendered="true" style="
+" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['NOMBRE']}" />
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="CP30561" styleClass="inputTab"
+													value="#{reg.campos['NOMBRE']}" style="width:100%"
+													maxlength="45">
+												</p:inputText>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TG_DESCRIPCION7}" width="280"
+										rendered="true" style="
+" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['SOLUCION']}" />
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="CP30562" styleClass="inputTab"
+													value="#{reg.campos['SOLUCION']}" style="width:100%"
+													maxlength="50">
+												</p:inputText>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TC_CK883}" width="85"
+										rendered="true" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText
+													value="#{reg.campos['INDFAVOREMPRESA']=='false'? 'No':'Si'}" />
+											</f:facet>
+											<f:facet name="input">
+												<center>
+													<h:selectBooleanCheckbox id="CK883"
+														value="#{reg.campos['INDFAVOREMPRESA']}">
+													</h:selectBooleanCheckbox>
+												</center>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TC_CP30563}" width="180"
+										rendered="#{claseproblemasControlador.cargarSuiEquivReclamaciones}"
+										style="
+" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['COD_EQUIVALENTE_SUI']}" />
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="CP30563" styleClass="inputTab"
+													value="#{reg.campos['COD_EQUIVALENTE_SUI']}"
+													style="width:100%" maxlength="20">
+													<pe:keyFilter regEx="/[\d]/" />
+												</p:inputText>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TC_CP30564}" width="160"
+										rendered="#{claseproblemasControlador.cargarSuiEquivReclamaciones}"
+										style="
+" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText
+													value="#{reg.campos['COD_EQUIVALENTE_SUIPETICIONES']}" />
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="CP30564" styleClass="inputTab"
+													value="#{reg.campos['COD_EQUIVALENTE_SUIPETICIONES']}"
+													style="width:100%" maxlength="22">
+												</p:inputText>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TC_CP30577}" width="160"
+										rendered="#{claseproblemasControlador.cargarCodEquivSuiPyre}"
+										style=";" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText
+													value="#{reg.campos['COD_EQUIVALENTE_SUI_PYRE']}" />
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="CP30577" styleClass="inputTab"
+													value="#{reg.campos['COD_EQUIVALENTE_SUI_PYRE']}"
+													style="width:100%" maxlength="20">
+													<pe:keyFilter regEx="/[\d]/" />
+												</p:inputText>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TC_CK884}" width="105"
+										rendered="#{claseproblemasControlador.cargaDeshabitado}"
+										styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText
+													value="#{reg.campos['ACTIVA_DESHABITADO']=='false'? 'No':'Si'}" />
+											</f:facet>
+											<f:facet name="input">
+												<center>
+													<h:selectBooleanCheckbox id="CK884"
+														value="#{reg.campos['ACTIVA_DESHABITADO']}">
+													</h:selectBooleanCheckbox>
+												</center>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TC_CK885}" width="88"
+										rendered="#{claseproblemasControlador.cargaHabitado}"
+										styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText
+													value="#{reg.campos['ACTIVA_HABITADO']=='false'? 'No':'Si'}" />
+											</f:facet>
+											<f:facet name="input">
+												<center>
+													<h:selectBooleanCheckbox id="CK885"
+														value="#{reg.campos['ACTIVA_HABITADO']}">
+													</h:selectBooleanCheckbox>
+												</center>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column width="30"
+										rendered="#{claseproblemasControlador.accion=='m'}">
+										<p:rowEditor />
+									</p:column>
+									<p:column width="30"
+										rendered="#{claseproblemasControlador.accion=='m'}">
+										<p:commandButton icon="ui-icon-trash"
+											title="#{idm.TI_ELIMINAR_REGISTRO}"
+											action="#{claseproblemasControlador.eliminarRegSubSubproblema(reg)}"
+											oncomplete="PF('blockNuevoGuardar').hide(); refreshTabPL1978();"
+											onclick="PF('blockNuevoGuardar').show();"
+											update=":FR1026_nuevo:alert,tablePL1978,"
+											style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;"
+											tabindex="4">
+											<p:confirm header="#{sessionBean.tituloMensajes}"
+												message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+										</p:commandButton>
+									</p:column>
+								</p:dataTable>
+							</div>
+						</h:panelGroup>
+						<h:outputLabel id="LB24600" value="#{idm.TG_CLASE5}"
+							style="position: absolute; width:77px; height: 20px; left: 10px;   top: 5px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

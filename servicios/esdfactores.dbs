@@ -1,0 +1,160 @@
+﻿<data name="esdfactores" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getEsdfactoresSumapuntajeQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NVL(SUM(PUNTAJE),0) TOTAL  FROM ES_DFACTORES WHERE COMPANIA = :COMPANIA AND CODIGOESTUDIO = :CODIGOESTUDIO AND CODIGOMODALIDAD = :CODIGOMODALIDAD AND CODIGOCRITERIO = :CODIGOCRITERIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOESTUDIO" sqlType="STRING"/>
+		<param name="CODIGOMODALIDAD" sqlType="STRING"/>
+		<param name="CODIGOCRITERIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="esdfactores/sumapuntaje">
+		<call-query href="getEsdfactoresSumapuntajeQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOESTUDIO" query-param="CODIGOESTUDIO"/>
+			<with-param name="CODIGOMODALIDAD" query-param="CODIGOMODALIDAD"/>
+			<with-param name="CODIGOCRITERIO" query-param="CODIGOCRITERIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertEsdfactores" keyColumns="COMPANIA,CODIGOESTUDIO,CODIGOMODALIDAD,CODIGOCRITERIO,CODIGO_SUBFACTOR" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ES_DFACTORES (COMPANIA, CODIGOESTUDIO, CODIGOMODALIDAD, CODIGOCRITERIO, CODIGO_SUBFACTOR, NOMBRE, PUNTAJE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGOESTUDIO, :CODIGOMODALIDAD, :CODIGOCRITERIO, :CODIGO_SUBFACTOR, :NOMBRE, :PUNTAJE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGOESTUDIO":"$CODIGOESTUDIO","KEY_CODIGOMODALIDAD":"$CODIGOMODALIDAD","KEY_CODIGOCRITERIO":"$CODIGOCRITERIO","KEY_CODIGO_SUBFACTOR":"$CODIGO_SUBFACTOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOESTUDIO" sqlType="STRING"/>
+		<param name="CODIGOMODALIDAD" sqlType="STRING"/>
+		<param name="CODIGOCRITERIO" sqlType="STRING"/>
+		<param name="CODIGO_SUBFACTOR" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="0" name="PUNTAJE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="esdfactores">
+		<call-query href="insertEsdfactores">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOESTUDIO" query-param="CODIGOESTUDIO"/>
+			<with-param name="CODIGOMODALIDAD" query-param="CODIGOMODALIDAD"/>
+			<with-param name="CODIGOCRITERIO" query-param="CODIGOCRITERIO"/>
+			<with-param name="CODIGO_SUBFACTOR" query-param="CODIGO_SUBFACTOR"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PUNTAJE" query-param="PUNTAJE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEsdfactores" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ES_DFACTORES WHERE ES_DFACTORES.COMPANIA= :KEY_COMPANIA AND ES_DFACTORES.CODIGOESTUDIO= :KEY_CODIGOESTUDIO AND ES_DFACTORES.CODIGOMODALIDAD= :KEY_CODIGOMODALIDAD AND ES_DFACTORES.CODIGOCRITERIO= :KEY_CODIGOCRITERIO AND ES_DFACTORES.CODIGO_SUBFACTOR= :KEY_CODIGO_SUBFACTOR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOESTUDIO" sqlType="STRING"/>
+		<param name="KEY_CODIGOMODALIDAD" sqlType="STRING"/>
+		<param name="KEY_CODIGOCRITERIO" sqlType="STRING"/>
+		<param name="KEY_CODIGO_SUBFACTOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="esdfactores">
+		<call-query href="deleteEsdfactores">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOESTUDIO" query-param="KEY_CODIGOESTUDIO"/>
+			<with-param name="KEY_CODIGOMODALIDAD" query-param="KEY_CODIGOMODALIDAD"/>
+			<with-param name="KEY_CODIGOCRITERIO" query-param="KEY_CODIGOCRITERIO"/>
+			<with-param name="KEY_CODIGO_SUBFACTOR" query-param="KEY_CODIGO_SUBFACTOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsdfactoresPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CODIGOESTUDIO, CODIGOMODALIDAD, CODIGOCRITERIO, CODIGO_SUBFACTOR, NOMBRE, PUNTAJE  FROM ES_DFACTORES WHERE COMPANIA = :COMPANIA AND CODIGOESTUDIO = :CODIGOESTUDIO AND CODIGOMODALIDAD = :CODIGOMODALIDAD AND CODIGOCRITERIO = :CODIGOCRITERIO) WHERE (CASE WHEN CODIGO_SUBFACTOR IS NULL THEN ' ' ELSE UPPER(CODIGO_SUBFACTOR) END)  LIKE UPPER(:CODIGO_SUBFACTOR || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN PUNTAJE IS NULL THEN ' ' ELSE UPPER(PUNTAJE) END)  LIKE UPPER(:PUNTAJE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGOESTUDIO":"$CODIGOESTUDIO","CODIGOMODALIDAD":"$CODIGOMODALIDAD","CODIGOCRITERIO":"$CODIGOCRITERIO","CODIGO_SUBFACTOR":"$CODIGO_SUBFACTOR","NOMBRE":"$NOMBRE","PUNTAJE":"$PUNTAJE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOESTUDIO" sqlType="STRING"/>
+		<param name="CODIGOMODALIDAD" sqlType="STRING"/>
+		<param name="CODIGOCRITERIO" sqlType="STRING"/>
+		<param name="CODIGO_SUBFACTOR" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PUNTAJE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="esdfactores">
+		<call-query href="getEsdfactoresPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOESTUDIO" query-param="CODIGOESTUDIO"/>
+			<with-param name="CODIGOMODALIDAD" query-param="CODIGOMODALIDAD"/>
+			<with-param name="CODIGOCRITERIO" query-param="CODIGOCRITERIO"/>
+			<with-param name="CODIGO_SUBFACTOR" query-param="CODIGO_SUBFACTOR"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PUNTAJE" query-param="PUNTAJE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsdfactoresNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CODIGOESTUDIO, CODIGOMODALIDAD, CODIGOCRITERIO, CODIGO_SUBFACTOR, NOMBRE, PUNTAJE  FROM ES_DFACTORES WHERE COMPANIA = :COMPANIA AND CODIGOESTUDIO = :CODIGOESTUDIO AND CODIGOMODALIDAD = :CODIGOMODALIDAD AND CODIGOCRITERIO = :CODIGOCRITERIO) WHERE (CASE WHEN CODIGO_SUBFACTOR IS NULL THEN ' ' ELSE UPPER(CODIGO_SUBFACTOR) END)  LIKE UPPER(:CODIGO_SUBFACTOR || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN PUNTAJE IS NULL THEN ' ' ELSE UPPER(PUNTAJE) END)  LIKE UPPER(:PUNTAJE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOESTUDIO" sqlType="STRING"/>
+		<param name="CODIGOMODALIDAD" sqlType="STRING"/>
+		<param name="CODIGOCRITERIO" sqlType="STRING"/>
+		<param name="CODIGO_SUBFACTOR" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PUNTAJE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="esdfactores/numero">
+		<call-query href="getEsdfactoresNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOESTUDIO" query-param="CODIGOESTUDIO"/>
+			<with-param name="CODIGOMODALIDAD" query-param="CODIGOMODALIDAD"/>
+			<with-param name="CODIGOCRITERIO" query-param="CODIGOCRITERIO"/>
+			<with-param name="CODIGO_SUBFACTOR" query-param="CODIGO_SUBFACTOR"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PUNTAJE" query-param="PUNTAJE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEsdfactores" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ES_DFACTORES SET CODIGO_SUBFACTOR=:CODIGO_SUBFACTOR, NOMBRE=:NOMBRE, PUNTAJE=:PUNTAJE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ES_DFACTORES.COMPANIA= :KEY_COMPANIA AND ES_DFACTORES.CODIGOESTUDIO= :KEY_CODIGOESTUDIO AND ES_DFACTORES.CODIGOMODALIDAD= :KEY_CODIGOMODALIDAD AND ES_DFACTORES.CODIGOCRITERIO= :KEY_CODIGOCRITERIO AND ES_DFACTORES.CODIGO_SUBFACTOR= :KEY_CODIGO_SUBFACTOR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO_SUBFACTOR" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PUNTAJE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOESTUDIO" sqlType="STRING"/>
+		<param name="KEY_CODIGOMODALIDAD" sqlType="STRING"/>
+		<param name="KEY_CODIGOCRITERIO" sqlType="STRING"/>
+		<param name="KEY_CODIGO_SUBFACTOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="esdfactores">
+		<call-query href="updateEsdfactores">
+			<with-param name="CODIGO_SUBFACTOR" query-param="CODIGO_SUBFACTOR"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PUNTAJE" query-param="PUNTAJE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOESTUDIO" query-param="KEY_CODIGOESTUDIO"/>
+			<with-param name="KEY_CODIGOMODALIDAD" query-param="KEY_CODIGOMODALIDAD"/>
+			<with-param name="KEY_CODIGOCRITERIO" query-param="KEY_CODIGOCRITERIO"/>
+			<with-param name="KEY_CODIGO_SUBFACTOR" query-param="KEY_CODIGO_SUBFACTOR"/>
+
+		</call-query>
+	</resource>
+
+</data>

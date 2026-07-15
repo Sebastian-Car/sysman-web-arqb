@@ -1,0 +1,126 @@
+﻿<data name="grupoplanos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getGrupoplanosPagGrupoYDescripcionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  GRUPO, DESCRIPCION  FROM GRUPO_PLANOS) WHERE (CASE WHEN GRUPO IS NULL THEN ' ' ELSE UPPER(GRUPO) END)  LIKE UPPER( '%' || :GRUPO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"GRUPO":"$GRUPO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="grupoplanos/grupoydescripcion/pag">
+		<call-query href="getGrupoplanosPagGrupoYDescripcionQuery">
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getGrupoplanosNumGrupoYDescripcionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  GRUPO, DESCRIPCION  FROM GRUPO_PLANOS) WHERE (CASE WHEN GRUPO IS NULL THEN ' ' ELSE UPPER(GRUPO) END)  LIKE UPPER( '%' || :GRUPO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="grupoplanos/grupoydescripcion/num">
+		<call-query href="getGrupoplanosNumGrupoYDescripcionQuery">
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="insertGrupoplanos" keyColumns="GRUPO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO GRUPO_PLANOS (GRUPO, DESCRIPCION, DATE_CREATED, CREATED_BY) VALUES (:GRUPO, :DESCRIPCION, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_GRUPO":"$GRUPO"}]}}		</result>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="grupoplanos">
+		<call-query href="insertGrupoplanos">
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteGrupoplanos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM GRUPO_PLANOS WHERE GRUPO_PLANOS.GRUPO= :KEY_GRUPO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_GRUPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="grupoplanos">
+		<call-query href="deleteGrupoplanos">
+			<with-param name="KEY_GRUPO" query-param="KEY_GRUPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getGrupoplanosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  GRUPO, DESCRIPCION  FROM GRUPO_PLANOS) WHERE (CASE WHEN GRUPO IS NULL THEN ' ' ELSE UPPER(GRUPO) END)  LIKE UPPER(:GRUPO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"GRUPO":"$GRUPO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="grupoplanos">
+		<call-query href="getGrupoplanosPaginaQuery">
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getGrupoplanosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  GRUPO, DESCRIPCION  FROM GRUPO_PLANOS) WHERE (CASE WHEN GRUPO IS NULL THEN ' ' ELSE UPPER(GRUPO) END)  LIKE UPPER(:GRUPO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="grupoplanos/numero">
+		<call-query href="getGrupoplanosNumeroQuery">
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="updateGrupoplanos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE GRUPO_PLANOS SET GRUPO=:GRUPO, DESCRIPCION=:DESCRIPCION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE GRUPO_PLANOS.GRUPO= :KEY_GRUPO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_GRUPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="grupoplanos">
+		<call-query href="updateGrupoplanos">
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_GRUPO" query-param="KEY_GRUPO"/>
+
+		</call-query>
+	</resource>
+
+</data>

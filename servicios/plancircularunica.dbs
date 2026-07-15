@@ -1,0 +1,182 @@
+﻿<data name="plancircularunica" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getPlancircularunicaAniosporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT ANO  FROM PLAN_CIRCULAR_UNICA WHERE COMPANIA = :COMPANIA ORDER BY ANO DESC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="plancircularunica/aniosporcompania">
+		<call-query href="getPlancircularunicaAniosporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getPlancircularunicaPagGcodigoopcionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT CODIGO, NOMBRE  FROM PLAN_CIRCULAR_UNICA WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER(:NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="plancircularunica/gcodigoopcion/pag">
+		<call-query href="getPlancircularunicaPagGcodigoopcionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPlancircularunicaNumGcodigoopcionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT CODIGO, NOMBRE  FROM PLAN_CIRCULAR_UNICA WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER(:NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="plancircularunica/gcodigoopcion/num">
+		<call-query href="getPlancircularunicaNumGcodigoopcionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertPlancircularunica" keyColumns="COMPANIA,CODIGO,ANO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PLAN_CIRCULAR_UNICA (COMPANIA, CODIGO, ANO, NOMBRE, TIPOCUENTA, MOVIMIENTO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :ANO, :NOMBRE, :TIPOCUENTA, :MOVIMIENTO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO","KEY_ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TIPOCUENTA" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="plancircularunica">
+		<call-query href="insertPlancircularunica">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deletePlancircularunica" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM PLAN_CIRCULAR_UNICA WHERE PLAN_CIRCULAR_UNICA.COMPANIA= :KEY_COMPANIA AND PLAN_CIRCULAR_UNICA.CODIGO= :KEY_CODIGO AND PLAN_CIRCULAR_UNICA.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="plancircularunica">
+		<call-query href="deletePlancircularunica">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPlancircularunicaPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CODIGO, ANO, NOMBRE, TIPOCUENTA,(CASE MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO FROM PLAN_CIRCULAR_UNICA WHERE COMPANIA = :COMPANIA AND ANO = :ANO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TIPOCUENTA IS NULL THEN ' ' ELSE UPPER(TIPOCUENTA) END)  LIKE UPPER(:TIPOCUENTA || '%')  AND (CASE WHEN MOVIMIENTO IS NULL THEN ' ' ELSE UPPER(MOVIMIENTO) END)  LIKE UPPER(:MOVIMIENTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","ANO":"$ANO(type:integer)","NOMBRE":"$NOMBRE","TIPOCUENTA":"$TIPOCUENTA","MOVIMIENTO":"$MOVIMIENTO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TIPOCUENTA" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="plancircularunica">
+		<call-query href="getPlancircularunicaPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPlancircularunicaNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CODIGO, ANO, NOMBRE, TIPOCUENTA,(CASE MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO FROM PLAN_CIRCULAR_UNICA WHERE COMPANIA = :COMPANIA AND ANO = :ANO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TIPOCUENTA IS NULL THEN ' ' ELSE UPPER(TIPOCUENTA) END)  LIKE UPPER(:TIPOCUENTA || '%')  AND (CASE WHEN MOVIMIENTO IS NULL THEN ' ' ELSE UPPER(MOVIMIENTO) END)  LIKE UPPER(:MOVIMIENTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TIPOCUENTA" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="plancircularunica/numero">
+		<call-query href="getPlancircularunicaNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePlancircularunica" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PLAN_CIRCULAR_UNICA SET COMPANIA=:COMPANIA, CODIGO=:CODIGO, ANO=:ANO, NOMBRE=:NOMBRE, TIPOCUENTA=:TIPOCUENTA, MOVIMIENTO=:MOVIMIENTO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PLAN_CIRCULAR_UNICA.COMPANIA= :KEY_COMPANIA AND PLAN_CIRCULAR_UNICA.CODIGO= :KEY_CODIGO AND PLAN_CIRCULAR_UNICA.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TIPOCUENTA" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="plancircularunica">
+		<call-query href="updatePlancircularunica">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+
+</data>

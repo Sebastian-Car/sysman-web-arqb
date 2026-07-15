@@ -1,0 +1,102 @@
+/*-
+ * RespuestaApi.java
+ *
+ * 1.0
+ * 
+ * 26/09/2018
+ * 
+ * Copyright (c) 2016 Stefanini Sysman.
+ * Paipa, Boyaca.
+ * All rights reserved.
+ */
+
+package com.sysman.util.rest;
+
+import javax.xml.bind.annotation.XmlRootElement;
+
+/**
+ * Clase estandar para generar la respuesta de todos los servicios con el fin de
+ * enviar los errores de negocio claramente
+ * 
+ * @version 1.1, 19/06/2018
+ * @author jgomez
+ *
+ */
+@XmlRootElement
+public class RespuestaPdf {
+    /**
+     * Código de la respuesta del servicio que debe ser de negocio, por defecto
+     * se deja 0 indicando que no se genero error alguno y si envia el cuerpo de
+     * la respuesta
+     */
+    int codigo;
+    /**
+     * Mensaje del error de negocio, por defecto se deja OK; lo que indica que
+     * no hay error y el código es 0
+     */
+    String[] data;
+    /**
+     * Se incluye la respuesta del servicio para cuado el codigo es diferente de
+     * 0
+     */
+    Object cuerpo;
+
+    /**
+     * Constructor, el cual por defecto deja el codigo = 0 y data = OK, de tal
+     * fin que si el servicio no genera error solo se realiza el set a cuerpo
+     */
+    public RespuestaPdf() {
+        cuerpo = null;
+        codigo = 0;
+
+    }
+
+    /**
+     * 
+     * @return codigo
+     */
+    public int getCodigo() {
+        return codigo;
+    }
+
+    /**
+     * 
+     * @param codigo
+     */
+    public void setCodigo(int codigo) {
+        this.codigo = codigo;
+    }
+
+    /**
+     * 
+     * @return data
+     */
+    public String[] getData() {
+        return data;
+    }
+
+    /**
+     * 
+     * @param data
+     */
+    public void setData(String[] data) {
+        this.data = data;
+    }
+
+    /**
+     * 
+     * @return cuerpo
+     */
+    public Object getCuerpo() {
+        return cuerpo;
+    }
+
+    /**
+     * 
+     * @param cuerpo
+     */
+    public void setCuerpo(Object cuerpo) {
+        this.cuerpo = cuerpo;
+    }
+
+}

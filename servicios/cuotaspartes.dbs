@@ -1,0 +1,152 @@
+﻿<data name="cuotaspartes" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getCuotaspartesPagTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CUOTASPARTES.NIT, CUOTASPARTES.SUCURSAL, TERCERO.NOMBRE  FROM CUOTASPARTES INNER JOIN TERCERO ON CUOTASPARTES.COMPANIA = TERCERO.COMPANIA AND CUOTASPARTES.NIT = TERCERO.NIT AND CUOTASPARTES.SUCURSAL = TERCERO.SUCURSAL WHERE CUOTASPARTES.COMPANIA = :COMPANIA ORDER BY CUOTASPARTES.SUCURSAL) WHERE (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END)  LIKE UPPER(:NIT || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NIT":"$NIT","SUCURSAL":"$SUCURSAL","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cuotaspartes/todosporcompania/pag">
+		<call-query href="getCuotaspartesPagTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCuotaspartesNumTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CUOTASPARTES.NIT, CUOTASPARTES.SUCURSAL, TERCERO.NOMBRE  FROM CUOTASPARTES INNER JOIN TERCERO ON CUOTASPARTES.COMPANIA = TERCERO.COMPANIA AND CUOTASPARTES.NIT = TERCERO.NIT AND CUOTASPARTES.SUCURSAL = TERCERO.SUCURSAL WHERE CUOTASPARTES.COMPANIA = :COMPANIA ORDER BY CUOTASPARTES.SUCURSAL) WHERE (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END)  LIKE UPPER(:NIT || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cuotaspartes/todosporcompania/num">
+		<call-query href="getCuotaspartesNumTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertCuotaspartes" keyColumns="COMPANIA,NIT,SUCURSAL" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CUOTASPARTES (COMPANIA, NIT, SUCURSAL, TIPOC, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :NIT, :SUCURSAL, :TIPOC, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_NIT":"$NIT","KEY_SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="NIT" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="C" name="TIPOC" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="cuotaspartes">
+		<call-query href="insertCuotaspartes">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="TIPOC" query-param="TIPOC"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCuotaspartes" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CUOTASPARTES WHERE CUOTASPARTES.COMPANIA= :KEY_COMPANIA AND CUOTASPARTES.NIT= :KEY_NIT AND CUOTASPARTES.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NIT" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="cuotaspartes">
+		<call-query href="deleteCuotaspartes">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NIT" query-param="KEY_NIT"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getCuotaspartesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CUOTASPARTES.COMPANIA, CUOTASPARTES.NIT, CUOTASPARTES.SUCURSAL, CUOTASPARTES.TIPOC, TERCERO.NOMBRE NOMBREENTIDAD_LB, DECODE(CUOTASPARTES.TIPOC, 'P', 'Pagar','C','Cobrar') NOMBRETIPO  FROM CUOTASPARTES INNER JOIN TERCERO ON CUOTASPARTES.COMPANIA = TERCERO.COMPANIA AND CUOTASPARTES.SUCURSAL = TERCERO.SUCURSAL AND CUOTASPARTES.NIT = TERCERO.NIT WHERE CUOTASPARTES.COMPANIA = :COMPANIA ORDER BY CUOTASPARTES.NIT) WHERE (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END)  LIKE UPPER(:NIT || '%')  AND (CASE WHEN NOMBREENTIDAD_LB IS NULL THEN ' ' ELSE UPPER(NOMBREENTIDAD_LB) END)  LIKE UPPER( '%' || :NOMBREENTIDAD_LB || '%')  AND (CASE WHEN NOMBRETIPO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPO) END)  LIKE UPPER(:NOMBRETIPO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NIT":"$NIT","SUCURSAL":"$SUCURSAL","TIPOC":"$TIPOC","NOMBREENTIDAD_LB":"$NOMBREENTIDAD_LB","NOMBRETIPO":"$NOMBRETIPO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBREENTIDAD_LB" sqlType="STRING"/>
+		<param name="NOMBRETIPO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cuotaspartes">
+		<call-query href="getCuotaspartesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBREENTIDAD_LB" query-param="NOMBREENTIDAD_LB"/>
+			<with-param name="NOMBRETIPO" query-param="NOMBRETIPO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCuotaspartesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CUOTASPARTES.COMPANIA, CUOTASPARTES.NIT, CUOTASPARTES.SUCURSAL, CUOTASPARTES.TIPOC, TERCERO.NOMBRE NOMBREENTIDAD_LB, DECODE(CUOTASPARTES.TIPOC, 'P', 'Pagar','C','Cobrar') NOMBRETIPO  FROM CUOTASPARTES INNER JOIN TERCERO ON CUOTASPARTES.COMPANIA = TERCERO.COMPANIA AND CUOTASPARTES.SUCURSAL = TERCERO.SUCURSAL AND CUOTASPARTES.NIT = TERCERO.NIT WHERE CUOTASPARTES.COMPANIA = :COMPANIA ORDER BY CUOTASPARTES.NIT) WHERE (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END)  LIKE UPPER(:NIT || '%')  AND (CASE WHEN NOMBREENTIDAD_LB IS NULL THEN ' ' ELSE UPPER(NOMBREENTIDAD_LB) END)  LIKE UPPER( '%' || :NOMBREENTIDAD_LB || '%')  AND (CASE WHEN NOMBRETIPO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPO) END)  LIKE UPPER(:NOMBRETIPO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBREENTIDAD_LB" sqlType="STRING"/>
+		<param name="NOMBRETIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cuotaspartes/numero">
+		<call-query href="getCuotaspartesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBREENTIDAD_LB" query-param="NOMBREENTIDAD_LB"/>
+			<with-param name="NOMBRETIPO" query-param="NOMBRETIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCuotaspartes" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CUOTASPARTES SET NIT=:NIT, SUCURSAL=:SUCURSAL, TIPOC=:TIPOC, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CUOTASPARTES.COMPANIA= :KEY_COMPANIA AND CUOTASPARTES.NIT= :KEY_NIT AND CUOTASPARTES.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NIT" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="TIPOC" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NIT" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cuotaspartes">
+		<call-query href="updateCuotaspartes">
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="TIPOC" query-param="TIPOC"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NIT" query-param="KEY_NIT"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,1799 @@
+﻿<data name="spciclos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSpciclosPagPorcompaniacontQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUM, CICLO, ANO, PERIODO  FROM (SELECT TO_CHAR(NUMERO) NUM, NUMERO CICLO, ANO, PERIODO FROM SP_CICLO WHERE COMPANIA = :COMPANIA UNION SELECT TO_CHAR ('T') NUM, 999999 CICLO, 0 ANO, '0' PERIODO FROM DUAL ) ORDER BY CICLO) WHERE (CASE WHEN NUM IS NULL THEN ' ' ELSE UPPER(NUM) END)  LIKE UPPER(:NUM || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUM":"$NUM","CICLO":"$CICLO(type:double)","ANO":"$ANO(type:double)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUM" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/porcompaniacont/pag">
+		<call-query href="getSpciclosPagPorcompaniacontQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUM" query-param="NUM"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumPorcompaniacontQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUM, CICLO, ANO, PERIODO  FROM (SELECT TO_CHAR(NUMERO) NUM, NUMERO CICLO, ANO, PERIODO FROM SP_CICLO WHERE COMPANIA = :COMPANIA UNION SELECT TO_CHAR ('T') NUM, 999999 CICLO, 0 ANO, '0' PERIODO FROM DUAL ) ORDER BY CICLO) WHERE (CASE WHEN NUM IS NULL THEN ' ' ELSE UPPER(NUM) END)  LIKE UPPER(:NUM || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/porcompaniacont/num">
+		<call-query href="getSpciclosNumPorcompaniacontQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUM" query-param="NUM"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagCodinicialfinalporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO , CODIGOINICIAL, CODIGOFINAL,(CASE PREFACTURANDO WHEN 0 THEN 'false' ELSE 'true' END) PREFACTURANDO FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL","PREFACTURANDO":"$PREFACTURANDO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/codinicialfinalporcompania/pag">
+		<call-query href="getSpciclosPagCodinicialfinalporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumCodinicialfinalporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO , CODIGOINICIAL, CODIGOFINAL,(CASE PREFACTURANDO WHEN 0 THEN 'false' ELSE 'true' END) PREFACTURANDO FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/codinicialfinalporcompania/num">
+		<call-query href="getSpciclosNumCodinicialfinalporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodoPorCicloInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_CICLO.NUMERO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todoporcicloinicial">
+		<call-query href="getSpciclosTodoPorCicloInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodoPorCicloFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_CICLO.NUMERO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA AND SP_CICLO.NUMERO &gt;= :CICLOINICIAL ORDER BY SP_CICLO.NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLOINICIAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todoporciclofinal">
+		<call-query href="getSpciclosTodoPorCicloFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLOINICIAL" query-param="CICLOINICIAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosPorCompaniaNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NUMERO  FROM SP_CICLO WHERE COMPANIA =:COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporcompanianumero">
+		<call-query href="getSpciclosTodosPorCompaniaNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagNumeroAnoPeriodoFechapreparacionYPrefacturadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO, ANO, PERIODO,(TO_CHAR(FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION,(CASE PREFACTURANDO WHEN 0 THEN 'false' ELSE 'true' END) PREFACTURANDO FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END)  LIKE UPPER(:PERIODO || '%')  AND (CASE WHEN FECHA_PREPARACION IS NULL THEN ' ' ELSE UPPER(FECHA_PREPARACION) END)  LIKE UPPER( '%' || :FECHA_PREPARACION || '%')  AND (CASE WHEN PREFACTURANDO IS NULL THEN ' ' ELSE UPPER(PREFACTURANDO) END)  LIKE UPPER(:PREFACTURANDO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO","FECHA_PREPARACION":"$FECHA_PREPARACION","PREFACTURANDO":"$PREFACTURANDO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="FECHA_PREPARACION" sqlType="STRING"/>
+		<param name="PREFACTURANDO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numeroanoperiodofechapreparacionyprefacturado/pag">
+		<call-query href="getSpciclosPagNumeroAnoPeriodoFechapreparacionYPrefacturadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="FECHA_PREPARACION" query-param="FECHA_PREPARACION"/>
+			<with-param name="PREFACTURANDO" query-param="PREFACTURANDO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumNumeroAnoPeriodoFechapreparacionYPrefacturadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO, ANO, PERIODO,(TO_CHAR(FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION,(CASE PREFACTURANDO WHEN 0 THEN 'false' ELSE 'true' END) PREFACTURANDO FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END)  LIKE UPPER( '%' || :PERIODO || '%')  AND (CASE WHEN FECHA_PREPARACION IS NULL THEN ' ' ELSE UPPER(FECHA_PREPARACION) END)  LIKE UPPER( '%' || :FECHA_PREPARACION || '%')  AND (CASE WHEN PREFACTURANDO IS NULL THEN ' ' ELSE UPPER(PREFACTURANDO) END)  LIKE UPPER( '%' || :PREFACTURANDO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="FECHA_PREPARACION" sqlType="STRING"/>
+		<param name="PREFACTURANDO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numeroanoperiodofechapreparacionyprefacturado/num">
+		<call-query href="getSpciclosNumNumeroAnoPeriodoFechapreparacionYPrefacturadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="FECHA_PREPARACION" query-param="FECHA_PREPARACION"/>
+			<with-param name="PREFACTURANDO" query-param="PREFACTURANDO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSpciclos" keyColumns="COMPANIA,NUMERO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_CICLO (COMPANIA, NUMERO, ANO, PERIODO, CODIGOINICIAL, CODIGOFINAL, INDFACTURADO, INDPREPARADO, INDESTADISTICAS, INDCALCULADO, INDRECAUDADO, INDAUTORMODIFICACION, FECHAPAGO1, FECHAPAGO2, FECHAPAGO3, ANOINICIAL, PERIODOINICIAL, TASARECARGO, INDBLOQUEOMANUAL, INDSELLOFIMM, FECHA_PREPARACION, HORA_PREPARACION, PREFACTURANDO, FECHA_CIERREPREFAC, APLICADESCUENTO, EXCLUIR_ESTADISTICA_MENSUAL, CREATED_BY, DATE_CREATED) VALUES (:COMPANIA, :NUMERO, :ANO, :PERIODO, :CODIGOINICIAL, :CODIGOFINAL, :INDFACTURADO, :INDPREPARADO, :INDESTADISTICAS, :INDCALCULADO, :INDRECAUDADO, :INDAUTORMODIFICACION, TO_DATE(:FECHAPAGO1,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHAPAGO2,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHAPAGO3,'DD/MM/YYYY HH24:MI:SS'), :ANOINICIAL, :PERIODOINICIAL, :TASARECARGO, :INDBLOQUEOMANUAL, :INDSELLOFIMM, TO_DATE(:FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:HORA_PREPARACION,'DD/MM/YYYY HH24:MI:SS'), :PREFACTURANDO, TO_DATE(:FECHA_CIERREPREFAC,'DD/MM/YYYY HH24:MI:SS'), :APLICADESCUENTO, :EXCLUIR_ESTADISTICA_MENSUAL, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_NUMERO":"$NUMERO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param defaultValue="01" name="PERIODO" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOINICIAL" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOFINAL" sqlType="STRING"/>
+		<param defaultValue="0" name="INDFACTURADO" sqlType="STRING"/>
+		<param defaultValue="0" name="INDPREPARADO" sqlType="STRING"/>
+		<param defaultValue="0" name="INDESTADISTICAS" sqlType="STRING"/>
+		<param defaultValue="0" name="INDCALCULADO" sqlType="STRING"/>
+		<param defaultValue="0" name="INDRECAUDADO" sqlType="STRING"/>
+		<param defaultValue="0" name="INDAUTORMODIFICACION" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAPAGO1" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAPAGO2" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAPAGO3" sqlType="STRING"/>
+		<param name="ANOINICIAL" sqlType="STRING"/>
+		<param defaultValue="01" name="PERIODOINICIAL" sqlType="STRING"/>
+		<param defaultValue="0" name="TASARECARGO" sqlType="STRING"/>
+		<param defaultValue="0" name="INDBLOQUEOMANUAL" sqlType="STRING"/>
+		<param defaultValue="0" name="INDSELLOFIMM" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_PREPARACION" sqlType="STRING"/>
+		<param defaultValue="" name="HORA_PREPARACION" sqlType="STRING"/>
+		<param defaultValue="0" name="PREFACTURANDO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_CIERREPREFAC" sqlType="STRING"/>
+		<param defaultValue="0" name="APLICADESCUENTO" sqlType="STRING"/>
+		<param defaultValue="0" name="EXCLUIR_ESTADISTICA_MENSUAL" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="spciclos">
+		<call-query href="insertSpciclos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="INDFACTURADO" query-param="INDFACTURADO"/>
+			<with-param name="INDPREPARADO" query-param="INDPREPARADO"/>
+			<with-param name="INDESTADISTICAS" query-param="INDESTADISTICAS"/>
+			<with-param name="INDCALCULADO" query-param="INDCALCULADO"/>
+			<with-param name="INDRECAUDADO" query-param="INDRECAUDADO"/>
+			<with-param name="INDAUTORMODIFICACION" query-param="INDAUTORMODIFICACION"/>
+			<with-param name="FECHAPAGO1" query-param="FECHAPAGO1"/>
+			<with-param name="FECHAPAGO2" query-param="FECHAPAGO2"/>
+			<with-param name="FECHAPAGO3" query-param="FECHAPAGO3"/>
+			<with-param name="ANOINICIAL" query-param="ANOINICIAL"/>
+			<with-param name="PERIODOINICIAL" query-param="PERIODOINICIAL"/>
+			<with-param name="TASARECARGO" query-param="TASARECARGO"/>
+			<with-param name="INDBLOQUEOMANUAL" query-param="INDBLOQUEOMANUAL"/>
+			<with-param name="INDSELLOFIMM" query-param="INDSELLOFIMM"/>
+			<with-param name="FECHA_PREPARACION" query-param="FECHA_PREPARACION"/>
+			<with-param name="HORA_PREPARACION" query-param="HORA_PREPARACION"/>
+			<with-param name="PREFACTURANDO" query-param="PREFACTURANDO"/>
+			<with-param name="FECHA_CIERREPREFAC" query-param="FECHA_CIERREPREFAC"/>
+			<with-param name="APLICADESCUENTO" query-param="APLICADESCUENTO"/>
+			<with-param name="EXCLUIR_ESTADISTICA_MENSUAL" query-param="EXCLUIR_ESTADISTICA_MENSUAL"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSpciclos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SP_CICLO WHERE SP_CICLO.COMPANIA= :KEY_COMPANIA AND SP_CICLO.NUMERO= :KEY_NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="spciclos">
+		<call-query href="deleteSpciclos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, NUMERO , ANO , PERIODO , CODIGOINICIAL , CODIGOFINAL  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END)  LIKE UPPER(:PERIODO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NUMERO":"$NUMERO(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos">
+		<call-query href="getSpciclosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, NUMERO , ANO , PERIODO , CODIGOINICIAL , CODIGOFINAL  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END)  LIKE UPPER( '%' || :PERIODO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER( '%' || :CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER( '%' || :CODIGOFINAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numero">
+		<call-query href="getSpciclosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA , NUMERO , ANO , PERIODO , CODIGOINICIAL , CODIGOFINAL ,(CASE INDFACTURADO WHEN 0 THEN 'false' ELSE 'true' END) INDFACTURADO,(CASE INDPREPARADO WHEN 0 THEN 'false' ELSE 'true' END) INDPREPARADO,(CASE INDESTADISTICAS WHEN 0 THEN 'false' ELSE 'true' END) INDESTADISTICAS,(CASE INDCALCULADO WHEN 0 THEN 'false' ELSE 'true' END) INDCALCULADO,(CASE INDRECAUDADO WHEN 0 THEN 'false' ELSE 'true' END) INDRECAUDADO,(CASE INDAUTORMODIFICACION WHEN 0 THEN 'false' ELSE 'true' END) INDAUTORMODIFICACION,(TO_CHAR(FECHAPAGO1,'DD/MM/YYYY HH24:MI:SS')) FECHAPAGO1,(TO_CHAR(FECHAPAGO2,'DD/MM/YYYY HH24:MI:SS')) FECHAPAGO2,(TO_CHAR(FECHAPAGO3,'DD/MM/YYYY HH24:MI:SS')) FECHAPAGO3, ANOINICIAL , PERIODOINICIAL , TASARECARGO ,(CASE INDBLOQUEOMANUAL WHEN 0 THEN 'false' ELSE 'true' END) INDBLOQUEOMANUAL,(CASE INDSELLOFIMM WHEN 0 THEN 'false' ELSE 'true' END) INDSELLOFIMM,(TO_CHAR(FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION,(TO_CHAR(HORA_PREPARACION,'DD/MM/YYYY HH24:MI:SS')) HORA_PREPARACION,(CASE PREFACTURANDO WHEN 0 THEN 'false' ELSE 'true' END) PREFACTURANDO,(TO_CHAR(FECHA_CIERREPREFAC,'DD/MM/YYYY HH24:MI:SS')) FECHA_CIERREPREFAC,(CASE APLICADESCUENTO WHEN 0 THEN 'false' ELSE 'true' END) APLICADESCUENTO,(CASE EXCLUIR_ESTADISTICA_MENSUAL WHEN 0 THEN 'false' ELSE 'true' END) EXCLUIR_ESTADISTICA_MENSUAL, CREATED_BY ,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY ,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM SP_CICLO WHERE SP_CICLO.COMPANIA= :KEY_COMPANIA AND SP_CICLO.NUMERO= :KEY_NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NUMERO":"$NUMERO(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL","INDFACTURADO":"$INDFACTURADO(type:boolean)","INDPREPARADO":"$INDPREPARADO(type:boolean)","INDESTADISTICAS":"$INDESTADISTICAS(type:boolean)","INDCALCULADO":"$INDCALCULADO(type:boolean)","INDRECAUDADO":"$INDRECAUDADO(type:boolean)","INDAUTORMODIFICACION":"$INDAUTORMODIFICACION(type:boolean)","FECHAPAGO1":"$FECHAPAGO1","FECHAPAGO2":"$FECHAPAGO2","FECHAPAGO3":"$FECHAPAGO3","ANOINICIAL":"$ANOINICIAL(type:integer)","PERIODOINICIAL":"$PERIODOINICIAL","TASARECARGO":"$TASARECARGO","INDBLOQUEOMANUAL":"$INDBLOQUEOMANUAL(type:boolean)","INDSELLOFIMM":"$INDSELLOFIMM(type:boolean)","FECHA_PREPARACION":"$FECHA_PREPARACION","HORA_PREPARACION":"$HORA_PREPARACION","PREFACTURANDO":"$PREFACTURANDO(type:boolean)","FECHA_CIERREPREFAC":"$FECHA_CIERREPREFAC","APLICADESCUENTO":"$APLICADESCUENTO(type:boolean)","EXCLUIR_ESTADISTICA_MENSUAL":"$EXCLUIR_ESTADISTICA_MENSUAL(type:boolean)","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/data">
+		<call-query href="getSpciclosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpciclos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_CICLO SET COMPANIA=:COMPANIA, NUMERO=:NUMERO, ANO=:ANO, PERIODO=:PERIODO, CODIGOINICIAL=:CODIGOINICIAL, CODIGOFINAL=:CODIGOFINAL, INDFACTURADO=:INDFACTURADO, INDPREPARADO=:INDPREPARADO, INDESTADISTICAS=:INDESTADISTICAS, INDCALCULADO=:INDCALCULADO, INDRECAUDADO=:INDRECAUDADO, INDAUTORMODIFICACION=:INDAUTORMODIFICACION, FECHAPAGO1=TO_DATE(:FECHAPAGO1,'DD/MM/YYYY HH24:MI:SS'), FECHAPAGO2=TO_DATE(:FECHAPAGO2,'DD/MM/YYYY HH24:MI:SS'), FECHAPAGO3=TO_DATE(:FECHAPAGO3,'DD/MM/YYYY HH24:MI:SS'), ANOINICIAL=:ANOINICIAL, PERIODOINICIAL=:PERIODOINICIAL, TASARECARGO=:TASARECARGO, INDBLOQUEOMANUAL=:INDBLOQUEOMANUAL, INDSELLOFIMM=:INDSELLOFIMM, FECHA_PREPARACION=TO_DATE(:FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS'), HORA_PREPARACION=TO_DATE(:HORA_PREPARACION,'DD/MM/YYYY HH24:MI:SS'), PREFACTURANDO=:PREFACTURANDO, FECHA_CIERREPREFAC=TO_DATE(:FECHA_CIERREPREFAC,'DD/MM/YYYY HH24:MI:SS'), APLICADESCUENTO=:APLICADESCUENTO, EXCLUIR_ESTADISTICA_MENSUAL=:EXCLUIR_ESTADISTICA_MENSUAL, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE SP_CICLO.COMPANIA= :KEY_COMPANIA AND SP_CICLO.NUMERO= :KEY_NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="INDFACTURADO" sqlType="STRING"/>
+		<param name="INDPREPARADO" sqlType="STRING"/>
+		<param name="INDESTADISTICAS" sqlType="STRING"/>
+		<param name="INDCALCULADO" sqlType="STRING"/>
+		<param name="INDRECAUDADO" sqlType="STRING"/>
+		<param name="INDAUTORMODIFICACION" sqlType="STRING"/>
+		<param name="FECHAPAGO1" sqlType="STRING"/>
+		<param name="FECHAPAGO2" sqlType="STRING"/>
+		<param name="FECHAPAGO3" sqlType="STRING"/>
+		<param name="ANOINICIAL" sqlType="STRING"/>
+		<param name="PERIODOINICIAL" sqlType="STRING"/>
+		<param name="TASARECARGO" sqlType="STRING"/>
+		<param name="INDBLOQUEOMANUAL" sqlType="STRING"/>
+		<param name="INDSELLOFIMM" sqlType="STRING"/>
+		<param name="FECHA_PREPARACION" sqlType="STRING"/>
+		<param name="HORA_PREPARACION" sqlType="STRING"/>
+		<param name="PREFACTURANDO" sqlType="STRING"/>
+		<param name="FECHA_CIERREPREFAC" sqlType="STRING"/>
+		<param name="APLICADESCUENTO" sqlType="STRING"/>
+		<param name="EXCLUIR_ESTADISTICA_MENSUAL" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spciclos">
+		<call-query href="updateSpciclos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="INDFACTURADO" query-param="INDFACTURADO"/>
+			<with-param name="INDPREPARADO" query-param="INDPREPARADO"/>
+			<with-param name="INDESTADISTICAS" query-param="INDESTADISTICAS"/>
+			<with-param name="INDCALCULADO" query-param="INDCALCULADO"/>
+			<with-param name="INDRECAUDADO" query-param="INDRECAUDADO"/>
+			<with-param name="INDAUTORMODIFICACION" query-param="INDAUTORMODIFICACION"/>
+			<with-param name="FECHAPAGO1" query-param="FECHAPAGO1"/>
+			<with-param name="FECHAPAGO2" query-param="FECHAPAGO2"/>
+			<with-param name="FECHAPAGO3" query-param="FECHAPAGO3"/>
+			<with-param name="ANOINICIAL" query-param="ANOINICIAL"/>
+			<with-param name="PERIODOINICIAL" query-param="PERIODOINICIAL"/>
+			<with-param name="TASARECARGO" query-param="TASARECARGO"/>
+			<with-param name="INDBLOQUEOMANUAL" query-param="INDBLOQUEOMANUAL"/>
+			<with-param name="INDSELLOFIMM" query-param="INDSELLOFIMM"/>
+			<with-param name="FECHA_PREPARACION" query-param="FECHA_PREPARACION"/>
+			<with-param name="HORA_PREPARACION" query-param="HORA_PREPARACION"/>
+			<with-param name="PREFACTURANDO" query-param="PREFACTURANDO"/>
+			<with-param name="FECHA_CIERREPREFAC" query-param="FECHA_CIERREPREFAC"/>
+			<with-param name="APLICADESCUENTO" query-param="APLICADESCUENTO"/>
+			<with-param name="EXCLUIR_ESTADISTICA_MENSUAL" query-param="EXCLUIR_ESTADISTICA_MENSUAL"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagTodosPorNumeroAnioYPeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_CICLO.NUMERO, SP_CICLO.ANO, SP_CICLO.PERIODO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END)  LIKE UPPER(:PERIODO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todospornumeroanioyperiodo/pag">
+		<call-query href="getSpciclosPagTodosPorNumeroAnioYPeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumTodosPorNumeroAnioYPeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_CICLO.NUMERO, SP_CICLO.ANO, SP_CICLO.PERIODO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END)  LIKE UPPER( '%' || :PERIODO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todospornumeroanioyperiodo/num">
+		<call-query href="getSpciclosNumTodosPorNumeroAnioYPeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosPorAnoPeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT MAX(CONCAT(ANO,PERIODO) ) PER FROM SP_CICLO WHERE SP_CICLO.COMPANIA =:COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PER":"$PER"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporanoperiodo">
+		<call-query href="getSpciclosTodosPorAnoPeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagPorCompaniaAnioPeriodoInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT NUMERO, ANO, PERIODO, ANOINICIAL, PERIODOINICIAL,(TO_CHAR(NVL(FECHA_PREPARACION,TO_DATE(CONCAT('01/06/',TO_CHAR(SYSDATE,'YYYY') ),'DD/MM/YYYY') ),'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION FROM SP_CICLO WHERE COMPANIA =:COMPANIA) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(CONCAT('%',:ANO), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO","ANOINICIAL":"$ANOINICIAL(type:integer)","PERIODOINICIAL":"$PERIODOINICIAL","FECHA_PREPARACION":"$FECHA_PREPARACION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/porcompaniaanioperiodoinicial/pag">
+		<call-query href="getSpciclosPagPorCompaniaAnioPeriodoInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumPorCompaniaAnioPeriodoInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT NUMERO, ANO, PERIODO, ANOINICIAL, PERIODOINICIAL,(TO_CHAR(NVL(FECHA_PREPARACION,TO_DATE(CONCAT('01/06/',TO_CHAR(SYSDATE,'YYYY') ),'DD/MM/YYYY') ),'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION FROM SP_CICLO WHERE COMPANIA =:COMPANIA) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(CONCAT('%',:ANO), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/porcompaniaanioperiodoinicial/num">
+		<call-query href="getSpciclosNumPorCompaniaAnioPeriodoInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagTodosPorCompaniaCicloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_CICLO.NUMERO, SP_CICLO.ANO, SP_CICLO.PERIODO, SP_CICLO.ANOINICIAL, SP_CICLO.PERIODOINICIAL,(TO_CHAR(SP_CICLO.FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION,(CASE SP_CICLO.PREFACTURANDO WHEN 0 THEN 'false' ELSE 'true' END) PREFACTURANDO, SP_CICLO.TASARECARGO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO","ANOINICIAL":"$ANOINICIAL(type:integer)","PERIODOINICIAL":"$PERIODOINICIAL","FECHA_PREPARACION":"$FECHA_PREPARACION","PREFACTURANDO":"$PREFACTURANDO(type:boolean)","TASARECARGO":"$TASARECARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporcompaniaciclo/pag">
+		<call-query href="getSpciclosPagTodosPorCompaniaCicloQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumTodosPorCompaniaCicloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_CICLO.NUMERO, SP_CICLO.ANO, SP_CICLO.PERIODO, SP_CICLO.ANOINICIAL, SP_CICLO.PERIODOINICIAL,(TO_CHAR(SP_CICLO.FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION,(CASE SP_CICLO.PREFACTURANDO WHEN 0 THEN 'false' ELSE 'true' END) PREFACTURANDO, SP_CICLO.TASARECARGO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporcompaniaciclo/num">
+		<call-query href="getSpciclosNumTodosPorCompaniaCicloQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosPorCompaniaCicloIsbloqueadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE INDPREPARADO WHEN 0 THEN 'false' ELSE 'true' END) INDPREPARADO,(CASE INDBLOQUEOMANUAL WHEN 0 THEN 'false' ELSE 'true' END) INDBLOQUEOMANUAL FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO = :CICLO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"INDPREPARADO":"$INDPREPARADO(type:boolean)","INDBLOQUEOMANUAL":"$INDBLOQUEOMANUAL(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporcompaniacicloisbloqueado">
+		<call-query href="getSpciclosTodosPorCompaniaCicloIsbloqueadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO, ANO, PERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporcompania/pag">
+		<call-query href="getSpciclosPagTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO, ANO, PERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporcompania/num">
+		<call-query href="getSpciclosNumTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagNumeroCodigoInicialYFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO, CODIGOINICIAL, CODIGOFINAL  FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO, COMPANIA, ANO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numerocodigoinicialyfinal/pag">
+		<call-query href="getSpciclosPagNumeroCodigoInicialYFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumNumeroCodigoInicialYFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO, CODIGOINICIAL, CODIGOFINAL  FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO, COMPANIA, ANO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER( '%' || :CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER( '%' || :CODIGOFINAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numerocodigoinicialyfinal/num">
+		<call-query href="getSpciclosNumNumeroCodigoInicialYFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagCodigoInicialYFinalNullQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO, NVL(CODIGOINICIAL,'') CODIGOINICIAL, NVL(CODIGOFINAL,'') CODIGOFINAL  FROM SP_CICLO WHERE COMPANIA= :COMPANIA ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/codigoinicialyfinalnull/pag">
+		<call-query href="getSpciclosPagCodigoInicialYFinalNullQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumCodigoInicialYFinalNullQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO, NVL(CODIGOINICIAL,'') CODIGOINICIAL, NVL(CODIGOFINAL,'') CODIGOFINAL  FROM SP_CICLO WHERE COMPANIA= :COMPANIA ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER( '%' || :CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER( '%' || :CODIGOFINAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/codigoinicialyfinalnull/num">
+		<call-query href="getSpciclosNumCodigoInicialYFinalNullQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagNumerocodigoinicialfinalfinQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO, CODIGOINICIAL, CODIGOFINAL  FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO &gt;= :CODIGO_INICIAL ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_INICIAL" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numerocodigoinicialfinalfin/pag">
+		<call-query href="getSpciclosPagNumerocodigoinicialfinalfinQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_INICIAL" query-param="CODIGO_INICIAL"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumNumerocodigoinicialfinalfinQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO, CODIGOINICIAL, CODIGOFINAL  FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO &gt;= :CODIGO_INICIAL ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER( '%' || :CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER( '%' || :CODIGOFINAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_INICIAL" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numerocodigoinicialfinalfin/num">
+		<call-query href="getSpciclosNumNumerocodigoinicialfinalfinQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_INICIAL" query-param="CODIGO_INICIAL"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosPorNumeroInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NUMERO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todospornumeroinicial">
+		<call-query href="getSpciclosTodosPorNumeroInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosPorNumeroFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NUMERO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO &gt;= :CICLOINICIAL ORDER BY NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLOINICIAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todospornumerofinal">
+		<call-query href="getSpciclosTodosPorNumeroFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLOINICIAL" query-param="CICLOINICIAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNombrePeriodoPorCicloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PCK_SERVICIOS_PUBLICOS.FC_NOMBREPERIODO(COMPANIA,ANO,PERIODO,NULL)NOMBREPERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO = :CICLOINICIAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBREPERIODO":"$NOMBREPERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLOINICIAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/nombreperiodoporciclo">
+		<call-query href="getSpciclosNombrePeriodoPorCicloQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLOINICIAL" query-param="CICLOINICIAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosporcompaniacontQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  'T' NUMERO  FROM COMPANIA WHERE COMPANIA.CODIGO = :COMPANIA UNION ALL SELECT TO_CHAR(SP_CICLO.NUMERO) NUMERO FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporcompaniacont">
+		<call-query href="getSpciclosTodosporcompaniacontQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosPorAnoPeridoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ANO, PERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO = :CICLO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANO":"$ANO(type:integer)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporanoperido">
+		<call-query href="getSpciclosTodosPorAnoPeridoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosPorNumeroUnionTQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT 'T' NUMERO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA UNION ALL SELECT TO_CHAR(NUMERO) NUMERO FROM SP_CICLO WHERE COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todospornumerouniont">
+		<call-query href="getSpciclosTodosPorNumeroUnionTQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagConTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TO_CHAR(NUMERO) NUMERO, CODIGOINICIAL, CODIGOFINAL, PERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA UNION ALL SELECT 'TODOS' NUMERO, 'TODOS' CODIGOINICIAL, 'TODOS' CODIGOFINAL, 'TODOS' PERIODO FROM DUAL ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/contodosporcompania/pag">
+		<call-query href="getSpciclosPagConTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumConTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TO_CHAR(NUMERO) NUMERO, CODIGOINICIAL, CODIGOFINAL, PERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA UNION ALL SELECT 'TODOS' NUMERO, 'TODOS' CODIGOINICIAL, 'TODOS' CODIGOFINAL, 'TODOS' PERIODO FROM DUAL ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER( '%' || :CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER( '%' || :CODIGOFINAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/contodosporcompania/num">
+		<call-query href="getSpciclosNumConTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ANO, NUMERO, PERIODO,(CASE PREFACTURANDO WHEN 0 THEN 'false' ELSE 'true' END) PREFACTURANDO FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANO":"$ANO(type:integer)","NUMERO":"$NUMERO(type:integer)","PERIODO":"$PERIODO","PREFACTURANDO":"$PREFACTURANDO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/porcompania">
+		<call-query href="getSpciclosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosPorPrefacturadoNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE SP_CICLO.PREFACTURANDO WHEN 0 THEN 'false' ELSE 'true' END) PREFACTURANDO, SP_CICLO.NUMERO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PREFACTURANDO":"$PREFACTURANDO(type:boolean)","NUMERO":"$NUMERO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporprefacturadonumero">
+		<call-query href="getSpciclosTodosPorPrefacturadoNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpciclosPorCodigoFinalCiclo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_CICLO  SET CODIGOINICIAL =:CODIGOINICIAL, 	CODIGOFINAL   =:CODIGOFINAL,DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'),MODIFIED_BY=:MODIFIED_BY  WHERE NUMERO	  =:CICLO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spciclos/porcodigofinalciclo">
+		<call-query href="updateSpciclosPorCodigoFinalCiclo">
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagNumeroYFechaPreparacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO,(TO_CHAR(FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION FROM SP_CICLO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","FECHA_PREPARACION":"$FECHA_PREPARACION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numeroyfechapreparacion/pag">
+		<call-query href="getSpciclosPagNumeroYFechaPreparacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumNumeroYFechaPreparacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO,(TO_CHAR(FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION FROM SP_CICLO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numeroyfechapreparacion/num">
+		<call-query href="getSpciclosNumNumeroYFechaPreparacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNombrePeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PCK_SERVICIOS_PUBLICOS.FC_NOMBREPERIODO(COMPANIA, PCK_SERVICIOS_PUBLICOS.FC_ANO_PERIODO_SIGUIENTE(COMPANIA,ANO,PERIODO,'0'), PCK_SERVICIOS_PUBLICOS.FC_ANO_PERIODO_SIGUIENTE(COMPANIA,ANO,PERIODO,'1'),NULL) NOMBREPERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO = :CICLO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBREPERIODO":"$NOMBREPERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/nombreperiodo">
+		<call-query href="getSpciclosNombrePeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagTodosNumeroPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  'TODOS' NUMERO  FROM DUAL UNION ALL SELECT TO_CHAR(NUMERO) NUMERO FROM SP_CICLO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosnumeroporcompania/pag">
+		<call-query href="getSpciclosPagTodosNumeroPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumTodosNumeroPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  'TODOS' NUMERO  FROM DUAL UNION ALL SELECT TO_CHAR(NUMERO) NUMERO FROM SP_CICLO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosnumeroporcompania/num">
+		<call-query href="getSpciclosNumTodosNumeroPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagNumerocodinicodfinanoperiodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO, CODIGOINICIAL, CODIGOFINAL, ANO, PERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END)  LIKE UPPER(:PERIODO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numerocodinicodfinanoperiodo/pag">
+		<call-query href="getSpciclosPagNumerocodinicodfinanoperiodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumNumerocodinicodfinanoperiodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO, CODIGOINICIAL, CODIGOFINAL, ANO, PERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER( '%' || :CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER( '%' || :CODIGOFINAL || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END)  LIKE UPPER( '%' || :PERIODO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numerocodinicodfinanoperiodo/num">
+		<call-query href="getSpciclosNumNumerocodinicodfinanoperiodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosFechaPreparacionPorCicloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (TO_CHAR(FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION,(CASE INDCALCULADO WHEN 0 THEN 'false' ELSE 'true' END) INDCALCULADO FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO = :CICLO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FECHA_PREPARACION":"$FECHA_PREPARACION","INDCALCULADO":"$INDCALCULADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/fechapreparacionporciclo">
+		<call-query href="getSpciclosFechaPreparacionPorCicloQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagTodosPorCodigosNoNulosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_CICLO.NUMERO, SP_CICLO.CODIGOINICIAL, SP_CICLO.CODIGOFINAL, SP_CICLO.PERIODO, SP_CICLO.ANO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA AND SP_CICLO.CODIGOINICIAL IS NOT NULL AND SP_CICLO.CODIGOFINAL IS NOT NULL ORDER BY SP_CICLO.NUMERO, SP_CICLO.ANO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL","PERIODO":"$PERIODO","ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporcodigosnonulos/pag">
+		<call-query href="getSpciclosPagTodosPorCodigosNoNulosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumTodosPorCodigosNoNulosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_CICLO.NUMERO, SP_CICLO.CODIGOINICIAL, SP_CICLO.CODIGOFINAL, SP_CICLO.PERIODO, SP_CICLO.ANO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA AND SP_CICLO.CODIGOINICIAL IS NOT NULL AND SP_CICLO.CODIGOFINAL IS NOT NULL ORDER BY SP_CICLO.NUMERO, SP_CICLO.ANO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER( '%' || :CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER( '%' || :CODIGOFINAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporcodigosnonulos/num">
+		<call-query href="getSpciclosNumTodosPorCodigosNoNulosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagNumAnoPeriodoIndcalcCodsIniFinQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO, ANO, PERIODO,(CASE INDCALCULADO WHEN 0 THEN 'false' ELSE 'true' END) INDCALCULADO, CODIGOINICIAL, CODIGOFINAL  FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO","INDCALCULADO":"$INDCALCULADO(type:boolean)","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numanoperiodoindcalccodsinifin/pag">
+		<call-query href="getSpciclosPagNumAnoPeriodoIndcalcCodsIniFinQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumNumAnoPeriodoIndcalcCodsIniFinQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO, ANO, PERIODO,(CASE INDCALCULADO WHEN 0 THEN 'false' ELSE 'true' END) INDCALCULADO, CODIGOINICIAL, CODIGOFINAL  FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER( '%' || :CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER( '%' || :CODIGOFINAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numanoperiodoindcalccodsinifin/num">
+		<call-query href="getSpciclosNumNumAnoPeriodoIndcalcCodsIniFinQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosPorNumeroYPeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_CICLO.NUMERO, SP_CICLO.PERIODO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todospornumeroyperiodo">
+		<call-query href="getSpciclosTodosPorNumeroYPeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosExistenciaCicloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  'x' EXISTE  FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO = :CICLO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"EXISTE":"$EXISTE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/existenciaciclo">
+		<call-query href="getSpciclosExistenciaCicloQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPorFechaPreparacionYCalculadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PERIODO,(TO_CHAR(FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION,(CASE INDCALCULADO WHEN 0 THEN 'false' ELSE 'true' END) INDCALCULADO FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO = :CICLO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PERIODO":"$PERIODO","FECHA_PREPARACION":"$FECHA_PREPARACION","INDCALCULADO":"$INDCALCULADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/porfechapreparacionycalculado">
+		<call-query href="getSpciclosPorFechaPreparacionYCalculadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosFechalimite2PorNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (TO_CHAR(FECHALIMITE2,'DD/MM/YYYY HH24:MI:SS')) FECHALIMITE2 FROM SP_CICLO INNER JOIN SP_PARAMETROFACTURACION ON SP_CICLO.COMPANIA = SP_PARAMETROFACTURACION.COMPANIA AND SP_CICLO.NUMERO = SP_PARAMETROFACTURACION.CICLO AND SP_CICLO.ANO = SP_PARAMETROFACTURACION.ANO AND SP_CICLO.PERIODO = SP_PARAMETROFACTURACION.PERIODO WHERE SP_CICLO.COMPANIA = :COMPANIA AND SP_CICLO.NUMERO = :CICLO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FECHALIMITE2":"$FECHALIMITE2"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/fechalimite2pornumero">
+		<call-query href="getSpciclosFechalimite2PorNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosPorNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NUMERO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todospornumero">
+		<call-query href="getSpciclosTodosPorNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagTodosParaReconstruccionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO, CODIGOINICIAL, CODIGOFINAL,(TO_CHAR(FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION, ANO, PERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%')  AND (CASE WHEN FECHA_PREPARACION IS NULL THEN ' ' ELSE UPPER(FECHA_PREPARACION) END)  LIKE UPPER( '%' || :FECHA_PREPARACION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL","FECHA_PREPARACION":"$FECHA_PREPARACION","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="FECHA_PREPARACION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosparareconstruccion/pag">
+		<call-query href="getSpciclosPagTodosParaReconstruccionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="FECHA_PREPARACION" query-param="FECHA_PREPARACION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumTodosParaReconstruccionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO, CODIGOINICIAL, CODIGOFINAL,(TO_CHAR(FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION, ANO, PERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%')  AND (CASE WHEN FECHA_PREPARACION IS NULL THEN ' ' ELSE UPPER(FECHA_PREPARACION) END)  LIKE UPPER( '%' || :FECHA_PREPARACION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="FECHA_PREPARACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosparareconstruccion/num">
+		<call-query href="getSpciclosNumTodosParaReconstruccionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="FECHA_PREPARACION" query-param="FECHA_PREPARACION"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagCicloFacturaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_CICLO.NUMERO,(TO_CHAR(SP_CICLO.FECHAPAGO1,'DD/MM/YYYY HH24:MI:SS')) FECHAPAGO1,(TO_CHAR(SP_CICLO.FECHAPAGO2,'DD/MM/YYYY HH24:MI:SS')) FECHAPAGO2, SP_CICLO.CODIGOINICIAL, SP_CICLO.CODIGOFINAL, SP_CICLO.ANO, SP_CICLO.PERIODO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END)  LIKE UPPER( '%' || :PERIODO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","FECHAPAGO1":"$FECHAPAGO1","FECHAPAGO2":"$FECHAPAGO2","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/ciclofactura/pag">
+		<call-query href="getSpciclosPagCicloFacturaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumCicloFacturaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_CICLO.NUMERO,(TO_CHAR(SP_CICLO.FECHAPAGO1,'DD/MM/YYYY HH24:MI:SS')) FECHAPAGO1,(TO_CHAR(SP_CICLO.FECHAPAGO2,'DD/MM/YYYY HH24:MI:SS')) FECHAPAGO2, SP_CICLO.CODIGOINICIAL, SP_CICLO.CODIGOFINAL, SP_CICLO.ANO, SP_CICLO.PERIODO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END)  LIKE UPPER( '%' || :PERIODO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/ciclofactura/num">
+		<call-query href="getSpciclosNumCicloFacturaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagTodosPorCicloAnoNumeroPeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO, ANO, PERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END)  LIKE UPPER(:PERIODO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporcicloanonumeroperiodo/pag">
+		<call-query href="getSpciclosPagTodosPorCicloAnoNumeroPeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumTodosPorCicloAnoNumeroPeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO, ANO, PERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END)  LIKE UPPER( '%' || :PERIODO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporcicloanonumeroperiodo/num">
+		<call-query href="getSpciclosNumTodosPorCicloAnoNumeroPeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagCodiniCodfinPeriodoPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO, NVL(CODIGOINICIAL, ' ') CODIGOINICIAL, NVL(CODIGOFINAL,' ') CODIGOFINAL, PCK_SERVICIOS_PUBLICOS.FC_NOMBREPERIODO(COMPANIA,ANO,PERIODO,NULL) NOMBREPERIODO  FROM SP_CICLO WHERE COMPANIA=:COMPANIA ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL","NOMBREPERIODO":"$NOMBREPERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/codinicodfinperiodoporcompania/pag">
+		<call-query href="getSpciclosPagCodiniCodfinPeriodoPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumCodiniCodfinPeriodoPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO, NVL(CODIGOINICIAL, ' ') CODIGOINICIAL, NVL(CODIGOFINAL,' ') CODIGOFINAL, PCK_SERVICIOS_PUBLICOS.FC_NOMBREPERIODO(COMPANIA,ANO,PERIODO,NULL) NOMBREPERIODO  FROM SP_CICLO WHERE COMPANIA=:COMPANIA ORDER BY NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER( '%' || :CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER( '%' || :CODIGOFINAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/codinicodfinperiodoporcompania/num">
+		<call-query href="getSpciclosNumCodiniCodfinPeriodoPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosAnoPeriodoPorCompaniaCicloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ANO, PERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO = :CICLO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANO":"$ANO(type:integer)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/anoperiodoporcompaniaciclo">
+		<call-query href="getSpciclosAnoPeriodoPorCompaniaCicloQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagTodosLosCiclosPorCodigoInicialYFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  'T' NUMERO, '0' CODIGOINICIAL, '99999999999999' CODIGOFINAL, 0 ORDEN  FROM COMPANIA UNION SELECT TO_CHAR(SP_CICLO.NUMERO) NUMERO, SP_CICLO.CODIGOINICIAL, SP_CICLO.CODIGOFINAL, SP_CICLO.NUMERO ORDEN FROM SP_CICLO WHERE COMPANIA =:COMPANIA ORDER BY ORDEN ASC) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER( '%' || :NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL","ORDEN":"$ORDEN(type:double)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todoslosciclosporcodigoinicialyfinal/pag">
+		<call-query href="getSpciclosPagTodosLosCiclosPorCodigoInicialYFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumTodosLosCiclosPorCodigoInicialYFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  'T' NUMERO, '0' CODIGOINICIAL, '99999999999999' CODIGOFINAL, 0 ORDEN  FROM COMPANIA UNION SELECT TO_CHAR(SP_CICLO.NUMERO) NUMERO, SP_CICLO.CODIGOINICIAL, SP_CICLO.CODIGOFINAL, SP_CICLO.NUMERO ORDEN FROM SP_CICLO WHERE COMPANIA =:COMPANIA ORDER BY ORDEN ASC) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER( '%' || :NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todoslosciclosporcodigoinicialyfinal/num">
+		<call-query href="getSpciclosNumTodosLosCiclosPorCodigoInicialYFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagUsuariosPorCiclosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT TO_CHAR(NUMERO) NUMERO, CODIGOINICIAL, CODIGOFINAL, NOMBREINICIAL, NOMBREFINAL, ROWNUM POS FROM ( SELECT NUMERO, NVL(CODIGOINICIAL,' ') CODIGOINICIAL, NVL(CODIGOFINAL,' ') CODIGOFINAL, CONCAT(NVL(U.PRIMERAPELLIDO,' '),CONCAT(' ',CONCAT(NVL(U.SEGUNDOAPELLIDO,' '),CONCAT(' ',NVL(U.NOMBRES,' ') ) ) ) ) NOMBREINICIAL , CONCAT(NVL(US.PRIMERAPELLIDO,' '),CONCAT(' ',CONCAT(NVL(US.SEGUNDOAPELLIDO,' '),CONCAT(' ',NVL(US.NOMBRES,' ') ) ) ) ) NOMBREFINAL FROM SP_CICLO C LEFT JOIN SP_USUARIO U ON C.COMPANIA = U.COMPANIA AND CODIGOINICIAL = U.CODIGORUTA AND C.NUMERO = U.CICLO LEFT JOIN SP_USUARIO US ON C.COMPANIA = US.COMPANIA AND C.CODIGOFINAL = US.CODIGORUTA AND C.NUMERO = US.CICLO WHERE C.COMPANIA =:COMPANIA ORDER BY NUMERO ) UNION SELECT 'T' NUMERO, '1', '9999999999999999', ' ', ' ', 9999999999999999 FROM DUAL ORDER BY POS) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END) LIKE UPPER(CONCAT(:CODIGOINICIAL, '%')) AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END) LIKE UPPER(CONCAT(:CODIGOFINAL, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL","NOMBREINICIAL":"$NOMBREINICIAL","NOMBREFINAL":"$NOMBREFINAL","POS":"$POS(type:double)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/usuariosporciclos/pag">
+		<call-query href="getSpciclosPagUsuariosPorCiclosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumUsuariosPorCiclosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT TO_CHAR(NUMERO) NUMERO, CODIGOINICIAL, CODIGOFINAL, NOMBREINICIAL, NOMBREFINAL, ROWNUM POS FROM ( SELECT NUMERO, NVL(CODIGOINICIAL,' ') CODIGOINICIAL, NVL(CODIGOFINAL,' ') CODIGOFINAL, CONCAT(NVL(U.PRIMERAPELLIDO,' '),CONCAT(' ',CONCAT(NVL(U.SEGUNDOAPELLIDO,' '),CONCAT(' ',NVL(U.NOMBRES,' ') ) ) ) ) NOMBREINICIAL , CONCAT(NVL(US.PRIMERAPELLIDO,' '),CONCAT(' ',CONCAT(NVL(US.SEGUNDOAPELLIDO,' '),CONCAT(' ',NVL(US.NOMBRES,' ') ) ) ) ) NOMBREFINAL FROM SP_CICLO C LEFT JOIN SP_USUARIO U ON C.COMPANIA = U.COMPANIA AND CODIGOINICIAL = U.CODIGORUTA AND C.NUMERO = U.CICLO LEFT JOIN SP_USUARIO US ON C.COMPANIA = US.COMPANIA AND C.CODIGOFINAL = US.CODIGORUTA AND C.NUMERO = US.CICLO WHERE C.COMPANIA =:COMPANIA ORDER BY NUMERO ) UNION SELECT 'T' NUMERO, '1', '9999999999999999', ' ', ' ', 9999999999999999 FROM DUAL ORDER BY POS) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END) LIKE UPPER(CONCAT(:CODIGOINICIAL, '%')) AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END) LIKE UPPER(CONCAT(:CODIGOFINAL, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/usuariosporciclos/num">
+		<call-query href="getSpciclosNumUsuariosPorCiclosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosPorCompaniaCicloRecuperarPeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PCK_SERVICIOS_PUBLICOS.FC_NOMBREPERIODO(COMPANIA,ANO,PERIODO,NULL) NOMBREPERIODO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO = :CICLO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBREPERIODO":"$NOMBREPERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporcompaniaciclorecuperarperiodo">
+		<call-query href="getSpciclosTodosPorCompaniaCicloRecuperarPeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagAnioPeriodoporCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CICLO, CASE WHEN ANO = 0 THEN ' ' ELSE TO_CHAR(ANO) END ANO , PERIODO  FROM (SELECT NUMERO , TO_CHAR(NUMERO) CICLO, ANO, PERIODO FROM SP_CICLO WHERE COMPANIA = :COMPANIA UNION SELECT 0 NUMERO , 'T' CICLO, 0 ANO, '0' PERIODO FROM DUAL ) ORDER BY NUMERO) WHERE (CASE WHEN CICLO IS NULL THEN ' ' ELSE UPPER(CICLO) END)  LIKE UPPER(:CICLO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CICLO":"$CICLO","ANO":"$ANO","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/anioperiodoporcompania/pag">
+		<call-query href="getSpciclosPagAnioPeriodoporCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumAnioPeriodoporCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CICLO, CASE WHEN ANO = 0 THEN ' ' ELSE TO_CHAR(ANO) END ANO , PERIODO  FROM (SELECT NUMERO , TO_CHAR(NUMERO) CICLO, ANO, PERIODO FROM SP_CICLO WHERE COMPANIA = :COMPANIA UNION SELECT 0 NUMERO , 'T' CICLO, 0 ANO, '0' PERIODO FROM DUAL ) ORDER BY NUMERO) WHERE (CASE WHEN CICLO IS NULL THEN ' ' ELSE UPPER(CICLO) END)  LIKE UPPER(:CICLO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/anioperiodoporcompania/num">
+		<call-query href="getSpciclosNumAnioPeriodoporCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TO_CHAR(NUMERO) NUMERO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA UNION ALL SELECT 'TODOS' FROM DUAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporcompania">
+		<call-query href="getSpciclosTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumeroYFechapreparacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NUMERO,(TO_CHAR(FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION FROM SP_CICLO WHERE COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","FECHA_PREPARACION":"$FECHA_PREPARACION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numeroyfechapreparacion">
+		<call-query href="getSpciclosNumeroYFechapreparacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosPorNumeroYNombreperiodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TO_CHAR(SP_CICLO.NUMERO) NUMERO, SP_CICLO.NUMERO NUMEROV, PCK_SERVICIOS_PUBLICOS.FC_NOMBREPERIODO(SP_CICLO.COMPANIA,SP_CICLO.ANO,SP_CICLO.PERIODO,NULL) NOMPERIODO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA UNION SELECT 'Todos' NUMERO, (MAX(NUMERO)+1) NUMEROV, 'Todos' NOMPERIODO FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY NUMEROV</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","NUMEROV":"$NUMEROV(type:double)","NOMPERIODO":"$NOMPERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todospornumeroynombreperiodo">
+		<call-query href="getSpciclosTodosPorNumeroYNombreperiodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagTodosCiclosCodinifiniPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_CICLO.NUMERO, SP_CICLO.CODIGOINICIAL, SP_CICLO.CODIGOFINAL  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.COMPANIA, SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todoscicloscodinifiniporcompania/pag">
+		<call-query href="getSpciclosPagTodosCiclosCodinifiniPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumTodosCiclosCodinifiniPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_CICLO.NUMERO, SP_CICLO.CODIGOINICIAL, SP_CICLO.CODIGOFINAL  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.COMPANIA, SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER( '%' || :CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER( '%' || :CODIGOFINAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todoscicloscodinifiniporcompania/num">
+		<call-query href="getSpciclosNumTodosCiclosCodinifiniPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPorCompaniaNumPerQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_CICLO.NUMERO, SP_CICLO.ANO, SP_CICLO.PERIODO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/porcompanianumper">
+		<call-query href="getSpciclosPorCompaniaNumPerQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPorCompaniaNumPerFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_CICLO.NUMERO, SP_CICLO.ANO, SP_CICLO.PERIODO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA AND SP_CICLO.NUMERO &gt;= :CICLOINICIAL ORDER BY SP_CICLO.NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLOINICIAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/porcompanianumperfinal">
+		<call-query href="getSpciclosPorCompaniaNumPerFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLOINICIAL" query-param="CICLOINICIAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumerosytQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  'T' NUMERO  FROM DUAL UNION ALL SELECT TO_CHAR(NUMERO) FROM SP_CICLO WHERE COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numerosyt">
+		<call-query href="getSpciclosNumerosytQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosCicloynombreporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CICLO.NUMERO, PCK_SERVICIOS_PUBLICOS.FC_NOMBREPERIODO(CICLO.COMPANIA,CICLO.ANO,CICLO.PERIODO,NULL) NOMPERIODO  FROM SP_CICLO CICLO WHERE CICLO.COMPANIA = :COMPANIA ORDER BY NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","NOMPERIODO":"$NOMPERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/cicloynombreporcompania">
+		<call-query href="getSpciclosCicloynombreporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPorPrefacturadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_CICLO.NUMERO,(CASE SP_CICLO.PREFACTURANDO WHEN 0 THEN 'false' ELSE 'true' END) PREFACTURANDO, SP_CICLO.PERIODO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","PREFACTURANDO":"$PREFACTURANDO(type:boolean)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/porprefacturado">
+		<call-query href="getSpciclosPorPrefacturadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosTodosPorNumero,ano,peridoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CICLO.NUMERO, CICLO.ANO, CICLO.PERIODO  FROM SP_CICLO CICLO WHERE CICLO.COMPANIA = :COMPANIA ORDER BY CICLO.NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todospornumero,ano,perido">
+		<call-query href="getSpciclosTodosPorNumero,ano,peridoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosConsultarPedirCicloNuevoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NUMERO, NUMERO NUMERO2, ANO, PERIODO, ANOINICIAL, PERIODOINICIAL  FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","NUMERO2":"$NUMERO2(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO","ANOINICIAL":"$ANOINICIAL(type:integer)","PERIODOINICIAL":"$PERIODOINICIAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/consultarpedirciclonuevo">
+		<call-query href="getSpciclosConsultarPedirCicloNuevoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPeriodoCondicionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PCK_SERVICIOS_PUBLICOS.FC_NOMBREPERIODO(COMPANIA,ANO,PERIODO,NULL) NOMBRE  FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO = CASE WHEN (:CICLO)='TODOS' THEN NUMERO ELSE TO_NUMBER(:CICLO) END</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/periodocondicion">
+		<call-query href="getSpciclosPeriodoCondicionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumerosinrepetirQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT NUMERO  FROM SP_CICLO WHERE COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/numerosinrepetir">
+		<call-query href="getSpciclosNumerosinrepetirQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagListaciclocompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_CICLO.NUMERO, SP_CICLO.CODIGOINICIAL, SP_CICLO.CODIGOFINAL, PCK_SERVICIOS_PUBLICOS.FC_NOMBREPERIODO(SP_CICLO.COMPANIA,SP_CICLO.ANO,SP_CICLO.PERIODO,NULL) NOMPERIODO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL","NOMPERIODO":"$NOMPERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/listaciclocompania/pag">
+		<call-query href="getSpciclosPagListaciclocompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumListaciclocompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_CICLO.NUMERO, SP_CICLO.CODIGOINICIAL, SP_CICLO.CODIGOFINAL, PCK_SERVICIOS_PUBLICOS.FC_NOMBREPERIODO(SP_CICLO.COMPANIA,SP_CICLO.ANO,SP_CICLO.PERIODO,NULL) NOMPERIODO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER( '%' || :CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER( '%' || :CODIGOFINAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/listaciclocompania/num">
+		<call-query href="getSpciclosNumListaciclocompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagListaciclosconcodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_CICLO.NUMERO, SP_CICLO.CODIGOINICIAL, SP_CICLO.CODIGOFINAL  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA AND NUMERO &gt;= :CICLOINICIAL ORDER BY SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLOINICIAL" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/listaciclosconcod/pag">
+		<call-query href="getSpciclosPagListaciclosconcodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLOINICIAL" query-param="CICLOINICIAL"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumListaciclosconcodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_CICLO.NUMERO, SP_CICLO.CODIGOINICIAL, SP_CICLO.CODIGOFINAL  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA AND NUMERO &gt;= :CICLOINICIAL ORDER BY SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER( '%' || :CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER( '%' || :CODIGOFINAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLOINICIAL" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/listaciclosconcod/num">
+		<call-query href="getSpciclosNumListaciclosconcodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLOINICIAL" query-param="CICLOINICIAL"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagUnionTOrdenNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT 'T' NUMERO, '0' CODIGOINICIAL, '99999999999999' CODIGOFINAL, 0 NUMEROORD  FROM SP_CICLO WHERE COMPANIA =:COMPANIA UNION ALL SELECT TO_CHAR(SP_CICLO.NUMERO) NUMERO, SP_CICLO.CODIGOINICIAL, SP_CICLO.CODIGOFINAL, SP_CICLO.NUMERO NUMEROORD FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMEROORD) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER( '%' || :NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER(:CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER(:CODIGOFINAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","CODIGOINICIAL":"$CODIGOINICIAL","CODIGOFINAL":"$CODIGOFINAL","NUMEROORD":"$NUMEROORD(type:double)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/uniontordennumero/pag">
+		<call-query href="getSpciclosPagUnionTOrdenNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumUnionTOrdenNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT 'T' NUMERO, '0' CODIGOINICIAL, '99999999999999' CODIGOFINAL, 0 NUMEROORD  FROM SP_CICLO WHERE COMPANIA =:COMPANIA UNION ALL SELECT TO_CHAR(SP_CICLO.NUMERO) NUMERO, SP_CICLO.CODIGOINICIAL, SP_CICLO.CODIGOFINAL, SP_CICLO.NUMERO NUMEROORD FROM SP_CICLO WHERE COMPANIA = :COMPANIA ORDER BY NUMEROORD) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER( '%' || :NUMERO || '%')  AND (CASE WHEN CODIGOINICIAL IS NULL THEN ' ' ELSE UPPER(CODIGOINICIAL) END)  LIKE UPPER( '%' || :CODIGOINICIAL || '%')  AND (CASE WHEN CODIGOFINAL IS NULL THEN ' ' ELSE UPPER(CODIGOFINAL) END)  LIKE UPPER( '%' || :CODIGOFINAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/uniontordennumero/num">
+		<call-query href="getSpciclosNumUnionTOrdenNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGOFINAL" query-param="CODIGOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosFechaeindicadorcalcQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (TO_CHAR(FECHA_PREPARACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_PREPARACION,(CASE INDCALCULADO WHEN 0 THEN 'false' ELSE 'true' END) INDCALCULADO FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO = :CICLO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FECHA_PREPARACION":"$FECHA_PREPARACION","INDCALCULADO":"$INDCALCULADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/fechaeindicadorcalc">
+		<call-query href="getSpciclosFechaeindicadorcalcQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosPagTodosPorAnoYPeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_CICLO.NUMERO, SP_CICLO.ANO, SP_CICLO.PERIODO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END)  LIKE UPPER(:PERIODO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporanoyperiodo/pag">
+		<call-query href="getSpciclosPagTodosPorAnoYPeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosNumTodosPorAnoYPeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_CICLO.NUMERO, SP_CICLO.ANO, SP_CICLO.PERIODO  FROM SP_CICLO WHERE SP_CICLO.COMPANIA = :COMPANIA ORDER BY SP_CICLO.NUMERO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN PERIODO IS NULL THEN ' ' ELSE UPPER(PERIODO) END)  LIKE UPPER(:PERIODO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/todosporanoyperiodo/num">
+		<call-query href="getSpciclosNumTodosPorAnoYPeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpciclosDiferenciafechapreparaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TRUNC(SYSDATE) - TRUNC(NVL(FECHA_PREPARACION,SYSDATE)) DIFERENCIA  FROM SP_CICLO WHERE COMPANIA = :COMPANIA AND NUMERO = :CICLO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DIFERENCIA":"$DIFERENCIA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spciclos/diferenciafechaprepara">
+		<call-query href="getSpciclosDiferenciafechapreparaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+
+		</call-query>
+	</resource>
+
+</data>

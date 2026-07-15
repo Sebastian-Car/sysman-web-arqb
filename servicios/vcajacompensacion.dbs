@@ -1,0 +1,90 @@
+﻿<data name="vcajacompensacion" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getVcajacompensacionTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CAJA_COMPENSACION, NOMBRE_CAJA  FROM V_CAJA_COMPENSACION WHERE COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CAJA_COMPENSACION":"$CAJA_COMPENSACION","NOMBRE_CAJA":"$NOMBRE_CAJA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vcajacompensacion/todosporcompania">
+		<call-query href="getVcajacompensacionTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getVcajacompensacionPagTodosPorNitQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NIT , NOMBRE_CAJA, CAJA_COMPENSACION  FROM V_CAJA_COMPENSACION WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END)  LIKE UPPER(:NIT || '%')  AND (CASE WHEN NOMBRE_CAJA IS NULL THEN ' ' ELSE UPPER(NOMBRE_CAJA) END)  LIKE UPPER( '%' || :NOMBRE_CAJA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NIT":"$NIT","NOMBRE_CAJA":"$NOMBRE_CAJA","CAJA_COMPENSACION":"$CAJA_COMPENSACION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRE_CAJA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vcajacompensacion/todospornit/pag">
+		<call-query href="getVcajacompensacionPagTodosPorNitQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRE_CAJA" query-param="NOMBRE_CAJA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getVcajacompensacionNumTodosPorNitQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NIT , NOMBRE_CAJA, CAJA_COMPENSACION  FROM V_CAJA_COMPENSACION WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END)  LIKE UPPER(:NIT || '%')  AND (CASE WHEN NOMBRE_CAJA IS NULL THEN ' ' ELSE UPPER(NOMBRE_CAJA) END)  LIKE UPPER( '%' || :NOMBRE_CAJA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRE_CAJA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vcajacompensacion/todospornit/num">
+		<call-query href="getVcajacompensacionNumTodosPorNitQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRE_CAJA" query-param="NOMBRE_CAJA"/>
+
+		</call-query>
+	</resource>
+		<query id="getVcajacompensacionPagCodigonombreporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CAJA_COMPENSACION, NOMBRE_CAJA FROM V_CAJA_COMPENSACION WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN CAJA_COMPENSACION IS NULL THEN ' ' ELSE UPPER(CAJA_COMPENSACION) END) LIKE UPPER(CONCAT(:CAJA_COMPENSACION, '%')) AND (CASE WHEN NOMBRE_CAJA IS NULL THEN ' ' ELSE UPPER(NOMBRE_CAJA) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_CAJA), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CAJA_COMPENSACION":"$CAJA_COMPENSACION","NOMBRE_CAJA":"$NOMBRE_CAJA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CAJA_COMPENSACION" sqlType="STRING"/>
+		<param name="NOMBRE_CAJA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vcajacompensacion/codigonombreporcompania/pag">
+		<call-query href="getVcajacompensacionPagCodigonombreporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CAJA_COMPENSACION" query-param="CAJA_COMPENSACION"/>
+			<with-param name="NOMBRE_CAJA" query-param="NOMBRE_CAJA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getVcajacompensacionNumCodigonombreporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CAJA_COMPENSACION, NOMBRE_CAJA FROM V_CAJA_COMPENSACION WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN CAJA_COMPENSACION IS NULL THEN ' ' ELSE UPPER(CAJA_COMPENSACION) END) LIKE UPPER(CONCAT(:CAJA_COMPENSACION, '%')) AND (CASE WHEN NOMBRE_CAJA IS NULL THEN ' ' ELSE UPPER(NOMBRE_CAJA) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_CAJA), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CAJA_COMPENSACION" sqlType="STRING"/>
+		<param name="NOMBRE_CAJA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vcajacompensacion/codigonombreporcompania/num">
+		<call-query href="getVcajacompensacionNumCodigonombreporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CAJA_COMPENSACION" query-param="CAJA_COMPENSACION"/>
+			<with-param name="NOMBRE_CAJA" query-param="NOMBRE_CAJA"/>
+
+		</call-query>
+	</resource>
+
+</data>

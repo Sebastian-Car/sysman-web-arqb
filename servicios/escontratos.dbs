@@ -1,0 +1,166 @@
+﻿<data name="escontratos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getEscontratosPagAdjudicacionPorTipoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ES_CONTRATO.COD_T_CONTRATO, ES_CONTRATO.NOMBRE, ES_CONTRATO.COD_CONTRATO  FROM ES_CONTRATO WHERE ES_CONTRATO.COMPANIA = :COMPANIA AND ES_CONTRATO.COD_T_CONTRATO = :TIPOCONTRATO) WHERE (CASE WHEN COD_T_CONTRATO IS NULL THEN ' ' ELSE UPPER(COD_T_CONTRATO) END)  LIKE UPPER(:COD_T_CONTRATO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN COD_CONTRATO IS NULL THEN ' ' ELSE UPPER(COD_CONTRATO) END)  LIKE UPPER(:COD_CONTRATO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COD_T_CONTRATO":"$COD_T_CONTRATO","NOMBRE":"$NOMBRE","COD_CONTRATO":"$COD_CONTRATO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="COD_T_CONTRATO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="COD_CONTRATO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="escontratos/adjudicacionportipo/pag">
+		<call-query href="getEscontratosPagAdjudicacionPorTipoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="COD_T_CONTRATO" query-param="COD_T_CONTRATO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="COD_CONTRATO" query-param="COD_CONTRATO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEscontratosNumAdjudicacionPorTipoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ES_CONTRATO.COD_T_CONTRATO, ES_CONTRATO.NOMBRE, ES_CONTRATO.COD_CONTRATO  FROM ES_CONTRATO WHERE ES_CONTRATO.COMPANIA = :COMPANIA AND ES_CONTRATO.COD_T_CONTRATO = :TIPOCONTRATO) WHERE (CASE WHEN COD_T_CONTRATO IS NULL THEN ' ' ELSE UPPER(COD_T_CONTRATO) END)  LIKE UPPER(:COD_T_CONTRATO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN COD_CONTRATO IS NULL THEN ' ' ELSE UPPER(COD_CONTRATO) END)  LIKE UPPER(:COD_CONTRATO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="COD_T_CONTRATO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="COD_CONTRATO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="escontratos/adjudicacionportipo/num">
+		<call-query href="getEscontratosNumAdjudicacionPorTipoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="COD_T_CONTRATO" query-param="COD_T_CONTRATO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="COD_CONTRATO" query-param="COD_CONTRATO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertEscontratos" keyColumns="COMPANIA,COD_CONTRATO,COD_T_CONTRATO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ES_CONTRATO (COMPANIA, COD_CONTRATO, COD_T_CONTRATO, NOMBRE, OBSERVACIONES, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :COD_CONTRATO, :COD_T_CONTRATO, :NOMBRE, :OBSERVACIONES, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_COD_CONTRATO":"$COD_CONTRATO","KEY_COD_T_CONTRATO":"$COD_T_CONTRATO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_CONTRATO" sqlType="STRING"/>
+		<param name="COD_T_CONTRATO" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="escontratos">
+		<call-query href="insertEscontratos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_CONTRATO" query-param="COD_CONTRATO"/>
+			<with-param name="COD_T_CONTRATO" query-param="COD_T_CONTRATO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEscontratos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ES_CONTRATO WHERE ES_CONTRATO.COMPANIA= :KEY_COMPANIA AND ES_CONTRATO.COD_CONTRATO= :KEY_COD_CONTRATO AND ES_CONTRATO.COD_T_CONTRATO= :KEY_COD_T_CONTRATO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_CONTRATO" sqlType="STRING"/>
+		<param name="KEY_COD_T_CONTRATO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="escontratos">
+		<call-query href="deleteEscontratos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_CONTRATO" query-param="KEY_COD_CONTRATO"/>
+			<with-param name="KEY_COD_T_CONTRATO" query-param="KEY_COD_T_CONTRATO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEscontratosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, COD_CONTRATO, COD_T_CONTRATO, NOMBRE, OBSERVACIONES  FROM ES_CONTRATO WHERE COMPANIA = :COMPANIA AND COD_T_CONTRATO = :TIPO) WHERE (CASE WHEN COD_CONTRATO IS NULL THEN ' ' ELSE UPPER(COD_CONTRATO) END)  LIKE UPPER(:COD_CONTRATO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER( '%' || :OBSERVACIONES || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","COD_CONTRATO":"$COD_CONTRATO","COD_T_CONTRATO":"$COD_T_CONTRATO","NOMBRE":"$NOMBRE","OBSERVACIONES":"$OBSERVACIONES"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="COD_CONTRATO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="escontratos">
+		<call-query href="getEscontratosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="COD_CONTRATO" query-param="COD_CONTRATO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEscontratosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, COD_CONTRATO, COD_T_CONTRATO, NOMBRE, OBSERVACIONES  FROM ES_CONTRATO WHERE COMPANIA = :COMPANIA AND COD_T_CONTRATO = :TIPO) WHERE (CASE WHEN COD_CONTRATO IS NULL THEN ' ' ELSE UPPER(COD_CONTRATO) END)  LIKE UPPER(:COD_CONTRATO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER( '%' || :OBSERVACIONES || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="COD_CONTRATO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="escontratos/numero">
+		<call-query href="getEscontratosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="COD_CONTRATO" query-param="COD_CONTRATO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEscontratos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ES_CONTRATO SET COD_CONTRATO=:COD_CONTRATO, NOMBRE=:NOMBRE, OBSERVACIONES=:OBSERVACIONES, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ES_CONTRATO.COMPANIA= :KEY_COMPANIA AND ES_CONTRATO.COD_CONTRATO= :KEY_COD_CONTRATO AND ES_CONTRATO.COD_T_CONTRATO= :KEY_COD_T_CONTRATO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COD_CONTRATO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_CONTRATO" sqlType="STRING"/>
+		<param name="KEY_COD_T_CONTRATO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="escontratos">
+		<call-query href="updateEscontratos">
+			<with-param name="COD_CONTRATO" query-param="COD_CONTRATO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_CONTRATO" query-param="KEY_COD_CONTRATO"/>
+			<with-param name="KEY_COD_T_CONTRATO" query-param="KEY_COD_T_CONTRATO"/>
+
+		</call-query>
+	</resource>
+
+</data>

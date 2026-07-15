@@ -1,0 +1,461 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pt="http://java.sun.com/jsf/passthrough"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+	>
+        <ui:define name="script">
+        <script>
+            function loadDetalle() {
+                if("#{bancosControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+    </ui:define>   
+ <ui:define name="titulo">
+        <title>#{idm.TG_BANCOS}</title>
+    </ui:define>
+    <ui:define name="contenido">
+        <f:event type="preRenderView" listener="#{bancosControlador.cargarLista}" />
+        <section class="radius" >
+            <h:form id="FR30" >
+                <p:growl id="alert" showDetail="true" sticky="false" widgetVar="alert" life="5000" autoUpdate="false" escape="false"/>  
+                <p:panel id="lista" widgetVar="lista"   visible="#{bancosControlador.accion==null}" > 
+                    <p:confirmDialog global="true" showEffect="fade"    id="confFR30" widgetVar="confFR30"  rendered="#{bancosControlador.permisos[1]}">
+                        <p:commandButton value="#{idm.TI_SI}"  type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                        <p:commandButton value="#{idm.TI_NO}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                    </p:confirmDialog>
+                    <p:dataTable id="TBFR30" widgetVar="TBFR30"  var="reg" value="#{bancosControlador.listaInicial}"  
+                                 editable="true" 
+                                 emptyMessage="#{idm.TI_EMPTY_MESSAGE}" 
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}" 
+                                 currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+                                 rows="10"
+                                 rowIndexVar="rowIndex"
+                                 paginator="true"
+	           lazy="true">
+                        <f:facet name="{Exporters}" rendered="#{bancosControlador.permisos[4] }" >
+                            <h:commandLink rendered="#{bancosControlador.permisos[4] }" title="#{idm.TI_VER_EXCEL}">
+                                <p:graphicImage name="/images/general/excel.png" width="24"/>
+                                <p:dataExporter type="xls" target="TBFR30" fileName="Datos"  encoding="ISO-8859-1"  />
+                            </h:commandLink>
+                            <h:commandLink rendered="#{bancosControlador.permisos[4] }" title="#{idm.TI_VER_PDF}">
+                                <p:graphicImage name="/images/general/pdf.png" width="24"/>
+                                <p:dataExporter type="pdf" target="TBFR30" fileName="Datos"  encoding="ISO-8859-1"/>
+                            </h:commandLink>
+                        </f:facet>
+                        <f:facet name="header">
+                            <div style="position: relative; height: 50px">
+                                <h:panelGroup class="acme" rendered="#{bancosControlador.permisos[0] }">
+                                    <p:commandLink action="#{bancosControlador.cargarRegistroNuevo}" 
+                                                   update=":FR30_nuevo:nuevoPanel"
+                                                   rendered="#{bancosControlador.permisos[0]}"
+                                                   onclick="try { PF('blockLista').show(); PF('TBCB45').nuevo=true;} catch (e) { }"
+                                                   oncomplete="try{ asignarEventoContGrande();
+validarCargaGrandes();
+  PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+                                                   title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;" 
+                                                   id="btNuevo">
+                                        <center><p:graphicImage name="/images/menus/32/add.png"/>
+                                            <div>#{idm.TI_NUEVO}</div>
+                                        </center>
+                                    </p:commandLink>
+                                </h:panelGroup>
+                                <div class="acme">
+                                    <h:outputLink  value="javascript:void(0)" onclick="rcCerrar();" title="#{idm.TI_VOLVER}" style="padding-top: 10px;" >  
+		<center><p:graphicImage name="/images/menus/32/close.png"/>
+                                            <div>#{idm.TI_CERRAR}</div>
+                                        </center>
+                                    </h:outputLink>
+                                </div>
+                            </div>
+	<p:remoteCommand name="rcCerrar" actionListener="#{bancosControlador.ejecutarrcCerrar}" 
+ /> 
+                            #{idm.TG_BANCOS}
+                        </f:facet>
+<p:column headerText="#{idm.TG_CODIGO7}" filterBy="#{reg.campos['BANCO']}" filterMatchMode="startsWith" style="text-align:center; "  width="15%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['BANCO']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_NOMBRE3}" filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains" style="text-align:center; "  width="50%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['NOMBRE']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_FR30_2}" filterBy="#{reg.campos['CUENTA']}" filterMatchMode="startsWith" style="text-align:center; "  width="20%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['CUENTA']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_TIPO_CUENTA}" filterBy="#{reg.campos['TIPOCUENTA_LB']}" filterMatchMode="startsWith" style="text-align:center; "  width="15%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['TIPOCUENTA_LB']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column width="150"  headerText="Acciones" style="text-align: center" exportable="false">
+ <p:commandButton icon="ui-icon-search"   title="#{idm.TI_VER_REGISTRO}" 
+                                             action="#{bancosControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+                                             update=":FR30_nuevo"
+                                             onclick="try{ PF('blockLista').show();  PF('TBCB45').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+                                             rendered="#{bancosControlador.permisos[3]}"
+                                             oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+                                <f:param name="rowIndex" value="#{rowIndex}" />
+                            </p:commandButton>
+	<p:commandButton icon="ui-icon-document-b"   title="#{idm.TI_EDITAR_REGISTRO}" 
+                                             action="#{bancosControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+                                             update=":FR30_nuevo"
+                                             onclick="try{ PF('blockLista').show();  PF('TBCB45').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+                                             rendered="#{bancosControlador.permisos[2] }"
+                                             oncomplete="try{asignarEventoContGrande();
+validarCargaGrandes();
+ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+                                <f:param name="rowIndex" value="#{rowIndex}" />
+                            </p:commandButton>
+	       <p:commandButton icon="ui-icon-trash"   title="#{idm.TI_ELIMINAR_REGISTRO}" 
+		 onclick="PF('blockListaGuardar').show()"
+                                             action="#{bancosControlador.eliminarReg(reg)}" 
+                                             update=":FR30:TBFR30,:FR30:alert"
+                                             rendered="#{bancosControlador.permisos[1] }"
+                                             oncomplete=" PF('blockListaGuardar').hide();">
+                                <p:confirm header="#{sessionBean.tituloMensajes}" message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                    <p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR30">
+#{idm.TI_CARGANDO}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                    <p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                </p:panel>
+            </h:form>
+<h:form id="FR30_nuevo"    style="margin-top: -20px;"      >
+	<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA" my="left bottom" at="left bottom"  for="BTBUSQUEDA"  hideEffect="fade" rendered="#{bancosControlador.accion!='i'}"  style="width: 500px"   >
+                    <p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA"  var="reg" value="#{bancosControlador.listaInicialF}"
+                                 editable="true"
+                                 emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+                                 currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+                                 rows="10"
+                                 rowIndexVar="rowIndex"
+                                 selectionMode="single"
+                                 rowKey="#{reg.llave}"
+                                 paginator="true"
+                                 lazy="true">
+                        <p:ajax event="rowSelect" listener="#{bancosControlador.seleccionarFilaBusqueda}" onstart="PF('blockNuevo').show()" oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();    " update="@form"  />
+	<p:column headerText="#{idm.TG_NOMBRE3}" filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains" style="text-align:center; "  width="50%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['NOMBRE']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_FR30_2}" filterBy="#{reg.campos['CUENTA']}" filterMatchMode="startsWith" style="text-align:center; "  width="20%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['CUENTA']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_TIPO_CUENTA}" filterBy="#{reg.campos['TIPOCUENTA_LB']}" filterMatchMode="startsWith" style="text-align:center; "  width="15%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['TIPOCUENTA_LB']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+                    </p:dataTable>
+                </p:overlayPanel>
+               <p:growl id="alert" showDetail="true" sticky="false" widgetVar="alert" life="5000" autoUpdate="false"  escape="false" />  
+                <p:panel id="nuevoPanel"   visible="#{bancosControlador.accion!=null}" widgetVar="nuevoPanel"  >
+	<div style="position: relative; height: 50px; padding-bottom: 80px;  " >
+	<div class="acme" style="display:#{bancosControlador.accion=='v'?'none':'block'}">
+                            <p:commandLink action="#{bancosControlador.agregarRegistroNuevo(false)}" rendered="#{bancosControlador.accion!='v'}"
+                                           update=":FR30_nuevo,#{!bancosControlador.permisos[2]?':FR30':'' }"
+                                          onclick="if (!validarVacios(['CB45','CP244'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+                                          title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+ oncomplete="asignarEventoContGrande(); validarCargaGrandes(); " >
+                                <center><p:graphicImage name="/images/menus/32/save.png"/>
+                                    <div style="height: 30px">#{idm.TI_GUARDAR}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+	<div class="acme" style="display:#{bancosControlador.accion=='v' or !bancosControlador.permisos[0]?'none':'block'}">
+                            <p:commandLink action="#{bancosControlador.guardarNuevo}" rendered="#{bancosControlador.accion!='v' and bancosControlador.permisos[0]}"
+                                           update=":FR30_nuevo"
+	                      onclick="if (!validarVacios(['CB45','CP244'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{bancosControlador.accion!='i'  and bancosControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+                                           oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+                                           title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}" style="padding-top: 10px;" >
+                                <center><p:graphicImage name="/images/menus/32/savenew.png"/>
+                                    <div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+ <div class="acme" style="display:#{bancosControlador.accion=='i' or !bancosControlador.permisos[0]?'none':'block'}">
+                            <p:commandLink id="BTBUSQUEDA" rendered="#{bancosControlador.accion!='i' and bancosControlador.permisos[0]}"
+                                           title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;"  >
+                                <center><p:graphicImage name="/images/menus/32/search.png"/>
+                                    <div style="height: 30px">#{idm.TI_BUSCAR}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+ 	<div class="acme" >
+                            <p:commandLink update=":FR30:TBFR30"
+                                           onclick="try {
+		           PF('TBFR30').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+                                           title="#{idm.TI_ATRAS}" style="padding-top: 10px;" >
+                                <center><p:graphicImage name="/images/menus/32/back.png"/>
+                                    <div style="height: 30px">#{idm.TI_VOLVER}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+                        <p:panel rendered="#{bancosControlador.accion!='i'  and bancosControlador.rid==null }" styleClass="acme" style="min-width: 350px; width:30%; padding: 10px;">
+                            <center style="margin: 2px;"> 
+                                <p:commandButton icon="ui-icon-seek-first"   
+                                                 action="#{bancosControlador.irPrimero()}"
+                                                 title="#{idm.TI_PRIMER_REGISTRO}" 
+                                                 update=":FR30_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); "
+                                                 >
+                                </p:commandButton>
+                                <p:commandButton icon="ui-icon-seek-prev"   
+                                                 action="#{bancosControlador.irAnterior()}"
+                                                 title="#{idm.TI_REGISTRO_ANTERIOR}" 
+                                                 update=":FR30_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); "
+                                                 >
+                                </p:commandButton>
+	           <p:outputLabel value="#{idm.TI_REGISTRO} #{bancosControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{bancosControlador.listaInicial.rowCount} " />
+                                <p:commandButton icon="ui-icon-seek-next"   
+                                                 title="#{idm.TI_REGISTRO_SIGUIENTE}" 
+                                                 action="#{bancosControlador.irSiguiente()}"
+                                                 update=":FR30_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); ">
+                                </p:commandButton>
+                                <p:commandButton icon="ui-icon-seek-end"
+                                                 title="#{idm.TI_ULTIMO_REGISTRO}" 
+                                                 action="#{bancosControlador.irUltimo()}"
+                                                 update=":FR30_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); ">
+                                </p:commandButton>
+                            </center>
+                        </p:panel>
+	   <p:panel styleClass="acme" style="width:21%; min-width:260px">
+                            <h:panelGrid columns="3"  style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+                                <h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}"/>
+                                <p:inputText id="CPCREADO"  readonly="true" widgetVar="CPCREADO"
+                                             value="#{bancosControlador.registro.campos['CREATED_BY']}"   placeholder="#{idm.TI_CREADOR}" disabled="true"/>
+                                <p:calendar   locale="es"  style="width: 60%" pattern="dd/MM/yyyy"  id="CPCREADOF"  widgetVar="CPCREADOF" value="#{bancosControlador.registro.campos['DATE_CREATED']}" disabled="true" />
+                                <h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+                                <p:inputText id="CPMODIFICADO"  readonly="true" widgetVar="CPMODIFICADO"
+                                             value="#{bancosControlador.registro.campos['MODIFIED_BY']}"   placeholder="#{idm.TI_MODIFICADOR}" disabled="true"/>
+                                <p:calendar   locale="es"  style="width: 60%" pattern="dd/MM/yyyy"  id="CPMODIFICADOF" widgetVar="CPMODIFICADOF" value="#{bancosControlador.registro.campos['DATE_MODIFIED']}" disabled="true" />
+                            </h:panelGrid>
+                        </p:panel>
+                    </div>
+<div id="PL69" class="
+" style="position: relative; height: 63px; ">
+<h:outputLabel id="LB43285" value="#{idm.TT_LB43285}"       style="position: absolute; width:521px; height: 34px; left: 19px;   top: 5px; text-align: center; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 15px; display:#{bancosControlador.visibleSiif? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px;"   />
+<h:outputLabel id="LB141" value="#{idm.TT_LB141}"       style="position: absolute; width:521px; height: 34px; left: 19px;   top: 5px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+</div>
+<div id="PL70" class="
+" style="position: relative; height: 471px; ">
+<h:outputLabel id="LB55691" value="#{idm.TT_LB55691}"       style="position: absolute; width:263px; height: 20px; left: 33px;   top: 229px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<p:inputText id="CP52458"   widgetVar="CP52458"  
+styleClass="inputTab"
+value="#{bancosControlador.registro.campos['NIT_SIIF']}"  
+   readonly="#{bancosControlador.accion=='v'?true:false}" tabindex="6" 
+ rendered="true"
+  style="position: absolute; width:174px; height: 22px; text-decoration:none; left: 301px;   top: 101px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleSiif? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<h:outputLabel id="LB50393" value="#{idm.TT_LB50393}"       style="position: absolute; width:263px; height: 20px; left: 32px;   top: 200px; text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:none;"   />
+<p:inputText id="CP62452"   widgetVar="CP62452"  
+styleClass="inputTab"
+value="#{bancosControlador.registro.campos['CODIGO_NACHAM']}"  
+  placeholder="#{idm.AC_CP62452}" readonly="#{bancosControlador.accion=='v'?true:false}"  
+maxlength="12"
+  style="position: absolute; width:174px; height: 20px; text-decoration:none; left: 301px;   top: 200px; text-align: left; font-weight: none; font-style: none; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+ <pe:keyFilter mask="pint"/>  
+</p:inputText>
+<p:selectOneMenu filter="true" editable="false"       effect="fade" id="CB5712"   widgetVar="CB5712"  value="#{bancosControlador.registro.campos['DOC_SIIF_BANCO']}" disabled="#{bancosControlador.accion=='v'?true:false}"  tabindex="3"  
+ style="position: absolute; width:174px; height: 22px; left: 301px;   top: 74px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleSiif? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px;"
+>
+      <f:selectItem/>
+       <f:selectItems value="#{bancosControlador.listatipoDocumento}" var="regc" itemLabel="#{regc.campos['DESCRIPCION']}" itemValue="#{regc.campos['DCTO_IDENTIDAD']}" /></p:selectOneMenu>
+<h:outputLabel id="LB43284" value="#{idm.TG_NIT7}"       style="position: absolute; width:200px; height: 22px; left: 96px;   top: 101px; text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleSiif? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<p:selectBooleanCheckbox id="CK2055"  widgetVar="CK2055"  
+value="#{bancosControlador.registro.campos['PAGOBANCOBOGOTA']}" disabled="#{bancosControlador.accion=='v'?true:false}" 
+tabindex="18"  style="position: absolute;  left: 302px;   top: 229px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; "
+>
+</p:selectBooleanCheckbox>
+<h:outputLabel id="LB149" value="#{bancosControlador.tituloNoCuenta}"       style="position: absolute; width:200px; height: 22px; left: 96px;   top: 74px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB150" value="#{idm.TG_TELEFONO3}"  rendered="true"     style="position: absolute; width:200px; height: 22px; left: 96px;   top: 101px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB151" value="#{idm.TT_LB151}"       style="position: absolute; width:200px; height: 20px; left: 96px;   top: 127px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB152" value="#{idm.TT_LB152}"  rendered="#{bancosControlador.visibleHojas}"     style="position: absolute; width:200px; height: 20px; left: 96px;   top: 204px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<p:inputText id="CP244"   widgetVar="CP244"  
+styleClass="inputTab"
+value="#{bancosControlador.registro.campos['NOMBRE']}"  
+   readonly="#{bancosControlador.accion=='v'?true:false}" tabindex="2" 
+  style="position: absolute; width:302px; height: 23px; text-decoration:none; left: 301px;   top: 46px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputText id="CP245"   widgetVar="CP245"  
+styleClass="inputTab"
+value="#{bancosControlador.registro.campos['CUENTA']}"  
+  placeholder="#{idm.AC_CP245}" readonly="#{bancosControlador.accion=='v'?true:false}" tabindex="4" 
+maxlength="20"
+  style="position: absolute; width:174px; height: 22px; text-decoration:none; left: 301px;   top: 74px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+ <pe:keyFilter mask="pint"/>  
+</p:inputText>
+<p:inputText id="CP246"   widgetVar="CP246"  
+styleClass="inputTab"
+value="#{bancosControlador.registro.campos['TELEFONO']}"  
+  placeholder="#{idm.AC_CP246}" readonly="#{bancosControlador.accion=='v'?true:false}" tabindex="7" 
+ rendered="true"
+maxlength="15"
+  style="position: absolute; width:174px; height: 22px; text-decoration:none; left: 301px;   top: 101px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+ <pe:keyFilter mask="pint"/>  
+</p:inputText>
+<p:inputText id="CP247"   widgetVar="CP247"  
+styleClass="inputTab"
+value="#{bancosControlador.registro.campos['FAX']}"  
+  placeholder="#{idm.TG_NUMERO_DEL_FAX}" readonly="#{bancosControlador.accion=='v'?true:false}" tabindex="8" 
+maxlength="15"
+  style="position: absolute; width:174px; height: 20px; text-decoration:none; left: 301px;   top: 127px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+ <pe:keyFilter mask="pint"/>  
+</p:inputText>
+<p:inputText id="CP248"   widgetVar="CP248"  
+styleClass="inputTab"
+value="#{bancosControlador.registro.campos['DIRECCION']}"  
+  placeholder="#{idm.AC_CP248}" readonly="#{bancosControlador.accion=='v'?true:false}" tabindex="9" 
+maxlength="40"
+  style="position: absolute; width:174px; height: 20px; text-decoration:none; left: 301px;   top: 153px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputText id="CP249"   widgetVar="CP249"  
+styleClass="inputTab"
+value="#{bancosControlador.registro.campos['SUCURSAL']}"  
+  placeholder="#{idm.AC_CP249}" readonly="#{bancosControlador.accion=='v'?true:false}" tabindex="10" 
+maxlength="15"
+  style="position: absolute; width:174px; height: 20px; text-decoration:none; left: 301px;   top: 178px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputText id="CP250"   widgetVar="CP250"  
+styleClass="inputTab"
+value="#{bancosControlador.registro.campos['CODIGO_ENTIDAD']}"  
+  placeholder="#{idm.AC_CP250}" readonly="#{bancosControlador.accion=='v'?true:false}" tabindex="11" 
+ rendered="#{bancosControlador.visibleHojas}"
+maxlength="9"
+  style="position: absolute; width:174px; height: 20px; text-decoration:none; left: 301px;   top: 204px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:selectBooleanCheckbox id="CK1455"  widgetVar="CK1455"  
+value="#{bancosControlador.registro.campos['PAGOBANPOULAR']}" disabled="#{bancosControlador.accion=='v'?true:false}" 
+tabindex="13"  style="position: absolute;  left: 302px;   top: 281px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; "
+>
+</p:selectBooleanCheckbox>
+<p:selectBooleanCheckbox id="CK1598"  widgetVar="CK1598"  
+value="#{bancosControlador.registro.campos['IND_CODCIUDADCTA']}" disabled="#{bancosControlador.accion=='v'?true:false}" 
+tabindex="15"  style="position: absolute;  left: 302px;   top: 304px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; "
+>
+</p:selectBooleanCheckbox>
+<h:outputLabel id="LB41097" value="#{idm.TT_LB41097}"       style="position: absolute; width:200px; height: 20px; left: 96px;   top: 281px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB41098" value="#{idm.TT_LB41098}"       style="position: absolute; width:200px; height: 20px; left: 96px;   top: 324px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB46027" value="#{idm.TT_LB46027}"       style="position: absolute; width:263px; height: 20px; left: 33px;   top: 303px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<p:inputText id="CP49891"   widgetVar="CP49891"  
+styleClass="inputTab"
+value="#{bancosControlador.registro.campos['DIGITO_VERIFICACION']}"  
+   readonly="#{bancosControlador.accion=='v'?true:false}" tabindex="14" 
+ rendered="true"
+maxlength="4"
+  style="position: absolute; width:174px; height: 20px; text-decoration:none; left: 302px;   top: 324px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+ <pe:keyFilter mask="pint"/>  
+</p:inputText>
+<h:outputLabel id="LB148" value="#{idm.TT_LB148}"       style="position: absolute; width:200px; height: 23px; left: 96px;   top: 46px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB147" value="#{idm.TT_LB147}"       style="position: absolute; width:200px; height: 22px; left: 96px;   top: 19px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB144" value="#{idm.TT_LB144}"  rendered="#{bancosControlador.visibleHojas}"     style="position: absolute; width:200px; height: 20px; left: 96px;   top: 255px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB143" value="#{idm.TG_SUCURSAL2}"       style="position: absolute; width:200px; height: 20px; left: 96px;   top: 178px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB142" value="#{idm.TG_DIRECCION4}"       style="position: absolute; width:200px; height: 20px; left: 96px;   top: 153px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<p:inputText id="CB45" widgetVar="CB45" onfocus="if(!false){PF('BTCB45').jq.focus();}" onclick="if(!false){PF('PLCB45').show();}" value="#{bancosControlador.registro.campos['BANCO']}"   disabled="#{bancosControlador.accion=='v'?true:false}" tabindex="-1"    
+style="cursor:pointer; position: absolute; width:149px; height: 22px; left: 301px;   top: 19px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />   
+	<p:commandButton id="BTCB45"   onblur="PF('CB45').jq.blur();"  onfocus="PF('CB45').jq.addClass('ui-state-focus');" widgetVar="BTCB45"   disabled="#{bancosControlador.accion=='v'?true:false}" type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"    
+                                                     style="position: absolute; width:25px; height:  22px; left: 448px;   top: 19px; display:block; "     tabindex="1"    />   
+	<p:overlayPanel widgetVar="PLCB45" id="PLCB45" onShow="if(PF('TBCB45').nuevo){ PF('TBCB45').filter(); PF('TBCB45').nuevo=false;}"  onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB45').jq.focus();}"  my="left" at="left"  for="BTCB45" hideEffect="fade" rendered= "#{bancosControlador.accion!='v'}"  style="width: 500px"   >   
+		<p:dataTable id="TBCB45" widgetVar="TBCB45"  var="reg" value="#{bancosControlador.listaBanco}"     
+                                                     editable="true"    
+                                                     emptyMessage="#{idm.TI_EMPTY_MESSAGE}"    
+                                                     currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"   
+                                                     rows="11"   
+                                                     rowIndexVar="rowIndex"   
+                                                     selectionMode="single"   
+                                                     rowKey="#{reg.campos['BANCO']}"   
+                                                     paginator="true"   
+                                                     lazy="true">   
+			<p:ajax event="rowSelect" listener="#{bancosControlador.seleccionarFilaBanco}" update=":FR30_nuevo:CB45,:FR30_nuevo:CP244"    
+  oncomplete="PF('PLCB45').hide(); "  />   
+			<p:column headerText="#{idm.TG_CODIGO7}" style="text-align:center; "  width="5" filterBy="#{reg.campos['BANCO']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['BANCO']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.TG_NOMBRE3}" style="text-align:center; "  width="15" filterBy="#{reg.campos['NOMBREBANCO']}" filterMatchMode="contains" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['NOMBREBANCO']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+		</p:dataTable>   
+    </p:overlayPanel>   
+<p:selectBooleanCheckbox id="CK23"  widgetVar="CK23"  
+rendered="#{bancosControlador.visibleHojas}"
+value="#{bancosControlador.registro.campos['PAGOBANCOLOMBIA']}" disabled="#{bancosControlador.accion=='v'?true:false}" 
+tabindex="12"  style="position: absolute;  left: 301px;   top: 255px; display:#{bancosControlador.visibleNomina? 'block' : 'none'}; "
+>
+</p:selectBooleanCheckbox>
+<p:selectOneMenu filter="true" editable="false"    rendered="true"   effect="fade" id="CB44"   widgetVar="CB44"  value="#{bancosControlador.registro.campos['TIPO_CUENTA']}" disabled="#{bancosControlador.accion=='v'?true:false}"  tabindex="5"  
+ style="position: absolute; width:122px; height: 22px; left: 480px;   top: 74px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;"
+>
+      <f:selectItem/>
+       <f:selectItem itemValue="A" itemLabel="#{idm.OD_CB44_0}"/>
+<f:selectItem itemValue="C" itemLabel="#{idm.OD_CB44_1}"/>
+<f:selectItem itemValue="R" itemLabel="#{idm.OD_CB44_2}"/>
+</p:selectOneMenu>
+</div>
+                   <p:blockUI block="nuevoPanel" widgetVar="blockNuevo"  trigger="">
+#{idm.TI_CARGANDO}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                    <p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                </p:panel>
+            </h:form>
+        </section>
+    </ui:define>
+</ui:composition>

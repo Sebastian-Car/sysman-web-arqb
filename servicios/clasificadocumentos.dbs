@@ -1,0 +1,205 @@
+﻿<data name="clasificadocumentos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getClasificadocumentosTodosporclaseordenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CLASIFICA_DOCUMENTOS.CLASEORDEN, CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO  FROM CLASIFICA_DOCUMENTOS WHERE CLASIFICA_DOCUMENTOS.COMPANIA = :COMPANIA AND CLASIFICA_DOCUMENTOS.CLASEORDEN = :CLASEORDEN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CLASEORDEN":"$CLASEORDEN","CODIGO_DOCUMENTO":"$CODIGO_DOCUMENTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="clasificadocumentos/todosporclaseorden">
+		<call-query href="getClasificadocumentosTodosporclaseordenQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="getClasificadocumentosPorclaseordensindocsQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CLASIFICA_DOCUMENTOS.COMPANIA, CLASIFICA_DOCUMENTOS.CLASEORDEN, :NUMERO_ORDEN AS NUMERO, 0 AS ENTREGADO, CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO  FROM CLASIFICA_DOCUMENTOS LEFT JOIN DOCUMENTOS ON CLASIFICA_DOCUMENTOS.COMPANIA = DOCUMENTOS.COMPANIA AND CLASIFICA_DOCUMENTOS.CLASEORDEN = DOCUMENTOS.CLASEORDEN AND CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO = DOCUMENTOS.DOCUMENTO WHERE CLASIFICA_DOCUMENTOS.COMPANIA = :COMPANIA AND CLASIFICA_DOCUMENTOS.CLASEORDEN = :CLASEORDEN AND DOCUMENTOS.COMPANIA IS NULL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CLASEORDEN":"$CLASEORDEN","NUMERO":"$NUMERO","ENTREGADO":"$ENTREGADO(type:boolean)","CODIGO_DOCUMENTO":"$CODIGO_DOCUMENTO"}]}}		</result>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="clasificadocumentos/porclaseordensindocs">
+		<call-query href="getClasificadocumentosPorclaseordensindocsQuery">
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="getClasificadocumentosPorclaseordenparainsQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CLASIFICA_DOCUMENTOS.COMPANIA, CLASIFICA_DOCUMENTOS.CLASEORDEN, :NUMERO_ORDEN NUMERO, CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO DOCUMENTO, 0 ENTREGADO  FROM CLASIFICA_DOCUMENTOS WHERE CLASIFICA_DOCUMENTOS.COMPANIA = :COMPANIA AND CLASIFICA_DOCUMENTOS.CLASEORDEN = :CLASEORDEN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CLASEORDEN":"$CLASEORDEN","NUMERO":"$NUMERO","DOCUMENTO":"$DOCUMENTO","ENTREGADO":"$ENTREGADO(type:double)"}]}}		</result>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="clasificadocumentos/porclaseordenparains">
+		<call-query href="getClasificadocumentosPorclaseordenparainsQuery">
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="getClasificadocumentosPagListarClasificarDocumentosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CLASIFICA_DOCUMENTOS.COMPANIA, CLASIFICA_DOCUMENTOS.CLASEORDEN, CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO, DOCUMENTOS_CONTRATOS.NOMBRE NOMBREDOCUMENTO  FROM CLASIFICA_DOCUMENTOS LEFT JOIN DOCUMENTOS_CONTRATOS ON CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO = DOCUMENTOS_CONTRATOS.CODIGO) WHERE (CASE WHEN CLASEORDEN IS NULL THEN ' ' ELSE UPPER(CLASEORDEN) END)  LIKE UPPER(:CLASEORDEN || '%')  AND (CASE WHEN NOMBREDOCUMENTO IS NULL THEN ' ' ELSE UPPER(NOMBREDOCUMENTO) END)  LIKE UPPER( '%' || :NOMBREDOCUMENTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CLASEORDEN":"$CLASEORDEN","CODIGO_DOCUMENTO":"$CODIGO_DOCUMENTO","NOMBREDOCUMENTO":"$NOMBREDOCUMENTO"}]}}		</result>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NOMBREDOCUMENTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="clasificadocumentos/listarclasificardocumentos/pag">
+		<call-query href="getClasificadocumentosPagListarClasificarDocumentosQuery">
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NOMBREDOCUMENTO" query-param="NOMBREDOCUMENTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getClasificadocumentosNumListarClasificarDocumentosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CLASIFICA_DOCUMENTOS.COMPANIA, CLASIFICA_DOCUMENTOS.CLASEORDEN, CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO, DOCUMENTOS_CONTRATOS.NOMBRE NOMBREDOCUMENTO  FROM CLASIFICA_DOCUMENTOS LEFT JOIN DOCUMENTOS_CONTRATOS ON CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO = DOCUMENTOS_CONTRATOS.CODIGO) WHERE (CASE WHEN CLASEORDEN IS NULL THEN ' ' ELSE UPPER(CLASEORDEN) END)  LIKE UPPER(:CLASEORDEN || '%')  AND (CASE WHEN NOMBREDOCUMENTO IS NULL THEN ' ' ELSE UPPER(NOMBREDOCUMENTO) END)  LIKE UPPER( '%' || :NOMBREDOCUMENTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NOMBREDOCUMENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="clasificadocumentos/listarclasificardocumentos/num">
+		<call-query href="getClasificadocumentosNumListarClasificarDocumentosQuery">
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NOMBREDOCUMENTO" query-param="NOMBREDOCUMENTO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertClasificadocumentosClasificacionDeDocumentos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO DOCUMENTOS   ( COMPANIA, CLASEORDEN, NUMERO, ENTREGADO, DOCUMENTO   ) SELECT CLASIFICA_DOCUMENTOS.COMPANIA,   CLASIFICA_DOCUMENTOS.CLASEORDEN,   :NUMERO_ORDEN AS NUMERO,   0             AS ENTREGADO,   CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO FROM CLASIFICA_DOCUMENTOS LEFT JOIN DOCUMENTOS ON CLASIFICA_DOCUMENTOS.COMPANIA          = DOCUMENTOS.COMPANIA AND CLASIFICA_DOCUMENTOS.CLASEORDEN       = DOCUMENTOS.CLASEORDEN AND CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO = DOCUMENTOS.DOCUMENTO WHERE CLASIFICA_DOCUMENTOS.COMPANIA       = :COMPANIA AND CLASIFICA_DOCUMENTOS.CLASEORDEN       = :CLASEORDEN AND DOCUMENTOS.COMPANIA                  IS NULL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="clasificadocumentos/clasificaciondedocumentos">
+		<call-query href="insertClasificadocumentosClasificacionDeDocumentos">
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="insertClasificadocumentos" keyColumns="COMPANIA,CLASEORDEN,CODIGO_DOCUMENTO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CLASIFICA_DOCUMENTOS (COMPANIA, CLASEORDEN, CODIGO_DOCUMENTO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CLASEORDEN, :CODIGO_DOCUMENTO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CLASEORDEN":"$CLASEORDEN","KEY_CODIGO_DOCUMENTO":"$CODIGO_DOCUMENTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="CODIGO_DOCUMENTO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="clasificadocumentos">
+		<call-query href="insertClasificadocumentos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="CODIGO_DOCUMENTO" query-param="CODIGO_DOCUMENTO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteClasificadocumentos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CLASIFICA_DOCUMENTOS WHERE CLASIFICA_DOCUMENTOS.COMPANIA= :KEY_COMPANIA AND CLASIFICA_DOCUMENTOS.CLASEORDEN= :KEY_CLASEORDEN AND CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO= :KEY_CODIGO_DOCUMENTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASEORDEN" sqlType="STRING"/>
+		<param name="KEY_CODIGO_DOCUMENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="clasificadocumentos">
+		<call-query href="deleteClasificadocumentos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASEORDEN" query-param="KEY_CLASEORDEN"/>
+			<with-param name="KEY_CODIGO_DOCUMENTO" query-param="KEY_CODIGO_DOCUMENTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getClasificadocumentosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CLASIFICA_DOCUMENTOS.COMPANIA, CLASIFICA_DOCUMENTOS.CLASEORDEN, CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO, DOCUMENTOS_CONTRATOS.NOMBRE  FROM CLASIFICA_DOCUMENTOS LEFT JOIN DOCUMENTOS_CONTRATOS ON CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO = DOCUMENTOS_CONTRATOS.CODIGO WHERE CLASIFICA_DOCUMENTOS.COMPANIA = :COMPANIA AND CLASIFICA_DOCUMENTOS.CLASEORDEN = :TIPOCONTRATO) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CLASEORDEN":"$CLASEORDEN","CODIGO_DOCUMENTO":"$CODIGO_DOCUMENTO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="clasificadocumentos">
+		<call-query href="getClasificadocumentosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getClasificadocumentosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CLASIFICA_DOCUMENTOS.COMPANIA, CLASIFICA_DOCUMENTOS.CLASEORDEN, CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO, DOCUMENTOS_CONTRATOS.NOMBRE  FROM CLASIFICA_DOCUMENTOS LEFT JOIN DOCUMENTOS_CONTRATOS ON CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO = DOCUMENTOS_CONTRATOS.CODIGO WHERE CLASIFICA_DOCUMENTOS.COMPANIA = :COMPANIA AND CLASIFICA_DOCUMENTOS.CLASEORDEN = :TIPOCONTRATO) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="clasificadocumentos/numero">
+		<call-query href="getClasificadocumentosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateClasificadocumentos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CLASIFICA_DOCUMENTOS SET CLASEORDEN=:CLASEORDEN, CODIGO_DOCUMENTO=:CODIGO_DOCUMENTO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CLASIFICA_DOCUMENTOS.COMPANIA= :KEY_COMPANIA AND CLASIFICA_DOCUMENTOS.CLASEORDEN= :KEY_CLASEORDEN AND CLASIFICA_DOCUMENTOS.CODIGO_DOCUMENTO= :KEY_CODIGO_DOCUMENTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="CODIGO_DOCUMENTO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASEORDEN" sqlType="STRING"/>
+		<param name="KEY_CODIGO_DOCUMENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="clasificadocumentos">
+		<call-query href="updateClasificadocumentos">
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="CODIGO_DOCUMENTO" query-param="CODIGO_DOCUMENTO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASEORDEN" query-param="KEY_CLASEORDEN"/>
+			<with-param name="KEY_CODIGO_DOCUMENTO" query-param="KEY_CODIGO_DOCUMENTO"/>
+
+		</call-query>
+	</resource>
+
+</data>

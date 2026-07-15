@@ -1,0 +1,32 @@
+﻿<data name="bpplanadquisicionesvigencia" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getBpplanadquisicionesvigenciaListadovigenciaporciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT BP_PLAN_ADQUISICIONES.VIGENCIA  FROM BP_PLAN_ADQUISICIONES_VIGENCIA BP_PLAN_ADQUISICIONES WHERE BP_PLAN_ADQUISICIONES.COMPANIA = :COMPANIA ORDER BY BP_PLAN_ADQUISICIONES.VIGENCIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VIGENCIA":"$VIGENCIA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bpplanadquisicionesvigencia/listadovigenciaporcia">
+		<call-query href="getBpplanadquisicionesvigenciaListadovigenciaporciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getBpplanadquisicionesvigenciaValoritemsporestudioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SUM(NVL(VALOR_ESTIMADO,0)) SALDO_DISPONIBLE  FROM BP_PLAN_ADQUISICIONES_VIGENCIA WHERE (COMPANIA, VIGENCIA_INICIAL, ID_PLAN, CODIGO, VIGENCIA) IN (SELECT COMPANIA, VIGENCIA_INICIAL_PAV, ID_PLAN, CODIGO_PAV, VIGENCIA_PAV FROM ESTPREVIO_PLANACCION WHERE COMPANIA = :COMPANIA AND COD_ESTUDIO = :ESTUDIO)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SALDO_DISPONIBLE":"$SALDO_DISPONIBLE(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bpplanadquisicionesvigencia/valoritemsporestudio">
+		<call-query href="getBpplanadquisicionesvigenciaValoritemsporestudioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESTUDIO" query-param="ESTUDIO"/>
+
+		</call-query>
+	</resource>
+
+</data>

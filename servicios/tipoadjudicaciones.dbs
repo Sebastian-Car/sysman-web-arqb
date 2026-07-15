@@ -1,0 +1,370 @@
+﻿<data name="tipoadjudicaciones" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTipoadjudicacionesTodosMovimientoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT TIPOADJUDICACION.CODIGO, TIPOADJUDICACION.DESCRIPCION, TIPOADJUDICACION.SALARIOS_MINIMOS_CUANTIA  FROM TIPOADJUDICACION WHERE TIPOADJUDICACION.COMPANIA = :COMPANIA AND TIPOADJUDICACION.MOVIMIENTO NOT IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION","SALARIOS_MINIMOS_CUANTIA":"$SALARIOS_MINIMOS_CUANTIA(type:double)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipoadjudicaciones/todosmovimiento">
+		<call-query href="getTipoadjudicacionesTodosMovimientoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoadjudicacionesConMovimientoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO, DESCRIPCION  FROM TIPOADJUDICACION WHERE COMPANIA = :COMPANIA AND MOVIMIENTO NOT IN 0 ORDER BY DESCRIPCION</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipoadjudicaciones/conmovimiento">
+		<call-query href="getTipoadjudicacionesConMovimientoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoadjudicacionesSalarioMinimoPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SALARIOS_MINIMOS_CUANTIA  FROM TIPOADJUDICACION WHERE COMPANIA = :COMPANIA AND CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SALARIOS_MINIMOS_CUANTIA":"$SALARIOS_MINIMOS_CUANTIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipoadjudicaciones/salariominimoporcodigo">
+		<call-query href="getTipoadjudicacionesSalarioMinimoPorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoadjudicacionesCodigoordendescripcionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO ,DESCRIPCION  FROM TIPOADJUDICACION WHERE COMPANIA = :COMPANIA ORDER BY DESCRIPCION</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipoadjudicaciones/codigoordendescripcion">
+		<call-query href="getTipoadjudicacionesCodigoordendescripcionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoadjudicacionesPagCodydescripconmovQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TIPOADJUDICACION.CODIGO, TIPOADJUDICACION.DESCRIPCION  FROM TIPOADJUDICACION WHERE TIPOADJUDICACION.COMPANIA = :COMPANIA AND TIPOADJUDICACION.MOVIMIENTO NOT IN(0) ORDER BY LPAD (TIPOADJUDICACION.CODIGO,4)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipoadjudicaciones/codydescripconmov/pag">
+		<call-query href="getTipoadjudicacionesPagCodydescripconmovQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoadjudicacionesNumCodydescripconmovQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TIPOADJUDICACION.CODIGO, TIPOADJUDICACION.DESCRIPCION  FROM TIPOADJUDICACION WHERE TIPOADJUDICACION.COMPANIA = :COMPANIA AND TIPOADJUDICACION.MOVIMIENTO NOT IN(0) ORDER BY LPAD (TIPOADJUDICACION.CODIGO,4)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipoadjudicaciones/codydescripconmov/num">
+		<call-query href="getTipoadjudicacionesNumCodydescripconmovQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoadjudicacionesPagModalidadSeleccionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TIPOADJUDICACION.CODIGO, TIPOADJUDICACION.DESCRIPCION  FROM TIPOADJUDICACION WHERE TIPOADJUDICACION.COMPANIA =:COMPANIA AND (TIPOADJUDICACION.MOVIMIENTO NOT IN (0) OR TIPOADJUDICACION.MOVIMIENTO IS NOT NULL)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipoadjudicaciones/modalidadseleccion/pag">
+		<call-query href="getTipoadjudicacionesPagModalidadSeleccionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoadjudicacionesNumModalidadSeleccionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TIPOADJUDICACION.CODIGO, TIPOADJUDICACION.DESCRIPCION  FROM TIPOADJUDICACION WHERE TIPOADJUDICACION.COMPANIA =:COMPANIA AND (TIPOADJUDICACION.MOVIMIENTO NOT IN (0) OR TIPOADJUDICACION.MOVIMIENTO IS NOT NULL)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipoadjudicaciones/modalidadseleccion/num">
+		<call-query href="getTipoadjudicacionesNumModalidadSeleccionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoadjudicacionesPagCodigoYDescripcionMovimientoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TIPOADJUDICACION.CODIGO, TIPOADJUDICACION.DESCRIPCION  FROM TIPOADJUDICACION WHERE TIPOADJUDICACION.MOVIMIENTO NOT IN (0) ORDER BY TO_NUMBER(TIPOADJUDICACION.CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipoadjudicaciones/codigoydescripcionmovimiento/pag">
+		<call-query href="getTipoadjudicacionesPagCodigoYDescripcionMovimientoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertTipoadjudicaciones" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TIPOADJUDICACION (COMPANIA, CODIGO, DESCRIPCION, TIPOSIA, SIRECI, CODIGOPRECONTRATO, TIPOFUT, SALARIOS_MINIMOS_CUANTIA, NOMBRE_INFAUDITORIA, EQUIVALENTESIA, MOVIMIENTO, TIPOCONTRALORIA, PROCEDIMIENTOSIA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :DESCRIPCION, :TIPOSIA, :SIRECI, :CODIGOPRECONTRATO, :TIPOFUT, :SALARIOS_MINIMOS_CUANTIA, :NOMBRE_INFAUDITORIA, :EQUIVALENTESIA, :MOVIMIENTO, :TIPOCONTRALORIA, :PROCEDIMIENTOSIA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="" name="TIPOSIA" sqlType="STRING"/>
+		<param defaultValue="" name="SIRECI" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOPRECONTRATO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPOFUT" sqlType="STRING"/>
+		<param defaultValue="0" name="SALARIOS_MINIMOS_CUANTIA" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE_INFAUDITORIA" sqlType="STRING"/>
+		<param defaultValue="" name="EQUIVALENTESIA" sqlType="STRING"/>
+		<param defaultValue="0" name="MOVIMIENTO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPOCONTRALORIA" sqlType="STRING"/>
+		<param defaultValue="" name="PROCEDIMIENTOSIA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="tipoadjudicaciones">
+		<call-query href="insertTipoadjudicaciones">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="TIPOSIA" query-param="TIPOSIA"/>
+			<with-param name="SIRECI" query-param="SIRECI"/>
+			<with-param name="CODIGOPRECONTRATO" query-param="CODIGOPRECONTRATO"/>
+			<with-param name="TIPOFUT" query-param="TIPOFUT"/>
+			<with-param name="SALARIOS_MINIMOS_CUANTIA" query-param="SALARIOS_MINIMOS_CUANTIA"/>
+			<with-param name="NOMBRE_INFAUDITORIA" query-param="NOMBRE_INFAUDITORIA"/>
+			<with-param name="EQUIVALENTESIA" query-param="EQUIVALENTESIA"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="TIPOCONTRALORIA" query-param="TIPOCONTRALORIA"/>
+			<with-param name="PROCEDIMIENTOSIA" query-param="PROCEDIMIENTOSIA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTipoadjudicaciones" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TIPOADJUDICACION WHERE TIPOADJUDICACION.COMPANIA= :KEY_COMPANIA AND TIPOADJUDICACION.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="tipoadjudicaciones">
+		<call-query href="deleteTipoadjudicaciones">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoadjudicacionesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TIPOADJUDICACION.COMPANIA, TIPOADJUDICACION.CODIGO, TIPOADJUDICACION.DESCRIPCION, TIPOADJUDICACION.CODIGOPRECONTRATO, ES_TIPOCONTRATO.NOMBRE, TIPOADJUDICACION.SIRECI, TIPOADJUDICACION.TIPOFUT, TIPOADJUDICACION.SALARIOS_MINIMOS_CUANTIA, TIPOADJUDICACION.EQUIVALENTESIA,(CASE TIPOADJUDICACION.MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO, TIPOADJUDICACION.TIPOSIA, TIPOADJUDICACION.TIPOCONTRALORIA, TIPOADJUDICACION.NOMBRE_INFAUDITORIA, ( CASE WHEN TIPOADJUDICACION.NOMBRE_INFAUDITORIA = '1' THEN 'Concurso de Méritos' WHEN TIPOADJUDICACION.NOMBRE_INFAUDITORIA = '2' THEN 'Contratación Directa' WHEN TIPOADJUDICACION.NOMBRE_INFAUDITORIA = '3' THEN 'Licitación Pública' WHEN TIPOADJUDICACION.NOMBRE_INFAUDITORIA = '4' THEN 'Selección Abreviada' END)INFAUDITORIA, PROCEDIMIENTOSIA  FROM TIPOADJUDICACION LEFT JOIN ES_TIPOCONTRATO ON ES_TIPOCONTRATO.COD_T_CONTRATO = TIPOADJUDICACION.CODIGOPRECONTRATO WHERE TIPOADJUDICACION.COMPANIA = :COMPANIA ORDER BY TIPOADJUDICACION.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SIRECI IS NULL THEN ' ' ELSE UPPER(SIRECI) END)  LIKE UPPER( '%' || :SIRECI || '%')  AND (CASE WHEN TIPOFUT IS NULL THEN ' ' ELSE UPPER(TIPOFUT) END)  LIKE UPPER( '%' || :TIPOFUT || '%')  AND (CASE WHEN SALARIOS_MINIMOS_CUANTIA IS NULL THEN ' ' ELSE UPPER(SALARIOS_MINIMOS_CUANTIA) END)  LIKE UPPER( '%' || :SALARIOS_MINIMOS_CUANTIA || '%')  AND (CASE WHEN EQUIVALENTESIA IS NULL THEN ' ' ELSE UPPER(EQUIVALENTESIA) END)  LIKE UPPER( '%' || :EQUIVALENTESIA || '%')  AND (CASE WHEN MOVIMIENTO IS NULL THEN ' ' ELSE UPPER(MOVIMIENTO) END)  LIKE UPPER( '%' || :MOVIMIENTO || '%')  AND (CASE WHEN TIPOCONTRALORIA IS NULL THEN ' ' ELSE UPPER(TIPOCONTRALORIA) END)  LIKE UPPER( '%' || :TIPOCONTRALORIA || '%')  AND (CASE WHEN INFAUDITORIA IS NULL THEN ' ' ELSE UPPER(INFAUDITORIA) END)  LIKE UPPER( '%' || :INFAUDITORIA || '%')  AND (CASE WHEN PROCEDIMIENTOSIA IS NULL THEN ' ' ELSE UPPER(PROCEDIMIENTOSIA) END)  LIKE UPPER( '%' || :PROCEDIMIENTOSIA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION","CODIGOPRECONTRATO":"$CODIGOPRECONTRATO","NOMBRE":"$NOMBRE","SIRECI":"$SIRECI","TIPOFUT":"$TIPOFUT","SALARIOS_MINIMOS_CUANTIA":"$SALARIOS_MINIMOS_CUANTIA","EQUIVALENTESIA":"$EQUIVALENTESIA","MOVIMIENTO":"$MOVIMIENTO(type:boolean)","TIPOSIA":"$TIPOSIA","TIPOCONTRALORIA":"$TIPOCONTRALORIA","NOMBRE_INFAUDITORIA":"$NOMBRE_INFAUDITORIA","INFAUDITORIA":"$INFAUDITORIA","PROCEDIMIENTOSIA":"$PROCEDIMIENTOSIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SIRECI" sqlType="STRING"/>
+		<param name="TIPOFUT" sqlType="STRING"/>
+		<param name="SALARIOS_MINIMOS_CUANTIA" sqlType="STRING"/>
+		<param name="EQUIVALENTESIA" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="TIPOCONTRALORIA" sqlType="STRING"/>
+		<param name="INFAUDITORIA" sqlType="STRING"/>
+		<param name="PROCEDIMIENTOSIA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipoadjudicaciones">
+		<call-query href="getTipoadjudicacionesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SIRECI" query-param="SIRECI"/>
+			<with-param name="TIPOFUT" query-param="TIPOFUT"/>
+			<with-param name="SALARIOS_MINIMOS_CUANTIA" query-param="SALARIOS_MINIMOS_CUANTIA"/>
+			<with-param name="EQUIVALENTESIA" query-param="EQUIVALENTESIA"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="TIPOCONTRALORIA" query-param="TIPOCONTRALORIA"/>
+			<with-param name="INFAUDITORIA" query-param="INFAUDITORIA"/>
+			<with-param name="PROCEDIMIENTOSIA" query-param="PROCEDIMIENTOSIA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoadjudicacionesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TIPOADJUDICACION.COMPANIA, TIPOADJUDICACION.CODIGO, TIPOADJUDICACION.DESCRIPCION, TIPOADJUDICACION.CODIGOPRECONTRATO, ES_TIPOCONTRATO.NOMBRE, TIPOADJUDICACION.SIRECI, TIPOADJUDICACION.TIPOFUT, TIPOADJUDICACION.SALARIOS_MINIMOS_CUANTIA, TIPOADJUDICACION.EQUIVALENTESIA,(CASE TIPOADJUDICACION.MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO, TIPOADJUDICACION.TIPOSIA, TIPOADJUDICACION.TIPOCONTRALORIA, TIPOADJUDICACION.NOMBRE_INFAUDITORIA, ( CASE WHEN TIPOADJUDICACION.NOMBRE_INFAUDITORIA = '1' THEN 'Concurso de Méritos' WHEN TIPOADJUDICACION.NOMBRE_INFAUDITORIA = '2' THEN 'Contratación Directa' WHEN TIPOADJUDICACION.NOMBRE_INFAUDITORIA = '3' THEN 'Licitación Pública' WHEN TIPOADJUDICACION.NOMBRE_INFAUDITORIA = '4' THEN 'Selección Abreviada' END)INFAUDITORIA, PROCEDIMIENTOSIA  FROM TIPOADJUDICACION LEFT JOIN ES_TIPOCONTRATO ON ES_TIPOCONTRATO.COD_T_CONTRATO = TIPOADJUDICACION.CODIGOPRECONTRATO WHERE TIPOADJUDICACION.COMPANIA = :COMPANIA ORDER BY TIPOADJUDICACION.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SIRECI IS NULL THEN ' ' ELSE UPPER(SIRECI) END)  LIKE UPPER( '%' || :SIRECI || '%')  AND (CASE WHEN TIPOFUT IS NULL THEN ' ' ELSE UPPER(TIPOFUT) END)  LIKE UPPER( '%' || :TIPOFUT || '%')  AND (CASE WHEN SALARIOS_MINIMOS_CUANTIA IS NULL THEN ' ' ELSE UPPER(SALARIOS_MINIMOS_CUANTIA) END)  LIKE UPPER( '%' || :SALARIOS_MINIMOS_CUANTIA || '%')  AND (CASE WHEN EQUIVALENTESIA IS NULL THEN ' ' ELSE UPPER(EQUIVALENTESIA) END)  LIKE UPPER( '%' || :EQUIVALENTESIA || '%')  AND (CASE WHEN MOVIMIENTO IS NULL THEN ' ' ELSE UPPER(MOVIMIENTO) END)  LIKE UPPER( '%' || :MOVIMIENTO || '%')  AND (CASE WHEN TIPOCONTRALORIA IS NULL THEN ' ' ELSE UPPER(TIPOCONTRALORIA) END)  LIKE UPPER( '%' || :TIPOCONTRALORIA || '%')  AND (CASE WHEN INFAUDITORIA IS NULL THEN ' ' ELSE UPPER(INFAUDITORIA) END)  LIKE UPPER( '%' || :INFAUDITORIA || '%')  AND (CASE WHEN PROCEDIMIENTOSIA IS NULL THEN ' ' ELSE UPPER(PROCEDIMIENTOSIA) END)  LIKE UPPER( '%' || :PROCEDIMIENTOSIA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SIRECI" sqlType="STRING"/>
+		<param name="TIPOFUT" sqlType="STRING"/>
+		<param name="SALARIOS_MINIMOS_CUANTIA" sqlType="STRING"/>
+		<param name="EQUIVALENTESIA" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="TIPOCONTRALORIA" sqlType="STRING"/>
+		<param name="INFAUDITORIA" sqlType="STRING"/>
+		<param name="PROCEDIMIENTOSIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipoadjudicaciones/numero">
+		<call-query href="getTipoadjudicacionesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SIRECI" query-param="SIRECI"/>
+			<with-param name="TIPOFUT" query-param="TIPOFUT"/>
+			<with-param name="SALARIOS_MINIMOS_CUANTIA" query-param="SALARIOS_MINIMOS_CUANTIA"/>
+			<with-param name="EQUIVALENTESIA" query-param="EQUIVALENTESIA"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="TIPOCONTRALORIA" query-param="TIPOCONTRALORIA"/>
+			<with-param name="INFAUDITORIA" query-param="INFAUDITORIA"/>
+			<with-param name="PROCEDIMIENTOSIA" query-param="PROCEDIMIENTOSIA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTipoadjudicaciones" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TIPOADJUDICACION SET CODIGO=:CODIGO, DESCRIPCION=:DESCRIPCION, CODIGOPRECONTRATO=:CODIGOPRECONTRATO, SIRECI=:SIRECI, TIPOFUT=:TIPOFUT, SALARIOS_MINIMOS_CUANTIA=:SALARIOS_MINIMOS_CUANTIA, PROCEDIMIENTOSIA=:PROCEDIMIENTOSIA, EQUIVALENTESIA=:EQUIVALENTESIA, MOVIMIENTO=:MOVIMIENTO, TIPOSIA=:TIPOSIA, TIPOCONTRALORIA=:TIPOCONTRALORIA, NOMBRE_INFAUDITORIA=:NOMBRE_INFAUDITORIA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TIPOADJUDICACION.COMPANIA= :KEY_COMPANIA AND TIPOADJUDICACION.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="CODIGOPRECONTRATO" sqlType="STRING"/>
+		<param name="SIRECI" sqlType="STRING"/>
+		<param name="TIPOFUT" sqlType="STRING"/>
+		<param name="SALARIOS_MINIMOS_CUANTIA" sqlType="STRING"/>
+		<param name="PROCEDIMIENTOSIA" sqlType="STRING"/>
+		<param name="EQUIVALENTESIA" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="TIPOSIA" sqlType="STRING"/>
+		<param name="TIPOCONTRALORIA" sqlType="STRING"/>
+		<param name="NOMBRE_INFAUDITORIA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tipoadjudicaciones">
+		<call-query href="updateTipoadjudicaciones">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CODIGOPRECONTRATO" query-param="CODIGOPRECONTRATO"/>
+			<with-param name="SIRECI" query-param="SIRECI"/>
+			<with-param name="TIPOFUT" query-param="TIPOFUT"/>
+			<with-param name="SALARIOS_MINIMOS_CUANTIA" query-param="SALARIOS_MINIMOS_CUANTIA"/>
+			<with-param name="PROCEDIMIENTOSIA" query-param="PROCEDIMIENTOSIA"/>
+			<with-param name="EQUIVALENTESIA" query-param="EQUIVALENTESIA"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="TIPOSIA" query-param="TIPOSIA"/>
+			<with-param name="TIPOCONTRALORIA" query-param="TIPOCONTRALORIA"/>
+			<with-param name="NOMBRE_INFAUDITORIA" query-param="NOMBRE_INFAUDITORIA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoadjudicacionesNumCodigoYDescripcionMovimientoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TIPOADJUDICACION.CODIGO, TIPOADJUDICACION.DESCRIPCION  FROM TIPOADJUDICACION WHERE TIPOADJUDICACION.MOVIMIENTO NOT IN (0) ORDER BY TO_NUMBER(TIPOADJUDICACION.CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipoadjudicaciones/codigoydescripcionmovimiento/num">
+		<call-query href="getTipoadjudicacionesNumCodigoYDescripcionMovimientoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoadjudicacionesPagXQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TIPOADJUDICACION.CODIGO, TIPOADJUDICACION.DESCRIPCION  FROM TIPOADJUDICACION WHERE TIPOADJUDICACION.COMPANIA = :COMPANIA AND TIPOADJUDICACION.MOVIMIENTO NOT IN(0) ORDER BY LPAD (TIPOADJUDICACION.CODIGO,4)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tipoadjudicaciones/x/pag">
+		<call-query href="getTipoadjudicacionesPagXQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTipoadjudicacionesNumXQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TIPOADJUDICACION.CODIGO, TIPOADJUDICACION.DESCRIPCION  FROM TIPOADJUDICACION WHERE TIPOADJUDICACION.COMPANIA = :COMPANIA AND TIPOADJUDICACION.MOVIMIENTO NOT IN(0) ORDER BY LPAD (TIPOADJUDICACION.CODIGO,4)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tipoadjudicaciones/x/num">
+		<call-query href="getTipoadjudicacionesNumXQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+
+</data>

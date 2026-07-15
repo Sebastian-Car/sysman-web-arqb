@@ -1,0 +1,164 @@
+﻿<data name="retencionestipo" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getRetencionestipoPagTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  RETENCIONTIPO.ID_RETETIPO, RETENCIONTIPO.NOMBRE  FROM RETENCIONTIPO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_RETETIPO IS NULL THEN ' ' ELSE UPPER(ID_RETETIPO) END)  LIKE UPPER(:ID_RETETIPO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_RETETIPO":"$ID_RETETIPO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_RETETIPO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="retencionestipo/todosporcompania/pag">
+		<call-query href="getRetencionestipoPagTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_RETETIPO" query-param="ID_RETETIPO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getRetencionestipoNumTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  RETENCIONTIPO.ID_RETETIPO, RETENCIONTIPO.NOMBRE  FROM RETENCIONTIPO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_RETETIPO IS NULL THEN ' ' ELSE UPPER(ID_RETETIPO) END)  LIKE UPPER(:ID_RETETIPO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_RETETIPO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="retencionestipo/todosporcompania/num">
+		<call-query href="getRetencionestipoNumTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_RETETIPO" query-param="ID_RETETIPO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertRetencionestipo" keyColumns="COMPANIA,ID_RETETIPO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO RETENCIONTIPO (COMPANIA, ID_RETETIPO, NOMBRE, PORCENTAJE, CONCEPTO, DESCRIPCION, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ID_RETETIPO, :NOMBRE, :PORCENTAJE, :CONCEPTO, :DESCRIPCION, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_RETETIPO":"$ID_RETETIPO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_RETETIPO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="0" name="PORCENTAJE" sqlType="STRING"/>
+		<param defaultValue="" name="CONCEPTO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="retencionestipo">
+		<call-query href="insertRetencionestipo">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_RETETIPO" query-param="ID_RETETIPO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteRetencionestipo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM RETENCIONTIPO WHERE RETENCIONTIPO.COMPANIA= :KEY_COMPANIA AND RETENCIONTIPO.ID_RETETIPO= :KEY_ID_RETETIPO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_RETETIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="retencionestipo">
+		<call-query href="deleteRetencionestipo">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_RETETIPO" query-param="KEY_ID_RETETIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getRetencionestipoPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  RETENCIONTIPO.COMPANIA, RETENCIONTIPO.ID_RETETIPO, RETENCIONTIPO.NOMBRE, RETENCIONTIPO.PORCENTAJE, RETENCIONTIPO.CONCEPTO, (SELECT NOMBRE_CONCEPTO FROM CONCEPTOS WHERE COMPANIA=RETENCIONTIPO.COMPANIA AND ID_DE_CONCEPTO=RETENCIONTIPO.CONCEPTO) NOMBRE_CONCEPTO, RETENCIONTIPO.DESCRIPCION  FROM RETENCIONTIPO WHERE RETENCIONTIPO.COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_RETETIPO IS NULL THEN ' ' ELSE UPPER(ID_RETETIPO) END)  LIKE UPPER(:ID_RETETIPO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN PORCENTAJE IS NULL THEN ' ' ELSE UPPER(PORCENTAJE) END)  LIKE UPPER( '%' || :PORCENTAJE || '%')  AND (CASE WHEN NOMBRE_CONCEPTO IS NULL THEN ' ' ELSE UPPER(NOMBRE_CONCEPTO) END)  LIKE UPPER( '%' || :NOMBRE_CONCEPTO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_RETETIPO":"$ID_RETETIPO","NOMBRE":"$NOMBRE","PORCENTAJE":"$PORCENTAJE","CONCEPTO":"$CONCEPTO","NOMBRE_CONCEPTO":"$NOMBRE_CONCEPTO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_RETETIPO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+		<param name="NOMBRE_CONCEPTO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="retencionestipo">
+		<call-query href="getRetencionestipoPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_RETETIPO" query-param="ID_RETETIPO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="NOMBRE_CONCEPTO" query-param="NOMBRE_CONCEPTO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getRetencionestipoNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  RETENCIONTIPO.COMPANIA, RETENCIONTIPO.ID_RETETIPO, RETENCIONTIPO.NOMBRE, RETENCIONTIPO.PORCENTAJE, RETENCIONTIPO.CONCEPTO, (SELECT NOMBRE_CONCEPTO FROM CONCEPTOS WHERE COMPANIA=RETENCIONTIPO.COMPANIA AND ID_DE_CONCEPTO=RETENCIONTIPO.CONCEPTO) NOMBRE_CONCEPTO, RETENCIONTIPO.DESCRIPCION  FROM RETENCIONTIPO WHERE RETENCIONTIPO.COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_RETETIPO IS NULL THEN ' ' ELSE UPPER(ID_RETETIPO) END)  LIKE UPPER(:ID_RETETIPO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN PORCENTAJE IS NULL THEN ' ' ELSE UPPER(PORCENTAJE) END)  LIKE UPPER( '%' || :PORCENTAJE || '%')  AND (CASE WHEN NOMBRE_CONCEPTO IS NULL THEN ' ' ELSE UPPER(NOMBRE_CONCEPTO) END)  LIKE UPPER( '%' || :NOMBRE_CONCEPTO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_RETETIPO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+		<param name="NOMBRE_CONCEPTO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="retencionestipo/numero">
+		<call-query href="getRetencionestipoNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_RETETIPO" query-param="ID_RETETIPO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="NOMBRE_CONCEPTO" query-param="NOMBRE_CONCEPTO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="updateRetencionestipo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE RETENCIONTIPO SET ID_RETETIPO=:ID_RETETIPO, NOMBRE=:NOMBRE, PORCENTAJE=:PORCENTAJE, CONCEPTO=:CONCEPTO, DESCRIPCION=:DESCRIPCION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE RETENCIONTIPO.COMPANIA= :KEY_COMPANIA AND RETENCIONTIPO.ID_RETETIPO= :KEY_ID_RETETIPO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ID_RETETIPO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_RETETIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="retencionestipo">
+		<call-query href="updateRetencionestipo">
+			<with-param name="ID_RETETIPO" query-param="ID_RETETIPO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_RETETIPO" query-param="KEY_ID_RETETIPO"/>
+
+		</call-query>
+	</resource>
+
+</data>

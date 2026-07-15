@@ -1,0 +1,152 @@
+﻿<data name="oeigastosschip" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getOeigastosschipPagTodosPorEntidadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  OEI_GASTOS_SCHIP.CODIGO, OEI_GASTOS_SCHIP.NOMBRE  FROM OEI_GASTOS_SCHIP WHERE OEI_GASTOS_SCHIP.ENTIDAD = :ENTIDAD) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="ENTIDAD" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="oeigastosschip/todosporentidad/pag">
+		<call-query href="getOeigastosschipPagTodosPorEntidadQuery">
+			<with-param name="ENTIDAD" query-param="ENTIDAD"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOeigastosschipNumTodosPorEntidadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  OEI_GASTOS_SCHIP.CODIGO, OEI_GASTOS_SCHIP.NOMBRE  FROM OEI_GASTOS_SCHIP WHERE OEI_GASTOS_SCHIP.ENTIDAD = :ENTIDAD) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="ENTIDAD" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="oeigastosschip/todosporentidad/num">
+		<call-query href="getOeigastosschipNumTodosPorEntidadQuery">
+			<with-param name="ENTIDAD" query-param="ENTIDAD"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getOeigastosschipPorentidadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  OEI_GASTOS_SCHIP.CODIGO, OEI_GASTOS_SCHIP.NOMBRE  FROM OEI_GASTOS_SCHIP WHERE OEI_GASTOS_SCHIP.ENTIDAD = :ENTIDAD</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="ENTIDAD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="oeigastosschip/porentidad">
+		<call-query href="getOeigastosschipPorentidadQuery">
+			<with-param name="ENTIDAD" query-param="ENTIDAD"/>
+
+		</call-query>
+	</resource>
+	<query id="insertOeigastosschip" keyColumns="ENTIDAD,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO OEI_GASTOS_SCHIP (ENTIDAD, CODIGO, NOMBRE, DATE_CREATED, CREATED_BY) VALUES (:ENTIDAD, :CODIGO, :NOMBRE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_ENTIDAD":"$ENTIDAD(type:integer)","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="ENTIDAD" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="oeigastosschip">
+		<call-query href="insertOeigastosschip">
+			<with-param name="ENTIDAD" query-param="ENTIDAD"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteOeigastosschip" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM OEI_GASTOS_SCHIP WHERE OEI_GASTOS_SCHIP.ENTIDAD= :KEY_ENTIDAD AND OEI_GASTOS_SCHIP.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_ENTIDAD" sqlType="INTEGER"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="oeigastosschip">
+		<call-query href="deleteOeigastosschip">
+			<with-param name="KEY_ENTIDAD" query-param="KEY_ENTIDAD"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOeigastosschipPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  OEI_GASTOS_SCHIP.ENTIDAD, OEI_GASTOS_SCHIP.CODIGO, OEI_GASTOS_SCHIP.NOMBRE  FROM OEI_GASTOS_SCHIP WHERE OEI_GASTOS_SCHIP.ENTIDAD = :ENTIDAD ORDER BY OEI_GASTOS_SCHIP.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ENTIDAD":"$ENTIDAD(type:integer)","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="ENTIDAD" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="oeigastosschip">
+		<call-query href="getOeigastosschipPaginaQuery">
+			<with-param name="ENTIDAD" query-param="ENTIDAD"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOeigastosschipNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  OEI_GASTOS_SCHIP.ENTIDAD, OEI_GASTOS_SCHIP.CODIGO, OEI_GASTOS_SCHIP.NOMBRE  FROM OEI_GASTOS_SCHIP WHERE OEI_GASTOS_SCHIP.ENTIDAD = :ENTIDAD ORDER BY OEI_GASTOS_SCHIP.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="ENTIDAD" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="oeigastosschip/numero">
+		<call-query href="getOeigastosschipNumeroQuery">
+			<with-param name="ENTIDAD" query-param="ENTIDAD"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateOeigastosschip" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE OEI_GASTOS_SCHIP SET CODIGO=:CODIGO, NOMBRE=:NOMBRE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE OEI_GASTOS_SCHIP.ENTIDAD= :KEY_ENTIDAD AND OEI_GASTOS_SCHIP.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_ENTIDAD" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="oeigastosschip">
+		<call-query href="updateOeigastosschip">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_ENTIDAD" query-param="KEY_ENTIDAD"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

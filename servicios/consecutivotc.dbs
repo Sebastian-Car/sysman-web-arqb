@@ -1,0 +1,136 @@
+﻿<data name="consecutivotc" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getConsecutivotcPagTipoMantActivosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CONSECUTIVOTC.COMPANIA, CONSECUTIVOTC.ANO, CONSECUTIVOTC.TIPOCOMPROBANTE, TIPO_COMPROBANTE.NOMBRE, CONSECUTIVOTC.CONSECUTIVO  FROM CONSECUTIVOTC INNER JOIN TIPO_COMPROBANTE ON CONSECUTIVOTC.COMPANIA = TIPO_COMPROBANTE.COMPANIA AND TIPO_COMPROBANTE.CODIGO = CONSECUTIVOTC.TIPOCOMPROBANTE WHERE CONSECUTIVOTC.COMPANIA = :COMPANIA AND TIPO_COMPROBANTE.CLASE_CONTABLE = 'M') WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN TIPOCOMPROBANTE IS NULL THEN ' ' ELSE UPPER(TIPOCOMPROBANTE) END)  LIKE UPPER(:TIPOCOMPROBANTE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPOCOMPROBANTE":"$TIPOCOMPROBANTE","NOMBRE":"$NOMBRE","CONSECUTIVO":"$CONSECUTIVO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOMPROBANTE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="consecutivotc/tipomantactivos/pag">
+		<call-query href="getConsecutivotcPagTipoMantActivosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOMPROBANTE" query-param="TIPOCOMPROBANTE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getConsecutivotcNumTipoMantActivosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CONSECUTIVOTC.COMPANIA, CONSECUTIVOTC.ANO, CONSECUTIVOTC.TIPOCOMPROBANTE, TIPO_COMPROBANTE.NOMBRE, CONSECUTIVOTC.CONSECUTIVO  FROM CONSECUTIVOTC INNER JOIN TIPO_COMPROBANTE ON CONSECUTIVOTC.COMPANIA = TIPO_COMPROBANTE.COMPANIA AND TIPO_COMPROBANTE.CODIGO = CONSECUTIVOTC.TIPOCOMPROBANTE WHERE CONSECUTIVOTC.COMPANIA = :COMPANIA AND TIPO_COMPROBANTE.CLASE_CONTABLE = 'M') WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN TIPOCOMPROBANTE IS NULL THEN ' ' ELSE UPPER(TIPOCOMPROBANTE) END)  LIKE UPPER(:TIPOCOMPROBANTE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOMPROBANTE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="consecutivotc/tipomantactivos/num">
+		<call-query href="getConsecutivotcNumTipoMantActivosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOMPROBANTE" query-param="TIPOCOMPROBANTE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertConsecutivotc" keyColumns="COMPANIA,TIPOCOMPROBANTE,ANO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CONSECUTIVOTC (COMPANIA, TIPOCOMPROBANTE, ANO, CONSECUTIVO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :TIPOCOMPROBANTE, :ANO, :CONSECUTIVO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_TIPOCOMPROBANTE":"$TIPOCOMPROBANTE","KEY_ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOMPROBANTE" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="consecutivotc">
+		<call-query href="insertConsecutivotc">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOMPROBANTE" query-param="TIPOCOMPROBANTE"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteConsecutivotc" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CONSECUTIVOTC WHERE CONSECUTIVOTC.COMPANIA= :KEY_COMPANIA AND CONSECUTIVOTC.TIPOCOMPROBANTE= :KEY_TIPOCOMPROBANTE AND CONSECUTIVOTC.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPOCOMPROBANTE" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="consecutivotc">
+		<call-query href="deleteConsecutivotc">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPOCOMPROBANTE" query-param="KEY_TIPOCOMPROBANTE"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getConsecutivotcPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CONSECUTIVOTC.COMPANIA, CONSECUTIVOTC.TIPOCOMPROBANTE, CONSECUTIVOTC.ANO, CONSECUTIVOTC.CONSECUTIVO  FROM CONSECUTIVOTC WHERE COMPANIA = :COMPANIA AND TIPOCOMPROBANTE = :CODCOMPROBANTE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPOCOMPROBANTE":"$TIPOCOMPROBANTE","ANO":"$ANO(type:integer)","CONSECUTIVO":"$CONSECUTIVO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODCOMPROBANTE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="consecutivotc">
+		<call-query href="getConsecutivotcPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODCOMPROBANTE" query-param="CODCOMPROBANTE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateConsecutivotc" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CONSECUTIVOTC SET COMPANIA=:COMPANIA, TIPOCOMPROBANTE=:TIPOCOMPROBANTE, ANO=:ANO, CONSECUTIVO=:CONSECUTIVO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CONSECUTIVOTC.COMPANIA= :KEY_COMPANIA AND CONSECUTIVOTC.TIPOCOMPROBANTE= :KEY_TIPOCOMPROBANTE AND CONSECUTIVOTC.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOMPROBANTE" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPOCOMPROBANTE" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="consecutivotc">
+		<call-query href="updateConsecutivotc">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOMPROBANTE" query-param="TIPOCOMPROBANTE"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPOCOMPROBANTE" query-param="KEY_TIPOCOMPROBANTE"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+
+</data>

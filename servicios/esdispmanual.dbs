@@ -1,0 +1,126 @@
+﻿<data name="esdispmanual" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertEsdispmanual" keyColumns="COMPANIA,CONSECUTIVO,COD_ESTUDIO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ES_DISP_MANUAL (COMPANIA, COD_ESTUDIO, CONSECUTIVO, FECHA, CODIGO_CUENTA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :COD_ESTUDIO, :CONSECUTIVO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :CODIGO_CUENTA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CONSECUTIVO":"$CONSECUTIVO(type:integer)","KEY_COD_ESTUDIO":"$COD_ESTUDIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGO_CUENTA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="esdispmanual">
+		<call-query href="insertEsdispmanual">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="CODIGO_CUENTA" query-param="CODIGO_CUENTA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEsdispmanual" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ES_DISP_MANUAL WHERE ES_DISP_MANUAL.COMPANIA= :KEY_COMPANIA AND ES_DISP_MANUAL.CONSECUTIVO= :KEY_CONSECUTIVO AND ES_DISP_MANUAL.COD_ESTUDIO= :KEY_COD_ESTUDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="INTEGER"/>
+		<param name="KEY_COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="esdispmanual">
+		<call-query href="deleteEsdispmanual">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+			<with-param name="KEY_COD_ESTUDIO" query-param="KEY_COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsdispmanualPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, COD_ESTUDIO, CONSECUTIVO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,CODIGO_CUENTA  FROM ES_DISP_MANUAL WHERE COMPANIA = :COMPANIA AND COD_ESTUDIO = :COD_ESTUDIO) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN CODIGO_CUENTA IS NULL THEN ' ' ELSE UPPER(CODIGO_CUENTA) END)  LIKE UPPER(:CODIGO_CUENTA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","COD_ESTUDIO":"$COD_ESTUDIO","CONSECUTIVO":"$CONSECUTIVO(type:integer)","FECHA":"$FECHA","CODIGO_CUENTA":"$CODIGO_CUENTA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="CODIGO_CUENTA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="esdispmanual">
+		<call-query href="getEsdispmanualPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="CODIGO_CUENTA" query-param="CODIGO_CUENTA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEsdispmanualNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, COD_ESTUDIO, CONSECUTIVO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,CODIGO_CUENTA  FROM ES_DISP_MANUAL WHERE COMPANIA = :COMPANIA AND COD_ESTUDIO = :COD_ESTUDIO) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN CODIGO_CUENTA IS NULL THEN ' ' ELSE UPPER(CODIGO_CUENTA) END)  LIKE UPPER(:CODIGO_CUENTA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="CODIGO_CUENTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="esdispmanual/numero">
+		<call-query href="getEsdispmanualNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="CODIGO_CUENTA" query-param="CODIGO_CUENTA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEsdispmanual" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ES_DISP_MANUAL SET COMPANIA=:COMPANIA, COD_ESTUDIO=:COD_ESTUDIO, CONSECUTIVO=:CONSECUTIVO, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), CODIGO_CUENTA=:CODIGO_CUENTA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ES_DISP_MANUAL.COMPANIA= :KEY_COMPANIA AND ES_DISP_MANUAL.CONSECUTIVO= :KEY_CONSECUTIVO AND ES_DISP_MANUAL.COD_ESTUDIO= :KEY_COD_ESTUDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="CODIGO_CUENTA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+		<param name="KEY_COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="esdispmanual">
+		<call-query href="updateEsdispmanual">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="CODIGO_CUENTA" query-param="CODIGO_CUENTA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+			<with-param name="KEY_COD_ESTUDIO" query-param="KEY_COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+
+</data>

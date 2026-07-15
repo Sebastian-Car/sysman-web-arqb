@@ -1,0 +1,192 @@
+﻿<data name="sstfactores" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSstfactoresPagTodosPorCompaniaYGrupoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SST_FACTOR.CODIGO_FACTOR, SST_FACTOR.NOMBRE_FACTOR  FROM SST_FACTOR WHERE COMPANIA = :COMPANIA AND GRUPO = :GRUPO) WHERE (CASE WHEN CODIGO_FACTOR IS NULL THEN ' ' ELSE UPPER(CODIGO_FACTOR) END)  LIKE UPPER(:CODIGO_FACTOR || '%')  AND (CASE WHEN NOMBRE_FACTOR IS NULL THEN ' ' ELSE UPPER(NOMBRE_FACTOR) END)  LIKE UPPER( '%' || :NOMBRE_FACTOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO_FACTOR":"$CODIGO_FACTOR","NOMBRE_FACTOR":"$NOMBRE_FACTOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="CODIGO_FACTOR" sqlType="STRING"/>
+		<param name="NOMBRE_FACTOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sstfactores/todosporcompaniaygrupo/pag">
+		<call-query href="getSstfactoresPagTodosPorCompaniaYGrupoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="CODIGO_FACTOR" query-param="CODIGO_FACTOR"/>
+			<with-param name="NOMBRE_FACTOR" query-param="NOMBRE_FACTOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSstfactoresNumTodosPorCompaniaYGrupoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SST_FACTOR.CODIGO_FACTOR, SST_FACTOR.NOMBRE_FACTOR  FROM SST_FACTOR WHERE COMPANIA = :COMPANIA AND GRUPO = :GRUPO) WHERE (CASE WHEN CODIGO_FACTOR IS NULL THEN ' ' ELSE UPPER(CODIGO_FACTOR) END)  LIKE UPPER(:CODIGO_FACTOR || '%')  AND (CASE WHEN NOMBRE_FACTOR IS NULL THEN ' ' ELSE UPPER(NOMBRE_FACTOR) END)  LIKE UPPER( '%' || :NOMBRE_FACTOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="CODIGO_FACTOR" sqlType="STRING"/>
+		<param name="NOMBRE_FACTOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sstfactores/todosporcompaniaygrupo/num">
+		<call-query href="getSstfactoresNumTodosPorCompaniaYGrupoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="CODIGO_FACTOR" query-param="CODIGO_FACTOR"/>
+			<with-param name="NOMBRE_FACTOR" query-param="NOMBRE_FACTOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getSstfactoresTodosPorCompaniaYGrupoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SST_FACTOR.CODIGO_FACTOR, SST_FACTOR.NOMBRE_FACTOR  FROM SST_FACTOR WHERE SST_FACTOR.COMPANIA = :COMPANIA AND SST_FACTOR.GRUPO = :GRUPO ORDER BY SST_FACTOR.CODIGO_FACTOR</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO_FACTOR":"$CODIGO_FACTOR","NOMBRE_FACTOR":"$NOMBRE_FACTOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="GRUPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sstfactores/todosporcompaniaygrupo">
+		<call-query href="getSstfactoresTodosPorCompaniaYGrupoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="GRUPO" query-param="GRUPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSstfactoresListadoOrdenGrupoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CONCAT(CHR(39) ,CONCAT( ( SELECT LISTAGG(CODIGO_FACTOR,CONCAT( CHR(39) ,CONCAT( ',' , CHR(39))) ) WITHIN GROUP(ORDER BY GRUPO,CODIGO_FACTOR) FROM SST_FACTOR WHERE SST_FACTOR.COMPANIA =:COMPANIA ) , CHR(39))) LISTA FROM DUAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"LISTA":"$LISTA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sstfactores/listadoordengrupo">
+		<call-query href="getSstfactoresListadoOrdenGrupoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSstfactores" keyColumns="COMPANIA,GRUPO,CODIGO_FACTOR" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SST_FACTOR (COMPANIA, CODIGO_FACTOR, GRUPO, NOMBRE_FACTOR, NUMERICO_TEXTO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO_FACTOR, :GRUPO, :NOMBRE_FACTOR, :NUMERICO_TEXTO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_GRUPO":"$GRUPO","KEY_CODIGO_FACTOR":"$CODIGO_FACTOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_FACTOR" sqlType="STRING"/>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE_FACTOR" sqlType="STRING"/>
+		<param defaultValue="0" name="NUMERICO_TEXTO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="sstfactores">
+		<call-query href="insertSstfactores">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_FACTOR" query-param="CODIGO_FACTOR"/>
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="NOMBRE_FACTOR" query-param="NOMBRE_FACTOR"/>
+			<with-param name="NUMERICO_TEXTO" query-param="NUMERICO_TEXTO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSstfactores" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SST_FACTOR WHERE SST_FACTOR.COMPANIA= :KEY_COMPANIA AND SST_FACTOR.GRUPO= :KEY_GRUPO AND SST_FACTOR.CODIGO_FACTOR= :KEY_CODIGO_FACTOR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_GRUPO" sqlType="STRING"/>
+		<param name="KEY_CODIGO_FACTOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="sstfactores">
+		<call-query href="deleteSstfactores">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_GRUPO" query-param="KEY_GRUPO"/>
+			<with-param name="KEY_CODIGO_FACTOR" query-param="KEY_CODIGO_FACTOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getSstfactoresPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SST_FACTOR.COMPANIA, SST_FACTOR.CODIGO_FACTOR, SST_FACTOR.GRUPO, SST_GRUPO.NOMBRE, SST_FACTOR.NOMBRE_FACTOR,(CASE SST_FACTOR.NUMERICO_TEXTO WHEN 0 THEN 'false' ELSE 'true' END) NUMERICO_TEXTO FROM SST_FACTOR INNER JOIN SST_GRUPO ON SST_FACTOR.COMPANIA = SST_GRUPO.COMPANIA AND SST_FACTOR.GRUPO = SST_GRUPO.GRUPO WHERE SST_FACTOR.COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGO_FACTOR IS NULL THEN ' ' ELSE UPPER(CODIGO_FACTOR) END)  LIKE UPPER(:CODIGO_FACTOR || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NOMBRE_FACTOR IS NULL THEN ' ' ELSE UPPER(NOMBRE_FACTOR) END)  LIKE UPPER( '%' || :NOMBRE_FACTOR || '%')  AND (CASE WHEN NUMERICO_TEXTO IS NULL THEN ' ' ELSE UPPER(NUMERICO_TEXTO) END)  LIKE UPPER(:NUMERICO_TEXTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO_FACTOR":"$CODIGO_FACTOR","GRUPO":"$GRUPO","NOMBRE":"$NOMBRE","NOMBRE_FACTOR":"$NOMBRE_FACTOR","NUMERICO_TEXTO":"$NUMERICO_TEXTO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_FACTOR" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBRE_FACTOR" sqlType="STRING"/>
+		<param name="NUMERICO_TEXTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sstfactores">
+		<call-query href="getSstfactoresPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_FACTOR" query-param="CODIGO_FACTOR"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBRE_FACTOR" query-param="NOMBRE_FACTOR"/>
+			<with-param name="NUMERICO_TEXTO" query-param="NUMERICO_TEXTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSstfactoresNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SST_FACTOR.COMPANIA, SST_FACTOR.CODIGO_FACTOR, SST_FACTOR.GRUPO, SST_GRUPO.NOMBRE, SST_FACTOR.NOMBRE_FACTOR,(CASE SST_FACTOR.NUMERICO_TEXTO WHEN 0 THEN 'false' ELSE 'true' END) NUMERICO_TEXTO FROM SST_FACTOR INNER JOIN SST_GRUPO ON SST_FACTOR.COMPANIA = SST_GRUPO.COMPANIA AND SST_FACTOR.GRUPO = SST_GRUPO.GRUPO WHERE SST_FACTOR.COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGO_FACTOR IS NULL THEN ' ' ELSE UPPER(CODIGO_FACTOR) END)  LIKE UPPER(:CODIGO_FACTOR || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NOMBRE_FACTOR IS NULL THEN ' ' ELSE UPPER(NOMBRE_FACTOR) END)  LIKE UPPER( '%' || :NOMBRE_FACTOR || '%')  AND (CASE WHEN NUMERICO_TEXTO IS NULL THEN ' ' ELSE UPPER(NUMERICO_TEXTO) END)  LIKE UPPER(:NUMERICO_TEXTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_FACTOR" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBRE_FACTOR" sqlType="STRING"/>
+		<param name="NUMERICO_TEXTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sstfactores/numero">
+		<call-query href="getSstfactoresNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_FACTOR" query-param="CODIGO_FACTOR"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBRE_FACTOR" query-param="NOMBRE_FACTOR"/>
+			<with-param name="NUMERICO_TEXTO" query-param="NUMERICO_TEXTO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSstfactores" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SST_FACTOR SET COMPANIA=:COMPANIA, CODIGO_FACTOR=:CODIGO_FACTOR, GRUPO=:GRUPO, NOMBRE_FACTOR=:NOMBRE_FACTOR, NUMERICO_TEXTO=:NUMERICO_TEXTO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SST_FACTOR.COMPANIA= :KEY_COMPANIA AND SST_FACTOR.GRUPO= :KEY_GRUPO AND SST_FACTOR.CODIGO_FACTOR= :KEY_CODIGO_FACTOR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_FACTOR" sqlType="STRING"/>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="NOMBRE_FACTOR" sqlType="STRING"/>
+		<param name="NUMERICO_TEXTO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_GRUPO" sqlType="STRING"/>
+		<param name="KEY_CODIGO_FACTOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="sstfactores">
+		<call-query href="updateSstfactores">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_FACTOR" query-param="CODIGO_FACTOR"/>
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="NOMBRE_FACTOR" query-param="NOMBRE_FACTOR"/>
+			<with-param name="NUMERICO_TEXTO" query-param="NUMERICO_TEXTO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_GRUPO" query-param="KEY_GRUPO"/>
+			<with-param name="KEY_CODIGO_FACTOR" query-param="KEY_CODIGO_FACTOR"/>
+
+		</call-query>
+	</resource>
+
+</data>

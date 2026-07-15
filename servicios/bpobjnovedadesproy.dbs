@@ -1,0 +1,182 @@
+﻿<data name="bpobjnovedadesproy" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getBpobjnovedadesproyTotalInversionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  BP_OBJNOVEDADPROY.TIPOT, SUM (BP_OBJNOVEDADPROY.INVERSION) INVERSION  FROM BP_OBJNOVEDADPROY WHERE COMPANIA = :COMPANIA AND TIPOT= :TIPO AND CLASET = :CLASE AND NOVEDAD = :NOVEDADINI AND DEPENDENCIA = :DEPENDENCIAINI GROUP BY BP_OBJNOVEDADPROY.TIPOT</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TIPOT":"$TIPOT","INVERSION":"$INVERSION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="NOVEDADINI" sqlType="STRING"/>
+		<param name="DEPENDENCIAINI" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bpobjnovedadesproy/totalinversion">
+		<call-query href="getBpobjnovedadesproyTotalInversionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="NOVEDADINI" query-param="NOVEDADINI"/>
+			<with-param name="DEPENDENCIAINI" query-param="DEPENDENCIAINI"/>
+
+		</call-query>
+	</resource>
+	<query id="insertBpobjnovedadesproy" keyColumns="COMPANIA,TIPOT,CLASET,NOVEDAD,DEPENDENCIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO BP_OBJNOVEDADPROY (COMPANIA, TIPOT, CLASET, NOVEDAD, DEPENDENCIA, CODIGO, OBJETO, INVERSION, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :TIPOT, :CLASET, :NOVEDAD, :DEPENDENCIA, :CODIGO, :OBJETO, :INVERSION, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_TIPOT":"$TIPOT","KEY_CLASET":"$CLASET","KEY_NOVEDAD":"$NOVEDAD(type:long)","KEY_DEPENDENCIA":"$DEPENDENCIA","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOT" sqlType="STRING"/>
+		<param name="CLASET" sqlType="STRING"/>
+		<param defaultValue="0" name="NOVEDAD" sqlType="STRING"/>
+		<param defaultValue="999999999999" name="DEPENDENCIA" sqlType="STRING"/>
+		<param defaultValue="0" name="CODIGO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param defaultValue="0" name="INVERSION" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="bpobjnovedadesproy">
+		<call-query href="insertBpobjnovedadesproy">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOT" query-param="TIPOT"/>
+			<with-param name="CLASET" query-param="CLASET"/>
+			<with-param name="NOVEDAD" query-param="NOVEDAD"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="INVERSION" query-param="INVERSION"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteBpobjnovedadesproy" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM BP_OBJNOVEDADPROY WHERE BP_OBJNOVEDADPROY.COMPANIA= :KEY_COMPANIA AND BP_OBJNOVEDADPROY.TIPOT= :KEY_TIPOT AND BP_OBJNOVEDADPROY.CLASET= :KEY_CLASET AND BP_OBJNOVEDADPROY.NOVEDAD= :KEY_NOVEDAD AND BP_OBJNOVEDADPROY.DEPENDENCIA= :KEY_DEPENDENCIA AND BP_OBJNOVEDADPROY.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPOT" sqlType="STRING"/>
+		<param name="KEY_CLASET" sqlType="STRING"/>
+		<param name="KEY_NOVEDAD" sqlType="STRING"/>
+		<param name="KEY_DEPENDENCIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="bpobjnovedadesproy">
+		<call-query href="deleteBpobjnovedadesproy">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPOT" query-param="KEY_TIPOT"/>
+			<with-param name="KEY_CLASET" query-param="KEY_CLASET"/>
+			<with-param name="KEY_NOVEDAD" query-param="KEY_NOVEDAD"/>
+			<with-param name="KEY_DEPENDENCIA" query-param="KEY_DEPENDENCIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBpobjnovedadesproyPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  BP_OBJNOVEDADPROY.COMPANIA, BP_OBJNOVEDADPROY.TIPOT, BP_OBJNOVEDADPROY.CLASET, BP_OBJNOVEDADPROY.NOVEDAD, BP_OBJNOVEDADPROY.DEPENDENCIA, BP_OBJNOVEDADPROY.CODIGO, BP_OBJNOVEDADPROY.OBJETO, BP_OBJNOVEDADPROY.INVERSION  FROM BP_OBJNOVEDADPROY WHERE COMPANIA = :COMPANIA AND TIPOT= :TIPO AND CLASET = :CLASE AND NOVEDAD = :NOVEDADINI AND DEPENDENCIA = :DEPENDENCIAINI ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN INVERSION IS NULL THEN ' ' ELSE UPPER(INVERSION) END)  LIKE UPPER(:INVERSION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPOT":"$TIPOT","CLASET":"$CLASET","NOVEDAD":"$NOVEDAD(type:long)","DEPENDENCIA":"$DEPENDENCIA","CODIGO":"$CODIGO","OBJETO":"$OBJETO","INVERSION":"$INVERSION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="NOVEDADINI" sqlType="STRING"/>
+		<param name="DEPENDENCIAINI" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="INVERSION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bpobjnovedadesproy">
+		<call-query href="getBpobjnovedadesproyPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="NOVEDADINI" query-param="NOVEDADINI"/>
+			<with-param name="DEPENDENCIAINI" query-param="DEPENDENCIAINI"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="INVERSION" query-param="INVERSION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBpobjnovedadesproyNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  BP_OBJNOVEDADPROY.COMPANIA, BP_OBJNOVEDADPROY.TIPOT, BP_OBJNOVEDADPROY.CLASET, BP_OBJNOVEDADPROY.NOVEDAD, BP_OBJNOVEDADPROY.DEPENDENCIA, BP_OBJNOVEDADPROY.CODIGO, BP_OBJNOVEDADPROY.OBJETO, BP_OBJNOVEDADPROY.INVERSION  FROM BP_OBJNOVEDADPROY WHERE COMPANIA = :COMPANIA AND TIPOT= :TIPO AND CLASET = :CLASE AND NOVEDAD = :NOVEDADINI AND DEPENDENCIA = :DEPENDENCIAINI ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN OBJETO IS NULL THEN ' ' ELSE UPPER(OBJETO) END)  LIKE UPPER( '%' || :OBJETO || '%')  AND (CASE WHEN INVERSION IS NULL THEN ' ' ELSE UPPER(INVERSION) END)  LIKE UPPER(:INVERSION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="NOVEDADINI" sqlType="STRING"/>
+		<param name="DEPENDENCIAINI" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="INVERSION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bpobjnovedadesproy/numero">
+		<call-query href="getBpobjnovedadesproyNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="NOVEDADINI" query-param="NOVEDADINI"/>
+			<with-param name="DEPENDENCIAINI" query-param="DEPENDENCIAINI"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="INVERSION" query-param="INVERSION"/>
+
+		</call-query>
+	</resource>
+	<query id="updateBpobjnovedadesproy" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE BP_OBJNOVEDADPROY SET COMPANIA=:COMPANIA, TIPOT=:TIPOT, CLASET=:CLASET, NOVEDAD=:NOVEDAD, DEPENDENCIA=:DEPENDENCIA, CODIGO=:CODIGO, OBJETO=:OBJETO, INVERSION=:INVERSION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE BP_OBJNOVEDADPROY.COMPANIA= :KEY_COMPANIA AND BP_OBJNOVEDADPROY.TIPOT= :KEY_TIPOT AND BP_OBJNOVEDADPROY.CLASET= :KEY_CLASET AND BP_OBJNOVEDADPROY.NOVEDAD= :KEY_NOVEDAD AND BP_OBJNOVEDADPROY.DEPENDENCIA= :KEY_DEPENDENCIA AND BP_OBJNOVEDADPROY.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOT" sqlType="STRING"/>
+		<param name="CLASET" sqlType="STRING"/>
+		<param name="NOVEDAD" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="OBJETO" sqlType="STRING"/>
+		<param name="INVERSION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPOT" sqlType="STRING"/>
+		<param name="KEY_CLASET" sqlType="STRING"/>
+		<param name="KEY_NOVEDAD" sqlType="STRING"/>
+		<param name="KEY_DEPENDENCIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="bpobjnovedadesproy">
+		<call-query href="updateBpobjnovedadesproy">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOT" query-param="TIPOT"/>
+			<with-param name="CLASET" query-param="CLASET"/>
+			<with-param name="NOVEDAD" query-param="NOVEDAD"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="OBJETO" query-param="OBJETO"/>
+			<with-param name="INVERSION" query-param="INVERSION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPOT" query-param="KEY_TIPOT"/>
+			<with-param name="KEY_CLASET" query-param="KEY_CLASET"/>
+			<with-param name="KEY_NOVEDAD" query-param="KEY_NOVEDAD"/>
+			<with-param name="KEY_DEPENDENCIA" query-param="KEY_DEPENDENCIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

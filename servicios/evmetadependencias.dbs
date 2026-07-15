@@ -1,0 +1,190 @@
+﻿<data name="evmetadependencias" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getEvmetadependenciasPagTodosporcodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO_META, META  FROM EV_META_DEPENDENCIAS WHERE COMPANIA =:COMPANIA AND DEPENDENCIA = :DEPENDENCIA ORDER BY CODIGO_META ASC) WHERE (CASE WHEN CODIGO_META IS NULL THEN ' ' ELSE UPPER(CODIGO_META) END)  LIKE UPPER(:CODIGO_META || '%')  AND (CASE WHEN META IS NULL THEN ' ' ELSE UPPER(META) END)  LIKE UPPER( '%' || :META || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO_META":"$CODIGO_META","META":"$META"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODIGO_META" sqlType="STRING"/>
+		<param name="META" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="evmetadependencias/todosporcodigo/pag">
+		<call-query href="getEvmetadependenciasPagTodosporcodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODIGO_META" query-param="CODIGO_META"/>
+			<with-param name="META" query-param="META"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEvmetadependenciasNumTodosporcodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO_META, META  FROM EV_META_DEPENDENCIAS WHERE COMPANIA =:COMPANIA AND DEPENDENCIA = :DEPENDENCIA ORDER BY CODIGO_META ASC) WHERE (CASE WHEN CODIGO_META IS NULL THEN ' ' ELSE UPPER(CODIGO_META) END)  LIKE UPPER(:CODIGO_META || '%')  AND (CASE WHEN META IS NULL THEN ' ' ELSE UPPER(META) END)  LIKE UPPER( '%' || :META || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODIGO_META" sqlType="STRING"/>
+		<param name="META" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="evmetadependencias/todosporcodigo/num">
+		<call-query href="getEvmetadependenciasNumTodosporcodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODIGO_META" query-param="CODIGO_META"/>
+			<with-param name="META" query-param="META"/>
+
+		</call-query>
+	</resource>
+	<query id="insertEvmetadependencias" keyColumns="COMPANIA,DEPENDENCIA,CODIGO_META" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO EV_META_DEPENDENCIAS (COMPANIA, DEPENDENCIA, CODIGO_META, META, CALIFICACION, OBSERVACION, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :DEPENDENCIA, :CODIGO_META, :META, :CALIFICACION, :OBSERVACION, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_DEPENDENCIA":"$DEPENDENCIA","KEY_CODIGO_META":"$CODIGO_META"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODIGO_META" sqlType="STRING"/>
+		<param name="META" sqlType="STRING"/>
+		<param name="CALIFICACION" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACION" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="evmetadependencias">
+		<call-query href="insertEvmetadependencias">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODIGO_META" query-param="CODIGO_META"/>
+			<with-param name="META" query-param="META"/>
+			<with-param name="CALIFICACION" query-param="CALIFICACION"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEvmetadependencias" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM EV_META_DEPENDENCIAS WHERE EV_META_DEPENDENCIAS.COMPANIA= :KEY_COMPANIA AND EV_META_DEPENDENCIAS.DEPENDENCIA= :KEY_DEPENDENCIA AND EV_META_DEPENDENCIAS.CODIGO_META= :KEY_CODIGO_META</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_DEPENDENCIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO_META" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="evmetadependencias">
+		<call-query href="deleteEvmetadependencias">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_DEPENDENCIA" query-param="KEY_DEPENDENCIA"/>
+			<with-param name="KEY_CODIGO_META" query-param="KEY_CODIGO_META"/>
+
+		</call-query>
+	</resource>
+	<query id="getEvmetadependenciasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, DEPENDENCIA, CODIGO_META, META, CALIFICACION, OBSERVACION  FROM EV_META_DEPENDENCIAS WHERE COMPANIA = :COMPANIA AND DEPENDENCIA = :DEPENDENCIA) WHERE (CASE WHEN DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(DEPENDENCIA) END)  LIKE UPPER(:DEPENDENCIA || '%')  AND (CASE WHEN CODIGO_META IS NULL THEN ' ' ELSE UPPER(CODIGO_META) END)  LIKE UPPER(:CODIGO_META || '%')  AND (CASE WHEN META IS NULL THEN ' ' ELSE UPPER(META) END)  LIKE UPPER( '%' || :META || '%')  AND (CASE WHEN CALIFICACION IS NULL THEN ' ' ELSE UPPER(CALIFICACION) END)  LIKE UPPER(:CALIFICACION || '%')  AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END)  LIKE UPPER( '%' || :OBSERVACION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","DEPENDENCIA":"$DEPENDENCIA","CODIGO_META":"$CODIGO_META","META":"$META","CALIFICACION":"$CALIFICACION(type:integer)","OBSERVACION":"$OBSERVACION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODIGO_META" sqlType="STRING"/>
+		<param name="META" sqlType="STRING"/>
+		<param name="CALIFICACION" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="evmetadependencias">
+		<call-query href="getEvmetadependenciasPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODIGO_META" query-param="CODIGO_META"/>
+			<with-param name="META" query-param="META"/>
+			<with-param name="CALIFICACION" query-param="CALIFICACION"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEvmetadependenciasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, DEPENDENCIA, CODIGO_META, META, CALIFICACION, OBSERVACION  FROM EV_META_DEPENDENCIAS WHERE COMPANIA = :COMPANIA AND DEPENDENCIA = :DEPENDENCIA) WHERE (CASE WHEN DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(DEPENDENCIA) END)  LIKE UPPER(:DEPENDENCIA || '%')  AND (CASE WHEN CODIGO_META IS NULL THEN ' ' ELSE UPPER(CODIGO_META) END)  LIKE UPPER(:CODIGO_META || '%')  AND (CASE WHEN META IS NULL THEN ' ' ELSE UPPER(META) END)  LIKE UPPER( '%' || :META || '%')  AND (CASE WHEN CALIFICACION IS NULL THEN ' ' ELSE UPPER(CALIFICACION) END)  LIKE UPPER(:CALIFICACION || '%')  AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END)  LIKE UPPER( '%' || :OBSERVACION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODIGO_META" sqlType="STRING"/>
+		<param name="META" sqlType="STRING"/>
+		<param name="CALIFICACION" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="evmetadependencias/numero">
+		<call-query href="getEvmetadependenciasNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODIGO_META" query-param="CODIGO_META"/>
+			<with-param name="META" query-param="META"/>
+			<with-param name="CALIFICACION" query-param="CALIFICACION"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+
+		</call-query>
+	</resource>
+	<query id="getEvmetadependenciasRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, DEPENDENCIA, CODIGO_META, META, CALIFICACION, OBSERVACION  FROM EV_META_DEPENDENCIAS WHERE EV_META_DEPENDENCIAS.COMPANIA= :KEY_COMPANIA AND EV_META_DEPENDENCIAS.DEPENDENCIA= :KEY_DEPENDENCIA AND EV_META_DEPENDENCIAS.CODIGO_META= :KEY_CODIGO_META</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","DEPENDENCIA":"$DEPENDENCIA","CODIGO_META":"$CODIGO_META","META":"$META","CALIFICACION":"$CALIFICACION(type:integer)","OBSERVACION":"$OBSERVACION"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_DEPENDENCIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO_META" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="evmetadependencias/data">
+		<call-query href="getEvmetadependenciasRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_DEPENDENCIA" query-param="KEY_DEPENDENCIA"/>
+			<with-param name="KEY_CODIGO_META" query-param="KEY_CODIGO_META"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEvmetadependencias" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE EV_META_DEPENDENCIAS SET COMPANIA=:COMPANIA, DEPENDENCIA=:DEPENDENCIA, CODIGO_META=:CODIGO_META, META=:META, CALIFICACION=:CALIFICACION, OBSERVACION=:OBSERVACION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE EV_META_DEPENDENCIAS.COMPANIA= :KEY_COMPANIA AND EV_META_DEPENDENCIAS.DEPENDENCIA= :KEY_DEPENDENCIA AND EV_META_DEPENDENCIAS.CODIGO_META= :KEY_CODIGO_META</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODIGO_META" sqlType="STRING"/>
+		<param name="META" sqlType="STRING"/>
+		<param name="CALIFICACION" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_DEPENDENCIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO_META" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="evmetadependencias">
+		<call-query href="updateEvmetadependencias">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODIGO_META" query-param="CODIGO_META"/>
+			<with-param name="META" query-param="META"/>
+			<with-param name="CALIFICACION" query-param="CALIFICACION"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_DEPENDENCIA" query-param="KEY_DEPENDENCIA"/>
+			<with-param name="KEY_CODIGO_META" query-param="KEY_CODIGO_META"/>
+
+		</call-query>
+	</resource>
+
+</data>

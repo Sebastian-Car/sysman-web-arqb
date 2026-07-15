@@ -1,0 +1,31 @@
+MERGE INTO TIPOS TABLA
+USING (
+  SELECT d.CODIGO, d.NOMBRE, (SELECT NVL(MAX(ID),0) FROM TIPOS) + ROW_NUMBER() OVER (ORDER BY d.CODIGO) AS NEW_ID
+  FROM (
+    SELECT '1' AS CODIGO, 'DEPARTAMENTOS: Administración central territorial departamentos.' AS NOMBRE FROM dual UNION ALL
+    SELECT '2', 'MUNICIPIOS: Administración central territorial municipios.' FROM dual UNION ALL
+    SELECT '3', 'BOGOTÁ: Administración central territorial Bogotá.' FROM dual UNION ALL
+    SELECT '4', 'SAN ANDRES: Administración central territorial departamento de San Andrés y Providencia.' FROM dual UNION ALL
+    SELECT '5', 'ESTABLECIMIENTOS PÚBLICOS TERRITORIALES: Establecimientos públicos territoriales - asociaciones indí' FROM dual UNION ALL
+    SELECT '6', 'FONDOS SIN PERSONERÍA JURÍDICA: Fondos sin personería jurídica denominados especiales o cuenta cread' FROM dual UNION ALL
+    SELECT '7', 'EMPRESAS TERRITORIALES NO FINANCIERAS SUJETAS: Empresas territoriales no financieras sujetas al decr' FROM dual UNION ALL
+    SELECT '8', 'EMPRESAS NACIONALES NO FINANCIERAS SUJETAS: Empresas nacionales no financieras sujetas al decreto 11' FROM dual UNION ALL
+    SELECT '9', 'EMPRESAS TERRITORIALES NO FINANCIERAS NO SUJETAS: Empresas territoriales no financieras no sujetas a' FROM dual UNION ALL
+    SELECT '10', 'EMPRESAS NACIONALES NO FINANCIERAS NO SUJETAS: Empresas nacionales no financieras no sujetas al decr' FROM dual UNION ALL
+    SELECT '11', 'EMPRESAS TERRITORIALES FINANCIERAS: Empresa de servicios públicos, industriales y comerciales del es' FROM dual UNION ALL
+    SELECT '12', 'EMPRESAS NACIONALES FINANCIERAS: Empresas de servicios públicos domiciliarios, industriales y comerc' FROM dual UNION ALL
+    SELECT '13', 'RECURSOS EN FIDUCIAS PUBLICAS: Recursos en fiducias publicas encargos fiduciarios convenios articulo' FROM dual UNION ALL
+    SELECT '14', 'BANCO DE LA REPUBLICA: Banco de la Republica.' FROM dual UNION ALL
+    SELECT '15', 'ENTES AUTÓNOMOS CONSTITUCIONALES NO PGN: Entes autónomos constitucionales no Presupuesto General de ' FROM dual UNION ALL
+    SELECT '16', 'PARTICULARES: Entidades que administran recursos parafiscales, en relación con estos recursos las cá' FROM dual
+  ) d
+) VISTA
+ON (TABLA.CODIGO = VISTA.CODIGO)
+WHEN MATCHED THEN
+  UPDATE SET TABLA.NOMBRE = VISTA.NOMBRE,
+             TABLA.MODIFIED_BY   = 'ADMIN',
+             TABLA.DATE_MODIFIED = SYSDATE
+WHEN NOT MATCHED THEN
+  INSERT (ID, CODIGO, NOMBRE, ID_TIPO_PADRE, CATEGORIA, CREATED_BY, DATE_CREATED, MODIFIED_BY, DATE_MODIFIED)
+  VALUES (VISTA.NEW_ID, VISTA.CODIGO, VISTA.NOMBRE, NULL, 21, 'ADMIN', SYSDATE, NULL, NULL);
+  COMMIT;

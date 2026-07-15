@@ -1,0 +1,83 @@
+/*
+ * ConfigurarplanpptalsControladorUrlEnum
+ *
+ * 1.0
+ *
+ * 09/09/2016
+ *
+ * Copyright Stefanini Sysman
+ */
+package com.sysman.cgr.enums;
+
+/**
+ * @author Processors-api
+ * 
+ * @version 1.0
+ * 
+ * Enumeracion que permite clasificar cada uno de los identificadores
+ * geenerados en el refactoring y asociados al codigo legacy obtenido
+ * con patrones de busqueda.
+ */
+public enum ConfigurarplanpptalsControladorUrlEnum {
+
+    URL19635("CONFIGURARPLANPPTALSCONTROLADORURL19635", "584001"),
+
+    URL21184("CONFIGURARPLANPPTALSCONTROLADORURL21184", "585001"),
+
+    URL22207("CONFIGURARPLANPPTALSCONTROLADORURL22207", "586001"),
+
+    URL22744("CONFIGURARPLANPPTALSCONTROLADORURL22744", "587001"),
+
+    URL24604("CONFIGURARPLANPPTALSCONTROLADORURL24604", "514001"),
+
+    URL23817("CONFIGURARPLANPPTALSCONTROLADORURL23817", "589001"),
+
+    URL19069("CONFIGURARPLANPPTALSCONTROLADORURL19069", "583001"),
+
+    URL15313("CONFIGURARPLANPPTALSCONTROLADORURL15313", "578001"),
+
+    URL17863("CONFIGURARPLANPPTALSCONTROLADORURL17863", "59014"),
+
+    URL0001("CONFIGURARPLANPPTALSCONTROLADORURL0001", "570001"),
+
+    URL14108("CONFIGURARPLANPPTALSCONTROLADORURL14108", "4001"),
+
+    URL23300("CONFIGURARPLANPPTALSCONTROLADORURL23300", "588001"),
+
+    URL18483("CONFIGURARPLANPPTALSCONTROLADORURL18483", "582001"),
+
+    URL18484("CONFIGURARPLANPPTALSCONTROLADORURL18484", "577001"),
+
+    URL18485("CONFIGURARPLANPPTALSCONTROLADORURL18485", "574001"),
+
+    URL18486("CONFIGURARPLANPPTALSCONTROLADORURL18486", "579001"),
+
+    URL18487("CONFIGURARPLANPPTALSCONTROLADORURL18487", "573001"),
+
+    URL18488("CONFIGURARPLANPPTALSCONTROLADORURL18488", "575001"),
+
+    URL18489("CONFIGURARPLANPPTALSCONTROLADORURL18489", "580001"),
+
+    URL18490("CONFIGURARPLANPPTALSCONTROLADORURL18490", "569001")
+
+    ;
+
+    private final String key;
+    private final String value;
+
+    private ConfigurarplanpptalsControladorUrlEnum(String key, String value)
+    {
+        this.key = key;
+        this.value = value;
+    }
+
+    public String getKey()
+    {
+        return key;
+    }
+
+    public String getValue()
+    {
+        return value;
+    }
+}

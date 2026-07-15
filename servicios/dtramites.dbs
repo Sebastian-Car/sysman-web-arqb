@@ -1,0 +1,140 @@
+﻿<data name="dtramites" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getDtramitesMaxiconsecutivoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NVL(MAX(CONSECUTIVO),0) CONSECUTIVO  FROM D_TRAMITES WHERE COMPANIA =:COMPANIA AND PROCESOS =:PROCESO AND TIPO_TRAMITE =:TIPO_TRAMITE AND NUMERO =:TRAMITE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="TRAMITE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dtramites/maxiconsecutivo">
+		<call-query href="getDtramitesMaxiconsecutivoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="TRAMITE" query-param="TRAMITE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDtramitesPagMonitorhistorialtramiteQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DT.COMPANIA , DT.PROCESOS , DT.TIPO_TRAMITE , DT.NUMERO , DT.CONSECUTIVO , DT.NODO_DESTINO , ND.NOMBRE NODO_D_NOM,(TO_CHAR(DT.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, TO_CHAR(DT.HORA,'HH24:MI') HORA , DT.USUARIO_INTERNO , DT.USUARIO_EXTERNO, (TRUNC(NVL(DT.FECHA_PASE,SYSDATE)) - TRUNC(DT.FECHA)) DURACION, DT.DESCRIPCION, DT.CONTRATO_NUM  FROM D_TRAMITES DT INNER JOIN NODOS ND ON DT.COMPANIA = ND.COMPANIA AND DT.PROCESOS = ND.CODIGO_PROCESO AND DT.NODO_DESTINO = ND.CODIGO WHERE DT.COMPANIA = :COMPANIA AND DT.PROCESOS = :PROCESO AND DT.TIPO_TRAMITE = :TIPO_TRAMITE AND DT.NUMERO = :TRAMITE ORDER BY CONSECUTIVO DESC) WHERE (CASE WHEN NODO_DESTINO IS NULL THEN ' ' ELSE UPPER(NODO_DESTINO) END)  LIKE UPPER( '%' || :NODO_DESTINO || '%')  AND (CASE WHEN NODO_D_NOM IS NULL THEN ' ' ELSE UPPER(NODO_D_NOM) END)  LIKE UPPER( '%' || :NODO_D_NOM || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN HORA IS NULL THEN ' ' ELSE UPPER(HORA) END)  LIKE UPPER( '%' || :HORA || '%')  AND (CASE WHEN USUARIO_INTERNO IS NULL THEN ' ' ELSE UPPER(USUARIO_INTERNO) END)  LIKE UPPER( '%' || :USUARIO_INTERNO || '%')  AND (CASE WHEN USUARIO_EXTERNO IS NULL THEN ' ' ELSE UPPER(USUARIO_EXTERNO) END)  LIKE UPPER( '%' || :USUARIO_EXTERNO || '%')  AND (CASE WHEN DURACION IS NULL THEN ' ' ELSE UPPER(DURACION) END)  LIKE UPPER(:DURACION || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN CONTRATO_NUM IS NULL THEN ' ' ELSE UPPER(CONTRATO_NUM) END)  LIKE UPPER( '%' || :CONTRATO_NUM || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PROCESOS":"$PROCESOS","TIPO_TRAMITE":"$TIPO_TRAMITE","NUMERO":"$NUMERO(type:long)","CONSECUTIVO":"$CONSECUTIVO(type:long)","NODO_DESTINO":"$NODO_DESTINO","NODO_D_NOM":"$NODO_D_NOM","FECHA":"$FECHA","HORA":"$HORA","USUARIO_INTERNO":"$USUARIO_INTERNO","USUARIO_EXTERNO":"$USUARIO_EXTERNO","DURACION":"$DURACION(type:integer)","DESCRIPCION":"$DESCRIPCION","CONTRATO_NUM":"$CONTRATO_NUM"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="TRAMITE" sqlType="STRING"/>
+		<param name="NODO_DESTINO" sqlType="STRING"/>
+		<param name="NODO_D_NOM" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="HORA" sqlType="STRING"/>
+		<param name="USUARIO_INTERNO" sqlType="STRING"/>
+		<param name="USUARIO_EXTERNO" sqlType="STRING"/>
+		<param name="DURACION" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="CONTRATO_NUM" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dtramites/monitorhistorialtramite/pag">
+		<call-query href="getDtramitesPagMonitorhistorialtramiteQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="TRAMITE" query-param="TRAMITE"/>
+			<with-param name="NODO_DESTINO" query-param="NODO_DESTINO"/>
+			<with-param name="NODO_D_NOM" query-param="NODO_D_NOM"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA" query-param="HORA"/>
+			<with-param name="USUARIO_INTERNO" query-param="USUARIO_INTERNO"/>
+			<with-param name="USUARIO_EXTERNO" query-param="USUARIO_EXTERNO"/>
+			<with-param name="DURACION" query-param="DURACION"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CONTRATO_NUM" query-param="CONTRATO_NUM"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDtramitesNumMonitorhistorialtramiteQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DT.COMPANIA , DT.PROCESOS , DT.TIPO_TRAMITE , DT.NUMERO , DT.CONSECUTIVO , DT.NODO_DESTINO , ND.NOMBRE NODO_D_NOM,(TO_CHAR(DT.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, TO_CHAR(DT.HORA,'HH24:MI') HORA , DT.USUARIO_INTERNO , DT.USUARIO_EXTERNO, (TRUNC(NVL(DT.FECHA_PASE,SYSDATE)) - TRUNC(DT.FECHA)) DURACION, DT.DESCRIPCION, DT.CONTRATO_NUM  FROM D_TRAMITES DT INNER JOIN NODOS ND ON DT.COMPANIA = ND.COMPANIA AND DT.PROCESOS = ND.CODIGO_PROCESO AND DT.NODO_DESTINO = ND.CODIGO WHERE DT.COMPANIA = :COMPANIA AND DT.PROCESOS = :PROCESO AND DT.TIPO_TRAMITE = :TIPO_TRAMITE AND DT.NUMERO = :TRAMITE ORDER BY CONSECUTIVO DESC) WHERE (CASE WHEN NODO_DESTINO IS NULL THEN ' ' ELSE UPPER(NODO_DESTINO) END)  LIKE UPPER( '%' || :NODO_DESTINO || '%')  AND (CASE WHEN NODO_D_NOM IS NULL THEN ' ' ELSE UPPER(NODO_D_NOM) END)  LIKE UPPER( '%' || :NODO_D_NOM || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN HORA IS NULL THEN ' ' ELSE UPPER(HORA) END)  LIKE UPPER( '%' || :HORA || '%')  AND (CASE WHEN USUARIO_INTERNO IS NULL THEN ' ' ELSE UPPER(USUARIO_INTERNO) END)  LIKE UPPER( '%' || :USUARIO_INTERNO || '%')  AND (CASE WHEN USUARIO_EXTERNO IS NULL THEN ' ' ELSE UPPER(USUARIO_EXTERNO) END)  LIKE UPPER( '%' || :USUARIO_EXTERNO || '%')  AND (CASE WHEN DURACION IS NULL THEN ' ' ELSE UPPER(DURACION) END)  LIKE UPPER(:DURACION || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN CONTRATO_NUM IS NULL THEN ' ' ELSE UPPER(CONTRATO_NUM) END)  LIKE UPPER( '%' || :CONTRATO_NUM || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="TRAMITE" sqlType="STRING"/>
+		<param name="NODO_DESTINO" sqlType="STRING"/>
+		<param name="NODO_D_NOM" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="HORA" sqlType="STRING"/>
+		<param name="USUARIO_INTERNO" sqlType="STRING"/>
+		<param name="USUARIO_EXTERNO" sqlType="STRING"/>
+		<param name="DURACION" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="CONTRATO_NUM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dtramites/monitorhistorialtramite/num">
+		<call-query href="getDtramitesNumMonitorhistorialtramiteQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="TRAMITE" query-param="TRAMITE"/>
+			<with-param name="NODO_DESTINO" query-param="NODO_DESTINO"/>
+			<with-param name="NODO_D_NOM" query-param="NODO_D_NOM"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA" query-param="HORA"/>
+			<with-param name="USUARIO_INTERNO" query-param="USUARIO_INTERNO"/>
+			<with-param name="USUARIO_EXTERNO" query-param="USUARIO_EXTERNO"/>
+			<with-param name="DURACION" query-param="DURACION"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CONTRATO_NUM" query-param="CONTRATO_NUM"/>
+
+		</call-query>
+	</resource>
+	<query id="getDtramitesTodosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  FORMATO ,(TO_CHAR(FORMATO_FECHA,'DD/MM/YYYY HH24:MI:SS')) FORMATO_FECHA, MENU  FROM D_TRAMITES WHERE COMPANIA = :COMPANIA AND PROCESOS = :PROCESO AND TIPO_TRAMITE = :TIPO_TRAMITE AND NUMERO = :TRAMITE AND CONSECUTIVO = :DTRAMITE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FORMATO":"$FORMATO","FORMATO_FECHA":"$FORMATO_FECHA","MENU":"$MENU(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="TRAMITE" sqlType="STRING"/>
+		<param name="DTRAMITE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dtramites/todos">
+		<call-query href="getDtramitesTodosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="TRAMITE" query-param="TRAMITE"/>
+			<with-param name="DTRAMITE" query-param="DTRAMITE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDtramitesRespuestapqrQuery"  useConfig="sysmandsunist">
+		<sql>SELECT A.NUMERO ,N.NOMBRE AS ETAPA, D.NOMBRE AS DEPENDENCIA , DT. CONSECUTIVO, n.nodo_final AS NODOFINAL FROM TRAMITES A INNER JOIN NODOS N ON N.COMPANIA =A.COMPANIA AND N.CODIGO_PROCESO=A.PROCESOS AND N. CODIGO=A.NODO_ACTUAL LEFT JOIN DEPENDENCIA D ON A.COMPANIA=D .COMPANIA AND A. DEPENDENCIA= D.CODIGO INNER JOIN D_TRAMITES DT ON A.PROCESOS=DT .PROCESOS AND A. NUMERO=DT.NUMERO AND A.TIPO_TRAMITE= DT.TIPO_TRAMITE AND A.ESTADO=DT. ESTADO AND A.COMPANIA =DT.COMPANIA LEFT JOIN( SELECT COMPANIA, CODIGO_PROCESO,TIPO_TRAMITE,NUMERO_TRAMITE ,CODIGO_NODO ,CODIGO_NODO_VARIABLE FROM D_TRAMITE_VARIABLES WHERE CODIGO_NODO_VARIABLE='010' AND VALOR_TEXTO=:UN_CEDULA ) V ON V. COMPANIA=A.COMPANIA AND V.CODIGO_PROCESO= A.PROCESOS AND V.NUMERO_TRAMITE =A.NUMERO LEFT JOIN(SELECT COMPANIA,PROCESO,TIPO_TRAMITE ,TRAMITE ,VARIABLE FROM TRAMITE_VARIABLE WHERE VARIABLE='IDENTIFICACION' AND VALOR_TEXTO=:UN_CEDULA) TV ON V.COMPANIA=A.COMPANIA AND TV .PROCESO=A.PROCESOS AND TV.TIPO_TRAMITE=A.TIPO_TRAMITE AND TV.TRAMITE =A.NUMERO WHERE A.PROCESOS=:UN_PROCESO AND A.NUMERO =:UN_NUMERO AND A.TIPO_TRAMITE=:CODIGOTRAMITE AND A.COMPANIA=:UN_COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","ETAPA":"$ETAPA","DEPENDENCIA":"$DEPENDENCIA","CONSECUTIVO":"$CONSECUTIVO","NODOFINAL":"$NODOFINAL"}]}}		</result>
+		<param name="UN_CEDULA" sqlType="STRING"/>
+		<param name="UN_PROCESO" sqlType="STRING"/>
+		<param name="UN_NUMERO" sqlType="STRING"/>
+		<param name="CODIGOTRAMITE" sqlType="STRING"/>
+		<param name="UN_COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dtramites/respuestapqr">
+		<call-query href="getDtramitesRespuestapqrQuery">
+			<with-param name="UN_CEDULA" query-param="UN_CEDULA"/>
+			<with-param name="UN_PROCESO" query-param="UN_PROCESO"/>
+			<with-param name="UN_NUMERO" query-param="UN_NUMERO"/>
+			<with-param name="CODIGOTRAMITE" query-param="CODIGOTRAMITE"/>
+			<with-param name="UN_COMPANIA" query-param="UN_COMPANIA"/>
+
+		</call-query>
+	</resource>
+
+</data>

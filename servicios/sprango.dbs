@@ -1,0 +1,112 @@
+﻿<data name="sprango" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertSprango" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_RANGO (COMPANIA, CODIGO, LIMITEINFERIOR, LIMITESUPERIOR, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :LIMITEINFERIOR, :LIMITESUPERIOR, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="0" name="LIMITEINFERIOR" sqlType="STRING"/>
+		<param defaultValue="0" name="LIMITESUPERIOR" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="sprango">
+		<call-query href="insertSprango">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="LIMITEINFERIOR" query-param="LIMITEINFERIOR"/>
+			<with-param name="LIMITESUPERIOR" query-param="LIMITESUPERIOR"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSprango" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SP_RANGO WHERE SP_RANGO.COMPANIA= :KEY_COMPANIA AND SP_RANGO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="sprango">
+		<call-query href="deleteSprango">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSprangoPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CODIGO, LIMITEINFERIOR, LIMITESUPERIOR  FROM SP_RANGO WHERE COMPANIA = :COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN LIMITEINFERIOR IS NULL THEN ' ' ELSE UPPER(LIMITEINFERIOR) END)  LIKE UPPER( '%' || :LIMITEINFERIOR || '%')  AND (CASE WHEN LIMITESUPERIOR IS NULL THEN ' ' ELSE UPPER(LIMITESUPERIOR) END)  LIKE UPPER( '%' || :LIMITESUPERIOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","LIMITEINFERIOR":"$LIMITEINFERIOR","LIMITESUPERIOR":"$LIMITESUPERIOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="LIMITEINFERIOR" sqlType="STRING"/>
+		<param name="LIMITESUPERIOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sprango">
+		<call-query href="getSprangoPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="LIMITEINFERIOR" query-param="LIMITEINFERIOR"/>
+			<with-param name="LIMITESUPERIOR" query-param="LIMITESUPERIOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSprangoNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CODIGO, LIMITEINFERIOR, LIMITESUPERIOR  FROM SP_RANGO WHERE COMPANIA = :COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN LIMITEINFERIOR IS NULL THEN ' ' ELSE UPPER(LIMITEINFERIOR) END)  LIKE UPPER( '%' || :LIMITEINFERIOR || '%')  AND (CASE WHEN LIMITESUPERIOR IS NULL THEN ' ' ELSE UPPER(LIMITESUPERIOR) END)  LIKE UPPER( '%' || :LIMITESUPERIOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="LIMITEINFERIOR" sqlType="STRING"/>
+		<param name="LIMITESUPERIOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sprango/numero">
+		<call-query href="getSprangoNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="LIMITEINFERIOR" query-param="LIMITEINFERIOR"/>
+			<with-param name="LIMITESUPERIOR" query-param="LIMITESUPERIOR"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSprango" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_RANGO SET CODIGO=:CODIGO, LIMITEINFERIOR=:LIMITEINFERIOR, LIMITESUPERIOR=:LIMITESUPERIOR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SP_RANGO.COMPANIA= :KEY_COMPANIA AND SP_RANGO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="LIMITEINFERIOR" sqlType="STRING"/>
+		<param name="LIMITESUPERIOR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="sprango">
+		<call-query href="updateSprango">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="LIMITEINFERIOR" query-param="LIMITEINFERIOR"/>
+			<with-param name="LIMITESUPERIOR" query-param="LIMITESUPERIOR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

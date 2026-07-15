@@ -1,0 +1,888 @@
+﻿<data name="almacenescontabilidad" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="updateAlmacenescontabilidadMergeInventarios" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>MERGE INTO ALMACENCONTABILIDAD TABLA USING ( SELECT    TIPOMOVIMIENTO.COMPANIA COMPANIA,    :CODIGO CODIGOELEMENTO,   TIPOMOVIMIENTO.CODIGO TIPOMOVIMIENTO,   :ANO ANO, CASE WHEN TIPOMOVIMIENTO.CLASE = 'E' THEN :CUENTAACT ELSE NULL END CUENTADEBITO, CASE WHEN TIPOMOVIMIENTO.CLASE = 'S' THEN :CUENTAACT ELSE NULL END CUENTACREDITO FROM TIPOMOVIMIENTO WHERE TIPOMOVIMIENTO.TIPOELEMENTO = :TIPO)VISTA ON( TABLA.COMPANIA=VISTA.COMPANIA      AND TABLA.TIPOMOVIMIENTO=VISTA.TIPOMOVIMIENTO      AND TABLA.CODIGOELEMENTO=VISTA.CODIGOELEMENTO      AND TABLA.ANO=VISTA.ANO)     WHEN NOT MATCHED THEN      INSERT (COMPANIA, CODIGOELEMENTO, TIPOMOVIMIENTO, ANO, CUENTADEBITO, CUENTACREDITO) VALUES     (VISTA.COMPANIA,VISTA.CODIGOELEMENTO,VISTA.TIPOMOVIMIENTO,VISTA.ANO,VISTA.CUENTADEBITO,VISTA.CUENTACREDITO)</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CUENTAACT" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="almacenescontabilidad/mergeinventarios">
+		<call-query href="updateAlmacenescontabilidadMergeInventarios">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CUENTAACT" query-param="CUENTAACT"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateAlmacenescontabilidadMergeActInventarios" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>MERGE INTO ALMACENCONTABILIDAD TABLA USING ( SELECT    COMPANIA,   CODIGO,   CASE WHEN CLASE='E' OR CLASE='S' THEN :CUENTAACT ELSE '' END CLASE FROM TIPOMOVIMIENTO WHERE COMPANIA= :COMPANIA) VISTA ON (TABLA.COMPANIA=VISTA.COMPANIA     AND TABLA.TIPOMOVIMIENTO=VISTA.CODIGO) WHEN MATCHED THEN UPDATE SET     TABLA.CUENTADEBITO=VISTA.CLASE,   TABLA.CUENTACREDITO=VISTA.CLASE WHERE TABLA.COMPANIA = :COMPANIA   AND TABLA.CODIGOELEMENTO = :ELEMENTO   AND TABLA.ANO = :ANO   AND TABLA.CUENTADEBITO IS NULL   AND TABLA.CUENTACREDITO IS NULL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CUENTAACT" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="almacenescontabilidad/mergeactinventarios">
+		<call-query href="updateAlmacenescontabilidadMergeActInventarios">
+			<with-param name="CUENTAACT" query-param="CUENTAACT"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAlmacenescontabilidadCuentaCreditoYDebitoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CUENTACREDITO, CUENTADEBITO  FROM ALMACENCONTABILIDAD WHERE COMPANIA = :COMPANIA AND CODIGOELEMENTO = :ELEMENTO AND TIPOMOVIMIENTO IN (:TIPO) AND ANO = :ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTACREDITO":"$CUENTACREDITO","CUENTADEBITO":"$CUENTADEBITO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="almacenescontabilidad/cuentacreditoydebito">
+		<call-query href="getAlmacenescontabilidadCuentaCreditoYDebitoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAlmacenescontabilidadPagListaInterfacesAlmacenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ALMACENCONTABILIDAD.ANO, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, ALMACENCONTABILIDAD.CUENTADEBITO, ALMACENCONTABILIDAD.CUENTACREDITO, ALMACENCONTABILIDAD.CUENTADEBITOAJUSTE, ALMACENCONTABILIDAD.CUENTACREDITOAJUSTE, TIPOMOVIMIENTO.NOMBRE, INVENTARIO.NOMBRELARGO, ALMACENCONTABILIDAD.NIIF_CUENTADEBITO, ALMACENCONTABILIDAD.NIIF_CUENTACREDITO  FROM ALMACENCONTABILIDAD LEFT JOIN INVENTARIO ON ALMACENCONTABILIDAD.CODIGOELEMENTO = INVENTARIO.CODIGOELEMENTO AND ALMACENCONTABILIDAD.COMPANIA = INVENTARIO.COMPANIA LEFT JOIN TIPOMOVIMIENTO ON ALMACENCONTABILIDAD.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO AND ALMACENCONTABILIDAD.COMPANIA = TIPOMOVIMIENTO.COMPANIA WHERE ALMACENCONTABILIDAD.COMPANIA = :COMPANIA ORDER BY ALMACENCONTABILIDAD.ANO DESC, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN CODIGOELEMENTO IS NULL THEN ' ' ELSE UPPER(CODIGOELEMENTO) END)  LIKE UPPER(:CODIGOELEMENTO || '%')  AND (CASE WHEN TIPOMOVIMIENTO IS NULL THEN ' ' ELSE UPPER(TIPOMOVIMIENTO) END)  LIKE UPPER(:TIPOMOVIMIENTO || '%')  AND (CASE WHEN CUENTADEBITO IS NULL THEN ' ' ELSE UPPER(CUENTADEBITO) END)  LIKE UPPER(:CUENTADEBITO || '%')  AND (CASE WHEN CUENTACREDITO IS NULL THEN ' ' ELSE UPPER(CUENTACREDITO) END)  LIKE UPPER(:CUENTACREDITO || '%')  AND (CASE WHEN CUENTADEBITOAJUSTE IS NULL THEN ' ' ELSE UPPER(CUENTADEBITOAJUSTE) END)  LIKE UPPER(:CUENTADEBITOAJUSTE || '%')  AND (CASE WHEN CUENTACREDITOAJUSTE IS NULL THEN ' ' ELSE UPPER(CUENTACREDITOAJUSTE) END)  LIKE UPPER(:CUENTACREDITOAJUSTE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NOMBRELARGO IS NULL THEN ' ' ELSE UPPER(NOMBRELARGO) END)  LIKE UPPER( '%' || :NOMBRELARGO || '%')  AND (CASE WHEN NIIF_CUENTADEBITO IS NULL THEN ' ' ELSE UPPER(NIIF_CUENTADEBITO) END)  LIKE UPPER(:NIIF_CUENTADEBITO || '%')  AND (CASE WHEN NIIF_CUENTACREDITO IS NULL THEN ' ' ELSE UPPER(NIIF_CUENTACREDITO) END)  LIKE UPPER(:NIIF_CUENTACREDITO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANO":"$ANO(type:integer)","CODIGOELEMENTO":"$CODIGOELEMENTO","TIPOMOVIMIENTO":"$TIPOMOVIMIENTO","CUENTADEBITO":"$CUENTADEBITO","CUENTACREDITO":"$CUENTACREDITO","CUENTADEBITOAJUSTE":"$CUENTADEBITOAJUSTE","CUENTACREDITOAJUSTE":"$CUENTACREDITOAJUSTE","NOMBRE":"$NOMBRE","NOMBRELARGO":"$NOMBRELARGO","NIIF_CUENTADEBITO":"$NIIF_CUENTADEBITO","NIIF_CUENTACREDITO":"$NIIF_CUENTACREDITO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="CUENTADEBITO" sqlType="STRING"/>
+		<param name="CUENTACREDITO" sqlType="STRING"/>
+		<param name="CUENTADEBITOAJUSTE" sqlType="STRING"/>
+		<param name="CUENTACREDITOAJUSTE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBRELARGO" sqlType="STRING"/>
+		<param name="NIIF_CUENTADEBITO" sqlType="STRING"/>
+		<param name="NIIF_CUENTACREDITO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="almacenescontabilidad/listainterfacesalmacen/pag">
+		<call-query href="getAlmacenescontabilidadPagListaInterfacesAlmacenQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="CUENTADEBITO" query-param="CUENTADEBITO"/>
+			<with-param name="CUENTACREDITO" query-param="CUENTACREDITO"/>
+			<with-param name="CUENTADEBITOAJUSTE" query-param="CUENTADEBITOAJUSTE"/>
+			<with-param name="CUENTACREDITOAJUSTE" query-param="CUENTACREDITOAJUSTE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBRELARGO" query-param="NOMBRELARGO"/>
+			<with-param name="NIIF_CUENTADEBITO" query-param="NIIF_CUENTADEBITO"/>
+			<with-param name="NIIF_CUENTACREDITO" query-param="NIIF_CUENTACREDITO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAlmacenescontabilidadNumListaInterfacesAlmacenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ALMACENCONTABILIDAD.ANO, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, ALMACENCONTABILIDAD.CUENTADEBITO, ALMACENCONTABILIDAD.CUENTACREDITO, ALMACENCONTABILIDAD.CUENTADEBITOAJUSTE, ALMACENCONTABILIDAD.CUENTACREDITOAJUSTE, TIPOMOVIMIENTO.NOMBRE, INVENTARIO.NOMBRELARGO, ALMACENCONTABILIDAD.NIIF_CUENTADEBITO, ALMACENCONTABILIDAD.NIIF_CUENTACREDITO  FROM ALMACENCONTABILIDAD LEFT JOIN INVENTARIO ON ALMACENCONTABILIDAD.CODIGOELEMENTO = INVENTARIO.CODIGOELEMENTO AND ALMACENCONTABILIDAD.COMPANIA = INVENTARIO.COMPANIA LEFT JOIN TIPOMOVIMIENTO ON ALMACENCONTABILIDAD.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO AND ALMACENCONTABILIDAD.COMPANIA = TIPOMOVIMIENTO.COMPANIA WHERE ALMACENCONTABILIDAD.COMPANIA = :COMPANIA ORDER BY ALMACENCONTABILIDAD.ANO DESC, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN CODIGOELEMENTO IS NULL THEN ' ' ELSE UPPER(CODIGOELEMENTO) END)  LIKE UPPER(:CODIGOELEMENTO || '%')  AND (CASE WHEN TIPOMOVIMIENTO IS NULL THEN ' ' ELSE UPPER(TIPOMOVIMIENTO) END)  LIKE UPPER(:TIPOMOVIMIENTO || '%')  AND (CASE WHEN CUENTADEBITO IS NULL THEN ' ' ELSE UPPER(CUENTADEBITO) END)  LIKE UPPER(:CUENTADEBITO || '%')  AND (CASE WHEN CUENTACREDITO IS NULL THEN ' ' ELSE UPPER(CUENTACREDITO) END)  LIKE UPPER(:CUENTACREDITO || '%')  AND (CASE WHEN CUENTADEBITOAJUSTE IS NULL THEN ' ' ELSE UPPER(CUENTADEBITOAJUSTE) END)  LIKE UPPER(:CUENTADEBITOAJUSTE || '%')  AND (CASE WHEN CUENTACREDITOAJUSTE IS NULL THEN ' ' ELSE UPPER(CUENTACREDITOAJUSTE) END)  LIKE UPPER(:CUENTACREDITOAJUSTE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NOMBRELARGO IS NULL THEN ' ' ELSE UPPER(NOMBRELARGO) END)  LIKE UPPER( '%' || :NOMBRELARGO || '%')  AND (CASE WHEN NIIF_CUENTADEBITO IS NULL THEN ' ' ELSE UPPER(NIIF_CUENTADEBITO) END)  LIKE UPPER(:NIIF_CUENTADEBITO || '%')  AND (CASE WHEN NIIF_CUENTACREDITO IS NULL THEN ' ' ELSE UPPER(NIIF_CUENTACREDITO) END)  LIKE UPPER(:NIIF_CUENTACREDITO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="CUENTADEBITO" sqlType="STRING"/>
+		<param name="CUENTACREDITO" sqlType="STRING"/>
+		<param name="CUENTADEBITOAJUSTE" sqlType="STRING"/>
+		<param name="CUENTACREDITOAJUSTE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBRELARGO" sqlType="STRING"/>
+		<param name="NIIF_CUENTADEBITO" sqlType="STRING"/>
+		<param name="NIIF_CUENTACREDITO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="almacenescontabilidad/listainterfacesalmacen/num">
+		<call-query href="getAlmacenescontabilidadNumListaInterfacesAlmacenQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="CUENTADEBITO" query-param="CUENTADEBITO"/>
+			<with-param name="CUENTACREDITO" query-param="CUENTACREDITO"/>
+			<with-param name="CUENTADEBITOAJUSTE" query-param="CUENTADEBITOAJUSTE"/>
+			<with-param name="CUENTACREDITOAJUSTE" query-param="CUENTACREDITOAJUSTE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBRELARGO" query-param="NOMBRELARGO"/>
+			<with-param name="NIIF_CUENTADEBITO" query-param="NIIF_CUENTADEBITO"/>
+			<with-param name="NIIF_CUENTACREDITO" query-param="NIIF_CUENTACREDITO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAlmacenescontabilidadPagContabiliadadATransaccionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ALMACENCONTABILIDAD.COMPANIA, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, ALMACENCONTABILIDAD.ANO, ALMACENCONTABILIDAD.CUENTADEBITO, ALMACENCONTABILIDAD.CUENTACREDITO, TIPOMOVIMIENTO.NOMBRE, ALMACENCONTABILIDAD.DEBITO_BASE, ALMACENCONTABILIDAD.CREDITO_BASE, ALMACENCONTABILIDAD.CREDITO_IVA, ALMACENCONTABILIDAD.DEBITO_IVA  FROM ALMACENCONTABILIDAD LEFT JOIN TIPOMOVIMIENTO ON ALMACENCONTABILIDAD.COMPANIA = TIPOMOVIMIENTO.COMPANIA AND ALMACENCONTABILIDAD.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO WHERE ALMACENCONTABILIDAD.COMPANIA = :COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO = :CODIGOELEMENTO AND ALMACENCONTABILIDAD.ANO = :ANO ORDER BY ALMACENCONTABILIDAD.TIPOMOVIMIENTO) WHERE (CASE WHEN TIPOMOVIMIENTO IS NULL THEN ' ' ELSE UPPER(TIPOMOVIMIENTO) END)  LIKE UPPER(:TIPOMOVIMIENTO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN CUENTADEBITO IS NULL THEN ' ' ELSE UPPER(CUENTADEBITO) END)  LIKE UPPER(:CUENTADEBITO || '%')  AND (CASE WHEN CUENTACREDITO IS NULL THEN ' ' ELSE UPPER(CUENTACREDITO) END)  LIKE UPPER(:CUENTACREDITO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN DEBITO_BASE IS NULL THEN ' ' ELSE UPPER(DEBITO_BASE) END)  LIKE UPPER(:DEBITO_BASE || '%')  AND (CASE WHEN CREDITO_BASE IS NULL THEN ' ' ELSE UPPER(CREDITO_BASE) END)  LIKE UPPER(:CREDITO_BASE || '%')  AND (CASE WHEN CREDITO_IVA IS NULL THEN ' ' ELSE UPPER(CREDITO_IVA) END)  LIKE UPPER(:CREDITO_IVA || '%')  AND (CASE WHEN DEBITO_IVA IS NULL THEN ' ' ELSE UPPER(DEBITO_IVA) END)  LIKE UPPER(:DEBITO_IVA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGOELEMENTO":"$CODIGOELEMENTO","TIPOMOVIMIENTO":"$TIPOMOVIMIENTO","ANO":"$ANO(type:integer)","CUENTADEBITO":"$CUENTADEBITO","CUENTACREDITO":"$CUENTACREDITO","NOMBRE":"$NOMBRE","DEBITO_BASE":"$DEBITO_BASE","CREDITO_BASE":"$CREDITO_BASE","CREDITO_IVA":"$CREDITO_IVA","DEBITO_IVA":"$DEBITO_IVA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="CUENTADEBITO" sqlType="STRING"/>
+		<param name="CUENTACREDITO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DEBITO_BASE" sqlType="STRING"/>
+		<param name="CREDITO_BASE" sqlType="STRING"/>
+		<param name="CREDITO_IVA" sqlType="STRING"/>
+		<param name="DEBITO_IVA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="almacenescontabilidad/contabiliadadatransaccion/pag">
+		<call-query href="getAlmacenescontabilidadPagContabiliadadATransaccionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="CUENTADEBITO" query-param="CUENTADEBITO"/>
+			<with-param name="CUENTACREDITO" query-param="CUENTACREDITO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DEBITO_BASE" query-param="DEBITO_BASE"/>
+			<with-param name="CREDITO_BASE" query-param="CREDITO_BASE"/>
+			<with-param name="CREDITO_IVA" query-param="CREDITO_IVA"/>
+			<with-param name="DEBITO_IVA" query-param="DEBITO_IVA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAlmacenescontabilidadNumContabiliadadATransaccionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ALMACENCONTABILIDAD.COMPANIA, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, ALMACENCONTABILIDAD.ANO, ALMACENCONTABILIDAD.CUENTADEBITO, ALMACENCONTABILIDAD.CUENTACREDITO, TIPOMOVIMIENTO.NOMBRE, ALMACENCONTABILIDAD.DEBITO_BASE, ALMACENCONTABILIDAD.CREDITO_BASE, ALMACENCONTABILIDAD.CREDITO_IVA, ALMACENCONTABILIDAD.DEBITO_IVA  FROM ALMACENCONTABILIDAD LEFT JOIN TIPOMOVIMIENTO ON ALMACENCONTABILIDAD.COMPANIA = TIPOMOVIMIENTO.COMPANIA AND ALMACENCONTABILIDAD.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO WHERE ALMACENCONTABILIDAD.COMPANIA = :COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO = :CODIGOELEMENTO AND ALMACENCONTABILIDAD.ANO = :ANO ORDER BY ALMACENCONTABILIDAD.TIPOMOVIMIENTO) WHERE (CASE WHEN TIPOMOVIMIENTO IS NULL THEN ' ' ELSE UPPER(TIPOMOVIMIENTO) END)  LIKE UPPER(:TIPOMOVIMIENTO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN CUENTADEBITO IS NULL THEN ' ' ELSE UPPER(CUENTADEBITO) END)  LIKE UPPER(:CUENTADEBITO || '%')  AND (CASE WHEN CUENTACREDITO IS NULL THEN ' ' ELSE UPPER(CUENTACREDITO) END)  LIKE UPPER(:CUENTACREDITO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN DEBITO_BASE IS NULL THEN ' ' ELSE UPPER(DEBITO_BASE) END)  LIKE UPPER(:DEBITO_BASE || '%')  AND (CASE WHEN CREDITO_BASE IS NULL THEN ' ' ELSE UPPER(CREDITO_BASE) END)  LIKE UPPER(:CREDITO_BASE || '%')  AND (CASE WHEN CREDITO_IVA IS NULL THEN ' ' ELSE UPPER(CREDITO_IVA) END)  LIKE UPPER(:CREDITO_IVA || '%')  AND (CASE WHEN DEBITO_IVA IS NULL THEN ' ' ELSE UPPER(DEBITO_IVA) END)  LIKE UPPER(:DEBITO_IVA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="CUENTADEBITO" sqlType="STRING"/>
+		<param name="CUENTACREDITO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DEBITO_BASE" sqlType="STRING"/>
+		<param name="CREDITO_BASE" sqlType="STRING"/>
+		<param name="CREDITO_IVA" sqlType="STRING"/>
+		<param name="DEBITO_IVA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="almacenescontabilidad/contabiliadadatransaccion/num">
+		<call-query href="getAlmacenescontabilidadNumContabiliadadATransaccionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="CUENTADEBITO" query-param="CUENTADEBITO"/>
+			<with-param name="CUENTACREDITO" query-param="CUENTACREDITO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DEBITO_BASE" query-param="DEBITO_BASE"/>
+			<with-param name="CREDITO_BASE" query-param="CREDITO_BASE"/>
+			<with-param name="CREDITO_IVA" query-param="CREDITO_IVA"/>
+			<with-param name="DEBITO_IVA" query-param="DEBITO_IVA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertAlmacenescontabilidadContabiliadadATransaccion" keyColumns="COMPANIA,CODIGOELEMENTO,TIPOMOVIMIENTO,ANO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ALMACENCONTABILIDAD (COMPANIA, CODIGOELEMENTO, TIPOMOVIMIENTO, ANO, CUENTADEBITO, CUENTACREDITO, DEBITO_BASE, CREDITO_BASE, CREDITO_IVA, DEBITO_IVA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGOELEMENTO, :TIPOMOVIMIENTO, :ANO, :CUENTADEBITO, :CUENTACREDITO, :DEBITO_BASE, :CREDITO_BASE, :CREDITO_IVA, :DEBITO_IVA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGOELEMENTO":"$CODIGOELEMENTO","KEY_TIPOMOVIMIENTO":"$TIPOMOVIMIENTO","KEY_ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTADEBITO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTACREDITO" sqlType="STRING"/>
+		<param defaultValue="" name="DEBITO_BASE" sqlType="STRING"/>
+		<param defaultValue="" name="CREDITO_BASE" sqlType="STRING"/>
+		<param defaultValue="" name="CREDITO_IVA" sqlType="STRING"/>
+		<param defaultValue="" name="DEBITO_IVA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="almacenescontabilidad/contabiliadadatransaccion">
+		<call-query href="insertAlmacenescontabilidadContabiliadadATransaccion">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CUENTADEBITO" query-param="CUENTADEBITO"/>
+			<with-param name="CUENTACREDITO" query-param="CUENTACREDITO"/>
+			<with-param name="DEBITO_BASE" query-param="DEBITO_BASE"/>
+			<with-param name="CREDITO_BASE" query-param="CREDITO_BASE"/>
+			<with-param name="CREDITO_IVA" query-param="CREDITO_IVA"/>
+			<with-param name="DEBITO_IVA" query-param="DEBITO_IVA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="updateAlmacenescontabilidadContabiliadadATransaccion" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ALMACENCONTABILIDAD SET CODIGOELEMENTO=:CODIGOELEMENTO, TIPOMOVIMIENTO=:TIPOMOVIMIENTO, ANO=:ANO, CUENTADEBITO=:CUENTADEBITO, CUENTACREDITO=:CUENTACREDITO, NIIF_CUENTADEBITO=:CUENTADEBITO, NIIF_CUENTACREDITO=:CUENTACREDITO, DEBITO_BASE=:DEBITO_BASE, CREDITO_BASE=:CREDITO_BASE, CREDITO_IVA=:CREDITO_IVA, DEBITO_IVA=:DEBITO_IVA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ALMACENCONTABILIDAD.COMPANIA= :KEY_COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO= :KEY_CODIGOELEMENTO AND ALMACENCONTABILIDAD.TIPOMOVIMIENTO= :KEY_TIPOMOVIMIENTO AND ALMACENCONTABILIDAD.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CUENTADEBITO" sqlType="STRING"/>
+		<param name="CUENTACREDITO" sqlType="STRING"/>
+		<param name="DEBITO_BASE" sqlType="STRING"/>
+		<param name="CREDITO_BASE" sqlType="STRING"/>
+		<param name="CREDITO_IVA" sqlType="STRING"/>
+		<param name="DEBITO_IVA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="KEY_TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="almacenescontabilidad/contabiliadadatransaccion">
+		<call-query href="updateAlmacenescontabilidadContabiliadadATransaccion">
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CUENTADEBITO" query-param="CUENTADEBITO"/>
+			<with-param name="CUENTACREDITO" query-param="CUENTACREDITO"/>
+			<with-param name="DEBITO_BASE" query-param="DEBITO_BASE"/>
+			<with-param name="CREDITO_BASE" query-param="CREDITO_BASE"/>
+			<with-param name="CREDITO_IVA" query-param="CREDITO_IVA"/>
+			<with-param name="DEBITO_IVA" query-param="DEBITO_IVA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOELEMENTO" query-param="KEY_CODIGOELEMENTO"/>
+			<with-param name="KEY_TIPOMOVIMIENTO" query-param="KEY_TIPOMOVIMIENTO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertAlmacenescontabilidad" keyColumns="COMPANIA,CODIGOELEMENTO,TIPOMOVIMIENTO,ANO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ALMACENCONTABILIDAD (COMPANIA, CODIGOELEMENTO, TIPOMOVIMIENTO, ANO, CUENTADEBITO, CUENTACREDITO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGOELEMENTO, :TIPOMOVIMIENTO, :ANO, :CUENTADEBITO, :CUENTACREDITO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGOELEMENTO":"$CODIGOELEMENTO","KEY_TIPOMOVIMIENTO":"$TIPOMOVIMIENTO","KEY_ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTADEBITO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTACREDITO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="almacenescontabilidad">
+		<call-query href="insertAlmacenescontabilidad">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CUENTADEBITO" query-param="CUENTADEBITO"/>
+			<with-param name="CUENTACREDITO" query-param="CUENTACREDITO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteAlmacenescontabilidad" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ALMACENCONTABILIDAD WHERE ALMACENCONTABILIDAD.COMPANIA= :KEY_COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO= :KEY_CODIGOELEMENTO AND ALMACENCONTABILIDAD.TIPOMOVIMIENTO= :KEY_TIPOMOVIMIENTO AND ALMACENCONTABILIDAD.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="KEY_TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="almacenescontabilidad">
+		<call-query href="deleteAlmacenescontabilidad">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOELEMENTO" query-param="KEY_CODIGOELEMENTO"/>
+			<with-param name="KEY_TIPOMOVIMIENTO" query-param="KEY_TIPOMOVIMIENTO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAlmacenescontabilidadPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ALMACENCONTABILIDAD.COMPANIA, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, ALMACENCONTABILIDAD.ANO, ALMACENCONTABILIDAD.CUENTADEBITO, ALMACENCONTABILIDAD.CUENTACREDITO, TIPOMOVIMIENTO.NOMBRE  FROM ALMACENCONTABILIDAD INNER JOIN TIPOMOVIMIENTO ON ALMACENCONTABILIDAD.COMPANIA = TIPOMOVIMIENTO.COMPANIA AND ALMACENCONTABILIDAD.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO WHERE ALMACENCONTABILIDAD.COMPANIA = :COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO = :CODIGO AND ALMACENCONTABILIDAD.ANO = :ANIO ORDER BY TIPOMOVIMIENTO.NOMBRE) WHERE (CASE WHEN TIPOMOVIMIENTO IS NULL THEN ' ' ELSE UPPER(TIPOMOVIMIENTO) END)  LIKE UPPER( '%' || :TIPOMOVIMIENTO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN CUENTADEBITO IS NULL THEN ' ' ELSE UPPER(CUENTADEBITO) END)  LIKE UPPER( '%' || :CUENTADEBITO || '%')  AND (CASE WHEN CUENTACREDITO IS NULL THEN ' ' ELSE UPPER(CUENTACREDITO) END)  LIKE UPPER( '%' || :CUENTACREDITO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGOELEMENTO":"$CODIGOELEMENTO","TIPOMOVIMIENTO":"$TIPOMOVIMIENTO","ANO":"$ANO(type:integer)","CUENTADEBITO":"$CUENTADEBITO","CUENTACREDITO":"$CUENTACREDITO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CUENTADEBITO" sqlType="STRING"/>
+		<param name="CUENTACREDITO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="almacenescontabilidad">
+		<call-query href="getAlmacenescontabilidadPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CUENTADEBITO" query-param="CUENTADEBITO"/>
+			<with-param name="CUENTACREDITO" query-param="CUENTACREDITO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAlmacenescontabilidadNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ALMACENCONTABILIDAD.COMPANIA, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, ALMACENCONTABILIDAD.ANO, ALMACENCONTABILIDAD.CUENTADEBITO, ALMACENCONTABILIDAD.CUENTACREDITO, TIPOMOVIMIENTO.NOMBRE  FROM ALMACENCONTABILIDAD INNER JOIN TIPOMOVIMIENTO ON ALMACENCONTABILIDAD.COMPANIA = TIPOMOVIMIENTO.COMPANIA AND ALMACENCONTABILIDAD.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO WHERE ALMACENCONTABILIDAD.COMPANIA = :COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO = :CODIGO AND ALMACENCONTABILIDAD.ANO = :ANIO ORDER BY TIPOMOVIMIENTO.NOMBRE) WHERE (CASE WHEN TIPOMOVIMIENTO IS NULL THEN ' ' ELSE UPPER(TIPOMOVIMIENTO) END)  LIKE UPPER( '%' || :TIPOMOVIMIENTO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN CUENTADEBITO IS NULL THEN ' ' ELSE UPPER(CUENTADEBITO) END)  LIKE UPPER( '%' || :CUENTADEBITO || '%')  AND (CASE WHEN CUENTACREDITO IS NULL THEN ' ' ELSE UPPER(CUENTACREDITO) END)  LIKE UPPER( '%' || :CUENTACREDITO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CUENTADEBITO" sqlType="STRING"/>
+		<param name="CUENTACREDITO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="almacenescontabilidad/numero">
+		<call-query href="getAlmacenescontabilidadNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CUENTADEBITO" query-param="CUENTADEBITO"/>
+			<with-param name="CUENTACREDITO" query-param="CUENTACREDITO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateAlmacenescontabilidad" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ALMACENCONTABILIDAD SET CODIGOELEMENTO=:CODIGOELEMENTO, TIPOMOVIMIENTO=:TIPOMOVIMIENTO, ANO=:ANO, CUENTADEBITO=:CUENTADEBITO, CUENTACREDITO=:CUENTACREDITO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ALMACENCONTABILIDAD.COMPANIA= :KEY_COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO= :KEY_CODIGOELEMENTO AND ALMACENCONTABILIDAD.TIPOMOVIMIENTO= :KEY_TIPOMOVIMIENTO AND ALMACENCONTABILIDAD.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CUENTADEBITO" sqlType="STRING"/>
+		<param name="CUENTACREDITO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="KEY_TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="almacenescontabilidad">
+		<call-query href="updateAlmacenescontabilidad">
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CUENTADEBITO" query-param="CUENTADEBITO"/>
+			<with-param name="CUENTACREDITO" query-param="CUENTACREDITO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOELEMENTO" query-param="KEY_CODIGOELEMENTO"/>
+			<with-param name="KEY_TIPOMOVIMIENTO" query-param="KEY_TIPOMOVIMIENTO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAlmacenescontabilidadPagListaAlmacenBajaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT ALMACENCONTABILIDAD.COMPANIA, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.ANO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, TIPOMOVIMIENTO.NOMBRE, ALMACENCONTABILIDAD.DEBITO_HISTORICO_BAJA, ALMACENCONTABILIDAD.CREDITO_HISTORICO_BAJA, ALMACENCONTABILIDAD.DEBITO_ACUMULADA_BAJA, ALMACENCONTABILIDAD.CREDITO_ACUMULADA_BAJA, ALMACENCONTABILIDAD.DEBITO_LIBROS_BAJA, ALMACENCONTABILIDAD.CREDITO_LIBROS_BAJA, ALMACENCONTABILIDAD.DEBITO_RETIRADOS_BAJA, ALMACENCONTABILIDAD.CREDITO_RETIRADOS_BAJA FROM ALMACENCONTABILIDAD LEFT JOIN TIPOMOVIMIENTO ON ALMACENCONTABILIDAD.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO AND ALMACENCONTABILIDAD.COMPANIA = TIPOMOVIMIENTO.COMPANIA WHERE ALMACENCONTABILIDAD.COMPANIA = :COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO= :CODIGOELEMENTO AND ALMACENCONTABILIDAD.ANO = :ANO AND (TIPOMOVIMIENTO.CONCEPTO IN ('CM','DS','L','DT','T') AND TIPOMOVIMIENTO.CLASE NOT IN ('E') OR ( TIPOMOVIMIENTO.CLASE NOT IN ( 'T','E' ) AND TIPOMOVIMIENTO.CONCEPTO NOT IN ( 'T' ,'II','N') )) ORDER BY ALMACENCONTABILIDAD.COMPANIA, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, ALMACENCONTABILIDAD.ANO, TIPOMOVIMIENTO.NOMBRE) INI WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(:ANO, '%')) AND (CASE WHEN TIPOMOVIMIENTO IS NULL THEN ' ' ELSE UPPER(TIPOMOVIMIENTO) END) LIKE UPPER(CONCAT(:TIPOMOVIMIENTO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN DEBITO_HISTORICO_BAJA IS NULL THEN ' ' ELSE UPPER(DEBITO_HISTORICO_BAJA) END) LIKE UPPER(CONCAT(:DEBITO_HISTORICO_BAJA, '%')) AND (CASE WHEN CREDITO_HISTORICO_BAJA IS NULL THEN ' ' ELSE UPPER(CREDITO_HISTORICO_BAJA) END) LIKE UPPER(CONCAT(:CREDITO_HISTORICO_BAJA, '%')) AND (CASE WHEN DEBITO_ACUMULADA_BAJA IS NULL THEN ' ' ELSE UPPER(DEBITO_ACUMULADA_BAJA) END) LIKE UPPER(CONCAT(:DEBITO_ACUMULADA_BAJA, '%')) AND (CASE WHEN CREDITO_ACUMULADA_BAJA IS NULL THEN ' ' ELSE UPPER(CREDITO_ACUMULADA_BAJA) END) LIKE UPPER(CONCAT(:CREDITO_ACUMULADA_BAJA, '%')) AND (CASE WHEN DEBITO_LIBROS_BAJA IS NULL THEN ' ' ELSE UPPER(DEBITO_LIBROS_BAJA) END) LIKE UPPER(CONCAT(:DEBITO_LIBROS_BAJA, '%')) AND (CASE WHEN CREDITO_LIBROS_BAJA IS NULL THEN ' ' ELSE UPPER(CREDITO_LIBROS_BAJA) END) LIKE UPPER(CONCAT(:CREDITO_LIBROS_BAJA, '%')) AND (CASE WHEN DEBITO_RETIRADOS_BAJA IS NULL THEN ' ' ELSE UPPER(DEBITO_RETIRADOS_BAJA) END) LIKE UPPER(CONCAT(:DEBITO_RETIRADOS_BAJA, '%')) AND (CASE WHEN CREDITO_RETIRADOS_BAJA IS NULL THEN ' ' ELSE UPPER(CREDITO_RETIRADOS_BAJA) END) LIKE UPPER(CONCAT(:CREDITO_RETIRADOS_BAJA, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGOELEMENTO":"$CODIGOELEMENTO","ANO":"$ANO(type:integer)","TIPOMOVIMIENTO":"$TIPOMOVIMIENTO","NOMBRE":"$NOMBRE","DEBITO_HISTORICO_BAJA":"$DEBITO_HISTORICO_BAJA","CREDITO_HISTORICO_BAJA":"$CREDITO_HISTORICO_BAJA","DEBITO_ACUMULADA_BAJA":"$DEBITO_ACUMULADA_BAJA","CREDITO_ACUMULADA_BAJA":"$CREDITO_ACUMULADA_BAJA","DEBITO_LIBROS_BAJA":"$DEBITO_LIBROS_BAJA","CREDITO_LIBROS_BAJA":"$CREDITO_LIBROS_BAJA","DEBITO_RETIRADOS_BAJA":"$DEBITO_RETIRADOS_BAJA","CREDITO_RETIRADOS_BAJA":"$CREDITO_RETIRADOS_BAJA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DEBITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param name="CREDITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param name="DEBITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param name="CREDITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param name="DEBITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param name="CREDITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param name="DEBITO_RETIRADOS_BAJA" sqlType="STRING"/>
+		<param name="CREDITO_RETIRADOS_BAJA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="almacenescontabilidad/listaalmacenbaja/pag">
+		<call-query href="getAlmacenescontabilidadPagListaAlmacenBajaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DEBITO_HISTORICO_BAJA" query-param="DEBITO_HISTORICO_BAJA"/>
+			<with-param name="CREDITO_HISTORICO_BAJA" query-param="CREDITO_HISTORICO_BAJA"/>
+			<with-param name="DEBITO_ACUMULADA_BAJA" query-param="DEBITO_ACUMULADA_BAJA"/>
+			<with-param name="CREDITO_ACUMULADA_BAJA" query-param="CREDITO_ACUMULADA_BAJA"/>
+			<with-param name="DEBITO_LIBROS_BAJA" query-param="DEBITO_LIBROS_BAJA"/>
+			<with-param name="CREDITO_LIBROS_BAJA" query-param="CREDITO_LIBROS_BAJA"/>
+			<with-param name="DEBITO_RETIRADOS_BAJA" query-param="DEBITO_RETIRADOS_BAJA"/>
+			<with-param name="CREDITO_RETIRADOS_BAJA" query-param="CREDITO_RETIRADOS_BAJA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAlmacenescontabilidadNumListaAlmacenBajaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT ALMACENCONTABILIDAD.COMPANIA, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.ANO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, TIPOMOVIMIENTO.NOMBRE, ALMACENCONTABILIDAD.DEBITO_HISTORICO_BAJA, ALMACENCONTABILIDAD.CREDITO_HISTORICO_BAJA, ALMACENCONTABILIDAD.DEBITO_ACUMULADA_BAJA, ALMACENCONTABILIDAD.CREDITO_ACUMULADA_BAJA, ALMACENCONTABILIDAD.DEBITO_LIBROS_BAJA, ALMACENCONTABILIDAD.CREDITO_LIBROS_BAJA, ALMACENCONTABILIDAD.DEBITO_RETIRADOS_BAJA, ALMACENCONTABILIDAD.CREDITO_RETIRADOS_BAJA FROM ALMACENCONTABILIDAD LEFT JOIN TIPOMOVIMIENTO ON ALMACENCONTABILIDAD.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO AND ALMACENCONTABILIDAD.COMPANIA = TIPOMOVIMIENTO.COMPANIA WHERE ALMACENCONTABILIDAD.COMPANIA = :COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO= :CODIGOELEMENTO AND ALMACENCONTABILIDAD.ANO = :ANO AND (TIPOMOVIMIENTO.CONCEPTO IN ('CM','DS','L','DT','T') AND TIPOMOVIMIENTO.CLASE NOT IN ('E') OR ( TIPOMOVIMIENTO.CLASE NOT IN ( 'T','E' ) AND TIPOMOVIMIENTO.CONCEPTO NOT IN ( 'T' ,'II','N') ))ORDER BY ALMACENCONTABILIDAD.COMPANIA, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, ALMACENCONTABILIDAD.ANO, TIPOMOVIMIENTO.NOMBRE) INI WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(:ANO, '%')) AND (CASE WHEN TIPOMOVIMIENTO IS NULL THEN ' ' ELSE UPPER(TIPOMOVIMIENTO) END) LIKE UPPER(CONCAT(:TIPOMOVIMIENTO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN DEBITO_HISTORICO_BAJA IS NULL THEN ' ' ELSE UPPER(DEBITO_HISTORICO_BAJA) END) LIKE UPPER(CONCAT(:DEBITO_HISTORICO_BAJA, '%')) AND (CASE WHEN CREDITO_HISTORICO_BAJA IS NULL THEN ' ' ELSE UPPER(CREDITO_HISTORICO_BAJA) END) LIKE UPPER(CONCAT(:CREDITO_HISTORICO_BAJA, '%')) AND (CASE WHEN DEBITO_ACUMULADA_BAJA IS NULL THEN ' ' ELSE UPPER(DEBITO_ACUMULADA_BAJA) END) LIKE UPPER(CONCAT(:DEBITO_ACUMULADA_BAJA, '%')) AND (CASE WHEN CREDITO_ACUMULADA_BAJA IS NULL THEN ' ' ELSE UPPER(CREDITO_ACUMULADA_BAJA) END) LIKE UPPER(CONCAT(:CREDITO_ACUMULADA_BAJA, '%')) AND (CASE WHEN DEBITO_LIBROS_BAJA IS NULL THEN ' ' ELSE UPPER(DEBITO_LIBROS_BAJA) END) LIKE UPPER(CONCAT(:DEBITO_LIBROS_BAJA, '%')) AND (CASE WHEN CREDITO_LIBROS_BAJA IS NULL THEN ' ' ELSE UPPER(CREDITO_LIBROS_BAJA) END) LIKE UPPER(CONCAT(:CREDITO_LIBROS_BAJA, '%')) AND (CASE WHEN DEBITO_RETIRADOS_BAJA IS NULL THEN ' ' ELSE UPPER(DEBITO_RETIRADOS_BAJA) END) LIKE UPPER(CONCAT(:DEBITO_RETIRADOS_BAJA, '%')) AND (CASE WHEN CREDITO_RETIRADOS_BAJA IS NULL THEN ' ' ELSE UPPER(CREDITO_RETIRADOS_BAJA) END) LIKE UPPER(CONCAT(:CREDITO_RETIRADOS_BAJA, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DEBITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param name="CREDITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param name="DEBITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param name="CREDITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param name="DEBITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param name="CREDITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param name="DEBITO_RETIRADOS_BAJA" sqlType="STRING"/>
+		<param name="CREDITO_RETIRADOS_BAJA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="almacenescontabilidad/listaalmacenbaja/num">
+		<call-query href="getAlmacenescontabilidadNumListaAlmacenBajaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DEBITO_HISTORICO_BAJA" query-param="DEBITO_HISTORICO_BAJA"/>
+			<with-param name="CREDITO_HISTORICO_BAJA" query-param="CREDITO_HISTORICO_BAJA"/>
+			<with-param name="DEBITO_ACUMULADA_BAJA" query-param="DEBITO_ACUMULADA_BAJA"/>
+			<with-param name="CREDITO_ACUMULADA_BAJA" query-param="CREDITO_ACUMULADA_BAJA"/>
+			<with-param name="DEBITO_LIBROS_BAJA" query-param="DEBITO_LIBROS_BAJA"/>
+			<with-param name="CREDITO_LIBROS_BAJA" query-param="CREDITO_LIBROS_BAJA"/>
+			<with-param name="DEBITO_RETIRADOS_BAJA" query-param="DEBITO_RETIRADOS_BAJA"/>
+			<with-param name="CREDITO_RETIRADOS_BAJA" query-param="CREDITO_RETIRADOS_BAJA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertAlmacenescontabilidadAlmacenBaja" keyColumns="COMPANIA,CODIGOELEMENTO,TIPOMOVIMIENTO,ANO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ALMACENCONTABILIDAD (COMPANIA, CODIGOELEMENTO, ANO, TIPOMOVIMIENTO, DEBITO_HISTORICO_BAJA, CREDITO_HISTORICO_BAJA, DEBITO_ACUMULADA_BAJA, CREDITO_ACUMULADA_BAJA, DEBITO_LIBROS_BAJA, CREDITO_LIBROS_BAJA, DEBITO_RETIRADOS_BAJA, CREDITO_RETIRADOS_BAJA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGOELEMENTO, :ANO, :TIPOMOVIMIENTO, :DEBITO_HISTORICO_BAJA, :CREDITO_HISTORICO_BAJA, :DEBITO_ACUMULADA_BAJA, :CREDITO_ACUMULADA_BAJA, :DEBITO_LIBROS_BAJA, :CREDITO_LIBROS_BAJA, :DEBITO_RETIRADOS_BAJA, :CREDITO_RETIRADOS_BAJA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGOELEMENTO":"$CODIGOELEMENTO","KEY_TIPOMOVIMIENTO":"$TIPOMOVIMIENTO","KEY_ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param defaultValue="" name="DEBITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param defaultValue="" name="CREDITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param defaultValue="" name="DEBITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param defaultValue="" name="CREDITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param defaultValue="" name="DEBITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param defaultValue="" name="CREDITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param defaultValue="" name="DEBITO_RETIRADOS_BAJA" sqlType="STRING"/>
+		<param defaultValue="" name="CREDITO_RETIRADOS_BAJA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="almacenescontabilidad/almacenbaja">
+		<call-query href="insertAlmacenescontabilidadAlmacenBaja">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="DEBITO_HISTORICO_BAJA" query-param="DEBITO_HISTORICO_BAJA"/>
+			<with-param name="CREDITO_HISTORICO_BAJA" query-param="CREDITO_HISTORICO_BAJA"/>
+			<with-param name="DEBITO_ACUMULADA_BAJA" query-param="DEBITO_ACUMULADA_BAJA"/>
+			<with-param name="CREDITO_ACUMULADA_BAJA" query-param="CREDITO_ACUMULADA_BAJA"/>
+			<with-param name="DEBITO_LIBROS_BAJA" query-param="DEBITO_LIBROS_BAJA"/>
+			<with-param name="CREDITO_LIBROS_BAJA" query-param="CREDITO_LIBROS_BAJA"/>
+			<with-param name="DEBITO_RETIRADOS_BAJA" query-param="DEBITO_RETIRADOS_BAJA"/>
+			<with-param name="CREDITO_RETIRADOS_BAJA" query-param="CREDITO_RETIRADOS_BAJA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="updateAlmacenescontabilidadAlmacenBaja" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ALMACENCONTABILIDAD SET CODIGOELEMENTO=:CODIGOELEMENTO, ANO=:ANO, TIPOMOVIMIENTO=:TIPOMOVIMIENTO, DEBITO_HISTORICO_BAJA=:DEBITO_HISTORICO_BAJA, CREDITO_HISTORICO_BAJA=:CREDITO_HISTORICO_BAJA, DEBITO_ACUMULADA_BAJA=:DEBITO_ACUMULADA_BAJA, CREDITO_ACUMULADA_BAJA=:CREDITO_ACUMULADA_BAJA, DEBITO_LIBROS_BAJA=:DEBITO_LIBROS_BAJA, CREDITO_LIBROS_BAJA=:CREDITO_LIBROS_BAJA, DEBITO_RETIRADOS_BAJA=:DEBITO_RETIRADOS_BAJA, CREDITO_RETIRADOS_BAJA=:CREDITO_RETIRADOS_BAJA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ALMACENCONTABILIDAD.COMPANIA= :KEY_COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO= :KEY_CODIGOELEMENTO AND ALMACENCONTABILIDAD.TIPOMOVIMIENTO= :KEY_TIPOMOVIMIENTO AND ALMACENCONTABILIDAD.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="DEBITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param name="CREDITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param name="DEBITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param name="CREDITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param name="DEBITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param name="CREDITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param name="DEBITO_RETIRADOS_BAJA" sqlType="STRING"/>
+		<param name="CREDITO_RETIRADOS_BAJA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="KEY_TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="almacenescontabilidad/almacenbaja">
+		<call-query href="updateAlmacenescontabilidadAlmacenBaja">
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="DEBITO_HISTORICO_BAJA" query-param="DEBITO_HISTORICO_BAJA"/>
+			<with-param name="CREDITO_HISTORICO_BAJA" query-param="CREDITO_HISTORICO_BAJA"/>
+			<with-param name="DEBITO_ACUMULADA_BAJA" query-param="DEBITO_ACUMULADA_BAJA"/>
+			<with-param name="CREDITO_ACUMULADA_BAJA" query-param="CREDITO_ACUMULADA_BAJA"/>
+			<with-param name="DEBITO_LIBROS_BAJA" query-param="DEBITO_LIBROS_BAJA"/>
+			<with-param name="CREDITO_LIBROS_BAJA" query-param="CREDITO_LIBROS_BAJA"/>
+			<with-param name="DEBITO_RETIRADOS_BAJA" query-param="DEBITO_RETIRADOS_BAJA"/>
+			<with-param name="CREDITO_RETIRADOS_BAJA" query-param="CREDITO_RETIRADOS_BAJA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOELEMENTO" query-param="KEY_CODIGOELEMENTO"/>
+			<with-param name="KEY_TIPOMOVIMIENTO" query-param="KEY_TIPOMOVIMIENTO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertAlmacenescontabilidadContabilizartraniif" keyColumns="COMPANIA,CODIGOELEMENTO,TIPOMOVIMIENTO,ANO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ALMACENCONTABILIDAD (COMPANIA, CODIGOELEMENTO, TIPOMOVIMIENTO, ANO, NIIF_CUENTADEBITO, NIIF_CUENTACREDITO, NIIF_DEBITO_BASE, NIIF_CREDITO_BASE, NIIF_DEBITO_IVA, NIIF_CREDITO_IVA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGOELEMENTO, :TIPOMOVIMIENTO, :ANO, :NIIF_CUENTADEBITO, :NIIF_CUENTACREDITO, :NIIF_DEBITO_BASE, :NIIF_CREDITO_BASE, :NIIF_DEBITO_IVA, :NIIF_CREDITO_IVA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGOELEMENTO":"$CODIGOELEMENTO","KEY_TIPOMOVIMIENTO":"$TIPOMOVIMIENTO","KEY_ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param defaultValue="" name="NIIF_CUENTADEBITO" sqlType="STRING"/>
+		<param defaultValue="" name="NIIF_CUENTACREDITO" sqlType="STRING"/>
+		<param defaultValue="" name="NIIF_DEBITO_BASE" sqlType="STRING"/>
+		<param defaultValue="" name="NIIF_CREDITO_BASE" sqlType="STRING"/>
+		<param defaultValue="" name="NIIF_DEBITO_IVA" sqlType="STRING"/>
+		<param defaultValue="" name="NIIF_CREDITO_IVA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="almacenescontabilidad/contabilizartraniif">
+		<call-query href="insertAlmacenescontabilidadContabilizartraniif">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NIIF_CUENTADEBITO" query-param="NIIF_CUENTADEBITO"/>
+			<with-param name="NIIF_CUENTACREDITO" query-param="NIIF_CUENTACREDITO"/>
+			<with-param name="NIIF_DEBITO_BASE" query-param="NIIF_DEBITO_BASE"/>
+			<with-param name="NIIF_CREDITO_BASE" query-param="NIIF_CREDITO_BASE"/>
+			<with-param name="NIIF_DEBITO_IVA" query-param="NIIF_DEBITO_IVA"/>
+			<with-param name="NIIF_CREDITO_IVA" query-param="NIIF_CREDITO_IVA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="updateAlmacenescontabilidadUpdatecontabilizartraniif" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ALMACENCONTABILIDAD SET CODIGOELEMENTO=:CODIGOELEMENTO, TIPOMOVIMIENTO=:TIPOMOVIMIENTO, ANO=:ANO, NIIF_CUENTADEBITO=:NIIF_CUENTADEBITO, NIIF_CUENTACREDITO=:NIIF_CUENTACREDITO, NIIF_DEBITO_BASE=:NIIF_DEBITO_BASE, NIIF_CREDITO_BASE=:NIIF_CREDITO_BASE, NIIF_DEBITO_IVA=:NIIF_DEBITO_IVA, NIIF_CREDITO_IVA=:NIIF_CREDITO_IVA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ALMACENCONTABILIDAD.COMPANIA= :KEY_COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO= :KEY_CODIGOELEMENTO AND ALMACENCONTABILIDAD.TIPOMOVIMIENTO= :KEY_TIPOMOVIMIENTO AND ALMACENCONTABILIDAD.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="NIIF_CUENTADEBITO" sqlType="STRING"/>
+		<param name="NIIF_CUENTACREDITO" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_BASE" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_BASE" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_IVA" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_IVA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="KEY_TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="almacenescontabilidad/updatecontabilizartraniif">
+		<call-query href="updateAlmacenescontabilidadUpdatecontabilizartraniif">
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NIIF_CUENTADEBITO" query-param="NIIF_CUENTADEBITO"/>
+			<with-param name="NIIF_CUENTACREDITO" query-param="NIIF_CUENTACREDITO"/>
+			<with-param name="NIIF_DEBITO_BASE" query-param="NIIF_DEBITO_BASE"/>
+			<with-param name="NIIF_CREDITO_BASE" query-param="NIIF_CREDITO_BASE"/>
+			<with-param name="NIIF_DEBITO_IVA" query-param="NIIF_DEBITO_IVA"/>
+			<with-param name="NIIF_CREDITO_IVA" query-param="NIIF_CREDITO_IVA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOELEMENTO" query-param="KEY_CODIGOELEMENTO"/>
+			<with-param name="KEY_TIPOMOVIMIENTO" query-param="KEY_TIPOMOVIMIENTO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAlmacenescontabilidadPagContabilizartraniiflistadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ALMACENCONTABILIDAD.COMPANIA, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, ALMACENCONTABILIDAD.ANO, ALMACENCONTABILIDAD.NIIF_CUENTADEBITO, ALMACENCONTABILIDAD.NIIF_CUENTACREDITO, TIPOMOVIMIENTO.NOMBRE, ALMACENCONTABILIDAD.NIIF_DEBITO_BASE, ALMACENCONTABILIDAD.NIIF_CREDITO_BASE, ALMACENCONTABILIDAD.NIIF_CREDITO_IVA, ALMACENCONTABILIDAD.NIIF_DEBITO_IVA  FROM ALMACENCONTABILIDAD LEFT JOIN TIPOMOVIMIENTO ON ALMACENCONTABILIDAD.COMPANIA = TIPOMOVIMIENTO.COMPANIA AND ALMACENCONTABILIDAD.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO WHERE ALMACENCONTABILIDAD.COMPANIA = :COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO = :CODIGOELEMENTO AND ALMACENCONTABILIDAD.ANO = :ANO ORDER BY ALMACENCONTABILIDAD.TIPOMOVIMIENTO) WHERE (CASE WHEN TIPOMOVIMIENTO IS NULL THEN ' ' ELSE UPPER(TIPOMOVIMIENTO) END)  LIKE UPPER(:TIPOMOVIMIENTO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN NIIF_CUENTADEBITO IS NULL THEN ' ' ELSE UPPER(NIIF_CUENTADEBITO) END)  LIKE UPPER(:NIIF_CUENTADEBITO || '%')  AND (CASE WHEN NIIF_CUENTACREDITO IS NULL THEN ' ' ELSE UPPER(NIIF_CUENTACREDITO) END)  LIKE UPPER(:NIIF_CUENTACREDITO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER(:NOMBRE || '%')  AND (CASE WHEN NIIF_DEBITO_BASE IS NULL THEN ' ' ELSE UPPER(NIIF_DEBITO_BASE) END)  LIKE UPPER(:NIIF_DEBITO_BASE || '%')  AND (CASE WHEN NIIF_CREDITO_BASE IS NULL THEN ' ' ELSE UPPER(NIIF_CREDITO_BASE) END)  LIKE UPPER( '%' || :NIIF_CREDITO_BASE || '%')  AND (CASE WHEN NIIF_CREDITO_IVA IS NULL THEN ' ' ELSE UPPER(NIIF_CREDITO_IVA) END)  LIKE UPPER(:NIIF_CREDITO_IVA || '%')  AND (CASE WHEN NIIF_DEBITO_IVA IS NULL THEN ' ' ELSE UPPER(NIIF_DEBITO_IVA) END)  LIKE UPPER(:NIIF_DEBITO_IVA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGOELEMENTO":"$CODIGOELEMENTO","TIPOMOVIMIENTO":"$TIPOMOVIMIENTO","ANO":"$ANO(type:integer)","NIIF_CUENTADEBITO":"$NIIF_CUENTADEBITO","NIIF_CUENTACREDITO":"$NIIF_CUENTACREDITO","NOMBRE":"$NOMBRE","NIIF_DEBITO_BASE":"$NIIF_DEBITO_BASE","NIIF_CREDITO_BASE":"$NIIF_CREDITO_BASE","NIIF_CREDITO_IVA":"$NIIF_CREDITO_IVA","NIIF_DEBITO_IVA":"$NIIF_DEBITO_IVA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="NIIF_CUENTADEBITO" sqlType="STRING"/>
+		<param name="NIIF_CUENTACREDITO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_BASE" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_BASE" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_IVA" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_IVA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="almacenescontabilidad/contabilizartraniiflistado/pag">
+		<call-query href="getAlmacenescontabilidadPagContabilizartraniiflistadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="NIIF_CUENTADEBITO" query-param="NIIF_CUENTADEBITO"/>
+			<with-param name="NIIF_CUENTACREDITO" query-param="NIIF_CUENTACREDITO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NIIF_DEBITO_BASE" query-param="NIIF_DEBITO_BASE"/>
+			<with-param name="NIIF_CREDITO_BASE" query-param="NIIF_CREDITO_BASE"/>
+			<with-param name="NIIF_CREDITO_IVA" query-param="NIIF_CREDITO_IVA"/>
+			<with-param name="NIIF_DEBITO_IVA" query-param="NIIF_DEBITO_IVA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAlmacenescontabilidadNumContabilizartraniiflistadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ALMACENCONTABILIDAD.COMPANIA, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, ALMACENCONTABILIDAD.ANO, ALMACENCONTABILIDAD.NIIF_CUENTADEBITO, ALMACENCONTABILIDAD.NIIF_CUENTACREDITO, TIPOMOVIMIENTO.NOMBRE, ALMACENCONTABILIDAD.NIIF_DEBITO_BASE, ALMACENCONTABILIDAD.NIIF_CREDITO_BASE, ALMACENCONTABILIDAD.NIIF_CREDITO_IVA, ALMACENCONTABILIDAD.NIIF_DEBITO_IVA  FROM ALMACENCONTABILIDAD LEFT JOIN TIPOMOVIMIENTO ON ALMACENCONTABILIDAD.COMPANIA = TIPOMOVIMIENTO.COMPANIA AND ALMACENCONTABILIDAD.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO WHERE ALMACENCONTABILIDAD.COMPANIA = :COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO = :CODIGOELEMENTO AND ALMACENCONTABILIDAD.ANO = :ANO ORDER BY ALMACENCONTABILIDAD.TIPOMOVIMIENTO) WHERE (CASE WHEN TIPOMOVIMIENTO IS NULL THEN ' ' ELSE UPPER(TIPOMOVIMIENTO) END)  LIKE UPPER(:TIPOMOVIMIENTO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN NIIF_CUENTADEBITO IS NULL THEN ' ' ELSE UPPER(NIIF_CUENTADEBITO) END)  LIKE UPPER(:NIIF_CUENTADEBITO || '%')  AND (CASE WHEN NIIF_CUENTACREDITO IS NULL THEN ' ' ELSE UPPER(NIIF_CUENTACREDITO) END)  LIKE UPPER(:NIIF_CUENTACREDITO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER(:NOMBRE || '%')  AND (CASE WHEN NIIF_DEBITO_BASE IS NULL THEN ' ' ELSE UPPER(NIIF_DEBITO_BASE) END)  LIKE UPPER(:NIIF_DEBITO_BASE || '%')  AND (CASE WHEN NIIF_CREDITO_BASE IS NULL THEN ' ' ELSE UPPER(NIIF_CREDITO_BASE) END)  LIKE UPPER( '%' || :NIIF_CREDITO_BASE || '%')  AND (CASE WHEN NIIF_CREDITO_IVA IS NULL THEN ' ' ELSE UPPER(NIIF_CREDITO_IVA) END)  LIKE UPPER(:NIIF_CREDITO_IVA || '%')  AND (CASE WHEN NIIF_DEBITO_IVA IS NULL THEN ' ' ELSE UPPER(NIIF_DEBITO_IVA) END)  LIKE UPPER(:NIIF_DEBITO_IVA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="NIIF_CUENTADEBITO" sqlType="STRING"/>
+		<param name="NIIF_CUENTACREDITO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_BASE" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_BASE" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_IVA" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_IVA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="almacenescontabilidad/contabilizartraniiflistado/num">
+		<call-query href="getAlmacenescontabilidadNumContabilizartraniiflistadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="NIIF_CUENTADEBITO" query-param="NIIF_CUENTADEBITO"/>
+			<with-param name="NIIF_CUENTACREDITO" query-param="NIIF_CUENTACREDITO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NIIF_DEBITO_BASE" query-param="NIIF_DEBITO_BASE"/>
+			<with-param name="NIIF_CREDITO_BASE" query-param="NIIF_CREDITO_BASE"/>
+			<with-param name="NIIF_CREDITO_IVA" query-param="NIIF_CREDITO_IVA"/>
+			<with-param name="NIIF_DEBITO_IVA" query-param="NIIF_DEBITO_IVA"/>
+
+		</call-query>
+	</resource>
+	<query id="getAlmacenescontabilidadPagListaalmacenbajaniifQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT ALMACENCONTABILIDAD.COMPANIA, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.ANO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, TIPOMOVIMIENTO.NOMBRE, ALMACENCONTABILIDAD.NIIF_DEBITO_HISTORICO_BAJA, ALMACENCONTABILIDAD.NIIF_CREDITO_HISTORICO_BAJA, ALMACENCONTABILIDAD.NIIF_DEBITO_ACUMULADA_BAJA, ALMACENCONTABILIDAD.NIIF_CREDITO_ACUMULADA_BAJA, ALMACENCONTABILIDAD.NIIF_DEBITO_LIBROS_BAJA, ALMACENCONTABILIDAD.NIIF_CREDITO_LIBROS_BAJA, ALMACENCONTABILIDAD.NIIF_DEBITO_RETIRADOS_BAJA, ALMACENCONTABILIDAD.NIIF_CREDITO_RETIRADOS_BAJA FROM ALMACENCONTABILIDAD LEFT JOIN TIPOMOVIMIENTO ON ALMACENCONTABILIDAD.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO AND ALMACENCONTABILIDAD.COMPANIA = TIPOMOVIMIENTO.COMPANIA WHERE ALMACENCONTABILIDAD.COMPANIA = :COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO= :CODIGOELEMENTO AND ALMACENCONTABILIDAD.ANO = :ANO AND (TIPOMOVIMIENTO.CONCEPTO IN ('CM','DS','L','DT','T') AND TIPOMOVIMIENTO.CLASE NOT IN ('E') OR ( TIPOMOVIMIENTO.CLASE NOT IN ( 'T','E' ) AND TIPOMOVIMIENTO.CONCEPTO NOT IN ( 'T' ,'II','N') )) ORDER BY ALMACENCONTABILIDAD.COMPANIA, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, ALMACENCONTABILIDAD.ANO, TIPOMOVIMIENTO.NOMBRE) INI WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(:ANO, '%')) AND (CASE WHEN TIPOMOVIMIENTO IS NULL THEN ' ' ELSE UPPER(TIPOMOVIMIENTO) END) LIKE UPPER(CONCAT(:TIPOMOVIMIENTO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN NIIF_DEBITO_HISTORICO_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_DEBITO_HISTORICO_BAJA) END) LIKE UPPER(CONCAT(:NIIF_DEBITO_HISTORICO_BAJA, '%')) AND (CASE WHEN NIIF_CREDITO_HISTORICO_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_CREDITO_HISTORICO_BAJA) END) LIKE UPPER(CONCAT(:NIIF_CREDITO_HISTORICO_BAJA, '%')) AND (CASE WHEN NIIF_DEBITO_ACUMULADA_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_DEBITO_ACUMULADA_BAJA) END) LIKE UPPER(CONCAT(:NIIF_DEBITO_ACUMULADA_BAJA, '%')) AND (CASE WHEN NIIF_CREDITO_ACUMULADA_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_CREDITO_ACUMULADA_BAJA) END) LIKE UPPER(CONCAT(:NIIF_CREDITO_ACUMULADA_BAJA, '%')) AND (CASE WHEN NIIF_DEBITO_LIBROS_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_DEBITO_LIBROS_BAJA) END) LIKE UPPER(CONCAT(:NIIF_DEBITO_LIBROS_BAJA, '%')) AND (CASE WHEN NIIF_CREDITO_LIBROS_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_CREDITO_LIBROS_BAJA) END) LIKE UPPER(CONCAT(:NIIF_CREDITO_LIBROS_BAJA, '%')) AND (CASE WHEN NIIF_DEBITO_RETIRADOS_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_DEBITO_RETIRADOS_BAJA) END) LIKE UPPER(CONCAT(:NIIF_DEBITO_RETIRADOS_BAJA, '%')) AND (CASE WHEN NIIF_CREDITO_RETIRADOS_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_CREDITO_RETIRADOS_BAJA) END) LIKE UPPER(CONCAT(:NIIF_CREDITO_RETIRADOS_BAJA, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGOELEMENTO":"$CODIGOELEMENTO","ANO":"$ANO(type:integer)","TIPOMOVIMIENTO":"$TIPOMOVIMIENTO","NOMBRE":"$NOMBRE","NIIF_DEBITO_HISTORICO_BAJA":"$NIIF_DEBITO_HISTORICO_BAJA","NIIF_CREDITO_HISTORICO_BAJA":"$NIIF_CREDITO_HISTORICO_BAJA","NIIF_DEBITO_ACUMULADA_BAJA":"$NIIF_DEBITO_ACUMULADA_BAJA","NIIF_CREDITO_ACUMULADA_BAJA":"$NIIF_CREDITO_ACUMULADA_BAJA","NIIF_DEBITO_LIBROS_BAJA":"$NIIF_DEBITO_LIBROS_BAJA","NIIF_CREDITO_LIBROS_BAJA":"$NIIF_CREDITO_LIBROS_BAJA","NIIF_DEBITO_RETIRADOS_BAJA":"$NIIF_DEBITO_RETIRADOS_BAJA","NIIF_CREDITO_RETIRADOS_BAJA":"$NIIF_CREDITO_RETIRADOS_BAJA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_RETIRADOS_BAJA" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_RETIRADOS_BAJA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="almacenescontabilidad/listaalmacenbajaniif/pag">
+		<call-query href="getAlmacenescontabilidadPagListaalmacenbajaniifQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NIIF_DEBITO_HISTORICO_BAJA" query-param="NIIF_DEBITO_HISTORICO_BAJA"/>
+			<with-param name="NIIF_CREDITO_HISTORICO_BAJA" query-param="NIIF_CREDITO_HISTORICO_BAJA"/>
+			<with-param name="NIIF_DEBITO_ACUMULADA_BAJA" query-param="NIIF_DEBITO_ACUMULADA_BAJA"/>
+			<with-param name="NIIF_CREDITO_ACUMULADA_BAJA" query-param="NIIF_CREDITO_ACUMULADA_BAJA"/>
+			<with-param name="NIIF_DEBITO_LIBROS_BAJA" query-param="NIIF_DEBITO_LIBROS_BAJA"/>
+			<with-param name="NIIF_CREDITO_LIBROS_BAJA" query-param="NIIF_CREDITO_LIBROS_BAJA"/>
+			<with-param name="NIIF_DEBITO_RETIRADOS_BAJA" query-param="NIIF_DEBITO_RETIRADOS_BAJA"/>
+			<with-param name="NIIF_CREDITO_RETIRADOS_BAJA" query-param="NIIF_CREDITO_RETIRADOS_BAJA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAlmacenescontabilidadNumListaalmacenbajaniifQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT ALMACENCONTABILIDAD.COMPANIA, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.ANO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, TIPOMOVIMIENTO.NOMBRE, ALMACENCONTABILIDAD.NIIF_DEBITO_HISTORICO_BAJA, ALMACENCONTABILIDAD.NIIF_CREDITO_HISTORICO_BAJA, ALMACENCONTABILIDAD.NIIF_DEBITO_ACUMULADA_BAJA, ALMACENCONTABILIDAD.NIIF_CREDITO_ACUMULADA_BAJA, ALMACENCONTABILIDAD.NIIF_DEBITO_LIBROS_BAJA, ALMACENCONTABILIDAD.NIIF_CREDITO_LIBROS_BAJA, ALMACENCONTABILIDAD.NIIF_DEBITO_RETIRADOS_BAJA, ALMACENCONTABILIDAD.NIIF_CREDITO_RETIRADOS_BAJA FROM ALMACENCONTABILIDAD LEFT JOIN TIPOMOVIMIENTO ON ALMACENCONTABILIDAD.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO AND ALMACENCONTABILIDAD.COMPANIA = TIPOMOVIMIENTO.COMPANIA WHERE ALMACENCONTABILIDAD.COMPANIA = :COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO= :CODIGOELEMENTO AND ALMACENCONTABILIDAD.ANO = :ANO AND (TIPOMOVIMIENTO.CONCEPTO IN ('CM','DS','L','DT','T') AND TIPOMOVIMIENTO.CLASE NOT IN ('E') OR ( TIPOMOVIMIENTO.CLASE NOT IN ( 'T','E' ) AND TIPOMOVIMIENTO.CONCEPTO NOT IN ( 'T' ,'II','N') )) ORDER BY ALMACENCONTABILIDAD.COMPANIA, ALMACENCONTABILIDAD.CODIGOELEMENTO, ALMACENCONTABILIDAD.TIPOMOVIMIENTO, ALMACENCONTABILIDAD.ANO, TIPOMOVIMIENTO.NOMBRE) INI WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(:ANO, '%')) AND (CASE WHEN TIPOMOVIMIENTO IS NULL THEN ' ' ELSE UPPER(TIPOMOVIMIENTO) END) LIKE UPPER(CONCAT(:TIPOMOVIMIENTO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN NIIF_DEBITO_HISTORICO_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_DEBITO_HISTORICO_BAJA) END) LIKE UPPER(CONCAT(:NIIF_DEBITO_HISTORICO_BAJA, '%')) AND (CASE WHEN NIIF_CREDITO_HISTORICO_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_CREDITO_HISTORICO_BAJA) END) LIKE UPPER(CONCAT(:NIIF_CREDITO_HISTORICO_BAJA, '%')) AND (CASE WHEN NIIF_DEBITO_ACUMULADA_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_DEBITO_ACUMULADA_BAJA) END) LIKE UPPER(CONCAT(:NIIF_DEBITO_ACUMULADA_BAJA, '%')) AND (CASE WHEN NIIF_CREDITO_ACUMULADA_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_CREDITO_ACUMULADA_BAJA) END) LIKE UPPER(CONCAT(:NIIF_CREDITO_ACUMULADA_BAJA, '%')) AND (CASE WHEN NIIF_DEBITO_LIBROS_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_DEBITO_LIBROS_BAJA) END) LIKE UPPER(CONCAT(:NIIF_DEBITO_LIBROS_BAJA, '%')) AND (CASE WHEN NIIF_CREDITO_LIBROS_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_CREDITO_LIBROS_BAJA) END) LIKE UPPER(CONCAT(:NIIF_CREDITO_LIBROS_BAJA, '%')) AND (CASE WHEN NIIF_DEBITO_RETIRADOS_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_DEBITO_RETIRADOS_BAJA) END) LIKE UPPER(CONCAT(:NIIF_DEBITO_RETIRADOS_BAJA, '%')) AND (CASE WHEN NIIF_CREDITO_RETIRADOS_BAJA IS NULL THEN ' ' ELSE UPPER(NIIF_CREDITO_RETIRADOS_BAJA) END) LIKE UPPER(CONCAT(:NIIF_CREDITO_RETIRADOS_BAJA, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_RETIRADOS_BAJA" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_RETIRADOS_BAJA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="almacenescontabilidad/listaalmacenbajaniif/num">
+		<call-query href="getAlmacenescontabilidadNumListaalmacenbajaniifQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NIIF_DEBITO_HISTORICO_BAJA" query-param="NIIF_DEBITO_HISTORICO_BAJA"/>
+			<with-param name="NIIF_CREDITO_HISTORICO_BAJA" query-param="NIIF_CREDITO_HISTORICO_BAJA"/>
+			<with-param name="NIIF_DEBITO_ACUMULADA_BAJA" query-param="NIIF_DEBITO_ACUMULADA_BAJA"/>
+			<with-param name="NIIF_CREDITO_ACUMULADA_BAJA" query-param="NIIF_CREDITO_ACUMULADA_BAJA"/>
+			<with-param name="NIIF_DEBITO_LIBROS_BAJA" query-param="NIIF_DEBITO_LIBROS_BAJA"/>
+			<with-param name="NIIF_CREDITO_LIBROS_BAJA" query-param="NIIF_CREDITO_LIBROS_BAJA"/>
+			<with-param name="NIIF_DEBITO_RETIRADOS_BAJA" query-param="NIIF_DEBITO_RETIRADOS_BAJA"/>
+			<with-param name="NIIF_CREDITO_RETIRADOS_BAJA" query-param="NIIF_CREDITO_RETIRADOS_BAJA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertAlmacenescontabilidadAlmacenbajaniif" keyColumns="COMPANIA,CODIGOELEMENTO,TIPOMOVIMIENTO,ANO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ALMACENCONTABILIDAD (COMPANIA, CODIGOELEMENTO, ANO, TIPOMOVIMIENTO, NIIF_DEBITO_HISTORICO_BAJA, NIIF_CREDITO_HISTORICO_BAJA, NIIF_DEBITO_ACUMULADA_BAJA, NIIF_CREDITO_ACUMULADA_BAJA, NIIF_DEBITO_LIBROS_BAJA, NIIF_CREDITO_LIBROS_BAJA, NIIF_DEBITO_RETIRADOS_BAJA, NIIF_CREDITO_RETIRADOS_BAJA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGOELEMENTO, :ANO, :TIPOMOVIMIENTO, :NIIF_DEBITO_HISTORICO_BAJA, :NIIF_CREDITO_HISTORICO_BAJA, :NIIF_DEBITO_ACUMULADA_BAJA, :NIIF_CREDITO_ACUMULADA_BAJA, :NIIF_DEBITO_LIBROS_BAJA, :NIIF_CREDITO_LIBROS_BAJA, :NIIF_DEBITO_RETIRADOS_BAJA, :NIIF_CREDITO_RETIRADOS_BAJA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGOELEMENTO":"$CODIGOELEMENTO","KEY_TIPOMOVIMIENTO":"$TIPOMOVIMIENTO","KEY_ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param defaultValue="" name="NIIF_DEBITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param defaultValue="" name="NIIF_CREDITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param defaultValue="" name="NIIF_DEBITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param defaultValue="" name="NIIF_CREDITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param defaultValue="" name="NIIF_DEBITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param defaultValue="" name="NIIF_CREDITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param defaultValue="" name="NIIF_DEBITO_RETIRADOS_BAJA" sqlType="STRING"/>
+		<param defaultValue="" name="NIIF_CREDITO_RETIRADOS_BAJA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="almacenescontabilidad/almacenbajaniif">
+		<call-query href="insertAlmacenescontabilidadAlmacenbajaniif">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="NIIF_DEBITO_HISTORICO_BAJA" query-param="NIIF_DEBITO_HISTORICO_BAJA"/>
+			<with-param name="NIIF_CREDITO_HISTORICO_BAJA" query-param="NIIF_CREDITO_HISTORICO_BAJA"/>
+			<with-param name="NIIF_DEBITO_ACUMULADA_BAJA" query-param="NIIF_DEBITO_ACUMULADA_BAJA"/>
+			<with-param name="NIIF_CREDITO_ACUMULADA_BAJA" query-param="NIIF_CREDITO_ACUMULADA_BAJA"/>
+			<with-param name="NIIF_DEBITO_LIBROS_BAJA" query-param="NIIF_DEBITO_LIBROS_BAJA"/>
+			<with-param name="NIIF_CREDITO_LIBROS_BAJA" query-param="NIIF_CREDITO_LIBROS_BAJA"/>
+			<with-param name="NIIF_DEBITO_RETIRADOS_BAJA" query-param="NIIF_DEBITO_RETIRADOS_BAJA"/>
+			<with-param name="NIIF_CREDITO_RETIRADOS_BAJA" query-param="NIIF_CREDITO_RETIRADOS_BAJA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="updateAlmacenescontabilidadAlmacenbajaniif" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ALMACENCONTABILIDAD SET CODIGOELEMENTO=:CODIGOELEMENTO, ANO=:ANO, TIPOMOVIMIENTO=:TIPOMOVIMIENTO, NIIF_DEBITO_HISTORICO_BAJA=:NIIF_DEBITO_HISTORICO_BAJA, NIIF_CREDITO_HISTORICO_BAJA=:NIIF_CREDITO_HISTORICO_BAJA, NIIF_DEBITO_ACUMULADA_BAJA=:NIIF_DEBITO_ACUMULADA_BAJA, NIIF_CREDITO_ACUMULADA_BAJA=:NIIF_CREDITO_ACUMULADA_BAJA, NIIF_DEBITO_LIBROS_BAJA=:NIIF_DEBITO_LIBROS_BAJA, NIIF_CREDITO_LIBROS_BAJA=:NIIF_CREDITO_LIBROS_BAJA, NIIF_DEBITO_RETIRADOS_BAJA=:NIIF_DEBITO_RETIRADOS_BAJA, NIIF_CREDITO_RETIRADOS_BAJA=:NIIF_CREDITO_RETIRADOS_BAJA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ALMACENCONTABILIDAD.COMPANIA= :KEY_COMPANIA AND ALMACENCONTABILIDAD.CODIGOELEMENTO= :KEY_CODIGOELEMENTO AND ALMACENCONTABILIDAD.TIPOMOVIMIENTO= :KEY_TIPOMOVIMIENTO AND ALMACENCONTABILIDAD.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_HISTORICO_BAJA" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_ACUMULADA_BAJA" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_LIBROS_BAJA" sqlType="STRING"/>
+		<param name="NIIF_DEBITO_RETIRADOS_BAJA" sqlType="STRING"/>
+		<param name="NIIF_CREDITO_RETIRADOS_BAJA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="KEY_TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="almacenescontabilidad/almacenbajaniif">
+		<call-query href="updateAlmacenescontabilidadAlmacenbajaniif">
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="NIIF_DEBITO_HISTORICO_BAJA" query-param="NIIF_DEBITO_HISTORICO_BAJA"/>
+			<with-param name="NIIF_CREDITO_HISTORICO_BAJA" query-param="NIIF_CREDITO_HISTORICO_BAJA"/>
+			<with-param name="NIIF_DEBITO_ACUMULADA_BAJA" query-param="NIIF_DEBITO_ACUMULADA_BAJA"/>
+			<with-param name="NIIF_CREDITO_ACUMULADA_BAJA" query-param="NIIF_CREDITO_ACUMULADA_BAJA"/>
+			<with-param name="NIIF_DEBITO_LIBROS_BAJA" query-param="NIIF_DEBITO_LIBROS_BAJA"/>
+			<with-param name="NIIF_CREDITO_LIBROS_BAJA" query-param="NIIF_CREDITO_LIBROS_BAJA"/>
+			<with-param name="NIIF_DEBITO_RETIRADOS_BAJA" query-param="NIIF_DEBITO_RETIRADOS_BAJA"/>
+			<with-param name="NIIF_CREDITO_RETIRADOS_BAJA" query-param="NIIF_CREDITO_RETIRADOS_BAJA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOELEMENTO" query-param="KEY_CODIGOELEMENTO"/>
+			<with-param name="KEY_TIPOMOVIMIENTO" query-param="KEY_TIPOMOVIMIENTO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+
+</data>

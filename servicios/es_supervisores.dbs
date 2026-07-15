@@ -1,0 +1,124 @@
+﻿<data name="es_supervisores" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertEs_supervisores" keyColumns="COMPANIA,NUMERO_ESTUDIO,CEDULA,SUCURSAL" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ES_SUPERVISORES (COMPANIA, NUMERO_ESTUDIO, CEDULA, SUCURSAL, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :NUMERO_ESTUDIO, :CEDULA, :SUCURSAL, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_NUMERO_ESTUDIO":"$NUMERO_ESTUDIO(type:long)","KEY_CEDULA":"$CEDULA","KEY_SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ESTUDIO" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="CEDULA" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="es_supervisores">
+		<call-query href="insertEs_supervisores">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ESTUDIO" query-param="NUMERO_ESTUDIO"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEs_supervisores" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ES_SUPERVISORES WHERE ES_SUPERVISORES.COMPANIA= :KEY_COMPANIA AND ES_SUPERVISORES.NUMERO_ESTUDIO= :KEY_NUMERO_ESTUDIO AND ES_SUPERVISORES.CEDULA= :KEY_CEDULA AND ES_SUPERVISORES.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO_ESTUDIO" sqlType="STRING"/>
+		<param name="KEY_CEDULA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="es_supervisores">
+		<call-query href="deleteEs_supervisores">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NUMERO_ESTUDIO" query-param="KEY_NUMERO_ESTUDIO"/>
+			<with-param name="KEY_CEDULA" query-param="KEY_CEDULA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getEs_supervisoresPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ES.COMPANIA, ES.NUMERO_ESTUDIO, ES.CEDULA, ES.SUCURSAL, T.NOMBRE, T.CARGO, T.PROFESION  FROM ES_SUPERVISORES ES INNER JOIN TERCERO T ON ES.COMPANIA = T.COMPANIA AND ES.CEDULA = T.NIT AND ES.SUCURSAL = T.SUCURSAL WHERE ES.COMPANIA = :COMPANIA AND NUMERO_ESTUDIO = :NUMEROESTUDIO) WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END)  LIKE UPPER(:CEDULA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END)  LIKE UPPER( '%' || :CARGO || '%')  AND (CASE WHEN PROFESION IS NULL THEN ' ' ELSE UPPER(PROFESION) END)  LIKE UPPER( '%' || :PROFESION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NUMERO_ESTUDIO":"$NUMERO_ESTUDIO(type:long)","CEDULA":"$CEDULA","SUCURSAL":"$SUCURSAL","NOMBRE":"$NOMBRE","CARGO":"$CARGO","PROFESION":"$PROFESION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMEROESTUDIO" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="PROFESION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="es_supervisores">
+		<call-query href="getEs_supervisoresPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMEROESTUDIO" query-param="NUMEROESTUDIO"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="PROFESION" query-param="PROFESION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEs_supervisoresNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ES.COMPANIA, ES.NUMERO_ESTUDIO, ES.CEDULA, ES.SUCURSAL, T.NOMBRE, T.CARGO, T.PROFESION  FROM ES_SUPERVISORES ES INNER JOIN TERCERO T ON ES.COMPANIA = T.COMPANIA AND ES.CEDULA = T.NIT AND ES.SUCURSAL = T.SUCURSAL WHERE ES.COMPANIA = :COMPANIA AND NUMERO_ESTUDIO = :NUMEROESTUDIO) WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END)  LIKE UPPER(:CEDULA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END)  LIKE UPPER( '%' || :CARGO || '%')  AND (CASE WHEN PROFESION IS NULL THEN ' ' ELSE UPPER(PROFESION) END)  LIKE UPPER( '%' || :PROFESION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMEROESTUDIO" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="PROFESION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="es_supervisores/numero">
+		<call-query href="getEs_supervisoresNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMEROESTUDIO" query-param="NUMEROESTUDIO"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="PROFESION" query-param="PROFESION"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEs_supervisores" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ES_SUPERVISORES SET CEDULA=:CEDULA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ES_SUPERVISORES.COMPANIA= :KEY_COMPANIA AND ES_SUPERVISORES.NUMERO_ESTUDIO= :KEY_NUMERO_ESTUDIO AND ES_SUPERVISORES.CEDULA= :KEY_CEDULA AND ES_SUPERVISORES.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NUMERO_ESTUDIO" sqlType="STRING"/>
+		<param name="KEY_CEDULA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="es_supervisores">
+		<call-query href="updateEs_supervisores">
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NUMERO_ESTUDIO" query-param="KEY_NUMERO_ESTUDIO"/>
+			<with-param name="KEY_CEDULA" query-param="KEY_CEDULA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+
+</data>

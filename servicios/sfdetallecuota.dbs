@@ -1,0 +1,102 @@
+﻿<data name="sfdetallecuota" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSfdetallecuotaTotalcuotasacuerdoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NVL(SUM(VALOR_BASE),0) TOTALBASE, NVL(SUM(VALOR_IVA),0) TOTALIVA, NVL(SUM(VALOR_RETE),0) TOTALRETE, NVL(SUM(VALOR_DESCUENTO),0) TOTALDESCUENTO, NVL(SUM(VALOR_ICA),0) TOTALICA, NVL(SUM(TOTAL_CUOTA),0) TOTALCUOTA  FROM SF_DETALLE_CUOTA WHERE COMPANIA = :COMPANIA AND TIPO_AP = :TIPOCOBRO AND CODIGO_AP = :CODACUERDO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTALBASE":"$TOTALBASE(type:integer)","TOTALIVA":"$TOTALIVA(type:integer)","TOTALRETE":"$TOTALRETE(type:integer)","TOTALDESCUENTO":"$TOTALDESCUENTO(type:integer)","TOTALICA":"$TOTALICA(type:integer)","TOTALCUOTA":"$TOTALCUOTA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODACUERDO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sfdetallecuota/totalcuotasacuerdo">
+		<call-query href="getSfdetallecuotaTotalcuotasacuerdoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODACUERDO" query-param="CODACUERDO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfdetallecuotaPagOrigenconsultacuotasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SF_DETALLE_CUOTA.COMPANIA, SF_DETALLE_CUOTA.TIPO_AP, SF_DETALLE_CUOTA.CODIGO_AP, SF_DETALLE_CUOTA.CUOTA, SF_DETALLE_CUOTA.ANO, SF_DETALLE_CUOTA.TIPOFACT, SF_DETALLE_CUOTA.NROFACT, SF_DETALLE_CUOTA.CONCEPTO, SF_CONCEPTOS.NOMBRE, SF_DETALLE_CUOTA.VALOR_BASE, SF_DETALLE_CUOTA.VALOR_IVA, SF_DETALLE_CUOTA.VALOR_RETE, SF_DETALLE_CUOTA.VALOR_DESCUENTO, SF_DETALLE_CUOTA.VALOR_ICA, SF_DETALLE_CUOTA.TOTAL_CUOTA  FROM SF_DETALLE_CUOTA LEFT JOIN SF_CONCEPTOS ON SF_DETALLE_CUOTA.COMPANIA = SF_CONCEPTOS.COMPANIA AND SF_DETALLE_CUOTA.TIPOFACT = SF_CONCEPTOS.TIPOCOBRO AND SF_DETALLE_CUOTA.CONCEPTO = SF_CONCEPTOS.CODIGO WHERE SF_DETALLE_CUOTA.COMPANIA = :COMPANIA AND SF_DETALLE_CUOTA.TIPO_AP = :TIPOCOBRO AND SF_DETALLE_CUOTA.CODIGO_AP = :CODACUERDO AND SF_DETALLE_CUOTA.CUOTA = :NUMCUOTA) WHERE (CASE WHEN CUOTA IS NULL THEN ' ' ELSE UPPER(CUOTA) END)  LIKE UPPER(:CUOTA || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN CONCEPTO IS NULL THEN ' ' ELSE UPPER(CONCEPTO) END)  LIKE UPPER(:CONCEPTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR_BASE IS NULL THEN ' ' ELSE UPPER(VALOR_BASE) END)  LIKE UPPER(:VALOR_BASE || '%')  AND (CASE WHEN VALOR_IVA IS NULL THEN ' ' ELSE UPPER(VALOR_IVA) END)  LIKE UPPER(:VALOR_IVA || '%')  AND (CASE WHEN VALOR_RETE IS NULL THEN ' ' ELSE UPPER(VALOR_RETE) END)  LIKE UPPER(:VALOR_RETE || '%')  AND (CASE WHEN VALOR_DESCUENTO IS NULL THEN ' ' ELSE UPPER(VALOR_DESCUENTO) END)  LIKE UPPER(:VALOR_DESCUENTO || '%')  AND (CASE WHEN VALOR_ICA IS NULL THEN ' ' ELSE UPPER(VALOR_ICA) END)  LIKE UPPER(:VALOR_ICA || '%')  AND (CASE WHEN TOTAL_CUOTA IS NULL THEN ' ' ELSE UPPER(TOTAL_CUOTA) END)  LIKE UPPER(:TOTAL_CUOTA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPO_AP":"$TIPO_AP","CODIGO_AP":"$CODIGO_AP(type:long)","CUOTA":"$CUOTA(type:integer)","ANO":"$ANO(type:integer)","TIPOFACT":"$TIPOFACT","NROFACT":"$NROFACT(type:long)","CONCEPTO":"$CONCEPTO","NOMBRE":"$NOMBRE","VALOR_BASE":"$VALOR_BASE","VALOR_IVA":"$VALOR_IVA","VALOR_RETE":"$VALOR_RETE","VALOR_DESCUENTO":"$VALOR_DESCUENTO","VALOR_ICA":"$VALOR_ICA","TOTAL_CUOTA":"$TOTAL_CUOTA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODACUERDO" sqlType="STRING"/>
+		<param name="NUMCUOTA" sqlType="STRING"/>
+		<param name="CUOTA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR_BASE" sqlType="STRING"/>
+		<param name="VALOR_IVA" sqlType="STRING"/>
+		<param name="VALOR_RETE" sqlType="STRING"/>
+		<param name="VALOR_DESCUENTO" sqlType="STRING"/>
+		<param name="VALOR_ICA" sqlType="STRING"/>
+		<param name="TOTAL_CUOTA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sfdetallecuota/origenconsultacuotas/pag">
+		<call-query href="getSfdetallecuotaPagOrigenconsultacuotasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODACUERDO" query-param="CODACUERDO"/>
+			<with-param name="NUMCUOTA" query-param="NUMCUOTA"/>
+			<with-param name="CUOTA" query-param="CUOTA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR_BASE" query-param="VALOR_BASE"/>
+			<with-param name="VALOR_IVA" query-param="VALOR_IVA"/>
+			<with-param name="VALOR_RETE" query-param="VALOR_RETE"/>
+			<with-param name="VALOR_DESCUENTO" query-param="VALOR_DESCUENTO"/>
+			<with-param name="VALOR_ICA" query-param="VALOR_ICA"/>
+			<with-param name="TOTAL_CUOTA" query-param="TOTAL_CUOTA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfdetallecuotaNumOrigenconsultacuotasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SF_DETALLE_CUOTA.COMPANIA, SF_DETALLE_CUOTA.TIPO_AP, SF_DETALLE_CUOTA.CODIGO_AP, SF_DETALLE_CUOTA.CUOTA, SF_DETALLE_CUOTA.ANO, SF_DETALLE_CUOTA.TIPOFACT, SF_DETALLE_CUOTA.NROFACT, SF_DETALLE_CUOTA.CONCEPTO, SF_CONCEPTOS.NOMBRE, SF_DETALLE_CUOTA.VALOR_BASE, SF_DETALLE_CUOTA.VALOR_IVA, SF_DETALLE_CUOTA.VALOR_RETE, SF_DETALLE_CUOTA.VALOR_DESCUENTO, SF_DETALLE_CUOTA.VALOR_ICA, SF_DETALLE_CUOTA.TOTAL_CUOTA  FROM SF_DETALLE_CUOTA LEFT JOIN SF_CONCEPTOS ON SF_DETALLE_CUOTA.COMPANIA = SF_CONCEPTOS.COMPANIA AND SF_DETALLE_CUOTA.TIPOFACT = SF_CONCEPTOS.TIPOCOBRO AND SF_DETALLE_CUOTA.CONCEPTO = SF_CONCEPTOS.CODIGO WHERE SF_DETALLE_CUOTA.COMPANIA = :COMPANIA AND SF_DETALLE_CUOTA.TIPO_AP = :TIPOCOBRO AND SF_DETALLE_CUOTA.CODIGO_AP = :CODACUERDO AND SF_DETALLE_CUOTA.CUOTA = :NUMCUOTA) WHERE (CASE WHEN CUOTA IS NULL THEN ' ' ELSE UPPER(CUOTA) END)  LIKE UPPER(:CUOTA || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN CONCEPTO IS NULL THEN ' ' ELSE UPPER(CONCEPTO) END)  LIKE UPPER(:CONCEPTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR_BASE IS NULL THEN ' ' ELSE UPPER(VALOR_BASE) END)  LIKE UPPER(:VALOR_BASE || '%')  AND (CASE WHEN VALOR_IVA IS NULL THEN ' ' ELSE UPPER(VALOR_IVA) END)  LIKE UPPER(:VALOR_IVA || '%')  AND (CASE WHEN VALOR_RETE IS NULL THEN ' ' ELSE UPPER(VALOR_RETE) END)  LIKE UPPER(:VALOR_RETE || '%')  AND (CASE WHEN VALOR_DESCUENTO IS NULL THEN ' ' ELSE UPPER(VALOR_DESCUENTO) END)  LIKE UPPER(:VALOR_DESCUENTO || '%')  AND (CASE WHEN VALOR_ICA IS NULL THEN ' ' ELSE UPPER(VALOR_ICA) END)  LIKE UPPER(:VALOR_ICA || '%')  AND (CASE WHEN TOTAL_CUOTA IS NULL THEN ' ' ELSE UPPER(TOTAL_CUOTA) END)  LIKE UPPER(:TOTAL_CUOTA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODACUERDO" sqlType="STRING"/>
+		<param name="NUMCUOTA" sqlType="STRING"/>
+		<param name="CUOTA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR_BASE" sqlType="STRING"/>
+		<param name="VALOR_IVA" sqlType="STRING"/>
+		<param name="VALOR_RETE" sqlType="STRING"/>
+		<param name="VALOR_DESCUENTO" sqlType="STRING"/>
+		<param name="VALOR_ICA" sqlType="STRING"/>
+		<param name="TOTAL_CUOTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sfdetallecuota/origenconsultacuotas/num">
+		<call-query href="getSfdetallecuotaNumOrigenconsultacuotasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODACUERDO" query-param="CODACUERDO"/>
+			<with-param name="NUMCUOTA" query-param="NUMCUOTA"/>
+			<with-param name="CUOTA" query-param="CUOTA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR_BASE" query-param="VALOR_BASE"/>
+			<with-param name="VALOR_IVA" query-param="VALOR_IVA"/>
+			<with-param name="VALOR_RETE" query-param="VALOR_RETE"/>
+			<with-param name="VALOR_DESCUENTO" query-param="VALOR_DESCUENTO"/>
+			<with-param name="VALOR_ICA" query-param="VALOR_ICA"/>
+			<with-param name="TOTAL_CUOTA" query-param="TOTAL_CUOTA"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,134 @@
+﻿<data name="cofinanciadores" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertCofinanciadores" keyColumns="COMPANIA,CLASEORDEN,NUMEROCONTRATO,CEDULA,SUCURSAL" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO COFINANCIADORES (COMPANIA, CLASEORDEN, NUMEROCONTRATO, CEDULA, SUCURSAL, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CLASEORDEN, :NUMEROCONTRATO, :CEDULA, :SUCURSAL, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CLASEORDEN":"$CLASEORDEN","KEY_NUMEROCONTRATO":"$NUMEROCONTRATO","KEY_CEDULA":"$CEDULA","KEY_SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param defaultValue="0" name="NUMEROCONTRATO" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="CEDULA" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="cofinanciadores">
+		<call-query href="insertCofinanciadores">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMEROCONTRATO" query-param="NUMEROCONTRATO"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCofinanciadores" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM COFINANCIADORES WHERE COFINANCIADORES.COMPANIA= :KEY_COMPANIA AND COFINANCIADORES.CLASEORDEN= :KEY_CLASEORDEN AND COFINANCIADORES.NUMEROCONTRATO= :KEY_NUMEROCONTRATO AND COFINANCIADORES.CEDULA= :KEY_CEDULA AND COFINANCIADORES.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASEORDEN" sqlType="STRING"/>
+		<param name="KEY_NUMEROCONTRATO" sqlType="STRING"/>
+		<param name="KEY_CEDULA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="cofinanciadores">
+		<call-query href="deleteCofinanciadores">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASEORDEN" query-param="KEY_CLASEORDEN"/>
+			<with-param name="KEY_NUMEROCONTRATO" query-param="KEY_NUMEROCONTRATO"/>
+			<with-param name="KEY_CEDULA" query-param="KEY_CEDULA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getCofinanciadoresPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COFINANCIADORES.COMPANIA, COFINANCIADORES.CLASEORDEN, COFINANCIADORES.NUMEROCONTRATO, COFINANCIADORES.CEDULA, COFINANCIADORES.SUCURSAL, TERCERO.NOMBRE FROM COFINANCIADORES INNER JOIN TERCERO ON COFINANCIADORES.COMPANIA = TERCERO.COMPANIA AND COFINANCIADORES.CEDULA = TERCERO.NIT AND COFINANCIADORES.SUCURSAL = TERCERO.SUCURSAL WHERE COFINANCIADORES.COMPANIA = :COMPANIA AND COFINANCIADORES.CLASEORDEN = :CLASEORDEN AND COFINANCIADORES.NUMEROCONTRATO = :NUMEROCONTRATO ORDER BY TERCERO.NIT) INI WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END) LIKE UPPER(CONCAT(:CEDULA, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CLASEORDEN":"$CLASEORDEN","NUMEROCONTRATO":"$NUMEROCONTRATO","CEDULA":"$CEDULA","SUCURSAL":"$SUCURSAL","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMEROCONTRATO" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cofinanciadores">
+		<call-query href="getCofinanciadoresPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMEROCONTRATO" query-param="NUMEROCONTRATO"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCofinanciadoresNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COFINANCIADORES.COMPANIA, COFINANCIADORES.CLASEORDEN, COFINANCIADORES.NUMEROCONTRATO, COFINANCIADORES.CEDULA, COFINANCIADORES.SUCURSAL, TERCERO.NOMBRE FROM COFINANCIADORES INNER JOIN TERCERO ON COFINANCIADORES.COMPANIA = TERCERO.COMPANIA AND COFINANCIADORES.CEDULA = TERCERO.NIT AND COFINANCIADORES.SUCURSAL = TERCERO.SUCURSAL WHERE COFINANCIADORES.COMPANIA = :COMPANIA AND COFINANCIADORES.CLASEORDEN = :CLASEORDEN AND COFINANCIADORES.NUMEROCONTRATO = :NUMEROCONTRATO ORDER BY TERCERO.NIT) INI WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END) LIKE UPPER(CONCAT(:CEDULA, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMEROCONTRATO" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cofinanciadores/numero">
+		<call-query href="getCofinanciadoresNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMEROCONTRATO" query-param="NUMEROCONTRATO"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCofinanciadores" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE COFINANCIADORES SET COMPANIA=:COMPANIA, CLASEORDEN=:CLASEORDEN, NUMEROCONTRATO=:NUMEROCONTRATO, CEDULA=:CEDULA, SUCURSAL=:SUCURSAL, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE COFINANCIADORES.COMPANIA= :KEY_COMPANIA AND COFINANCIADORES.CLASEORDEN= :KEY_CLASEORDEN AND COFINANCIADORES.NUMEROCONTRATO= :KEY_NUMEROCONTRATO AND COFINANCIADORES.CEDULA= :KEY_CEDULA AND COFINANCIADORES.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMEROCONTRATO" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASEORDEN" sqlType="STRING"/>
+		<param name="KEY_NUMEROCONTRATO" sqlType="STRING"/>
+		<param name="KEY_CEDULA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cofinanciadores">
+		<call-query href="updateCofinanciadores">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMEROCONTRATO" query-param="NUMEROCONTRATO"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASEORDEN" query-param="KEY_CLASEORDEN"/>
+			<with-param name="KEY_NUMEROCONTRATO" query-param="KEY_NUMEROCONTRATO"/>
+			<with-param name="KEY_CEDULA" query-param="KEY_CEDULA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+
+</data>

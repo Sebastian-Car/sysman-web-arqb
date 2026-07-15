@@ -1,0 +1,55 @@
+/**
+ * 
+ */
+package com.sysman.presupuesto.enums;
+
+/**
+ * @author dcastiblanco
+ *
+ */
+public enum FrejecucioninversionControladorUrlEnum {
+	
+	 URL4686("FREJECUCIONINVERSIONCONTROLADORURL4686", "7013"),
+	 
+	 URL5111("FREJECUCIONINVERSIONCONTROLADORURL5111", "7004"),
+	 
+	 URL5941("FREJECUCIONINVERSIONCONTROLADORURL5941", "94036"),
+	 
+	 URL6882("FREJECUCIONINVERSIONCONTROLADORURL6882", "94034"),
+	 
+	 URL7993("FREJECUCIONINVERSIONCONTROLADORURL7993", "20013"),
+	 
+	 URL8700("FREJECUCIONINVERSIONCONTROLADORURL8700", "20015"),
+	 
+	 URL8701("FREJECUCIONINVERSIONCONTROLADORURL8701", "23010"),
+	 
+	 URL10036("FREJECUCIONINVERSIONCONTROLADORURL10036", "23019"),
+	 
+	 URL10037("FREJECUCIONINVERSIONCONTROLADORURL10036", "13039"),
+	 
+	 URL10038("FREJECUCIONINVERSIONCONTROLADORURL10036", "13035"),
+	 
+	 URL6589("FREJECUCIONINVERSIONCONTROLADORURLENUM6589","23048"),
+	 
+	 URL6590("FREJECUCIONINVERSIONCONTROLADORURL6590", "23050"),
+	 
+	 URL5600("EJECUCIONPPTALGASTOSCONTROLADORURL5600", "4001");
+	
+	
+	
+	private final String key;
+    private final String value;
+
+    private FrejecucioninversionControladorUrlEnum(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}

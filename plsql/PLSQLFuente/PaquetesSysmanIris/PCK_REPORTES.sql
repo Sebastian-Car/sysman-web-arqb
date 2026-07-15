@@ -1,0 +1,27 @@
+create or replace PACKAGE                "PCK_REPORTES" AS 
+
+  /* TODO enter package declarations (types, exceptions, methods etc) here */ 
+  
+FUNCTION FC_RESULVECONSULTA
+(
+  UN_COMPANIA     IN VARCHAR2,
+  UN_REPORTE      IN VARCHAR2,
+  UN_USUARIO      IN PCK_SUBTIPOS.TI_USUARIO
+)
+RETURN CLOB;
+
+PROCEDURE PR_CONFIGURARPARAMETROS
+(
+  UN_COMPANIA           IN VARCHAR2,
+  UN_REPORTE            IN VARCHAR2,
+  UN_USUARIO            IN PCK_SUBTIPOS.TI_USUARIO
+);
+
+FUNCTION FC_DETECTARCAMPOS
+(
+    UN_SQL         CLOB
+)
+RETURN
+VARCHAR2;
+
+END PCK_REPORTES;

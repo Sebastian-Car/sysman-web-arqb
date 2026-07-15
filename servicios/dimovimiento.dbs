@@ -1,0 +1,91 @@
+﻿<data name="dimovimiento" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertDimovimiento" keyColumns="COMPANIA,TIPO_MOVIMIENTO,NUMERO_MOVIMIENTO,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO DI_MOVIMIENTO (COMPANIA, TIPO_MOVIMIENTO, NUMERO_MOVIMIENTO, ARCHIVO, CREATED_BY, DATE_CREATED, CONSECUTIVO) VALUES (:COMPANIA, :TIPO_MOVIMIENTO, :NUMERO_MOVIMIENTO, :ARCHIVO, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CONSECUTIVO)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_TIPO_MOVIMIENTO":"$TIPO_MOVIMIENTO","KEY_NUMERO_MOVIMIENTO":"$NUMERO_MOVIMIENTO","KEY_CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO_MOVIMIENTO" sqlType="STRING"/>
+		<param defaultValue="0" name="NUMERO_MOVIMIENTO" sqlType="STRING"/>
+		<param name="ARCHIVO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param defaultValue="0" name="CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="dimovimiento">
+		<call-query href="insertDimovimiento">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO_MOVIMIENTO" query-param="TIPO_MOVIMIENTO"/>
+			<with-param name="NUMERO_MOVIMIENTO" query-param="NUMERO_MOVIMIENTO"/>
+			<with-param name="ARCHIVO" query-param="ARCHIVO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteDimovimiento" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM DI_MOVIMIENTO WHERE DI_MOVIMIENTO.COMPANIA= :KEY_COMPANIA AND DI_MOVIMIENTO.TIPO_MOVIMIENTO= :KEY_TIPO_MOVIMIENTO AND DI_MOVIMIENTO.NUMERO_MOVIMIENTO= :KEY_NUMERO_MOVIMIENTO AND DI_MOVIMIENTO.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPO_MOVIMIENTO" sqlType="STRING"/>
+		<param name="KEY_NUMERO_MOVIMIENTO" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="dimovimiento">
+		<call-query href="deleteDimovimiento">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPO_MOVIMIENTO" query-param="KEY_TIPO_MOVIMIENTO"/>
+			<with-param name="KEY_NUMERO_MOVIMIENTO" query-param="KEY_NUMERO_MOVIMIENTO"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDimovimientoPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, TIPO_MOVIMIENTO AS CLASEORDEN, NUMERO_MOVIMIENTO AS REGISTRO, CONSECUTIVO, ARCHIVO FROM DI_MOVIMIENTO WHERE COMPANIA = :COMPANIA AND TIPO_MOVIMIENTO = :CLASEORDEN AND NUMERO_MOVIMIENTO = :REGISTRO ORDER BY ARCHIVO) INI WHERE (CASE WHEN CLASEORDEN IS NULL THEN ' ' ELSE UPPER(CLASEORDEN) END) LIKE UPPER(CONCAT(CONCAT('%',:CLASEORDEN), '%')) AND (CASE WHEN REGISTRO IS NULL THEN ' ' ELSE UPPER(REGISTRO) END) LIKE UPPER(CONCAT(CONCAT('%',:REGISTRO), '%')) AND (CASE WHEN ARCHIVO IS NULL THEN ' ' ELSE UPPER(ARCHIVO) END) LIKE UPPER(CONCAT(CONCAT('%',:ARCHIVO), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CLASEORDEN":"$CLASEORDEN","REGISTRO":"$REGISTRO","CONSECUTIVO":"$CONSECUTIVO","ARCHIVO":"$ARCHIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="REGISTRO" sqlType="STRING"/>
+		<param name="ARCHIVO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dimovimiento">
+		<call-query href="getDimovimientoPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="REGISTRO" query-param="REGISTRO"/>
+			<with-param name="ARCHIVO" query-param="ARCHIVO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDimovimientoNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, TIPO_MOVIMIENTO AS CLASEORDEN, NUMERO_MOVIMIENTO AS REGISTRO, CONSECUTIVO, ARCHIVO FROM DI_MOVIMIENTO WHERE COMPANIA = :COMPANIA AND TIPO_MOVIMIENTO = :CLASEORDEN AND NUMERO_MOVIMIENTO = :REGISTRO ORDER BY ARCHIVO) INI WHERE (CASE WHEN CLASEORDEN IS NULL THEN ' ' ELSE UPPER(CLASEORDEN) END) LIKE UPPER(CONCAT(CONCAT('%',:CLASEORDEN), '%')) AND (CASE WHEN REGISTRO IS NULL THEN ' ' ELSE UPPER(REGISTRO) END) LIKE UPPER(CONCAT(CONCAT('%',:REGISTRO), '%')) AND (CASE WHEN ARCHIVO IS NULL THEN ' ' ELSE UPPER(ARCHIVO) END) LIKE UPPER(CONCAT(CONCAT('%',:ARCHIVO), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="REGISTRO" sqlType="STRING"/>
+		<param name="ARCHIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dimovimiento/numero">
+		<call-query href="getDimovimientoNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="REGISTRO" query-param="REGISTRO"/>
+			<with-param name="ARCHIVO" query-param="ARCHIVO"/>
+
+		</call-query>
+	</resource>
+
+</data>

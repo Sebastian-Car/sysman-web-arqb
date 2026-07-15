@@ -1,0 +1,88 @@
+﻿<data name="clasecuentas" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getClasecuentasTodosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO, DESCRIPCION  FROM CLASECUENTA ORDER BY CLASECUENTA.CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="clasecuentas/todos">
+		<call-query href="getClasecuentasTodosQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getClasecuentasPagCodigoYDescripcionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CLASECUENTA.CODIGO, CLASECUENTA.DESCRIPCION  FROM CLASECUENTA ORDER BY CLASECUENTA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="clasecuentas/codigoydescripcion/pag">
+		<call-query href="getClasecuentasPagCodigoYDescripcionQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getClasecuentasNumCodigoYDescripcionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CLASECUENTA.CODIGO, CLASECUENTA.DESCRIPCION  FROM CLASECUENTA ORDER BY CLASECUENTA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="clasecuentas/codigoydescripcion/num">
+		<call-query href="getClasecuentasNumCodigoYDescripcionQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getClasecuentasPagFiltroidcargonombrecargoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO, ESCALAFON.NOMBRE  FROM CARGOS LEFT JOIN ESCALAFON ON CARGOS.COMPANIA = ESCALAFON.COMPANIA AND CARGOS.ESCALAFON = ESCALAFON.CODIGO WHERE CARGOS.COMPANIA = :COMPANIA ORDER BY CARGOS.ID_DE_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="clasecuentas/filtroidcargonombrecargo/pag">
+		<call-query href="getClasecuentasPagFiltroidcargonombrecargoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getClasecuentasNumFiltroidcargonombrecargoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO, ESCALAFON.NOMBRE  FROM CARGOS LEFT JOIN ESCALAFON ON CARGOS.COMPANIA = ESCALAFON.COMPANIA AND CARGOS.ESCALAFON = ESCALAFON.CODIGO WHERE CARGOS.COMPANIA = :COMPANIA ORDER BY CARGOS.ID_DE_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="clasecuentas/filtroidcargonombrecargo/num">
+		<call-query href="getClasecuentasNumFiltroidcargonombrecargoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+
+</data>

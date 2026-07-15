@@ -1,0 +1,560 @@
+﻿<data name="spproblema" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSpproblemaPagNombresPorClaseFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA = :COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA = :CLASE AND SP_PROBLEMA.CODIGO &gt;= :PROBLEMAINICIAL ORDER BY TO_NUMBER(CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="PROBLEMAINICIAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spproblema/nombresporclasefinal/pag">
+		<call-query href="getSpproblemaPagNombresPorClaseFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="PROBLEMAINICIAL" query-param="PROBLEMAINICIAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaNumNombresPorClaseFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA = :COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA = :CLASE AND SP_PROBLEMA.CODIGO &gt;= :PROBLEMAINICIAL ORDER BY TO_NUMBER(CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="PROBLEMAINICIAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spproblema/nombresporclasefinal/num">
+		<call-query href="getSpproblemaNumNombresPorClaseFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="PROBLEMAINICIAL" query-param="PROBLEMAINICIAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaListadoPorClaseproblemaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, CLASEPROBLEMA, CODIGO, NOMBRE, SOLUCION,(CASE INDFAVOREMPRESA WHEN 0 THEN 'false' ELSE 'true' END) INDFAVOREMPRESA, COD_EQUIVALENTE_SUI, COD_EQUIVALENTE_SUIPETICIONES, COD_EQUIVALENTE_SUI_PYRE,(CASE ACTIVA_DESHABITADO WHEN 0 THEN 'false' ELSE 'true' END) ACTIVA_DESHABITADO,(CASE ACTIVA_HABITADO WHEN 0 THEN 'false' ELSE 'true' END) ACTIVA_HABITADO FROM SP_PROBLEMA WHERE COMPANIA = :COMPANIA AND CLASEPROBLEMA= :CLASEPROBLEMA ORDER BY CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CLASEPROBLEMA":"$CLASEPROBLEMA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","SOLUCION":"$SOLUCION","INDFAVOREMPRESA":"$INDFAVOREMPRESA(type:boolean)","COD_EQUIVALENTE_SUI":"$COD_EQUIVALENTE_SUI(type:long)","COD_EQUIVALENTE_SUIPETICIONES":"$COD_EQUIVALENTE_SUIPETICIONES(type:long)","COD_EQUIVALENTE_SUI_PYRE":"$COD_EQUIVALENTE_SUI_PYRE(type:long)","ACTIVA_DESHABITADO":"$ACTIVA_DESHABITADO(type:boolean)","ACTIVA_HABITADO":"$ACTIVA_HABITADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEPROBLEMA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spproblema/listadoporclaseproblema">
+		<call-query href="getSpproblemaListadoPorClaseproblemaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEPROBLEMA" query-param="CLASEPROBLEMA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaPagTodosPorClaseProblemaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_PROBLEMA.CODIGO, SP_PROBLEMA.NOMBRE, SP_PROBLEMA.SOLUCION,(CASE SP_PROBLEMA.INDFAVOREMPRESA WHEN 0 THEN 'false' ELSE 'true' END) INDFAVOREMPRESA FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA = :COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA = :CLASEPROBLEMA ORDER BY SP_PROBLEMA.COMPANIA, SP_PROBLEMA.CLASEPROBLEMA, SP_PROBLEMA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SOLUCION IS NULL THEN ' ' ELSE UPPER(SOLUCION) END)  LIKE UPPER( '%' || :SOLUCION || '%')  AND (CASE WHEN INDFAVOREMPRESA IS NULL THEN ' ' ELSE UPPER(INDFAVOREMPRESA) END)  LIKE UPPER( '%' || :INDFAVOREMPRESA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","SOLUCION":"$SOLUCION","INDFAVOREMPRESA":"$INDFAVOREMPRESA(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEPROBLEMA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SOLUCION" sqlType="STRING"/>
+		<param name="INDFAVOREMPRESA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spproblema/todosporclaseproblema/pag">
+		<call-query href="getSpproblemaPagTodosPorClaseProblemaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEPROBLEMA" query-param="CLASEPROBLEMA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SOLUCION" query-param="SOLUCION"/>
+			<with-param name="INDFAVOREMPRESA" query-param="INDFAVOREMPRESA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaNumTodosPorClaseProblemaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_PROBLEMA.CODIGO, SP_PROBLEMA.NOMBRE, SP_PROBLEMA.SOLUCION,(CASE SP_PROBLEMA.INDFAVOREMPRESA WHEN 0 THEN 'false' ELSE 'true' END) INDFAVOREMPRESA FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA = :COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA = :CLASEPROBLEMA ORDER BY SP_PROBLEMA.COMPANIA, SP_PROBLEMA.CLASEPROBLEMA, SP_PROBLEMA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SOLUCION IS NULL THEN ' ' ELSE UPPER(SOLUCION) END)  LIKE UPPER( '%' || :SOLUCION || '%')  AND (CASE WHEN INDFAVOREMPRESA IS NULL THEN ' ' ELSE UPPER(INDFAVOREMPRESA) END)  LIKE UPPER( '%' || :INDFAVOREMPRESA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEPROBLEMA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SOLUCION" sqlType="STRING"/>
+		<param name="INDFAVOREMPRESA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spproblema/todosporclaseproblema/num">
+		<call-query href="getSpproblemaNumTodosPorClaseProblemaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEPROBLEMA" query-param="CLASEPROBLEMA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SOLUCION" query-param="SOLUCION"/>
+			<with-param name="INDFAVOREMPRESA" query-param="INDFAVOREMPRESA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaPagTodosPorCodigoinicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_PROBLEMA.CODIGO, SP_PROBLEMA.NOMBRE, SP_PROBLEMA.SOLUCION,(CASE SP_PROBLEMA.INDFAVOREMPRESA WHEN 0 THEN 'false' ELSE 'true' END) INDFAVOREMPRESA FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA = :COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA = :CLASEPROBLEMA ORDER BY SP_PROBLEMA.COMPANIA, SP_PROBLEMA.CLASEPROBLEMA, SP_PROBLEMA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SOLUCION IS NULL THEN ' ' ELSE UPPER(SOLUCION) END)  LIKE UPPER( '%' || :SOLUCION || '%')  AND (CASE WHEN INDFAVOREMPRESA IS NULL THEN ' ' ELSE UPPER(INDFAVOREMPRESA) END)  LIKE UPPER( '%' || :INDFAVOREMPRESA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","SOLUCION":"$SOLUCION","INDFAVOREMPRESA":"$INDFAVOREMPRESA(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEPROBLEMA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SOLUCION" sqlType="STRING"/>
+		<param name="INDFAVOREMPRESA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spproblema/todosporcodigoinicial/pag">
+		<call-query href="getSpproblemaPagTodosPorCodigoinicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEPROBLEMA" query-param="CLASEPROBLEMA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SOLUCION" query-param="SOLUCION"/>
+			<with-param name="INDFAVOREMPRESA" query-param="INDFAVOREMPRESA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaNumTodosPorCodigoinicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_PROBLEMA.CODIGO, SP_PROBLEMA.NOMBRE, SP_PROBLEMA.SOLUCION,(CASE SP_PROBLEMA.INDFAVOREMPRESA WHEN 0 THEN 'false' ELSE 'true' END) INDFAVOREMPRESA FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA = :COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA = :CLASEPROBLEMA ORDER BY SP_PROBLEMA.COMPANIA, SP_PROBLEMA.CLASEPROBLEMA, SP_PROBLEMA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SOLUCION IS NULL THEN ' ' ELSE UPPER(SOLUCION) END)  LIKE UPPER( '%' || :SOLUCION || '%')  AND (CASE WHEN INDFAVOREMPRESA IS NULL THEN ' ' ELSE UPPER(INDFAVOREMPRESA) END)  LIKE UPPER( '%' || :INDFAVOREMPRESA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEPROBLEMA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SOLUCION" sqlType="STRING"/>
+		<param name="INDFAVOREMPRESA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spproblema/todosporcodigoinicial/num">
+		<call-query href="getSpproblemaNumTodosPorCodigoinicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEPROBLEMA" query-param="CLASEPROBLEMA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SOLUCION" query-param="SOLUCION"/>
+			<with-param name="INDFAVOREMPRESA" query-param="INDFAVOREMPRESA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSpproblema" keyColumns="COMPANIA,CLASEPROBLEMA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_PROBLEMA (COMPANIA, CLASEPROBLEMA, CODIGO, NOMBRE, SOLUCION, INDFAVOREMPRESA, COD_EQUIVALENTE_SUI, COD_EQUIVALENTE_SUIPETICIONES, COD_EQUIVALENTE_SUI_PYRE, ACTIVA_DESHABITADO, ACTIVA_HABITADO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CLASEPROBLEMA, :CODIGO, :NOMBRE, :SOLUCION, :INDFAVOREMPRESA, :COD_EQUIVALENTE_SUI, :COD_EQUIVALENTE_SUIPETICIONES, :COD_EQUIVALENTE_SUI_PYRE, :ACTIVA_DESHABITADO, :ACTIVA_HABITADO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CLASEPROBLEMA":"$CLASEPROBLEMA","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEPROBLEMA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="SOLUCION" sqlType="STRING"/>
+		<param defaultValue="0" name="INDFAVOREMPRESA" sqlType="STRING"/>
+		<param defaultValue="0" name="COD_EQUIVALENTE_SUI" sqlType="STRING"/>
+		<param defaultValue="0" name="COD_EQUIVALENTE_SUIPETICIONES" sqlType="STRING"/>
+		<param defaultValue="0" name="COD_EQUIVALENTE_SUI_PYRE" sqlType="STRING"/>
+		<param defaultValue="0" name="ACTIVA_DESHABITADO" sqlType="STRING"/>
+		<param defaultValue="0" name="ACTIVA_HABITADO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="spproblema">
+		<call-query href="insertSpproblema">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEPROBLEMA" query-param="CLASEPROBLEMA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SOLUCION" query-param="SOLUCION"/>
+			<with-param name="INDFAVOREMPRESA" query-param="INDFAVOREMPRESA"/>
+			<with-param name="COD_EQUIVALENTE_SUI" query-param="COD_EQUIVALENTE_SUI"/>
+			<with-param name="COD_EQUIVALENTE_SUIPETICIONES" query-param="COD_EQUIVALENTE_SUIPETICIONES"/>
+			<with-param name="COD_EQUIVALENTE_SUI_PYRE" query-param="COD_EQUIVALENTE_SUI_PYRE"/>
+			<with-param name="ACTIVA_DESHABITADO" query-param="ACTIVA_DESHABITADO"/>
+			<with-param name="ACTIVA_HABITADO" query-param="ACTIVA_HABITADO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSpproblema" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA= :KEY_COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA= :KEY_CLASEPROBLEMA AND SP_PROBLEMA.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASEPROBLEMA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="spproblema">
+		<call-query href="deleteSpproblema">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASEPROBLEMA" query-param="KEY_CLASEPROBLEMA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpproblema" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_PROBLEMA SET CLASEPROBLEMA=:CLASEPROBLEMA, CODIGO=:CODIGO, NOMBRE=:NOMBRE, SOLUCION=:SOLUCION, INDFAVOREMPRESA=:INDFAVOREMPRESA, COD_EQUIVALENTE_SUI=:COD_EQUIVALENTE_SUI, COD_EQUIVALENTE_SUIPETICIONES=:COD_EQUIVALENTE_SUIPETICIONES, COD_EQUIVALENTE_SUI_PYRE=:COD_EQUIVALENTE_SUI_PYRE, ACTIVA_DESHABITADO=:ACTIVA_DESHABITADO, ACTIVA_HABITADO=:ACTIVA_HABITADO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SP_PROBLEMA.COMPANIA= :KEY_COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA= :KEY_CLASEPROBLEMA AND SP_PROBLEMA.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CLASEPROBLEMA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SOLUCION" sqlType="STRING"/>
+		<param name="INDFAVOREMPRESA" sqlType="STRING"/>
+		<param name="COD_EQUIVALENTE_SUI" sqlType="STRING"/>
+		<param name="COD_EQUIVALENTE_SUIPETICIONES" sqlType="STRING"/>
+		<param name="COD_EQUIVALENTE_SUI_PYRE" sqlType="STRING"/>
+		<param name="ACTIVA_DESHABITADO" sqlType="STRING"/>
+		<param name="ACTIVA_HABITADO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASEPROBLEMA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spproblema">
+		<call-query href="updateSpproblema">
+			<with-param name="CLASEPROBLEMA" query-param="CLASEPROBLEMA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SOLUCION" query-param="SOLUCION"/>
+			<with-param name="INDFAVOREMPRESA" query-param="INDFAVOREMPRESA"/>
+			<with-param name="COD_EQUIVALENTE_SUI" query-param="COD_EQUIVALENTE_SUI"/>
+			<with-param name="COD_EQUIVALENTE_SUIPETICIONES" query-param="COD_EQUIVALENTE_SUIPETICIONES"/>
+			<with-param name="COD_EQUIVALENTE_SUI_PYRE" query-param="COD_EQUIVALENTE_SUI_PYRE"/>
+			<with-param name="ACTIVA_DESHABITADO" query-param="ACTIVA_DESHABITADO"/>
+			<with-param name="ACTIVA_HABITADO" query-param="ACTIVA_HABITADO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASEPROBLEMA" query-param="KEY_CLASEPROBLEMA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaPagListadoclaseproblemaafrQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_PROBLEMA.CODIGO, SP_PROBLEMA.NOMBRE  FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA = :COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA = 'AFR' ORDER BY SP_PROBLEMA.COMPANIA, SP_PROBLEMA.CLASEPROBLEMA, SP_PROBLEMA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spproblema/listadoclaseproblemaafr/pag">
+		<call-query href="getSpproblemaPagListadoclaseproblemaafrQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaNumListadoclaseproblemaafrQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_PROBLEMA.CODIGO, SP_PROBLEMA.NOMBRE  FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA = :COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA = 'AFR' ORDER BY SP_PROBLEMA.COMPANIA, SP_PROBLEMA.CLASEPROBLEMA, SP_PROBLEMA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spproblema/listadoclaseproblemaafr/num">
+		<call-query href="getSpproblemaNumListadoclaseproblemaafrQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaListadoclaseproblemaafrQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_PROBLEMA.CODIGO, SP_PROBLEMA.NOMBRE  FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA = :COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA = 'AFR' ORDER BY SP_PROBLEMA.COMPANIA, SP_PROBLEMA.CLASEPROBLEMA, SP_PROBLEMA.CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spproblema/listadoclaseproblemaafr">
+		<call-query href="getSpproblemaListadoclaseproblemaafrQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaPagTodosPorCodigoEquivalentePyreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE, SOLUCION,(CASE INDFAVOREMPRESA WHEN 0 THEN 'false' ELSE 'true' END) INDFAVOREMPRESA, COD_EQUIVALENTE_SUI_PYRE, COD_EQUIVALENTE_SUI  FROM SP_PROBLEMA WHERE COMPANIA = :COMPANIA AND CLASEPROBLEMA = :CLASE AND COD_EQUIVALENTE_SUI_PYRE NOT IN(211) AND (COD_EQUIVALENTE_SUI_PYRE BETWEEN 201 AND 217 OR COD_EQUIVALENTE_SUI_PYRE IN (999)) ORDER BY SP_PROBLEMA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","SOLUCION":"$SOLUCION","INDFAVOREMPRESA":"$INDFAVOREMPRESA(type:boolean)","COD_EQUIVALENTE_SUI_PYRE":"$COD_EQUIVALENTE_SUI_PYRE(type:long)","COD_EQUIVALENTE_SUI":"$COD_EQUIVALENTE_SUI(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spproblema/todosporcodigoequivalentepyre/pag">
+		<call-query href="getSpproblemaPagTodosPorCodigoEquivalentePyreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaNumTodosPorCodigoEquivalentePyreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE, SOLUCION,(CASE INDFAVOREMPRESA WHEN 0 THEN 'false' ELSE 'true' END) INDFAVOREMPRESA, COD_EQUIVALENTE_SUI_PYRE, COD_EQUIVALENTE_SUI  FROM SP_PROBLEMA WHERE COMPANIA = :COMPANIA AND CLASEPROBLEMA = :CLASE AND COD_EQUIVALENTE_SUI_PYRE NOT IN(211) AND (COD_EQUIVALENTE_SUI_PYRE BETWEEN 201 AND 217 OR COD_EQUIVALENTE_SUI_PYRE IN (999)) ORDER BY SP_PROBLEMA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spproblema/todosporcodigoequivalentepyre/num">
+		<call-query href="getSpproblemaNumTodosPorCodigoEquivalentePyreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaPagCodigoEquivalentePyreConNotInQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO,NOMBRE,SOLUCION,(CASE INDFAVOREMPRESA WHEN 0 THEN 'false' ELSE 'true' END) INDFAVOREMPRESA,COD_EQUIVALENTE_SUI_PYRE,COD_EQUIVALENTE_SUI  FROM SP_PROBLEMA WHERE COMPANIA = :COMPANIA AND CLASEPROBLEMA = :CLASE AND COD_EQUIVALENTE_SUI_PYRE NOT IN(211) AND (COD_EQUIVALENTE_SUI_PYRE BETWEEN 101 AND 136 OR COD_EQUIVALENTE_SUI_PYRE IN (999)) ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","SOLUCION":"$SOLUCION","INDFAVOREMPRESA":"$INDFAVOREMPRESA(type:boolean)","COD_EQUIVALENTE_SUI_PYRE":"$COD_EQUIVALENTE_SUI_PYRE(type:long)","COD_EQUIVALENTE_SUI":"$COD_EQUIVALENTE_SUI(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spproblema/codigoequivalentepyreconnotin/pag">
+		<call-query href="getSpproblemaPagCodigoEquivalentePyreConNotInQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaNumCodigoEquivalentePyreConNotInQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO,NOMBRE,SOLUCION,(CASE INDFAVOREMPRESA WHEN 0 THEN 'false' ELSE 'true' END) INDFAVOREMPRESA,COD_EQUIVALENTE_SUI_PYRE,COD_EQUIVALENTE_SUI  FROM SP_PROBLEMA WHERE COMPANIA = :COMPANIA AND CLASEPROBLEMA = :CLASE AND COD_EQUIVALENTE_SUI_PYRE NOT IN(211) AND (COD_EQUIVALENTE_SUI_PYRE BETWEEN 101 AND 136 OR COD_EQUIVALENTE_SUI_PYRE IN (999)) ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spproblema/codigoequivalentepyreconnotin/num">
+		<call-query href="getSpproblemaNumCodigoEquivalentePyreConNotInQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaPagTodoPorCodigoEquivalentePeticionesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO ,NOMBRE,SOLUCION,(CASE INDFAVOREMPRESA WHEN 0 THEN 'false' ELSE 'true' END) INDFAVOREMPRESA,COD_EQUIVALENTE_SUIPETICIONES COD_EQUIVALENTE_SUI  FROM SP_PROBLEMA WHERE COMPANIA = :COMPANIA AND CLASEPROBLEMA = :CLASE AND COD_EQUIVALENTE_SUIPETICIONES IS NOT NULL ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","SOLUCION":"$SOLUCION","INDFAVOREMPRESA":"$INDFAVOREMPRESA(type:boolean)","COD_EQUIVALENTE_SUI":"$COD_EQUIVALENTE_SUI(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spproblema/todoporcodigoequivalentepeticiones/pag">
+		<call-query href="getSpproblemaPagTodoPorCodigoEquivalentePeticionesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaNumTodoPorCodigoEquivalentePeticionesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO ,NOMBRE,SOLUCION,(CASE INDFAVOREMPRESA WHEN 0 THEN 'false' ELSE 'true' END) INDFAVOREMPRESA,COD_EQUIVALENTE_SUIPETICIONES COD_EQUIVALENTE_SUI  FROM SP_PROBLEMA WHERE COMPANIA = :COMPANIA AND CLASEPROBLEMA = :CLASE AND COD_EQUIVALENTE_SUIPETICIONES IS NOT NULL ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spproblema/todoporcodigoequivalentepeticiones/num">
+		<call-query href="getSpproblemaNumTodoPorCodigoEquivalentePeticionesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaPagTodoPorCodigoEquivalenteSuiQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO,NOMBRE,SOLUCION,(CASE INDFAVOREMPRESA WHEN 0 THEN 'false' ELSE 'true' END) INDFAVOREMPRESA,COD_EQUIVALENTE_SUI  FROM SP_PROBLEMA WHERE COMPANIA = :COMPANIA AND CLASEPROBLEMA = :CLASE AND COD_EQUIVALENTE_SUI IS NOT NULL ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","SOLUCION":"$SOLUCION","INDFAVOREMPRESA":"$INDFAVOREMPRESA(type:boolean)","COD_EQUIVALENTE_SUI":"$COD_EQUIVALENTE_SUI(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spproblema/todoporcodigoequivalentesui/pag">
+		<call-query href="getSpproblemaPagTodoPorCodigoEquivalenteSuiQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaNumTodoPorCodigoEquivalenteSuiQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO,NOMBRE,SOLUCION,(CASE INDFAVOREMPRESA WHEN 0 THEN 'false' ELSE 'true' END) INDFAVOREMPRESA,COD_EQUIVALENTE_SUI  FROM SP_PROBLEMA WHERE COMPANIA = :COMPANIA AND CLASEPROBLEMA = :CLASE AND COD_EQUIVALENTE_SUI IS NOT NULL ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spproblema/todoporcodigoequivalentesui/num">
+		<call-query href="getSpproblemaNumTodoPorCodigoEquivalenteSuiQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaNombresPorClaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO, NOMBRE  FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA = :COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA = :CLASE ORDER BY CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spproblema/nombresporclase">
+		<call-query href="getSpproblemaNombresPorClaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaPagCodNombrePorClaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA = :COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA = :CLASE ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spproblema/codnombreporclase/pag">
+		<call-query href="getSpproblemaPagCodNombrePorClaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaNumCodNombrePorClaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA = :COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA = :CLASE ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spproblema/codnombreporclase/num">
+		<call-query href="getSpproblemaNumCodNombrePorClaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaPagNombresporclaseinicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA = :COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA = :CLASE ORDER BY TO_NUMBER(CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="spproblema/nombresporclaseinicial/pag">
+		<call-query href="getSpproblemaPagNombresporclaseinicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpproblemaNumNombresporclaseinicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM SP_PROBLEMA WHERE SP_PROBLEMA.COMPANIA = :COMPANIA AND SP_PROBLEMA.CLASEPROBLEMA = :CLASE ORDER BY TO_NUMBER(CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spproblema/nombresporclaseinicial/num">
+		<call-query href="getSpproblemaNumNombresporclaseinicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,248 @@
+﻿<data name="sstagentes" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSstagentesPagTodosPorClaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SST_AGENTES.CODIGO, SST_AGENTES.CLASE, SST_CLASE_AGENTE.NOMBRE NOMBRECLASE, SST_AGENTES.NOMBRE  FROM SST_AGENTES INNER JOIN SST_CLASE_AGENTE ON SST_AGENTES.COMPANIA = SST_CLASE_AGENTE.COMPANIA AND SST_AGENTES.CLASE = SST_CLASE_AGENTE.CODIGO WHERE SST_AGENTES.COMPANIA =:COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRECLASE IS NULL THEN ' ' ELSE UPPER(NOMBRECLASE) END)  LIKE UPPER( '%' || :NOMBRECLASE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","CLASE":"$CLASE","NOMBRECLASE":"$NOMBRECLASE","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRECLASE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sstagentes/todosporclase/pag">
+		<call-query href="getSstagentesPagTodosPorClaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRECLASE" query-param="NOMBRECLASE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSstagentesNumTodosPorClaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SST_AGENTES.CODIGO, SST_AGENTES.CLASE, SST_CLASE_AGENTE.NOMBRE NOMBRECLASE, SST_AGENTES.NOMBRE  FROM SST_AGENTES INNER JOIN SST_CLASE_AGENTE ON SST_AGENTES.COMPANIA = SST_CLASE_AGENTE.COMPANIA AND SST_AGENTES.CLASE = SST_CLASE_AGENTE.CODIGO WHERE SST_AGENTES.COMPANIA =:COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRECLASE IS NULL THEN ' ' ELSE UPPER(NOMBRECLASE) END)  LIKE UPPER( '%' || :NOMBRECLASE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRECLASE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sstagentes/todosporclase/num">
+		<call-query href="getSstagentesNumTodosPorClaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRECLASE" query-param="NOMBRECLASE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSstagentesPagAgenteInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT SST_AGENTES.CODIGO, SST_AGENTES.NOMBRE  FROM SST_AGENTES INNER JOIN SST_TRANSACCIONES ON SST_AGENTES.COMPANIA = SST_TRANSACCIONES.COMPANIA AND SST_AGENTES.CLASE = SST_TRANSACCIONES.CLASE_AGENTE AND SST_AGENTES.CODIGO = SST_TRANSACCIONES.AGENTE WHERE SST_AGENTES.COMPANIA = :COMPANIA AND SST_TRANSACCIONES.TIPO_TRANSACCION BETWEEN :TIPOINICIAL AND :TIPOFINAL ORDER BY SST_AGENTES.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOINICIAL" sqlType="STRING"/>
+		<param name="TIPOFINAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sstagentes/agenteinicial/pag">
+		<call-query href="getSstagentesPagAgenteInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOINICIAL" query-param="TIPOINICIAL"/>
+			<with-param name="TIPOFINAL" query-param="TIPOFINAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSstagentesNumAgenteInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT SST_AGENTES.CODIGO, SST_AGENTES.NOMBRE  FROM SST_AGENTES INNER JOIN SST_TRANSACCIONES ON SST_AGENTES.COMPANIA = SST_TRANSACCIONES.COMPANIA AND SST_AGENTES.CLASE = SST_TRANSACCIONES.CLASE_AGENTE AND SST_AGENTES.CODIGO = SST_TRANSACCIONES.AGENTE WHERE SST_AGENTES.COMPANIA = :COMPANIA AND SST_TRANSACCIONES.TIPO_TRANSACCION BETWEEN :TIPOINICIAL AND :TIPOFINAL ORDER BY SST_AGENTES.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOINICIAL" sqlType="STRING"/>
+		<param name="TIPOFINAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sstagentes/agenteinicial/num">
+		<call-query href="getSstagentesNumAgenteInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOINICIAL" query-param="TIPOINICIAL"/>
+			<with-param name="TIPOFINAL" query-param="TIPOFINAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSstagentesPagAgenteFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT SST_AGENTES.CODIGO, SST_AGENTES.NOMBRE  FROM SST_AGENTES INNER JOIN SST_TRANSACCIONES ON SST_AGENTES.COMPANIA = SST_TRANSACCIONES.COMPANIA AND SST_AGENTES.CLASE = SST_TRANSACCIONES.CLASE_AGENTE AND SST_AGENTES.CODIGO = SST_TRANSACCIONES.AGENTE WHERE SST_AGENTES.COMPANIA = :COMPANIA AND SST_TRANSACCIONES.TIPO_TRANSACCION BETWEEN :TIPOINICIAL AND :TIPOFINAL AND SST_AGENTES.CODIGO &gt;= :AGENTEINICIAL ORDER BY SST_AGENTES.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOINICIAL" sqlType="STRING"/>
+		<param name="TIPOFINAL" sqlType="STRING"/>
+		<param name="AGENTEINICIAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sstagentes/agentefinal/pag">
+		<call-query href="getSstagentesPagAgenteFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOINICIAL" query-param="TIPOINICIAL"/>
+			<with-param name="TIPOFINAL" query-param="TIPOFINAL"/>
+			<with-param name="AGENTEINICIAL" query-param="AGENTEINICIAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSstagentesNumAgenteFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT SST_AGENTES.CODIGO, SST_AGENTES.NOMBRE  FROM SST_AGENTES INNER JOIN SST_TRANSACCIONES ON SST_AGENTES.COMPANIA = SST_TRANSACCIONES.COMPANIA AND SST_AGENTES.CLASE = SST_TRANSACCIONES.CLASE_AGENTE AND SST_AGENTES.CODIGO = SST_TRANSACCIONES.AGENTE WHERE SST_AGENTES.COMPANIA = :COMPANIA AND SST_TRANSACCIONES.TIPO_TRANSACCION BETWEEN :TIPOINICIAL AND :TIPOFINAL AND SST_AGENTES.CODIGO &gt;= :AGENTEINICIAL ORDER BY SST_AGENTES.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOINICIAL" sqlType="STRING"/>
+		<param name="TIPOFINAL" sqlType="STRING"/>
+		<param name="AGENTEINICIAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sstagentes/agentefinal/num">
+		<call-query href="getSstagentesNumAgenteFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOINICIAL" query-param="TIPOINICIAL"/>
+			<with-param name="TIPOFINAL" query-param="TIPOFINAL"/>
+			<with-param name="AGENTEINICIAL" query-param="AGENTEINICIAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSstagentes" keyColumns="COMPANIA,CLASE,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SST_AGENTES (COMPANIA, CODIGO, CLASE, NOMBRE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :CLASE, :NOMBRE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CLASE":"$CLASE","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="sstagentes">
+		<call-query href="insertSstagentes">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSstagentes" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SST_AGENTES WHERE SST_AGENTES.COMPANIA= :KEY_COMPANIA AND SST_AGENTES.CLASE= :KEY_CLASE AND SST_AGENTES.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASE" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="sstagentes">
+		<call-query href="deleteSstagentes">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASE" query-param="KEY_CLASE"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSstagentesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SST_AGENTES.COMPANIA, SST_AGENTES.CODIGO, SST_AGENTES.CLASE, SST_CLASE_AGENTE.NOMBRE NOMBRECLASE, SST_AGENTES.NOMBRE  FROM SST_AGENTES INNER JOIN SST_CLASE_AGENTE ON SST_AGENTES.COMPANIA = SST_CLASE_AGENTE.COMPANIA AND SST_AGENTES.CLASE = SST_CLASE_AGENTE.CODIGO WHERE SST_AGENTES.COMPANIA =:COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN CLASE IS NULL THEN ' ' ELSE UPPER(CLASE) END)  LIKE UPPER( '%' || :CLASE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","CLASE":"$CLASE","NOMBRECLASE":"$NOMBRECLASE","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sstagentes">
+		<call-query href="getSstagentesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSstagentesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SST_AGENTES.COMPANIA, SST_AGENTES.CODIGO, SST_AGENTES.CLASE, SST_CLASE_AGENTE.NOMBRE NOMBRECLASE, SST_AGENTES.NOMBRE  FROM SST_AGENTES INNER JOIN SST_CLASE_AGENTE ON SST_AGENTES.COMPANIA = SST_CLASE_AGENTE.COMPANIA AND SST_AGENTES.CLASE = SST_CLASE_AGENTE.CODIGO WHERE SST_AGENTES.COMPANIA =:COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN CLASE IS NULL THEN ' ' ELSE UPPER(CLASE) END)  LIKE UPPER( '%' || :CLASE || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sstagentes/numero">
+		<call-query href="getSstagentesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSstagentes" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SST_AGENTES SET CODIGO=:CODIGO, CLASE=:CLASE, NOMBRE=:NOMBRE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SST_AGENTES.COMPANIA= :KEY_COMPANIA AND SST_AGENTES.CLASE= :KEY_CLASE AND SST_AGENTES.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASE" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="sstagentes">
+		<call-query href="updateSstagentes">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASE" query-param="KEY_CLASE"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

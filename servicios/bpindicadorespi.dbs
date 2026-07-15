@@ -1,0 +1,214 @@
+﻿<data name="bpindicadorespi" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getBpindicadorespiPagTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  BPI.ID_PLAN, PI.NOMBRE, BPI.CANTIDAD_META, BPI.COD_INDICADOR, PI.VIGENCIA_INICIAL  FROM BP_INDICADORES_PI BPI INNER JOIN PI_INDICADOR PI ON BPI.COMPANIA = PI.COMPANIA AND BPI.VIGENCIA_INICIAL = PI.VIGENCIA_INICIAL AND BPI.ID_PLAN = PI.ID_PLAN AND BPI.COD_INDICADOR = PI.CODIGO WHERE BPI.COMPANIA = :COMPANIA AND BPI.COD_PROYECTO = :COD_PROY AND BPI.TIPO_META = :TIPOMETA) WHERE (CASE WHEN ID_PLAN IS NULL THEN ' ' ELSE UPPER(ID_PLAN) END)  LIKE UPPER(:ID_PLAN || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CANTIDAD_META IS NULL THEN ' ' ELSE UPPER(CANTIDAD_META) END)  LIKE UPPER(:CANTIDAD_META || '%')  AND (CASE WHEN COD_INDICADOR IS NULL THEN ' ' ELSE UPPER(COD_INDICADOR) END)  LIKE UPPER( '%' || :COD_INDICADOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_PLAN":"$ID_PLAN","NOMBRE":"$NOMBRE","CANTIDAD_META":"$CANTIDAD_META","COD_INDICADOR":"$COD_INDICADOR","VIGENCIA_INICIAL":"$VIGENCIA_INICIAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_PROY" sqlType="STRING"/>
+		<param name="TIPOMETA" sqlType="STRING"/>
+		<param name="ID_PLAN" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CANTIDAD_META" sqlType="STRING"/>
+		<param name="COD_INDICADOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bpindicadorespi/todosporcompania/pag">
+		<call-query href="getBpindicadorespiPagTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_PROY" query-param="COD_PROY"/>
+			<with-param name="TIPOMETA" query-param="TIPOMETA"/>
+			<with-param name="ID_PLAN" query-param="ID_PLAN"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CANTIDAD_META" query-param="CANTIDAD_META"/>
+			<with-param name="COD_INDICADOR" query-param="COD_INDICADOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBpindicadorespiNumTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  BPI.ID_PLAN, PI.NOMBRE, BPI.CANTIDAD_META, BPI.COD_INDICADOR, PI.VIGENCIA_INICIAL  FROM BP_INDICADORES_PI BPI INNER JOIN PI_INDICADOR PI ON BPI.COMPANIA = PI.COMPANIA AND BPI.VIGENCIA_INICIAL = PI.VIGENCIA_INICIAL AND BPI.ID_PLAN = PI.ID_PLAN AND BPI.COD_INDICADOR = PI.CODIGO WHERE BPI.COMPANIA = :COMPANIA AND BPI.COD_PROYECTO = :COD_PROY AND BPI.TIPO_META = :TIPOMETA) WHERE (CASE WHEN ID_PLAN IS NULL THEN ' ' ELSE UPPER(ID_PLAN) END)  LIKE UPPER(:ID_PLAN || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CANTIDAD_META IS NULL THEN ' ' ELSE UPPER(CANTIDAD_META) END)  LIKE UPPER(:CANTIDAD_META || '%')  AND (CASE WHEN COD_INDICADOR IS NULL THEN ' ' ELSE UPPER(COD_INDICADOR) END)  LIKE UPPER( '%' || :COD_INDICADOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_PROY" sqlType="STRING"/>
+		<param name="TIPOMETA" sqlType="STRING"/>
+		<param name="ID_PLAN" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CANTIDAD_META" sqlType="STRING"/>
+		<param name="COD_INDICADOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bpindicadorespi/todosporcompania/num">
+		<call-query href="getBpindicadorespiNumTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_PROY" query-param="COD_PROY"/>
+			<with-param name="TIPOMETA" query-param="TIPOMETA"/>
+			<with-param name="ID_PLAN" query-param="ID_PLAN"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CANTIDAD_META" query-param="CANTIDAD_META"/>
+			<with-param name="COD_INDICADOR" query-param="COD_INDICADOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getBpindicadorespiPorTipoYNombreMetaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CONCAT( '(' , CONCAT( TIPO_META , CONCAT( ') - ', NOMBRE))) META FROM BP_INDICADORES_PI INNER JOIN PI_INDICADOR ON BP_INDICADORES_PI.COMPANIA = PI_INDICADOR.COMPANIA AND BP_INDICADORES_PI.VIGENCIA_INICIAL = PI_INDICADOR.VIGENCIA_INICIAL AND BP_INDICADORES_PI.ID_PLAN = PI_INDICADOR.ID_PLAN AND BP_INDICADORES_PI.COD_INDICADOR = PI_INDICADOR.CODIGO WHERE BP_INDICADORES_PI.COMPANIA =:COMPANIA AND BP_INDICADORES_PI.VIGENCIA_INICIAL =:VIGENCIA_INICIAL AND BP_INDICADORES_PI.COD_PROYECTO =:CODIGOPROYECTO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"META":"$META"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIGENCIA_INICIAL" sqlType="STRING"/>
+		<param name="CODIGOPROYECTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bpindicadorespi/portipoynombremeta">
+		<call-query href="getBpindicadorespiPorTipoYNombreMetaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA_INICIAL" query-param="VIGENCIA_INICIAL"/>
+			<with-param name="CODIGOPROYECTO" query-param="CODIGOPROYECTO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertBpindicadorespi" keyColumns="COMPANIA,ID_PLAN,VIGENCIA_INICIAL,COD_INDICADOR,COD_PROYECTO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO BP_INDICADORES_PI (COMPANIA, VIGENCIA_INICIAL, ID_PLAN, COD_INDICADOR, COD_PROYECTO, TIPO_META, CANTIDAD_META, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :VIGENCIA_INICIAL, :ID_PLAN, :COD_INDICADOR, :COD_PROYECTO, :TIPO_META, :CANTIDAD_META, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_PLAN":"$ID_PLAN","KEY_VIGENCIA_INICIAL":"$VIGENCIA_INICIAL(type:integer)","KEY_COD_INDICADOR":"$COD_INDICADOR","KEY_COD_PROYECTO":"$COD_PROYECTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIGENCIA_INICIAL" sqlType="STRING"/>
+		<param name="ID_PLAN" sqlType="STRING"/>
+		<param name="COD_INDICADOR" sqlType="STRING"/>
+		<param name="COD_PROYECTO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_META" sqlType="STRING"/>
+		<param defaultValue="0" name="CANTIDAD_META" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="bpindicadorespi">
+		<call-query href="insertBpindicadorespi">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA_INICIAL" query-param="VIGENCIA_INICIAL"/>
+			<with-param name="ID_PLAN" query-param="ID_PLAN"/>
+			<with-param name="COD_INDICADOR" query-param="COD_INDICADOR"/>
+			<with-param name="COD_PROYECTO" query-param="COD_PROYECTO"/>
+			<with-param name="TIPO_META" query-param="TIPO_META"/>
+			<with-param name="CANTIDAD_META" query-param="CANTIDAD_META"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteBpindicadorespi" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM BP_INDICADORES_PI WHERE BP_INDICADORES_PI.COMPANIA= :KEY_COMPANIA AND BP_INDICADORES_PI.ID_PLAN= :KEY_ID_PLAN AND BP_INDICADORES_PI.VIGENCIA_INICIAL= :KEY_VIGENCIA_INICIAL AND BP_INDICADORES_PI.COD_INDICADOR= :KEY_COD_INDICADOR AND BP_INDICADORES_PI.COD_PROYECTO= :KEY_COD_PROYECTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_PLAN" sqlType="STRING"/>
+		<param name="KEY_VIGENCIA_INICIAL" sqlType="INTEGER"/>
+		<param name="KEY_COD_INDICADOR" sqlType="STRING"/>
+		<param name="KEY_COD_PROYECTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="bpindicadorespi">
+		<call-query href="deleteBpindicadorespi">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_PLAN" query-param="KEY_ID_PLAN"/>
+			<with-param name="KEY_VIGENCIA_INICIAL" query-param="KEY_VIGENCIA_INICIAL"/>
+			<with-param name="KEY_COD_INDICADOR" query-param="KEY_COD_INDICADOR"/>
+			<with-param name="KEY_COD_PROYECTO" query-param="KEY_COD_PROYECTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBpindicadorespiPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  BP_INDICADORES_PI.COMPANIA, BP_INDICADORES_PI.VIGENCIA_INICIAL, BP_INDICADORES_PI.ID_PLAN, BP_PLAN_INDICATIVO.DESCRIPCION, BP_INDICADORES_PI.COD_INDICADOR, PI_INDICADOR.NOMBRE, BP_INDICADORES_PI.COD_PROYECTO, CASE BP_INDICADORES_PI.TIPO_META WHEN 'MR' THEN 'Meta Resultado' WHEN 'MP' THEN 'Meta Producto' END TIPO_META_LB, TIPO_META, BP_INDICADORES_PI.CANTIDAD_META  FROM BP_INDICADORES_PI INNER JOIN BP_PLAN_INDICATIVO ON BP_INDICADORES_PI.COMPANIA = BP_PLAN_INDICATIVO.COMPANIA AND BP_INDICADORES_PI.ID_PLAN = BP_PLAN_INDICATIVO.ID AND BP_INDICADORES_PI.VIGENCIA_INICIAL = BP_PLAN_INDICATIVO.VIGENCIA_INICIAL INNER JOIN PI_INDICADOR ON BP_INDICADORES_PI.COMPANIA = PI_INDICADOR.COMPANIA AND BP_INDICADORES_PI.ID_PLAN = PI_INDICADOR.ID_PLAN AND BP_INDICADORES_PI.VIGENCIA_INICIAL = PI_INDICADOR.VIGENCIA_INICIAL AND BP_INDICADORES_PI.COD_INDICADOR = PI_INDICADOR.CODIGO WHERE BP_INDICADORES_PI.COMPANIA = :COMPANIA AND BP_INDICADORES_PI.COD_PROYECTO = :CODIGO) WHERE (CASE WHEN ID_PLAN IS NULL THEN ' ' ELSE UPPER(ID_PLAN) END)  LIKE UPPER( '%' || :ID_PLAN || '%')  AND (CASE WHEN COD_INDICADOR IS NULL THEN ' ' ELSE UPPER(COD_INDICADOR) END)  LIKE UPPER(:COD_INDICADOR || '%')  AND (CASE WHEN TIPO_META IS NULL THEN ' ' ELSE UPPER(TIPO_META) END)  LIKE UPPER(:TIPO_META || '%')  AND (CASE WHEN CANTIDAD_META IS NULL THEN ' ' ELSE UPPER(CANTIDAD_META) END)  LIKE UPPER(:CANTIDAD_META || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","VIGENCIA_INICIAL":"$VIGENCIA_INICIAL(type:integer)","ID_PLAN":"$ID_PLAN","DESCRIPCION":"$DESCRIPCION","COD_INDICADOR":"$COD_INDICADOR","NOMBRE":"$NOMBRE","COD_PROYECTO":"$COD_PROYECTO","TIPO_META_LB":"$TIPO_META_LB","TIPO_META":"$TIPO_META","CANTIDAD_META":"$CANTIDAD_META"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ID_PLAN" sqlType="STRING"/>
+		<param name="COD_INDICADOR" sqlType="STRING"/>
+		<param name="TIPO_META" sqlType="STRING"/>
+		<param name="CANTIDAD_META" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bpindicadorespi">
+		<call-query href="getBpindicadorespiPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ID_PLAN" query-param="ID_PLAN"/>
+			<with-param name="COD_INDICADOR" query-param="COD_INDICADOR"/>
+			<with-param name="TIPO_META" query-param="TIPO_META"/>
+			<with-param name="CANTIDAD_META" query-param="CANTIDAD_META"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBpindicadorespiNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  BP_INDICADORES_PI.COMPANIA, BP_INDICADORES_PI.VIGENCIA_INICIAL, BP_INDICADORES_PI.ID_PLAN, BP_PLAN_INDICATIVO.DESCRIPCION, BP_INDICADORES_PI.COD_INDICADOR, PI_INDICADOR.NOMBRE, BP_INDICADORES_PI.COD_PROYECTO, CASE BP_INDICADORES_PI.TIPO_META WHEN 'MR' THEN 'Meta Resultado' WHEN 'MP' THEN 'Meta Producto' END TIPO_META_LB, TIPO_META, BP_INDICADORES_PI.CANTIDAD_META  FROM BP_INDICADORES_PI INNER JOIN BP_PLAN_INDICATIVO ON BP_INDICADORES_PI.COMPANIA = BP_PLAN_INDICATIVO.COMPANIA AND BP_INDICADORES_PI.ID_PLAN = BP_PLAN_INDICATIVO.ID AND BP_INDICADORES_PI.VIGENCIA_INICIAL = BP_PLAN_INDICATIVO.VIGENCIA_INICIAL INNER JOIN PI_INDICADOR ON BP_INDICADORES_PI.COMPANIA = PI_INDICADOR.COMPANIA AND BP_INDICADORES_PI.ID_PLAN = PI_INDICADOR.ID_PLAN AND BP_INDICADORES_PI.VIGENCIA_INICIAL = PI_INDICADOR.VIGENCIA_INICIAL AND BP_INDICADORES_PI.COD_INDICADOR = PI_INDICADOR.CODIGO WHERE BP_INDICADORES_PI.COMPANIA = :COMPANIA AND BP_INDICADORES_PI.COD_PROYECTO = :CODIGO) WHERE (CASE WHEN ID_PLAN IS NULL THEN ' ' ELSE UPPER(ID_PLAN) END)  LIKE UPPER( '%' || :ID_PLAN || '%')  AND (CASE WHEN COD_INDICADOR IS NULL THEN ' ' ELSE UPPER(COD_INDICADOR) END)  LIKE UPPER(:COD_INDICADOR || '%')  AND (CASE WHEN TIPO_META IS NULL THEN ' ' ELSE UPPER(TIPO_META) END)  LIKE UPPER(:TIPO_META || '%')  AND (CASE WHEN CANTIDAD_META IS NULL THEN ' ' ELSE UPPER(CANTIDAD_META) END)  LIKE UPPER(:CANTIDAD_META || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ID_PLAN" sqlType="STRING"/>
+		<param name="COD_INDICADOR" sqlType="STRING"/>
+		<param name="TIPO_META" sqlType="STRING"/>
+		<param name="CANTIDAD_META" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bpindicadorespi/numero">
+		<call-query href="getBpindicadorespiNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ID_PLAN" query-param="ID_PLAN"/>
+			<with-param name="COD_INDICADOR" query-param="COD_INDICADOR"/>
+			<with-param name="TIPO_META" query-param="TIPO_META"/>
+			<with-param name="CANTIDAD_META" query-param="CANTIDAD_META"/>
+
+		</call-query>
+	</resource>
+	<query id="updateBpindicadorespi" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE BP_INDICADORES_PI SET COMPANIA=:COMPANIA, VIGENCIA_INICIAL=:VIGENCIA_INICIAL, ID_PLAN=:ID_PLAN, COD_INDICADOR=:COD_INDICADOR, COD_PROYECTO=:COD_PROYECTO, TIPO_META=:TIPO_META, CANTIDAD_META=:CANTIDAD_META, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE BP_INDICADORES_PI.COMPANIA= :KEY_COMPANIA AND BP_INDICADORES_PI.ID_PLAN= :KEY_ID_PLAN AND BP_INDICADORES_PI.VIGENCIA_INICIAL= :KEY_VIGENCIA_INICIAL AND BP_INDICADORES_PI.COD_INDICADOR= :KEY_COD_INDICADOR AND BP_INDICADORES_PI.COD_PROYECTO= :KEY_COD_PROYECTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIGENCIA_INICIAL" sqlType="STRING"/>
+		<param name="ID_PLAN" sqlType="STRING"/>
+		<param name="COD_INDICADOR" sqlType="STRING"/>
+		<param name="COD_PROYECTO" sqlType="STRING"/>
+		<param name="TIPO_META" sqlType="STRING"/>
+		<param name="CANTIDAD_META" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_PLAN" sqlType="STRING"/>
+		<param name="KEY_VIGENCIA_INICIAL" sqlType="STRING"/>
+		<param name="KEY_COD_INDICADOR" sqlType="STRING"/>
+		<param name="KEY_COD_PROYECTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="bpindicadorespi">
+		<call-query href="updateBpindicadorespi">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIGENCIA_INICIAL" query-param="VIGENCIA_INICIAL"/>
+			<with-param name="ID_PLAN" query-param="ID_PLAN"/>
+			<with-param name="COD_INDICADOR" query-param="COD_INDICADOR"/>
+			<with-param name="COD_PROYECTO" query-param="COD_PROYECTO"/>
+			<with-param name="TIPO_META" query-param="TIPO_META"/>
+			<with-param name="CANTIDAD_META" query-param="CANTIDAD_META"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_PLAN" query-param="KEY_ID_PLAN"/>
+			<with-param name="KEY_VIGENCIA_INICIAL" query-param="KEY_VIGENCIA_INICIAL"/>
+			<with-param name="KEY_COD_INDICADOR" query-param="KEY_COD_INDICADOR"/>
+			<with-param name="KEY_COD_PROYECTO" query-param="KEY_COD_PROYECTO"/>
+
+		</call-query>
+	</resource>
+
+</data>

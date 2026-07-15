@@ -1,0 +1,380 @@
+CREATE OR REPLACE FORCE EDITIONABLE VIEW V_PLAN_PRESUPUESTAL AS 
+  SELECT   /*+ INDEX(PLAN_PRESUPUESTAL PK_PLAN_PRESUPUESTAL) */
+        PLAN_PRESUPUESTAL.COMPANIA,
+        PLAN_PRESUPUESTAL.ANO,
+        PLAN_PRESUPUESTAL.CODIGO,
+        PLAN_PRESUPUESTAL.CODIGO ID,
+        CASE
+            WHEN PLAN_PRESUPUESTAL.MOVIMIENTO IN ( 0 ) THEN
+                NULL
+            ELSE
+                '99999999999999999999'
+        END                      CENTRO_COSTO,
+        CASE
+            WHEN PLAN_PRESUPUESTAL.MOVIMIENTO IN ( 0 ) THEN
+                NULL
+            ELSE
+                '999999999999999999'
+        END                      TERCERO,
+        CASE
+            WHEN PLAN_PRESUPUESTAL.MOVIMIENTO IN ( 0 ) THEN
+                NULL
+            ELSE
+                '999'
+        END                      SUCURSAL,
+        CASE
+            WHEN PLAN_PRESUPUESTAL.MOVIMIENTO IN ( 0 ) THEN
+                NULL
+            ELSE
+                '99999999999999999999'
+        END                      AUXILIAR,
+        CASE
+            WHEN PLAN_PRESUPUESTAL.MOVIMIENTO IN ( 0 ) THEN
+                NULL
+            ELSE
+                '99999999999999999999'
+        END                      REFERENCIA,
+        CASE
+            WHEN PLAN_PRESUPUESTAL.MOVIMIENTO IN ( 0 ) THEN
+                NULL
+            ELSE
+                '99999999999999999999'
+        END                      FUENTE_RECURSO,
+        PLAN_PRESUPUESTAL.NOMBRE,
+        PLAN_PRESUPUESTAL.NATURALEZA,
+        PLAN_PRESUPUESTAL.MOVIMIENTO,
+        PLAN_PRESUPUESTAL.MAN_CEN_CTO,
+        PLAN_PRESUPUESTAL.MAN_AUX_TER,
+        PLAN_PRESUPUESTAL.MAN_AUX_GEN,
+        PLAN_PRESUPUESTAL.MAN_AUX_REF,
+        PLAN_PRESUPUESTAL.MAN_AUX_FUE,
+        PLAN_PRESUPUESTAL.MAN_PAC,
+        PLAN_PRESUPUESTAL.VIGENCIA,
+        PLAN_PRESUPUESTAL.DINAMICA,
+        PLAN_PRESUPUESTAL.CODIGO_EQUIV,
+        PLAN_PRESUPUESTAL.CODIGO_EQUIV2,
+        PLAN_PRESUPUESTAL.INDECONOMICO,
+        PLAN_PRESUPUESTAL.DESTINO,
+        PLAN_PRESUPUESTAL.TIPOVIGENCIA,
+        PLAN_PRESUPUESTAL.INDCONTROL,
+        PLAN_PRESUPUESTAL.INFORME,
+        PLAN_PRESUPUESTAL.DEPENDENCIAASOCIADA,
+        PLAN_PRESUPUESTAL.APROPIACIONINICIAL,
+        PLAN_PRESUPUESTAL.PERMITECONSOLIDAR,
+        PLAN_PRESUPUESTAL.COD_SIGUIENTE_VIGENCIA,
+        PLAN_PRESUPUESTAL.COD_ANTERIOR_VIGENCIA,
+        PLAN_PRESUPUESTAL.RECONOCIMIENTO,
+        PLAN_PRESUPUESTAL.INFORMESHACIENDA,
+        PLAN_PRESUPUESTAL.CONSITUACIONFONDOS,
+        NULL                     CONSECUTIVO_FUT,
+        NULL                     TIPODEUDA_FUT,
+        NULL                     TIPOOPERACION_FUT,
+        NULL                     UNIDADEJECUTORA_FUT,
+        NULL                     CODIGOSCHIP,
+        NULL                     RECURSOSCHIP,
+        PLAN_PRESUPUESTAL.ORIGENESPECIFICACIONINGRESOS,
+        NULL                     DESTINACIONDELOSRECURSOS,
+        NULL                     FINALIDADGASTO,
+        NULL                     VIGENCIAGASTO,
+        NULL                     DEPENDENCIASCHIP,
+        NULL                     VIGENCIATESORERIASCHIP,
+        NULL                     ORIGENESPECIFICOINGRESOS,
+        0                        SITUACIONFONDOSSCHIP,
+        PLAN_PRESUPUESTAL.MEN,
+        PLAN_PRESUPUESTAL.CUENTAAFORO,
+        NULL                     FUT_EJECUCIONSALUD,
+        NULL                     FUT_VIGENCIA_FUTURA,
+        NULL                     FUT_SALUD_TESORERIA,
+        NULL                     FUT_CUENTAXPAGAR,
+        NULL                     FUT_DESPLAZADOS1,
+        NULL                     FUT_DESPLAZADOS2,
+        NULL                     TIPO_FUTSALUD,
+        NULL                     CR1_RESGUARDOSCHIP,
+        0                        FUT_TRANSFERENCIA,
+        NULL                     CODIGOSIRECI,
+        NULL                     FUENTEFUT_RESERVA,
+        NULL                     FUT_INGRESOS_RESERVAS,
+        NULL                     COD_RECIPROCA,
+        PLAN_PRESUPUESTAL.NOM_CODIGO_EQUIVALENTE,
+        NULL                     FUT_VICTIMAS1,
+        NULL                     HECHOVICTIMIZANTE,
+        NULL                     CODIGOFUT_H,
+        NULL                     SECTOR_REGALIAS,
+        NULL                     CODIGOFUT_REGALIAS,
+        NULL                     FUENTE_FUTREGALIAS,
+        NULL                     FUENTE_FLS,
+        PLAN_PRESUPUESTAL.MANEJA_PROYECTOS,
+        PLAN_PRESUPUESTAL.REGALIAS,
+        NULL                     FUENTE_FUT,
+        NULL                     RECAUDO_VA,
+        NULL                     RUBRO_EQUIV,
+        NULL                     FUENTE_PREDIS,
+        NULL                     DET_FUENTE_PREDIS,
+        NULL                     FUENTE,
+        NULL                     CODIGO_BPIN_SGR,
+        NULL                     DISPONIBILIDAD_INICIAL_FUT,
+        PLAN_PRESUPUESTAL.NIVEL1,
+        PLAN_PRESUPUESTAL.NIVEL2,
+        PLAN_PRESUPUESTAL.NIVEL3,
+        PLAN_PRESUPUESTAL.NIVEL4,
+        PLAN_PRESUPUESTAL.NIVEL5,
+        PLAN_PRESUPUESTAL.NIVEL6,
+        PLAN_PRESUPUESTAL.NIVEL7,
+        PLAN_PRESUPUESTAL.NIVEL8,
+        PLAN_PRESUPUESTAL.COVID  AS IND_COVID,
+        NULL                     PMR1,
+        NULL                     PMR2,
+        NULL                     FUENTEFONDOS,
+        PLAN_PRESUPUESTAL.CUENTAGASTOCNT,
+        PLAN_PRESUPUESTAL.EQUIV_GASTO,
+        PLAN_PRESUPUESTAL.CODIGOBPIN,
+        PLAN_PRESUPUESTAL.TIPO_RECURSO,
+        NULL NOMBREFUENTE,
+        NULL FUENTECUIPO
+    FROM
+        PLAN_PRESUPUESTAL 
+--ESTO SE REALIZA PARA QUE NO DUPLIQUE LAS CUENTAS DE MOVIMIENTO CUANDO TIENEN SALDOS
+    WHERE
+        NOT EXISTS (
+            SELECT
+                COMPANIA
+            FROM
+                PLAN_PPTAL_CONFIG
+            WHERE
+                    PLAN_PRESUPUESTAL.COMPANIA = PLAN_PPTAL_CONFIG.COMPANIA
+                AND PLAN_PRESUPUESTAL.ANO = PLAN_PPTAL_CONFIG.ANO
+                AND PLAN_PRESUPUESTAL.CODIGO = PLAN_PPTAL_CONFIG.CODIGO
+                AND PLAN_PRESUPUESTAL.MOVIMIENTO NOT IN ( 0 )
+        )
+    UNION ALL
+    SELECT
+        PLAN_PRESUPUESTAL.COMPANIA,
+        PLAN_PRESUPUESTAL.ANO,
+        PLAN_PRESUPUESTAL.CODIGO,
+        TRIM(
+            CASE
+                WHEN PLAN_PRESUPUESTAL.ANO < 2022 THEN
+                    RPAD(
+                        PLAN_PRESUPUESTAL.CODIGO,
+                        32
+                    )
+                ELSE
+                    RPAD(
+                        PLAN_PRESUPUESTAL.CODIGO,
+                        100
+                    )
+            END
+            || RPAD(
+                CASE
+                    WHEN MAN_CEN_CTO IN(0) THEN
+                        ' '
+                    ELSE
+                        PLAN_PPTAL_CONFIG.CENTRO_COSTO
+                END,
+                20
+        )
+            || RPAD(
+                CASE
+                    WHEN MAN_AUX_TER IN(0) THEN
+                        ' '
+                    ELSE
+                        PLAN_PPTAL_CONFIG.TERCERO
+                END,
+                18
+        )
+            || RPAD(
+                CASE
+                    WHEN MAN_AUX_TER IN(0) THEN
+                        ' '
+                    ELSE
+                        PLAN_PPTAL_CONFIG.SUCURSAL
+                END,
+                3
+        )
+            || RPAD(
+                CASE
+                    WHEN MAN_AUX_GEN IN(0) THEN
+                        ' '
+                    ELSE
+                        PLAN_PPTAL_CONFIG.AUXILIAR
+                END,
+                20
+        )
+            || RPAD(
+                CASE
+                    WHEN MAN_AUX_REF IN(0) THEN
+                        ' '
+                    ELSE
+                        PLAN_PPTAL_CONFIG.REFERENCIA
+                END,
+                20
+        )
+            || RPAD(
+                CASE
+                    WHEN MAN_AUX_FUE IN(0) THEN
+                        ' '
+                    ELSE
+                        PLAN_PPTAL_CONFIG.FUENTE_RECURSO
+                END,
+                20
+        ))                               ID,
+        PLAN_PPTAL_CONFIG.CENTRO_COSTO   CENTRO_COSTO,
+        PLAN_PPTAL_CONFIG.TERCERO        TERCERO,
+        PLAN_PPTAL_CONFIG.SUCURSAL       SUCURSAL,
+        PLAN_PPTAL_CONFIG.AUXILIAR       AUXILIAR,
+        PLAN_PPTAL_CONFIG.REFERENCIA     REFERENCIA,
+        PLAN_PPTAL_CONFIG.FUENTE_RECURSO FUENTE_RECURSO,
+        PLAN_PRESUPUESTAL.NOMBRE
+        ||
+        CASE
+            WHEN PLAN_PRESUPUESTAL.MAN_AUX_TER <> 0 THEN
+                    '/' || TERCERO.NOMBRE
+            ELSE
+                NULL
+        END
+        ||
+        CASE
+            WHEN PLAN_PRESUPUESTAL.MAN_AUX_GEN <> 0 THEN
+                    '/' || AUXILIAR.NOMBRE
+            ELSE
+                NULL
+        END
+        ||
+        CASE
+            WHEN PLAN_PRESUPUESTAL.MAN_CEN_CTO <> 0 THEN
+                    '/' || CENTRO_COSTO.NOMBRE
+            ELSE
+                NULL
+        END
+        ||
+        CASE
+            WHEN PLAN_PRESUPUESTAL.MAN_AUX_REF <> 0 THEN
+                    '/' || REFERENCIA.NOMBRE
+            ELSE
+                NULL
+        END
+        ||
+        CASE
+            WHEN PLAN_PRESUPUESTAL.MAN_AUX_FUE <> 0 THEN
+                    '/' || FUENTE_RECURSOS.NOMBRE
+            ELSE
+                NULL
+        END
+        NOMBRE,
+        PLAN_PRESUPUESTAL.NATURALEZA,
+        - 1                              MOVIMIENTO,
+        0                                MAN_CEN_CTO,
+        0                                MAN_AUX_TER,
+        0                                MAN_AUX_GEN,
+        0                                MAN_AUX_REF,
+        0                                MAN_AUX_FUE,
+        PLAN_PRESUPUESTAL.MAN_PAC,
+        PLAN_PRESUPUESTAL.VIGENCIA,
+        PLAN_PRESUPUESTAL.DINAMICA,
+        PLAN_PRESUPUESTAL.CODIGO_EQUIV,
+        PLAN_PRESUPUESTAL.CODIGO_EQUIV2,
+        PLAN_PRESUPUESTAL.INDECONOMICO,
+        PLAN_PRESUPUESTAL.DESTINO,
+        PLAN_PPTAL_CONFIG.TIPOVIGENCIA,
+        PLAN_PRESUPUESTAL.INDCONTROL,
+        PLAN_PRESUPUESTAL.INFORME,
+        PLAN_PRESUPUESTAL.DEPENDENCIAASOCIADA,
+        PLAN_PPTAL_CONFIG.APROPIACIONINICIAL,
+        PLAN_PRESUPUESTAL.PERMITECONSOLIDAR,
+        PLAN_PRESUPUESTAL.COD_SIGUIENTE_VIGENCIA,
+        PLAN_PRESUPUESTAL.COD_ANTERIOR_VIGENCIA,
+        PLAN_PRESUPUESTAL.RECONOCIMIENTO,
+        PLAN_PRESUPUESTAL.INFORMESHACIENDA,
+        PLAN_PRESUPUESTAL.CONSITUACIONFONDOS,
+        PLAN_PPTAL_CONFIG.CONSECUTIVO_FUT,
+        PLAN_PPTAL_CONFIG.TIPODEUDA_FUT,
+        PLAN_PPTAL_CONFIG.TIPOOPERACION_FUT,
+        PLAN_PPTAL_CONFIG.UNIDADEJECUTORA_FUT,
+        PLAN_PPTAL_CONFIG.CODIGOSCHIP,
+        PLAN_PPTAL_CONFIG.RECURSOSCHIP,
+        PLAN_PRESUPUESTAL.ORIGENESPECIFICACIONINGRESOS,
+        PLAN_PPTAL_CONFIG.DESTINACIONDELOSRECURSOS,
+        PLAN_PPTAL_CONFIG.FINALIDADGASTO,
+        PLAN_PPTAL_CONFIG.VIGENCIAGASTO,
+        PLAN_PPTAL_CONFIG.DEPENDENCIASCHIP,
+        PLAN_PPTAL_CONFIG.VIGENCIATESORERIASCHIP,
+        PLAN_PPTAL_CONFIG.ORIGENESPECIFICOINGRESOS,
+        0                                SITUACIONFONDOSSCHIP,
+        PLAN_PRESUPUESTAL.MEN,
+        PLAN_PRESUPUESTAL.CUENTAAFORO,
+        PLAN_PPTAL_CONFIG.FUT_EJECUCIONSALUD,
+        PLAN_PPTAL_CONFIG.FUT_VIGENCIA_FUTURA,
+        PLAN_PPTAL_CONFIG.FUT_SALUD_TESORERIA,
+        PLAN_PPTAL_CONFIG.FUT_CUENTAXPAGAR,
+        PLAN_PPTAL_CONFIG.FUT_DESPLAZADOS1,
+        PLAN_PPTAL_CONFIG.FUT_DESPLAZADOS2,
+        PLAN_PPTAL_CONFIG.TIPO_FUTSALUD,
+        PLAN_PPTAL_CONFIG.CR1_RESGUARDOSCHIP,
+        PLAN_PPTAL_CONFIG.FUT_TRANSFERENCIA,
+        PLAN_PPTAL_CONFIG.CODIGOSIRECI,
+        PLAN_PPTAL_CONFIG.FUENTEFUT_RESERVA,
+        PLAN_PPTAL_CONFIG.FUT_INGRESOS_RESERVAS,
+        PLAN_PPTAL_CONFIG.COD_RECIPROCA,
+        PLAN_PRESUPUESTAL.NOM_CODIGO_EQUIVALENTE,
+        PLAN_PPTAL_CONFIG.FUT_VICTIMAS1,
+        PLAN_PPTAL_CONFIG.HECHOVICTIMIZANTE,
+        PLAN_PPTAL_CONFIG.CODIGOFUT_H,
+        PLAN_PPTAL_CONFIG.SECTOR_REGALIAS,
+        PLAN_PPTAL_CONFIG.CODIGOFUT_REGALIAS,
+        PLAN_PPTAL_CONFIG.FUENTE_FUTREGALIAS,
+        PLAN_PPTAL_CONFIG.FUENTE_FLS,
+        PLAN_PRESUPUESTAL.MANEJA_PROYECTOS,
+        PLAN_PRESUPUESTAL.REGALIAS,
+        PLAN_PPTAL_CONFIG.FUENTE_FUT,
+        PLAN_PPTAL_CONFIG.RECAUDO_VA,
+        PLAN_PPTAL_CONFIG.RUBRO_EQUIV,
+        PLAN_PPTAL_CONFIG.FUENTE_PREDIS,
+        PLAN_PPTAL_CONFIG.DET_FUENTE_PREDIS,
+        PLAN_PPTAL_CONFIG.FUENTE,
+        PLAN_PPTAL_CONFIG.CODIGO_BPIN_SGR,
+        PLAN_PPTAL_CONFIG.DISPONIBILIDAD_INICIAL_FUT,
+        PLAN_PRESUPUESTAL.NIVEL1,
+        PLAN_PRESUPUESTAL.NIVEL2,
+        PLAN_PRESUPUESTAL.NIVEL3,
+        PLAN_PRESUPUESTAL.NIVEL4,
+        PLAN_PRESUPUESTAL.NIVEL5,
+        PLAN_PRESUPUESTAL.NIVEL6,
+        PLAN_PRESUPUESTAL.NIVEL7,
+        PLAN_PRESUPUESTAL.NIVEL8,
+        PLAN_PRESUPUESTAL.COVID          AS IND_COVID,
+        PLAN_PRESUPUESTAL.PMR1,
+        PLAN_PRESUPUESTAL.PMR2,
+        PLAN_PRESUPUESTAL.FUENTERECURSOS FUENTEFONDOS,
+        PLAN_PRESUPUESTAL.CUENTAGASTOCNT,
+        PLAN_PRESUPUESTAL.EQUIV_GASTO,
+        PLAN_PRESUPUESTAL.CODIGOBPIN,
+        PLAN_PRESUPUESTAL.TIPO_RECURSO,
+         FUENTE_RECURSOS.NOMBRE NOMBREFUENTE,
+        CASE
+            WHEN PLAN_PRESUPUESTAL.TIPOVIGENCIA = 'RA' THEN 
+                FUENTE_RECURSOS.EQUIVALENTEAPROPIACION 
+            WHEN PLAN_PRESUPUESTAL.TIPOVIGENCIA = 'RC' THEN
+                 FUENTE_RECURSOS.EQUIVALENTECAJA 
+            ELSE
+                FUENTE_RECURSOS.EQUIVALENTECUIPO
+        END  FUENTECUIPO
+    FROM
+             PLAN_PRESUPUESTAL
+        INNER JOIN PLAN_PPTAL_CONFIG ON PLAN_PRESUPUESTAL.COMPANIA = PLAN_PPTAL_CONFIG.COMPANIA
+                                        AND PLAN_PRESUPUESTAL.ANO = PLAN_PPTAL_CONFIG.ANO
+                                        AND PLAN_PRESUPUESTAL.CODIGO = PLAN_PPTAL_CONFIG.CODIGO
+        INNER JOIN TERCERO ON PLAN_PPTAL_CONFIG.COMPANIA = TERCERO.COMPANIA
+                              AND PLAN_PPTAL_CONFIG.TERCERO = TERCERO.NIT
+                              AND PLAN_PPTAL_CONFIG.SUCURSAL = TERCERO.SUCURSAL
+        INNER JOIN CENTRO_COSTO ON PLAN_PPTAL_CONFIG.COMPANIA = CENTRO_COSTO.COMPANIA
+                                   AND PLAN_PPTAL_CONFIG.ANO = CENTRO_COSTO.ANO
+                                   AND PLAN_PPTAL_CONFIG.CENTRO_COSTO = CENTRO_COSTO.CODIGO
+        INNER JOIN AUXILIAR ON PLAN_PPTAL_CONFIG.COMPANIA = AUXILIAR.COMPANIA
+                               AND PLAN_PPTAL_CONFIG.ANO = AUXILIAR.ANO
+                               AND PLAN_PPTAL_CONFIG.AUXILIAR = AUXILIAR.CODIGO
+        INNER JOIN FUENTE_RECURSOS ON PLAN_PPTAL_CONFIG.COMPANIA = FUENTE_RECURSOS.COMPANIA
+                                      AND PLAN_PPTAL_CONFIG.ANO = FUENTE_RECURSOS.ANO
+                                      AND PLAN_PPTAL_CONFIG.FUENTE_RECURSO = FUENTE_RECURSOS.CODIGO
+        INNER JOIN REFERENCIA ON PLAN_PPTAL_CONFIG.COMPANIA = REFERENCIA.COMPANIA
+                                 AND PLAN_PPTAL_CONFIG.ANO = REFERENCIA.ANO
+                                 AND PLAN_PPTAL_CONFIG.REFERENCIA = REFERENCIA.CODIGO;

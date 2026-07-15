@@ -1,0 +1,41 @@
+package com.sysman.nomina.enums;
+
+public enum SubirPlanoPilaControladorUrlEnum {
+
+	URL4440("SUBIRPLANOPILACONTROLADORURLENUM001", "471073"),
+	URL4470("SUBIRPLANOPILACONTROLADORURLENUM002","7034"),
+	URL4430("SUBIRPLANOPILACONTROLADORURLENUM003","471069"),
+	URL4420("SUBIRPLANOPILACONTROLADORURLENUM004","537010"),
+	URL4058("PERIODOTRABAJOCONTROLADORURL4058", "537004"),
+
+	URL4735("PERIODOTRABAJOCONTROLADORURL4735", "471008"),
+
+	URL7274("PERIODOTRABAJOCONTROLADORURL7274", "471050"),
+
+	URL5723("PERIODOTRABAJOCONTROLADORURL5723", "471049"),
+
+	URL6834("PERIODOTRABAJOCONTROLADORURL6834", "620021"),
+	
+	URL59003("PERIODOTRABAJOCONTROLADORURL6834", "59003");
+
+
+	private final String key;
+	private final String value;
+
+	private SubirPlanoPilaControladorUrlEnum(String key,
+			String value)
+	{
+		this.key = key;
+		this.value = value;
+	}
+
+	public String getKey()
+	{
+		return key;
+	}
+
+	public String getValue()
+	{
+		return value;
+	}
+}

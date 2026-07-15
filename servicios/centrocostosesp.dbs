@@ -1,0 +1,142 @@
+﻿<data name="centrocostosesp" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getCentrocostosespTodosPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, ANO, MES, CODIGO, PORCENTAJE, (SELECT NOMBRE FROM CENTRO_COSTO WHERE COMPANIA = CENTRO_COSTOESP.COMPANIA AND ANO = CENTRO_COSTOESP.ANO AND CODIGO = CENTRO_COSTOESP.CODIGO ) NOMBRE_CCTOSUB  FROM CENTRO_COSTOESP WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND CODIGO= :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","MES":"$MES(type:integer)","CODIGO":"$CODIGO","PORCENTAJE":"$PORCENTAJE","NOMBRE_CCTOSUB":"$NOMBRE_CCTOSUB"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="centrocostosesp/todosporcodigo">
+		<call-query href="getCentrocostosespTodosPorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertCentrocostosesp" keyColumns="COMPANIA,ANO,MES,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CENTRO_COSTOESP (COMPANIA, ANO, MES, CODIGO, PORCENTAJE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :MES, :CODIGO, :PORCENTAJE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_MES":"$MES(type:integer)","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="0" name="PORCENTAJE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="centrocostosesp">
+		<call-query href="insertCentrocostosesp">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCentrocostosesp" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CENTRO_COSTOESP WHERE CENTRO_COSTOESP.COMPANIA= :KEY_COMPANIA AND CENTRO_COSTOESP.ANO= :KEY_ANO AND CENTRO_COSTOESP.MES= :KEY_MES AND CENTRO_COSTOESP.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_MES" sqlType="INTEGER"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="centrocostosesp">
+		<call-query href="deleteCentrocostosesp">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_MES" query-param="KEY_MES"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCentrocostosespPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, ANO, MES, CODIGO, PORCENTAJE  FROM CENTRO_COSTOESP WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND CODIGO= :CODIGO) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN PORCENTAJE IS NULL THEN ' ' ELSE UPPER(PORCENTAJE) END)  LIKE UPPER( '%' || :PORCENTAJE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","MES":"$MES(type:integer)","CODIGO":"$CODIGO","PORCENTAJE":"$PORCENTAJE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="centrocostosesp">
+		<call-query href="getCentrocostosespPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCentrocostosespNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, ANO, MES, CODIGO, PORCENTAJE  FROM CENTRO_COSTOESP WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND CODIGO= :CODIGO) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN PORCENTAJE IS NULL THEN ' ' ELSE UPPER(PORCENTAJE) END)  LIKE UPPER( '%' || :PORCENTAJE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="centrocostosesp/numero">
+		<call-query href="getCentrocostosespNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCentrocostosesp" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CENTRO_COSTOESP SET COMPANIA=:COMPANIA, ANO=:ANO, MES=:MES, CODIGO=:CODIGO, PORCENTAJE=:PORCENTAJE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CENTRO_COSTOESP.COMPANIA= :KEY_COMPANIA AND CENTRO_COSTOESP.ANO= :KEY_ANO AND CENTRO_COSTOESP.MES= :KEY_MES AND CENTRO_COSTOESP.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_MES" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="centrocostosesp">
+		<call-query href="updateCentrocostosesp">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_MES" query-param="KEY_MES"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

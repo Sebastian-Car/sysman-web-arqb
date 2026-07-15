@@ -1,0 +1,110 @@
+/*
+ * ComprobanteCntAfectarControladorUrlEnum
+ *
+ * 1.0
+ *
+ * 09/09/2016
+ *
+ * Copyright Stefanini Sysman
+ */
+package com.sysman.contabilidad.enums;
+
+/**
+ * @author Processors-api
+ * 
+ * @version 1.0
+ * 
+ * Enumeracion que permite clasificar cada uno de los identificadores
+ * geenerados en el refactoring y asociados al codigo legacy obtenido
+ * con patrones de busqueda.
+ */
+public enum ComprobanteCntAfectarControladorUrlEnum {
+
+    URL56457("COMPROBANTECNTAFECTARCONTROLADORURL56457",
+                    "Acciones.actualizar(ConectorPool.ESQUEMA_SYSMAN, \"DETALLE_COMPROBANTE_CNT\","),
+
+    URL91557("COMPROBANTECNTAFECTARCONTROLADORURL91557",
+                    "Acciones.actualizar(ConectorPool.ESQUEMA_SYSMAN, \"COMPROBANTE_CNT\","),
+
+    //URL39812("COMPROBANTECNTAFECTARCONTROLADORURL39812", "16101"),
+    URL39812("COMPROBANTECNTAFECTARCONTROLADORURL39812", "16069"),
+
+    URL82080("COMPROBANTECNTAFECTARCONTROLADORURL82080", "16087"),
+
+    URL63717("COMPROBANTECNTAFECTARCONTROLADORURL63717",
+                    "Acciones.actualizar(ConectorPool.ESQUEMA_SYSMAN, \"CHEQUERA\","),
+
+    URL58934("COMPROBANTECNTAFECTARCONTROLADORURL58934",
+                    "Acciones.actualizar(ConectorPool.ESQUEMA_SYSMAN, \"COMPROBANTE_CNT\","),
+
+    URL71900("COMPROBANTECNTAFECTARCONTROLADORURL71900",
+                    "Acciones.actualizar(ConectorPool.ESQUEMA_SYSMAN, \"COMPROBANTE_CNT\","),
+
+    URL61065("COMPROBANTECNTAFECTARCONTROLADORURL61065",
+                    "Acciones.actualizar(ConectorPool.ESQUEMA_SYSMAN, \"DETALLE_COMPROBANTE_CNT\","),
+
+    URL74337("COMPROBANTECNTAFECTARCONTROLADORURL74337",
+                    "Acciones.actualizar(ConectorPool.ESQUEMA_SYSMAN, \"COMPROBANTE_CNT\","),
+
+    URL38280("COMPROBANTECNTAFECTARCONTROLADORURL38280",
+                    "Acciones.actualizar(ConectorPool.ESQUEMA_SYSMAN, \"COMPROBANTE_CNT\","),
+
+    URL73001("COMPROBANTECNTAFECTARCONTROLADORURL73001",
+                    "Acciones.actualizar(ConectorPool.ESQUEMA_SYSMAN, \"COMPROBANTE_CNT\","),
+
+    URL90197("COMPROBANTECNTAFECTARCONTROLADORURL90197",
+                    "Acciones.actualizar(ConectorPool.ESQUEMA_SYSMAN, \"DETALLE_COMPROBANTE_CNT\","),
+
+    URL54446("COMPROBANTECNTAFECTARCONTROLADORURL54446",
+                    "Acciones.actualizar(ConectorPool.ESQUEMA_SYSMAN, \"COMPROBANTE_CNT\","),
+
+    URL017("COMPROBANTECNTAFECTARCONTROLADORURL017", "39065"),
+
+    URL016("COMPROBANTECNTAFECTARCONTROLADORURL016", "39064"),
+
+    URL015("COMPROBANTECNTAFECTARCONTROLADORURL015", "39063"),
+
+    URL014("COMPROBANTECNTAFECTARCONTROLADORURL014", "16095"),
+
+    URL013("COMPROBANTECNTAFECTARCONTROLADORURL013", "39062"),
+
+    URL012("COMPROBANTECNTAFECTARCONTROLADORURL012", "39060"),
+
+    URL011("COMPROBANTECNTAFECTARCONTROLADORURL011", "39033"),
+
+    URL010("COMPROBANTECNTAFECTARCONTROLADORURL010", "75030"),
+
+    URL009("COMPROBANTECNTAFECTARCONTROLADORURL009", "25028"),
+
+    URL008("COMPROBANTECNTAFECTARCONTROLADORURL008", "72054"),
+
+    URL007("COMPROBANTECNTAFECTARCONTROLADORURL007", "72052"),
+
+    URL006("COMPROBANTECNTAFECTARCONTROLADORURL006", "72050"),
+
+    URL005("COMPROBANTECNTAFECTARCONTROLADORURL005", "72048"),
+
+    URL004("COMPROBANTECNTAFECTARCONTROLADORURL004", "72046"),
+
+    URL003("COMPROBANTECNTAFECTARCONTROLADORURL003", "72044"),
+
+    URL002("COMPROBANTECNTAFECTARCONTROLADORURL002", "72042"),
+
+    URL001("COMPROBANTECNTAFECTARCONTROLADORURL001", "72040");
+
+    private final String key;
+    private final String value;
+
+    private ComprobanteCntAfectarControladorUrlEnum(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}

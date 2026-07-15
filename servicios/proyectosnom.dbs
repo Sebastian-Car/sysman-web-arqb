@@ -1,0 +1,42 @@
+﻿<data name="proyectosnom" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getProyectosnomPagIdYNombreDeProyectoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  PROYECTOSNOM.ID_DE_PROYECTO, PROYECTOSNOM.NOMBREPROYECTO, PROYECTOSNOM.DESCRIPCION  FROM PROYECTOSNOM WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_DE_PROYECTO IS NULL THEN ' ' ELSE UPPER(ID_DE_PROYECTO) END)  LIKE UPPER(:ID_DE_PROYECTO || '%')  AND (CASE WHEN NOMBREPROYECTO IS NULL THEN ' ' ELSE UPPER(NOMBREPROYECTO) END)  LIKE UPPER( '%' || :NOMBREPROYECTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_PROYECTO":"$ID_DE_PROYECTO","NOMBREPROYECTO":"$NOMBREPROYECTO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROYECTO" sqlType="STRING"/>
+		<param name="NOMBREPROYECTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="proyectosnom/idynombredeproyecto/pag">
+		<call-query href="getProyectosnomPagIdYNombreDeProyectoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROYECTO" query-param="ID_DE_PROYECTO"/>
+			<with-param name="NOMBREPROYECTO" query-param="NOMBREPROYECTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProyectosnomNumIdYNombreDeProyectoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  PROYECTOSNOM.ID_DE_PROYECTO, PROYECTOSNOM.NOMBREPROYECTO, PROYECTOSNOM.DESCRIPCION  FROM PROYECTOSNOM WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_DE_PROYECTO IS NULL THEN ' ' ELSE UPPER(ID_DE_PROYECTO) END)  LIKE UPPER(:ID_DE_PROYECTO || '%')  AND (CASE WHEN NOMBREPROYECTO IS NULL THEN ' ' ELSE UPPER(NOMBREPROYECTO) END)  LIKE UPPER( '%' || :NOMBREPROYECTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROYECTO" sqlType="STRING"/>
+		<param name="NOMBREPROYECTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="proyectosnom/idynombredeproyecto/num">
+		<call-query href="getProyectosnomNumIdYNombreDeProyectoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROYECTO" query-param="ID_DE_PROYECTO"/>
+			<with-param name="NOMBREPROYECTO" query-param="NOMBREPROYECTO"/>
+
+		</call-query>
+	</resource>
+
+</data>

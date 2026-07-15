@@ -1,0 +1,122 @@
+﻿<data name="planos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertPlanos" keyColumns="GRUPO,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PLANOS (GRUPO, CODIGO, ESTADO, SEPARADOR, DESCRIPCION, DATE_CREATED, CREATED_BY) VALUES (:GRUPO, :CODIGO, :ESTADO, :SEPARADOR, :DESCRIPCION, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_GRUPO":"$GRUPO","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="P" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="SEPARADOR" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="planos">
+		<call-query href="insertPlanos">
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="SEPARADOR" query-param="SEPARADOR"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deletePlanos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM PLANOS WHERE PLANOS.GRUPO= :KEY_GRUPO AND PLANOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_GRUPO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="planos">
+		<call-query href="deletePlanos">
+			<with-param name="KEY_GRUPO" query-param="KEY_GRUPO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPlanosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  GRUPO, CODIGO,ESTADO,SEPARADOR,DESCRIPCION  FROM PLANOS) WHERE (CASE WHEN GRUPO IS NULL THEN ' ' ELSE UPPER(GRUPO) END)  LIKE UPPER( '%' || :GRUPO || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER(:ESTADO || '%')  AND (CASE WHEN SEPARADOR IS NULL THEN ' ' ELSE UPPER(SEPARADOR) END)  LIKE UPPER(:SEPARADOR || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"GRUPO":"$GRUPO","CODIGO":"$CODIGO","ESTADO":"$ESTADO","SEPARADOR":"$SEPARADOR","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="SEPARADOR" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="planos">
+		<call-query href="getPlanosPaginaQuery">
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="SEPARADOR" query-param="SEPARADOR"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPlanosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  GRUPO, CODIGO,ESTADO,SEPARADOR,DESCRIPCION  FROM PLANOS) WHERE (CASE WHEN GRUPO IS NULL THEN ' ' ELSE UPPER(GRUPO) END)  LIKE UPPER( '%' || :GRUPO || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER(:ESTADO || '%')  AND (CASE WHEN SEPARADOR IS NULL THEN ' ' ELSE UPPER(SEPARADOR) END)  LIKE UPPER(:SEPARADOR || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="SEPARADOR" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="planos/numero">
+		<call-query href="getPlanosNumeroQuery">
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="SEPARADOR" query-param="SEPARADOR"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePlanos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PLANOS SET GRUPO=:GRUPO, CODIGO=:CODIGO, ESTADO=:ESTADO, SEPARADOR=:SEPARADOR, DESCRIPCION=:DESCRIPCION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PLANOS.GRUPO= :KEY_GRUPO AND PLANOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="SEPARADOR" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_GRUPO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="planos">
+		<call-query href="updatePlanos">
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="SEPARADOR" query-param="SEPARADOR"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_GRUPO" query-param="KEY_GRUPO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

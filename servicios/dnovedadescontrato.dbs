@@ -1,0 +1,237 @@
+﻿<data name="dnovedadescontrato" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertDnovedadescontratoAfectaritems" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO D_NOVEDADCONTRATO   (     COMPANIA,    CLASEORDEN,    ORDENDECOMPRA,    CODIGO,    CODIGOELEMENTO,     ESPECIFICACION,    NOVEDAD,    SALDOPORENTREGAR,    VALORPORENTREGAR,     CANTIDADAENTREGAR,    VALORUNITARIO,    VALORTOTAL,    DATE_CREATED,     CREATED_BY   )( SELECT    D_ORDENDECOMPRA.COMPANIA,  D_ORDENDECOMPRA.CLASEORDEN,   D_ORDENDECOMPRA.ORDENDECOMPRA,  D_ORDENDECOMPRA.CODIGO,   D_ORDENDECOMPRA.ELEMENTO,  D_ORDENDECOMPRA.ESPECIFICACION,   (:NOVEDAD),  D_ORDENDECOMPRA.SALDOCANT,  VLRTOTAL-VALORENTREGADO,  0,   VALORUNITARIODI,  0,TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'),    (:CREATED_BY) FROM D_ORDENDECOMPRA WHERE D_ORDENDECOMPRA.COMPANIA   = :COMPANIA AND D_ORDENDECOMPRA.CLASEORDEN   = :CLASEORDEN AND D_ORDENDECOMPRA.ORDENDECOMPRA= :ORDENDECOMPRA AND D_ORDENDECOMPRA.SALDOCANT    &gt; 0)</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NOVEDAD" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="ORDENDECOMPRA" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="dnovedadescontrato/afectaritems">
+		<call-query href="insertDnovedadescontratoAfectaritems">
+			<with-param name="NOVEDAD" query-param="NOVEDAD"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="ORDENDECOMPRA" query-param="ORDENDECOMPRA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDnovedadescontratoTotalPorOrdenClaseYNovedadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SUM(D_NOVEDADCONTRATO.VALORTOTAL) VALORTOTAL  FROM D_NOVEDADCONTRATO WHERE D_NOVEDADCONTRATO.COMPANIA = :COMPANIA AND D_NOVEDADCONTRATO.CLASEORDEN = :CLASEORDEN AND D_NOVEDADCONTRATO.ORDENDECOMPRA = :ORDENDECOMPRA AND D_NOVEDADCONTRATO.NOVEDAD = :NOVEDAD</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VALORTOTAL":"$VALORTOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="NOVEDAD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dnovedadescontrato/totalporordenclaseynovedad">
+		<call-query href="getDnovedadescontratoTotalPorOrdenClaseYNovedadQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="ORDENDECOMPRA" query-param="ORDENDECOMPRA"/>
+			<with-param name="NOVEDAD" query-param="NOVEDAD"/>
+
+		</call-query>
+	</resource>
+	<query id="getDnovedadescontratoCantidadregnoveQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(1) AS CANTIDAD  FROM D_ORDENDECOMPRA WHERE D_ORDENDECOMPRA.COMPANIA = :COMPANIA AND D_ORDENDECOMPRA.CLASEORDEN = :CLASEORDEN AND D_ORDENDECOMPRA.ORDENDECOMPRA= :ORDENDECOMPRA AND D_ORDENDECOMPRA.SALDOCANT &gt; 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CANTIDAD":"$CANTIDAD(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="ORDENDECOMPRA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dnovedadescontrato/cantidadregnove">
+		<call-query href="getDnovedadescontratoCantidadregnoveQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="ORDENDECOMPRA" query-param="ORDENDECOMPRA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertDnovedadescontrato" keyColumns="COMPANIA,CLASEORDEN,ORDENDECOMPRA,NOVEDAD,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO D_NOVEDADCONTRATO (CANTIDADAENTREGAR, CLASEORDEN, CODIGO, CODIGOELEMENTO, COMPANIA, ESPECIFICACION, NOVEDAD, ORDENDECOMPRA, SALDOPORENTREGAR, VALORPORENTREGAR, VALORTOTAL, VALORUNITARIO, DATE_CREATED, CREATED_BY) VALUES (:CANTIDADAENTREGAR, :CLASEORDEN, :CODIGO, :CODIGOELEMENTO, :COMPANIA, :ESPECIFICACION, :NOVEDAD, :ORDENDECOMPRA, :SALDOPORENTREGAR, :VALORPORENTREGAR, :VALORTOTAL, :VALORUNITARIO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CLASEORDEN":"$CLASEORDEN","KEY_ORDENDECOMPRA":"$ORDENDECOMPRA","KEY_NOVEDAD":"$NOVEDAD","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param defaultValue="0" name="CANTIDADAENTREGAR" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="" name="ESPECIFICACION" sqlType="STRING"/>
+		<param name="NOVEDAD" sqlType="STRING"/>
+		<param name="ORDENDECOMPRA" sqlType="STRING"/>
+		<param defaultValue="0" name="SALDOPORENTREGAR" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORPORENTREGAR" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORTOTAL" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORUNITARIO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="dnovedadescontrato">
+		<call-query href="insertDnovedadescontrato">
+			<with-param name="CANTIDADAENTREGAR" query-param="CANTIDADAENTREGAR"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESPECIFICACION" query-param="ESPECIFICACION"/>
+			<with-param name="NOVEDAD" query-param="NOVEDAD"/>
+			<with-param name="ORDENDECOMPRA" query-param="ORDENDECOMPRA"/>
+			<with-param name="SALDOPORENTREGAR" query-param="SALDOPORENTREGAR"/>
+			<with-param name="VALORPORENTREGAR" query-param="VALORPORENTREGAR"/>
+			<with-param name="VALORTOTAL" query-param="VALORTOTAL"/>
+			<with-param name="VALORUNITARIO" query-param="VALORUNITARIO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteDnovedadescontrato" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM D_NOVEDADCONTRATO WHERE D_NOVEDADCONTRATO.COMPANIA= :KEY_COMPANIA AND D_NOVEDADCONTRATO.CLASEORDEN= :KEY_CLASEORDEN AND D_NOVEDADCONTRATO.ORDENDECOMPRA= :KEY_ORDENDECOMPRA AND D_NOVEDADCONTRATO.NOVEDAD= :KEY_NOVEDAD AND D_NOVEDADCONTRATO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASEORDEN" sqlType="STRING"/>
+		<param name="KEY_ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="KEY_NOVEDAD" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="dnovedadescontrato">
+		<call-query href="deleteDnovedadescontrato">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASEORDEN" query-param="KEY_CLASEORDEN"/>
+			<with-param name="KEY_ORDENDECOMPRA" query-param="KEY_ORDENDECOMPRA"/>
+			<with-param name="KEY_NOVEDAD" query-param="KEY_NOVEDAD"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDnovedadescontratoPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  D_NOVEDADCONTRATO.CANTIDADAENTREGAR, D_NOVEDADCONTRATO.CLASEORDEN, D_NOVEDADCONTRATO.CODIGO, D_NOVEDADCONTRATO.CODIGOELEMENTO, D_NOVEDADCONTRATO.COMPANIA, D_NOVEDADCONTRATO.ESPECIFICACION, D_NOVEDADCONTRATO.NOVEDAD, D_NOVEDADCONTRATO.ORDENDECOMPRA, D_NOVEDADCONTRATO.SALDOPORENTREGAR, D_NOVEDADCONTRATO.VALORPORENTREGAR, D_NOVEDADCONTRATO.VALORTOTAL, D_NOVEDADCONTRATO.VALORUNITARIO  FROM D_NOVEDADCONTRATO WHERE D_NOVEDADCONTRATO.COMPANIA= :COMPANIA AND D_NOVEDADCONTRATO.CLASEORDEN = :CLASEORDEN AND D_NOVEDADCONTRATO.ORDENDECOMPRA = :ORDENDECOMPRA AND D_NOVEDADCONTRATO.NOVEDAD = :NOVEDAD) WHERE (CASE WHEN CANTIDADAENTREGAR IS NULL THEN ' ' ELSE UPPER(CANTIDADAENTREGAR) END)  LIKE UPPER(:CANTIDADAENTREGAR || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN CODIGOELEMENTO IS NULL THEN ' ' ELSE UPPER(CODIGOELEMENTO) END)  LIKE UPPER(:CODIGOELEMENTO || '%')  AND (CASE WHEN SALDOPORENTREGAR IS NULL THEN ' ' ELSE UPPER(SALDOPORENTREGAR) END)  LIKE UPPER(:SALDOPORENTREGAR || '%')  AND (CASE WHEN VALORPORENTREGAR IS NULL THEN ' ' ELSE UPPER(VALORPORENTREGAR) END)  LIKE UPPER(:VALORPORENTREGAR || '%')  AND (CASE WHEN VALORTOTAL IS NULL THEN ' ' ELSE UPPER(VALORTOTAL) END)  LIKE UPPER(:VALORTOTAL || '%')  AND (CASE WHEN VALORUNITARIO IS NULL THEN ' ' ELSE UPPER(VALORUNITARIO) END)  LIKE UPPER(:VALORUNITARIO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CANTIDADAENTREGAR":"$CANTIDADAENTREGAR","CLASEORDEN":"$CLASEORDEN","CODIGO":"$CODIGO","CODIGOELEMENTO":"$CODIGOELEMENTO","COMPANIA":"$COMPANIA","ESPECIFICACION":"$ESPECIFICACION","NOVEDAD":"$NOVEDAD","ORDENDECOMPRA":"$ORDENDECOMPRA","SALDOPORENTREGAR":"$SALDOPORENTREGAR","VALORPORENTREGAR":"$VALORPORENTREGAR","VALORTOTAL":"$VALORTOTAL","VALORUNITARIO":"$VALORUNITARIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="NOVEDAD" sqlType="STRING"/>
+		<param name="CANTIDADAENTREGAR" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="SALDOPORENTREGAR" sqlType="STRING"/>
+		<param name="VALORPORENTREGAR" sqlType="STRING"/>
+		<param name="VALORTOTAL" sqlType="STRING"/>
+		<param name="VALORUNITARIO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dnovedadescontrato">
+		<call-query href="getDnovedadescontratoPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="ORDENDECOMPRA" query-param="ORDENDECOMPRA"/>
+			<with-param name="NOVEDAD" query-param="NOVEDAD"/>
+			<with-param name="CANTIDADAENTREGAR" query-param="CANTIDADAENTREGAR"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="SALDOPORENTREGAR" query-param="SALDOPORENTREGAR"/>
+			<with-param name="VALORPORENTREGAR" query-param="VALORPORENTREGAR"/>
+			<with-param name="VALORTOTAL" query-param="VALORTOTAL"/>
+			<with-param name="VALORUNITARIO" query-param="VALORUNITARIO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDnovedadescontratoNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  D_NOVEDADCONTRATO.CANTIDADAENTREGAR, D_NOVEDADCONTRATO.CLASEORDEN, D_NOVEDADCONTRATO.CODIGO, D_NOVEDADCONTRATO.CODIGOELEMENTO, D_NOVEDADCONTRATO.COMPANIA, D_NOVEDADCONTRATO.ESPECIFICACION, D_NOVEDADCONTRATO.NOVEDAD, D_NOVEDADCONTRATO.ORDENDECOMPRA, D_NOVEDADCONTRATO.SALDOPORENTREGAR, D_NOVEDADCONTRATO.VALORPORENTREGAR, D_NOVEDADCONTRATO.VALORTOTAL, D_NOVEDADCONTRATO.VALORUNITARIO  FROM D_NOVEDADCONTRATO WHERE D_NOVEDADCONTRATO.COMPANIA= :COMPANIA AND D_NOVEDADCONTRATO.CLASEORDEN = :CLASEORDEN AND D_NOVEDADCONTRATO.ORDENDECOMPRA = :ORDENDECOMPRA AND D_NOVEDADCONTRATO.NOVEDAD = :NOVEDAD) WHERE (CASE WHEN CANTIDADAENTREGAR IS NULL THEN ' ' ELSE UPPER(CANTIDADAENTREGAR) END)  LIKE UPPER(:CANTIDADAENTREGAR || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN CODIGOELEMENTO IS NULL THEN ' ' ELSE UPPER(CODIGOELEMENTO) END)  LIKE UPPER(:CODIGOELEMENTO || '%')  AND (CASE WHEN SALDOPORENTREGAR IS NULL THEN ' ' ELSE UPPER(SALDOPORENTREGAR) END)  LIKE UPPER(:SALDOPORENTREGAR || '%')  AND (CASE WHEN VALORPORENTREGAR IS NULL THEN ' ' ELSE UPPER(VALORPORENTREGAR) END)  LIKE UPPER(:VALORPORENTREGAR || '%')  AND (CASE WHEN VALORTOTAL IS NULL THEN ' ' ELSE UPPER(VALORTOTAL) END)  LIKE UPPER(:VALORTOTAL || '%')  AND (CASE WHEN VALORUNITARIO IS NULL THEN ' ' ELSE UPPER(VALORUNITARIO) END)  LIKE UPPER(:VALORUNITARIO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="NOVEDAD" sqlType="STRING"/>
+		<param name="CANTIDADAENTREGAR" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="SALDOPORENTREGAR" sqlType="STRING"/>
+		<param name="VALORPORENTREGAR" sqlType="STRING"/>
+		<param name="VALORTOTAL" sqlType="STRING"/>
+		<param name="VALORUNITARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dnovedadescontrato/numero">
+		<call-query href="getDnovedadescontratoNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="ORDENDECOMPRA" query-param="ORDENDECOMPRA"/>
+			<with-param name="NOVEDAD" query-param="NOVEDAD"/>
+			<with-param name="CANTIDADAENTREGAR" query-param="CANTIDADAENTREGAR"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="SALDOPORENTREGAR" query-param="SALDOPORENTREGAR"/>
+			<with-param name="VALORPORENTREGAR" query-param="VALORPORENTREGAR"/>
+			<with-param name="VALORTOTAL" query-param="VALORTOTAL"/>
+			<with-param name="VALORUNITARIO" query-param="VALORUNITARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDnovedadescontrato" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE D_NOVEDADCONTRATO SET CANTIDADAENTREGAR=:CANTIDADAENTREGAR, CODIGO=:CODIGO, CODIGOELEMENTO=:CODIGOELEMENTO, ESPECIFICACION=:ESPECIFICACION, SALDOPORENTREGAR=:SALDOPORENTREGAR, VALORPORENTREGAR=:VALORPORENTREGAR, VALORTOTAL=:VALORTOTAL, VALORUNITARIO=:VALORUNITARIO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE D_NOVEDADCONTRATO.COMPANIA= :KEY_COMPANIA AND D_NOVEDADCONTRATO.CLASEORDEN= :KEY_CLASEORDEN AND D_NOVEDADCONTRATO.ORDENDECOMPRA= :KEY_ORDENDECOMPRA AND D_NOVEDADCONTRATO.NOVEDAD= :KEY_NOVEDAD AND D_NOVEDADCONTRATO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CANTIDADAENTREGAR" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ESPECIFICACION" sqlType="STRING"/>
+		<param name="SALDOPORENTREGAR" sqlType="STRING"/>
+		<param name="VALORPORENTREGAR" sqlType="STRING"/>
+		<param name="VALORTOTAL" sqlType="STRING"/>
+		<param name="VALORUNITARIO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASEORDEN" sqlType="STRING"/>
+		<param name="KEY_ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="KEY_NOVEDAD" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="dnovedadescontrato">
+		<call-query href="updateDnovedadescontrato">
+			<with-param name="CANTIDADAENTREGAR" query-param="CANTIDADAENTREGAR"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ESPECIFICACION" query-param="ESPECIFICACION"/>
+			<with-param name="SALDOPORENTREGAR" query-param="SALDOPORENTREGAR"/>
+			<with-param name="VALORPORENTREGAR" query-param="VALORPORENTREGAR"/>
+			<with-param name="VALORTOTAL" query-param="VALORTOTAL"/>
+			<with-param name="VALORUNITARIO" query-param="VALORUNITARIO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASEORDEN" query-param="KEY_CLASEORDEN"/>
+			<with-param name="KEY_ORDENDECOMPRA" query-param="KEY_ORDENDECOMPRA"/>
+			<with-param name="KEY_NOVEDAD" query-param="KEY_NOVEDAD"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

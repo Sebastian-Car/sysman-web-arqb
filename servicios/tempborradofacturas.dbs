@@ -1,0 +1,99 @@
+﻿<data name="tempborradofacturas" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="deleteTempborradofacturasBorrarDatos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TEMP_BORRADO_FACTURAS</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+ 
+	</query>
+	<resource method="DELETE" path="tempborradofacturas/borrardatos">
+		<call-query href="deleteTempborradofacturasBorrarDatos">
+ 
+		</call-query>
+	</resource>
+	<query id="insertTempborradofacturas" keyColumns="ID_FACTURA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TEMP_BORRADO_FACTURAS (NUM_FACTURA, PREFIJO, ID_FACTURA, COD_ESTADO, DESCRIPCION_ESTADO, CREATED_BY, DATE_CREATED) VALUES (:NUM_FACTURA, :PREFIJO, :ID_FACTURA, :COD_ESTADO, :DESCRIPCION_ESTADO, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_ID_FACTURA":"$ID_FACTURA"}]}}		</result>
+		<param name="NUM_FACTURA" sqlType="STRING"/>
+		<param name="PREFIJO" sqlType="STRING"/>
+		<param name="ID_FACTURA" sqlType="STRING"/>
+		<param name="COD_ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION_ESTADO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="tempborradofacturas">
+		<call-query href="insertTempborradofacturas">
+			<with-param name="NUM_FACTURA" query-param="NUM_FACTURA"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="ID_FACTURA" query-param="ID_FACTURA"/>
+			<with-param name="COD_ESTADO" query-param="COD_ESTADO"/>
+			<with-param name="DESCRIPCION_ESTADO" query-param="DESCRIPCION_ESTADO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="getTempborradofacturasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT NUM_FACTURA, PREFIJO, ID_FACTURA, COD_ESTADO, DESCRIPCION_ESTADO, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM TEMP_BORRADO_FACTURAS WHERE COD_ESTADO NOT IN ('7200002') ORDER BY ID_FACTURA) INI WHERE (CASE WHEN NUM_FACTURA IS NULL THEN ' ' ELSE UPPER(NUM_FACTURA) END) LIKE UPPER(CONCAT(CONCAT('%',:NUM_FACTURA), '%')) AND (CASE WHEN PREFIJO IS NULL THEN ' ' ELSE UPPER(PREFIJO) END) LIKE UPPER(CONCAT(CONCAT('%',:PREFIJO), '%')) AND (CASE WHEN ID_FACTURA IS NULL THEN ' ' ELSE UPPER(ID_FACTURA) END) LIKE UPPER(CONCAT(CONCAT('%',:ID_FACTURA), '%')) AND (CASE WHEN COD_ESTADO IS NULL THEN ' ' ELSE UPPER(COD_ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:COD_ESTADO), '%')) AND (CASE WHEN DESCRIPCION_ESTADO IS NULL THEN ' ' ELSE UPPER(DESCRIPCION_ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION_ESTADO), '%')) AND (CASE WHEN DATE_CREATED IS NULL THEN ' ' ELSE UPPER(DATE_CREATED) END) LIKE UPPER(CONCAT(CONCAT('%',:DATE_CREATED), '%')) AND (CASE WHEN MODIFIED_BY IS NULL THEN ' ' ELSE UPPER(MODIFIED_BY) END) LIKE UPPER(CONCAT(CONCAT('%',:MODIFIED_BY), '%')) AND (CASE WHEN DATE_MODIFIED IS NULL THEN ' ' ELSE UPPER(DATE_MODIFIED) END) LIKE UPPER(CONCAT(CONCAT('%',:DATE_MODIFIED), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUM_FACTURA":"$NUM_FACTURA","PREFIJO":"$PREFIJO","ID_FACTURA":"$ID_FACTURA","COD_ESTADO":"$COD_ESTADO","DESCRIPCION_ESTADO":"$DESCRIPCION_ESTADO","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="NUM_FACTURA" sqlType="STRING"/>
+		<param name="PREFIJO" sqlType="STRING"/>
+		<param name="ID_FACTURA" sqlType="STRING"/>
+		<param name="COD_ESTADO" sqlType="STRING"/>
+		<param name="DESCRIPCION_ESTADO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tempborradofacturas">
+		<call-query href="getTempborradofacturasPaginaQuery">
+			<with-param name="NUM_FACTURA" query-param="NUM_FACTURA"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="ID_FACTURA" query-param="ID_FACTURA"/>
+			<with-param name="COD_ESTADO" query-param="COD_ESTADO"/>
+			<with-param name="DESCRIPCION_ESTADO" query-param="DESCRIPCION_ESTADO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTempborradofacturasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT NUM_FACTURA, PREFIJO, ID_FACTURA, COD_ESTADO, DESCRIPCION_ESTADO, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM TEMP_BORRADO_FACTURAS WHERE COD_ESTADO NOT IN ('7200002') ORDER BY ID_FACTURA) INI WHERE (CASE WHEN NUM_FACTURA IS NULL THEN ' ' ELSE UPPER(NUM_FACTURA) END) LIKE UPPER(CONCAT(CONCAT('%',:NUM_FACTURA), '%')) AND (CASE WHEN PREFIJO IS NULL THEN ' ' ELSE UPPER(PREFIJO) END) LIKE UPPER(CONCAT(CONCAT('%',:PREFIJO), '%')) AND (CASE WHEN ID_FACTURA IS NULL THEN ' ' ELSE UPPER(ID_FACTURA) END) LIKE UPPER(CONCAT(CONCAT('%',:ID_FACTURA), '%')) AND (CASE WHEN COD_ESTADO IS NULL THEN ' ' ELSE UPPER(COD_ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:COD_ESTADO), '%')) AND (CASE WHEN DESCRIPCION_ESTADO IS NULL THEN ' ' ELSE UPPER(DESCRIPCION_ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:DESCRIPCION_ESTADO), '%')) AND (CASE WHEN DATE_CREATED IS NULL THEN ' ' ELSE UPPER(DATE_CREATED) END) LIKE UPPER(CONCAT(CONCAT('%',:DATE_CREATED), '%')) AND (CASE WHEN MODIFIED_BY IS NULL THEN ' ' ELSE UPPER(MODIFIED_BY) END) LIKE UPPER(CONCAT(CONCAT('%',:MODIFIED_BY), '%')) AND (CASE WHEN DATE_MODIFIED IS NULL THEN ' ' ELSE UPPER(DATE_MODIFIED) END) LIKE UPPER(CONCAT(CONCAT('%',:DATE_MODIFIED), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="NUM_FACTURA" sqlType="STRING"/>
+		<param name="PREFIJO" sqlType="STRING"/>
+		<param name="ID_FACTURA" sqlType="STRING"/>
+		<param name="COD_ESTADO" sqlType="STRING"/>
+		<param name="DESCRIPCION_ESTADO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tempborradofacturas/numero">
+		<call-query href="getTempborradofacturasNumeroQuery">
+			<with-param name="NUM_FACTURA" query-param="NUM_FACTURA"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="ID_FACTURA" query-param="ID_FACTURA"/>
+			<with-param name="COD_ESTADO" query-param="COD_ESTADO"/>
+			<with-param name="DESCRIPCION_ESTADO" query-param="DESCRIPCION_ESTADO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+
+		</call-query>
+	</resource>
+
+</data>

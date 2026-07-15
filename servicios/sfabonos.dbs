@@ -1,0 +1,252 @@
+﻿<data name="sfabonos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSfabonosReadAbonosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT SF_ABONOS.COMPANIA, SF_ABONOS.TIPO, SF_ABONOS.CODIGO, SF_ABONOS.TERCERO, SF_ABONOS.CENTRO_COSTO, SF_ABONOS.AUXILIAR,(TO_CHAR(SF_ABONOS.FECHA_INICIO,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIO,(TO_CHAR(SF_ABONOS.FECHA_FIN,'DD/MM/YYYY HH24:MI:SS')) FECHA_FIN, SF_ABONOS.ESTADO, SF_ABONOS.CODIGORUTA, SF_ABONOS.DEUDA_CAPITAL, SF_ABONOS.DEUDA_INTERES, SF_ABONOS.DEUDA_TOTAL, SF_ABONOS.TASA_INTERES, SF_ABONOS.CONDONACION, SF_ABONOS.OBSERVACION_CONDONACION,(TO_CHAR(SF_ABONOS.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, SF_ABONOS.CREATED_BY,(TO_CHAR(SF_ABONOS.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, SF_ABONOS.MODIFIED_BY, TERCERO.NOMBRE TERCERO_NOMBRE, CENTRO_COSTO.NOMBRE CENTROC_NOMBRE, AUXILIAR.NOMBRE AUXILIAR_NOMBRE, CONCAT(SP_USUARIO.NOMBRES,CONCAT(' ',CONCAT(SP_USUARIO.PRIMERAPELLIDO,CONCAT(' ',SP_USUARIO.SEGUNDOAPELLIDO) ) ) ) NOMBRE_CODRUTA FROM SF_ABONOS LEFT JOIN TERCERO ON SF_ABONOS.COMPANIA = TERCERO.COMPANIA AND SF_ABONOS.TERCERO = TERCERO.NIT AND SF_ABONOS.SUCURSAL = TERCERO.SUCURSAL LEFT JOIN CENTRO_COSTO ON SF_ABONOS.COMPANIA = CENTRO_COSTO.COMPANIA AND SF_ABONOS.CENTRO_COSTO = CENTRO_COSTO.CODIGO AND SF_ABONOS.ANO = CENTRO_COSTO.ANO LEFT JOIN AUXILIAR ON SF_ABONOS.COMPANIA = AUXILIAR.COMPANIA AND SF_ABONOS.AUXILIAR = AUXILIAR.CODIGO AND SF_ABONOS.ANO = AUXILIAR.ANO LEFT JOIN SP_USUARIO ON SF_ABONOS.COMPANIA = SP_USUARIO.COMPANIA AND SF_ABONOS.CODIGORUTA = SP_USUARIO.CODIGORUTA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPO":"$TIPO","CODIGO":"$CODIGO(type:long)","TERCERO":"$TERCERO","CENTRO_COSTO":"$CENTRO_COSTO","AUXILIAR":"$AUXILIAR","FECHA_INICIO":"$FECHA_INICIO","FECHA_FIN":"$FECHA_FIN","ESTADO":"$ESTADO","CODIGORUTA":"$CODIGORUTA","DEUDA_CAPITAL":"$DEUDA_CAPITAL","DEUDA_INTERES":"$DEUDA_INTERES","DEUDA_TOTAL":"$DEUDA_TOTAL","TASA_INTERES":"$TASA_INTERES","CONDONACION":"$CONDONACION","OBSERVACION_CONDONACION":"$OBSERVACION_CONDONACION","DATE_CREATED":"$DATE_CREATED","CREATED_BY":"$CREATED_BY","DATE_MODIFIED":"$DATE_MODIFIED","MODIFIED_BY":"$MODIFIED_BY","TERCERO_NOMBRE":"$TERCERO_NOMBRE","CENTROC_NOMBRE":"$CENTROC_NOMBRE","AUXILIAR_NOMBRE":"$AUXILIAR_NOMBRE","NOMBRE_CODRUTA":"$NOMBRE_CODRUTA"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="sfabonos/readabonos">
+		<call-query href="getSfabonosReadAbonosQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getSfabonosPagGrillaabonosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, TIPO, CODIGO, TERCERO,(TO_CHAR(FECHA_INICIO,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIO,(TO_CHAR(FECHA_FIN,'DD/MM/YYYY HH24:MI:SS')) FECHA_FIN, DEUDA_CAPITAL, DEUDA_INTERES, TASA_INTERES  FROM SF_ABONOS WHERE COMPANIA = :COMPANIA AND TIPO = :TIPO ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER(:TERCERO || '%')  AND (CASE WHEN FECHA_INICIO IS NULL THEN ' ' ELSE UPPER(FECHA_INICIO) END)  LIKE UPPER( '%' || :FECHA_INICIO || '%')  AND (CASE WHEN FECHA_FIN IS NULL THEN ' ' ELSE UPPER(FECHA_FIN) END)  LIKE UPPER( '%' || :FECHA_FIN || '%')  AND (CASE WHEN DEUDA_CAPITAL IS NULL THEN ' ' ELSE UPPER(DEUDA_CAPITAL) END)  LIKE UPPER(:DEUDA_CAPITAL || '%')  AND (CASE WHEN DEUDA_INTERES IS NULL THEN ' ' ELSE UPPER(DEUDA_INTERES) END)  LIKE UPPER(:DEUDA_INTERES || '%')  AND (CASE WHEN TASA_INTERES IS NULL THEN ' ' ELSE UPPER(TASA_INTERES) END)  LIKE UPPER(:TASA_INTERES || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPO":"$TIPO","CODIGO":"$CODIGO(type:long)","TERCERO":"$TERCERO","FECHA_INICIO":"$FECHA_INICIO","FECHA_FIN":"$FECHA_FIN","DEUDA_CAPITAL":"$DEUDA_CAPITAL","DEUDA_INTERES":"$DEUDA_INTERES","TASA_INTERES":"$TASA_INTERES"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="FECHA_INICIO" sqlType="STRING"/>
+		<param name="FECHA_FIN" sqlType="STRING"/>
+		<param name="DEUDA_CAPITAL" sqlType="STRING"/>
+		<param name="DEUDA_INTERES" sqlType="STRING"/>
+		<param name="TASA_INTERES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sfabonos/grillaabonos/pag">
+		<call-query href="getSfabonosPagGrillaabonosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="FECHA_INICIO" query-param="FECHA_INICIO"/>
+			<with-param name="FECHA_FIN" query-param="FECHA_FIN"/>
+			<with-param name="DEUDA_CAPITAL" query-param="DEUDA_CAPITAL"/>
+			<with-param name="DEUDA_INTERES" query-param="DEUDA_INTERES"/>
+			<with-param name="TASA_INTERES" query-param="TASA_INTERES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfabonosNumGrillaabonosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, TIPO, CODIGO, TERCERO,(TO_CHAR(FECHA_INICIO,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIO,(TO_CHAR(FECHA_FIN,'DD/MM/YYYY HH24:MI:SS')) FECHA_FIN, DEUDA_CAPITAL, DEUDA_INTERES, TASA_INTERES  FROM SF_ABONOS WHERE COMPANIA = :COMPANIA AND TIPO = :TIPO ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END)  LIKE UPPER(:TERCERO || '%')  AND (CASE WHEN FECHA_INICIO IS NULL THEN ' ' ELSE UPPER(FECHA_INICIO) END)  LIKE UPPER( '%' || :FECHA_INICIO || '%')  AND (CASE WHEN FECHA_FIN IS NULL THEN ' ' ELSE UPPER(FECHA_FIN) END)  LIKE UPPER( '%' || :FECHA_FIN || '%')  AND (CASE WHEN DEUDA_CAPITAL IS NULL THEN ' ' ELSE UPPER(DEUDA_CAPITAL) END)  LIKE UPPER(:DEUDA_CAPITAL || '%')  AND (CASE WHEN DEUDA_INTERES IS NULL THEN ' ' ELSE UPPER(DEUDA_INTERES) END)  LIKE UPPER(:DEUDA_INTERES || '%')  AND (CASE WHEN TASA_INTERES IS NULL THEN ' ' ELSE UPPER(TASA_INTERES) END)  LIKE UPPER(:TASA_INTERES || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="FECHA_INICIO" sqlType="STRING"/>
+		<param name="FECHA_FIN" sqlType="STRING"/>
+		<param name="DEUDA_CAPITAL" sqlType="STRING"/>
+		<param name="DEUDA_INTERES" sqlType="STRING"/>
+		<param name="TASA_INTERES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sfabonos/grillaabonos/num">
+		<call-query href="getSfabonosNumGrillaabonosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="FECHA_INICIO" query-param="FECHA_INICIO"/>
+			<with-param name="FECHA_FIN" query-param="FECHA_FIN"/>
+			<with-param name="DEUDA_CAPITAL" query-param="DEUDA_CAPITAL"/>
+			<with-param name="DEUDA_INTERES" query-param="DEUDA_INTERES"/>
+			<with-param name="TASA_INTERES" query-param="TASA_INTERES"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfabonosAmortizacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SF_ABONOS.DEUDA_TOTAL, SF_ABONOS.TASA_INTERES, SF_ABONOS.CUOTAS, SF_ABONOS.CUOTA_INICIAL, NRO_FACT, TERCERO.NOMBRE  FROM SF_ABONOS INNER JOIN TERCERO ON SF_ABONOS.COMPANIA = TERCERO.COMPANIA AND SF_ABONOS.TERCERO = TERCERO.NIT AND SF_ABONOS.SUCURSAL = TERCERO.SUCURSAL WHERE SF_ABONOS.COMPANIA = :COMPANIA AND SF_ABONOS.TIPO = :TIPO AND SF_ABONOS.CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DEUDA_TOTAL":"$DEUDA_TOTAL","TASA_INTERES":"$TASA_INTERES","CUOTAS":"$CUOTAS(type:integer)","CUOTA_INICIAL":"$CUOTA_INICIAL","NRO_FACT":"$NRO_FACT(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sfabonos/amortizacion">
+		<call-query href="getSfabonosAmortizacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSfabonos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SF_ABONOS WHERE SF_ABONOS.COMPANIA= :KEY_COMPANIA AND SF_ABONOS.TIPO= :KEY_TIPO AND SF_ABONOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="sfabonos">
+		<call-query href="deleteSfabonos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPO" query-param="KEY_TIPO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfabonosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, TIPO, CODIGO, TERCERO,(TO_CHAR(FECHA_INICIO,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIO,(TO_CHAR(FECHA_FIN,'DD/MM/YYYY HH24:MI:SS')) FECHA_FIN, DEUDA_CAPITAL, DEUDA_INTERES, TASA_INTERES FROM SF_ABONOS WHERE COMPANIA = :COMPANIA AND TIPO = :TIPO ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END) LIKE UPPER(CONCAT(:TERCERO, '%')) AND (CASE WHEN FECHA_INICIO IS NULL THEN ' ' ELSE UPPER(FECHA_INICIO) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA_INICIO), '%')) AND (CASE WHEN FECHA_FIN IS NULL THEN ' ' ELSE UPPER(FECHA_FIN) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA_FIN), '%')) AND (CASE WHEN DEUDA_CAPITAL IS NULL THEN ' ' ELSE UPPER(DEUDA_CAPITAL) END) LIKE UPPER(CONCAT(:DEUDA_CAPITAL, '%')) AND (CASE WHEN DEUDA_INTERES IS NULL THEN ' ' ELSE UPPER(DEUDA_INTERES) END) LIKE UPPER(CONCAT(:DEUDA_INTERES, '%')) AND (CASE WHEN TASA_INTERES IS NULL THEN ' ' ELSE UPPER(TASA_INTERES) END) LIKE UPPER(CONCAT(:TASA_INTERES, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPO":"$TIPO","CODIGO":"$CODIGO(type:long)","TERCERO":"$TERCERO","FECHA_INICIO":"$FECHA_INICIO","FECHA_FIN":"$FECHA_FIN","DEUDA_CAPITAL":"$DEUDA_CAPITAL","DEUDA_INTERES":"$DEUDA_INTERES","TASA_INTERES":"$TASA_INTERES"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="FECHA_INICIO" sqlType="STRING"/>
+		<param name="FECHA_FIN" sqlType="STRING"/>
+		<param name="DEUDA_CAPITAL" sqlType="STRING"/>
+		<param name="DEUDA_INTERES" sqlType="STRING"/>
+		<param name="TASA_INTERES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sfabonos">
+		<call-query href="getSfabonosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="FECHA_INICIO" query-param="FECHA_INICIO"/>
+			<with-param name="FECHA_FIN" query-param="FECHA_FIN"/>
+			<with-param name="DEUDA_CAPITAL" query-param="DEUDA_CAPITAL"/>
+			<with-param name="DEUDA_INTERES" query-param="DEUDA_INTERES"/>
+			<with-param name="TASA_INTERES" query-param="TASA_INTERES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfabonosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, TIPO, CODIGO, TERCERO,(TO_CHAR(FECHA_INICIO,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIO,(TO_CHAR(FECHA_FIN,'DD/MM/YYYY HH24:MI:SS')) FECHA_FIN, DEUDA_CAPITAL, DEUDA_INTERES, TASA_INTERES FROM SF_ABONOS WHERE COMPANIA = :COMPANIA AND TIPO = :TIPO ORDER BY CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN TERCERO IS NULL THEN ' ' ELSE UPPER(TERCERO) END) LIKE UPPER(CONCAT(:TERCERO, '%')) AND (CASE WHEN FECHA_INICIO IS NULL THEN ' ' ELSE UPPER(FECHA_INICIO) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA_INICIO), '%')) AND (CASE WHEN FECHA_FIN IS NULL THEN ' ' ELSE UPPER(FECHA_FIN) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA_FIN), '%')) AND (CASE WHEN DEUDA_CAPITAL IS NULL THEN ' ' ELSE UPPER(DEUDA_CAPITAL) END) LIKE UPPER(CONCAT(:DEUDA_CAPITAL, '%')) AND (CASE WHEN DEUDA_INTERES IS NULL THEN ' ' ELSE UPPER(DEUDA_INTERES) END) LIKE UPPER(CONCAT(:DEUDA_INTERES, '%')) AND (CASE WHEN TASA_INTERES IS NULL THEN ' ' ELSE UPPER(TASA_INTERES) END) LIKE UPPER(CONCAT(:TASA_INTERES, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="FECHA_INICIO" sqlType="STRING"/>
+		<param name="FECHA_FIN" sqlType="STRING"/>
+		<param name="DEUDA_CAPITAL" sqlType="STRING"/>
+		<param name="DEUDA_INTERES" sqlType="STRING"/>
+		<param name="TASA_INTERES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sfabonos/numero">
+		<call-query href="getSfabonosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="FECHA_INICIO" query-param="FECHA_INICIO"/>
+			<with-param name="FECHA_FIN" query-param="FECHA_FIN"/>
+			<with-param name="DEUDA_CAPITAL" query-param="DEUDA_CAPITAL"/>
+			<with-param name="DEUDA_INTERES" query-param="DEUDA_INTERES"/>
+			<with-param name="TASA_INTERES" query-param="TASA_INTERES"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfabonosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT SF_ABONOS.COMPANIA, SF_ABONOS.TIPO, SF_ABONOS.CODIGO, SF_ABONOS.TERCERO, SF_ABONOS.SUCURSAL, SF_ABONOS.CENTRO_COSTO, SF_ABONOS.AUXILIAR, SF_ABONOS.DEUDA_CAPITAL, SF_ABONOS.DEUDA_INTERES, SF_ABONOS.DEUDA_TOTAL, SF_ABONOS.CUOTAS,(TO_CHAR(SF_ABONOS.FECHA_INICIO,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIO,(TO_CHAR(SF_ABONOS.FECHA_FIN,'DD/MM/YYYY HH24:MI:SS')) FECHA_FIN, SF_ABONOS.ESTADO, SF_ABONOS.CUOTA_INICIAL,(CASE SF_ABONOS.APLICACONDONACION WHEN 0 THEN 'false' ELSE 'true' END) APLICACONDONACION, SF_ABONOS.CONDONACION, SF_ABONOS.OBSERVACION_CONDONACION, SF_ABONOS.TASA_INTERES, SF_ABONOS.CODIGORUTA, SF_ABONOS.TIPO_FACT, SF_ABONOS.NRO_FACT, SF_ABONOS.CREATED_BY,(TO_CHAR(SF_ABONOS.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, SF_ABONOS.MODIFIED_BY,(TO_CHAR(SF_ABONOS.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, SF_ABONOS.ANO, TERCERO.NOMBRE TERCERO_NOMBRE, CENTRO_COSTO.NOMBRE CENTROC_NOMBRE, AUXILIAR.NOMBRE AUXILIAR_NOMBRE, CONCAT(SP_USUARIO.NOMBRES,CONCAT(' ',CONCAT(SP_USUARIO.PRIMERAPELLIDO,CONCAT(' ',SP_USUARIO.SEGUNDOAPELLIDO) ) ) ) NOMBRE_CODRUTA FROM SF_ABONOS LEFT JOIN TERCERO ON SF_ABONOS.COMPANIA = TERCERO.COMPANIA AND SF_ABONOS.TERCERO = TERCERO.NIT AND SF_ABONOS.SUCURSAL = TERCERO.SUCURSAL LEFT JOIN CENTRO_COSTO ON SF_ABONOS.COMPANIA = CENTRO_COSTO.COMPANIA AND SF_ABONOS.CENTRO_COSTO = CENTRO_COSTO.CODIGO AND EXTRACT(YEAR FROM SF_ABONOS.FECHA_INICIO) = CENTRO_COSTO.ANO LEFT JOIN AUXILIAR ON SF_ABONOS.COMPANIA = AUXILIAR.COMPANIA AND SF_ABONOS.AUXILIAR = AUXILIAR.CODIGO AND EXTRACT(YEAR FROM SF_ABONOS.FECHA_INICIO) = AUXILIAR.ANO LEFT JOIN SP_USUARIO ON SF_ABONOS.COMPANIA = SP_USUARIO.COMPANIA AND SF_ABONOS.CODIGORUTA = SP_USUARIO.CODIGORUTA WHERE SF_ABONOS.COMPANIA= :KEY_COMPANIA AND SF_ABONOS.TIPO= :KEY_TIPO AND SF_ABONOS.CODIGO= :KEY_CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPO":"$TIPO","CODIGO":"$CODIGO(type:long)","TERCERO":"$TERCERO","SUCURSAL":"$SUCURSAL","CENTRO_COSTO":"$CENTRO_COSTO","AUXILIAR":"$AUXILIAR","DEUDA_CAPITAL":"$DEUDA_CAPITAL","DEUDA_INTERES":"$DEUDA_INTERES","DEUDA_TOTAL":"$DEUDA_TOTAL","CUOTAS":"$CUOTAS(type:integer)","FECHA_INICIO":"$FECHA_INICIO","FECHA_FIN":"$FECHA_FIN","ESTADO":"$ESTADO","CUOTA_INICIAL":"$CUOTA_INICIAL","APLICACONDONACION":"$APLICACONDONACION(type:boolean)","CONDONACION":"$CONDONACION","OBSERVACION_CONDONACION":"$OBSERVACION_CONDONACION","TASA_INTERES":"$TASA_INTERES","CODIGORUTA":"$CODIGORUTA","TIPO_FACT":"$TIPO_FACT","NRO_FACT":"$NRO_FACT(type:long)","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","ANO":"$ANO(type:integer)","TERCERO_NOMBRE":"$TERCERO_NOMBRE","CENTROC_NOMBRE":"$CENTROC_NOMBRE","AUXILIAR_NOMBRE":"$AUXILIAR_NOMBRE","NOMBRE_CODRUTA":"$NOMBRE_CODRUTA"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sfabonos/data">
+		<call-query href="getSfabonosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPO" query-param="KEY_TIPO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSfabonos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SF_ABONOS SET CODIGO=:CODIGO, TERCERO=:TERCERO, SUCURSAL=:SUCURSAL, CENTRO_COSTO=:CENTRO_COSTO, AUXILIAR=:AUXILIAR, DEUDA_CAPITAL=:DEUDA_CAPITAL, DEUDA_INTERES=:DEUDA_INTERES, DEUDA_TOTAL=:DEUDA_TOTAL, CUOTAS=:CUOTAS, FECHA_INICIO=TO_DATE(:FECHA_INICIO,'DD/MM/YYYY HH24:MI:SS'), FECHA_FIN=TO_DATE(:FECHA_FIN,'DD/MM/YYYY HH24:MI:SS'), ESTADO=:ESTADO, CUOTA_INICIAL=:CUOTA_INICIAL, APLICACONDONACION=:APLICACONDONACION, CONDONACION=:CONDONACION, OBSERVACION_CONDONACION=:OBSERVACION_CONDONACION, TASA_INTERES=:TASA_INTERES, CODIGORUTA=:CODIGORUTA, TIPO_FACT=:TIPO_FACT, NRO_FACT=:NRO_FACT, ANO=:ANO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SF_ABONOS.COMPANIA= :KEY_COMPANIA AND SF_ABONOS.TIPO= :KEY_TIPO AND SF_ABONOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="TERCERO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="CENTRO_COSTO" sqlType="STRING"/>
+		<param name="AUXILIAR" sqlType="STRING"/>
+		<param name="DEUDA_CAPITAL" sqlType="STRING"/>
+		<param name="DEUDA_INTERES" sqlType="STRING"/>
+		<param name="DEUDA_TOTAL" sqlType="STRING"/>
+		<param name="CUOTAS" sqlType="STRING"/>
+		<param name="FECHA_INICIO" sqlType="STRING"/>
+		<param name="FECHA_FIN" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="CUOTA_INICIAL" sqlType="STRING"/>
+		<param name="APLICACONDONACION" sqlType="STRING"/>
+		<param name="CONDONACION" sqlType="STRING"/>
+		<param name="OBSERVACION_CONDONACION" sqlType="STRING"/>
+		<param name="TASA_INTERES" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="TIPO_FACT" sqlType="STRING"/>
+		<param name="NRO_FACT" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="sfabonos">
+		<call-query href="updateSfabonos">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="DEUDA_CAPITAL" query-param="DEUDA_CAPITAL"/>
+			<with-param name="DEUDA_INTERES" query-param="DEUDA_INTERES"/>
+			<with-param name="DEUDA_TOTAL" query-param="DEUDA_TOTAL"/>
+			<with-param name="CUOTAS" query-param="CUOTAS"/>
+			<with-param name="FECHA_INICIO" query-param="FECHA_INICIO"/>
+			<with-param name="FECHA_FIN" query-param="FECHA_FIN"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CUOTA_INICIAL" query-param="CUOTA_INICIAL"/>
+			<with-param name="APLICACONDONACION" query-param="APLICACONDONACION"/>
+			<with-param name="CONDONACION" query-param="CONDONACION"/>
+			<with-param name="OBSERVACION_CONDONACION" query-param="OBSERVACION_CONDONACION"/>
+			<with-param name="TASA_INTERES" query-param="TASA_INTERES"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="TIPO_FACT" query-param="TIPO_FACT"/>
+			<with-param name="NRO_FACT" query-param="NRO_FACT"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPO" query-param="KEY_TIPO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

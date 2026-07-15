@@ -1,0 +1,138 @@
+﻿<data name="correossalidas" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getCorreossalidasCorreoporcodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CORREO_SALIDA  FROM CORREOS_SALIDA WHERE COMPANIA = :COMPANIA AND CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CORREO_SALIDA":"$CORREO_SALIDA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="correossalidas/correoporcodigo">
+		<call-query href="getCorreossalidasCorreoporcodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertCorreossalidas" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CORREOS_SALIDA (COMPANIA, CODIGO, NOMBRE, CORREO_SALIDA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :NOMBRE, :CORREO_SALIDA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CORREO_SALIDA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="correossalidas">
+		<call-query href="insertCorreossalidas">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CORREO_SALIDA" query-param="CORREO_SALIDA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCorreossalidas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CORREOS_SALIDA WHERE CORREOS_SALIDA.COMPANIA= :KEY_COMPANIA AND CORREOS_SALIDA.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="correossalidas">
+		<call-query href="deleteCorreossalidas">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCorreossalidasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CORREOS_SALIDA.COMPANIA, CORREOS_SALIDA.CODIGO, CORREOS_SALIDA.NOMBRE, CORREOS_SALIDA.CORREO_SALIDA  FROM CORREOS_SALIDA ORDER BY CORREOS_SALIDA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CORREO_SALIDA IS NULL THEN ' ' ELSE UPPER(CORREO_SALIDA) END)  LIKE UPPER(:CORREO_SALIDA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","CORREO_SALIDA":"$CORREO_SALIDA"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CORREO_SALIDA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="correossalidas">
+		<call-query href="getCorreossalidasPaginaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CORREO_SALIDA" query-param="CORREO_SALIDA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCorreossalidasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CORREOS_SALIDA.COMPANIA, CORREOS_SALIDA.CODIGO, CORREOS_SALIDA.NOMBRE, CORREOS_SALIDA.CORREO_SALIDA  FROM CORREOS_SALIDA ORDER BY CORREOS_SALIDA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CORREO_SALIDA IS NULL THEN ' ' ELSE UPPER(CORREO_SALIDA) END)  LIKE UPPER(:CORREO_SALIDA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CORREO_SALIDA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="correossalidas/numero">
+		<call-query href="getCorreossalidasNumeroQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CORREO_SALIDA" query-param="CORREO_SALIDA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCorreossalidasRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CORREOS_SALIDA.COMPANIA, CORREOS_SALIDA.CODIGO, CORREOS_SALIDA.NOMBRE, CORREOS_SALIDA.CORREO_SALIDA  FROM CORREOS_SALIDA WHERE CORREOS_SALIDA.COMPANIA= :KEY_COMPANIA AND CORREOS_SALIDA.CODIGO= :KEY_CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","CORREO_SALIDA":"$CORREO_SALIDA"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="correossalidas/data">
+		<call-query href="getCorreossalidasRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCorreossalidas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CORREOS_SALIDA SET COMPANIA=:COMPANIA, CODIGO=:CODIGO, NOMBRE=:NOMBRE, CORREO_SALIDA=:CORREO_SALIDA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CORREOS_SALIDA.COMPANIA= :KEY_COMPANIA AND CORREOS_SALIDA.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CORREO_SALIDA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="correossalidas">
+		<call-query href="updateCorreossalidas">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CORREO_SALIDA" query-param="CORREO_SALIDA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

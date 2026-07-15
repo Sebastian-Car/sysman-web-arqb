@@ -1,0 +1,172 @@
+﻿<data name="elementosproteccionpersonal" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertElementosproteccionpersonal" keyColumns="COMPANIA,ELEMENTO,CEDULA,SUCURSAL,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ELEMENTO_PROTECCION_PERSONAL (COMPANIA, ELEMENTO, ID_DE_EMPLEADO, CONSECUTIVO, ID_CARGO, NOMBRE_EMPLEADO, SALARIO, DEPENDENCIA, OBSERVACION, FECHAENTREGA, SUCURSAL, CEDULA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ELEMENTO, :ID_DE_EMPLEADO, :CONSECUTIVO, :ID_CARGO, :NOMBRE_EMPLEADO, :SALARIO, :DEPENDENCIA, :OBSERVACION, TO_DATE(:FECHAENTREGA,'DD/MM/YYYY HH24:MI:SS'), :SUCURSAL, :CEDULA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ELEMENTO":"$ELEMENTO","KEY_CEDULA":"$CEDULA","KEY_SUCURSAL":"$SUCURSAL","KEY_CONSECUTIVO":"$CONSECUTIVO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="ID_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_EMPLEADO" sqlType="STRING"/>
+		<param defaultValue="0" name="SALARIO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAENTREGA" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="CEDULA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="elementosproteccionpersonal">
+		<call-query href="insertElementosproteccionpersonal">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="ID_CARGO" query-param="ID_CARGO"/>
+			<with-param name="NOMBRE_EMPLEADO" query-param="NOMBRE_EMPLEADO"/>
+			<with-param name="SALARIO" query-param="SALARIO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="FECHAENTREGA" query-param="FECHAENTREGA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteElementosproteccionpersonal" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ELEMENTO_PROTECCION_PERSONAL WHERE ELEMENTO_PROTECCION_PERSONAL.COMPANIA= :KEY_COMPANIA AND ELEMENTO_PROTECCION_PERSONAL.ELEMENTO= :KEY_ELEMENTO AND ELEMENTO_PROTECCION_PERSONAL.CEDULA= :KEY_CEDULA AND ELEMENTO_PROTECCION_PERSONAL.SUCURSAL= :KEY_SUCURSAL AND ELEMENTO_PROTECCION_PERSONAL.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ELEMENTO" sqlType="STRING"/>
+		<param name="KEY_CEDULA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="elementosproteccionpersonal">
+		<call-query href="deleteElementosproteccionpersonal">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ELEMENTO" query-param="KEY_ELEMENTO"/>
+			<with-param name="KEY_CEDULA" query-param="KEY_CEDULA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getElementosproteccionpersonalPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  EPR.COMPANIA ,EPR.ELEMENTO , EPR.ID_DE_EMPLEADO ,EPR.SUCURSAL,EPR.CEDULA,EPR.CONSECUTIVO ,EPR.ID_CARGO ,EPR.SALARIO ,EPR.DEPENDENCIA ,EPR.OBSERVACION ,(TO_CHAR(EPR.FECHAENTREGA,'DD/MM/YYYY HH24:MI:SS')) FECHAENTREGA,SEP.NOMBRE NOMBREELEMENTO ,EPR.NOMBRE_EMPLEADO  FROM ELEMENTO_PROTECCION_PERSONAL EPR INNER JOIN SST_ELEMENTO_PROTECCION SEP ON EPR.COMPANIA = SEP.COMPANIA AND EPR.ELEMENTO = SEP.CODIGOELEMENTO WHERE EPR.COMPANIA = :COMPANIA AND EPR.CEDULA = :NUMCEDULA) WHERE (CASE WHEN ELEMENTO IS NULL THEN ' ' ELSE UPPER(ELEMENTO) END)  LIKE UPPER(:ELEMENTO || '%')  AND (CASE WHEN ID_DE_EMPLEADO IS NULL THEN ' ' ELSE UPPER(ID_DE_EMPLEADO) END)  LIKE UPPER(:ID_DE_EMPLEADO || '%')  AND (CASE WHEN SALARIO IS NULL THEN ' ' ELSE UPPER(SALARIO) END)  LIKE UPPER( '%' || :SALARIO || '%')  AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END)  LIKE UPPER( '%' || :OBSERVACION || '%')  AND (CASE WHEN FECHAENTREGA IS NULL THEN ' ' ELSE UPPER(FECHAENTREGA) END)  LIKE UPPER( '%' || :FECHAENTREGA || '%')  AND (CASE WHEN NOMBREELEMENTO IS NULL THEN ' ' ELSE UPPER(NOMBREELEMENTO) END)  LIKE UPPER( '%' || :NOMBREELEMENTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ELEMENTO":"$ELEMENTO","ID_DE_EMPLEADO":"$ID_DE_EMPLEADO(type:integer)","SUCURSAL":"$SUCURSAL","CEDULA":"$CEDULA","CONSECUTIVO":"$CONSECUTIVO(type:long)","ID_CARGO":"$ID_CARGO","SALARIO":"$SALARIO","DEPENDENCIA":"$DEPENDENCIA","OBSERVACION":"$OBSERVACION","FECHAENTREGA":"$FECHAENTREGA","NOMBREELEMENTO":"$NOMBREELEMENTO","NOMBRE_EMPLEADO":"$NOMBRE_EMPLEADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMCEDULA" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="SALARIO" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="FECHAENTREGA" sqlType="STRING"/>
+		<param name="NOMBREELEMENTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="elementosproteccionpersonal">
+		<call-query href="getElementosproteccionpersonalPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMCEDULA" query-param="NUMCEDULA"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="SALARIO" query-param="SALARIO"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="FECHAENTREGA" query-param="FECHAENTREGA"/>
+			<with-param name="NOMBREELEMENTO" query-param="NOMBREELEMENTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getElementosproteccionpersonalNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  EPR.COMPANIA ,EPR.ELEMENTO , EPR.ID_DE_EMPLEADO ,EPR.SUCURSAL,EPR.CEDULA,EPR.CONSECUTIVO ,EPR.ID_CARGO ,EPR.SALARIO ,EPR.DEPENDENCIA ,EPR.OBSERVACION ,(TO_CHAR(EPR.FECHAENTREGA,'DD/MM/YYYY HH24:MI:SS')) FECHAENTREGA,SEP.NOMBRE NOMBREELEMENTO ,EPR.NOMBRE_EMPLEADO  FROM ELEMENTO_PROTECCION_PERSONAL EPR INNER JOIN SST_ELEMENTO_PROTECCION SEP ON EPR.COMPANIA = SEP.COMPANIA AND EPR.ELEMENTO = SEP.CODIGOELEMENTO WHERE EPR.COMPANIA = :COMPANIA AND EPR.CEDULA = :NUMCEDULA) WHERE (CASE WHEN ELEMENTO IS NULL THEN ' ' ELSE UPPER(ELEMENTO) END)  LIKE UPPER(:ELEMENTO || '%')  AND (CASE WHEN ID_DE_EMPLEADO IS NULL THEN ' ' ELSE UPPER(ID_DE_EMPLEADO) END)  LIKE UPPER(:ID_DE_EMPLEADO || '%')  AND (CASE WHEN SALARIO IS NULL THEN ' ' ELSE UPPER(SALARIO) END)  LIKE UPPER( '%' || :SALARIO || '%')  AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END)  LIKE UPPER( '%' || :OBSERVACION || '%')  AND (CASE WHEN FECHAENTREGA IS NULL THEN ' ' ELSE UPPER(FECHAENTREGA) END)  LIKE UPPER( '%' || :FECHAENTREGA || '%')  AND (CASE WHEN NOMBREELEMENTO IS NULL THEN ' ' ELSE UPPER(NOMBREELEMENTO) END)  LIKE UPPER( '%' || :NOMBREELEMENTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMCEDULA" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="SALARIO" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="FECHAENTREGA" sqlType="STRING"/>
+		<param name="NOMBREELEMENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="elementosproteccionpersonal/numero">
+		<call-query href="getElementosproteccionpersonalNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMCEDULA" query-param="NUMCEDULA"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="SALARIO" query-param="SALARIO"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="FECHAENTREGA" query-param="FECHAENTREGA"/>
+			<with-param name="NOMBREELEMENTO" query-param="NOMBREELEMENTO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateElementosproteccionpersonal" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ELEMENTO_PROTECCION_PERSONAL SET ELEMENTO=:ELEMENTO, ID_DE_EMPLEADO=:ID_DE_EMPLEADO, CONSECUTIVO=:CONSECUTIVO, ID_CARGO=:ID_CARGO, NOMBRE_EMPLEADO=:NOMBRE_EMPLEADO, SALARIO=:SALARIO, DEPENDENCIA=:DEPENDENCIA, OBSERVACION=:OBSERVACION, FECHAENTREGA=TO_DATE(:FECHAENTREGA,'DD/MM/YYYY HH24:MI:SS'), SUCURSAL=:SUCURSAL, CEDULA=:CEDULA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ELEMENTO_PROTECCION_PERSONAL.COMPANIA= :KEY_COMPANIA AND ELEMENTO_PROTECCION_PERSONAL.ELEMENTO= :KEY_ELEMENTO AND ELEMENTO_PROTECCION_PERSONAL.CEDULA= :KEY_CEDULA AND ELEMENTO_PROTECCION_PERSONAL.SUCURSAL= :KEY_SUCURSAL AND ELEMENTO_PROTECCION_PERSONAL.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="ID_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_EMPLEADO" sqlType="STRING"/>
+		<param name="SALARIO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="FECHAENTREGA" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ELEMENTO" sqlType="STRING"/>
+		<param name="KEY_CEDULA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="elementosproteccionpersonal">
+		<call-query href="updateElementosproteccionpersonal">
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="ID_CARGO" query-param="ID_CARGO"/>
+			<with-param name="NOMBRE_EMPLEADO" query-param="NOMBRE_EMPLEADO"/>
+			<with-param name="SALARIO" query-param="SALARIO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="FECHAENTREGA" query-param="FECHAENTREGA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ELEMENTO" query-param="KEY_ELEMENTO"/>
+			<with-param name="KEY_CEDULA" query-param="KEY_CEDULA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+
+</data>

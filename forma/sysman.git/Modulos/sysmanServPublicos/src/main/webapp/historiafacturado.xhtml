@@ -1,0 +1,802 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	template="/templateModalDatos.xhtml" xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+                if("#{historiafacturadosControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TT_FR1186}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{historiafacturadosControlador.cargarLista}" />
+		<section class="radiusModal">
+			<h:form id="FR1186"
+				style="display: #{historiafacturadosControlador.accion==null?'block':'none'}; margin-top: 2px">
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="lista" widgetVar="lista"
+					visible="#{historiafacturadosControlador.accion==null}"
+					style="border-width: 0">
+					<p:confirmDialog global="true" showEffect="fade" id="confFR1186"
+						widgetVar="confFR1186"
+						rendered="#{historiafacturadosControlador.permisos[1]}">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:dataTable id="TBFR1186" widgetVar="TBFR1186" var="reg"
+						value="#{historiafacturadosControlador.listaInicial}"
+						editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" paginator="true" lazy="true">
+						<f:facet name="{Exporters}"
+							rendered="#{historiafacturadosControlador.permisos[4] }">
+							<h:commandLink
+								rendered="#{historiafacturadosControlador.permisos[4] }"
+								title="#{idm.TI_VER_EXCEL}">
+								<p:graphicImage name="/images/general/excel.png" width="24" />
+								<p:dataExporter type="xls" target="TBFR1186" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+							<h:commandLink
+								rendered="#{historiafacturadosControlador.permisos[4] }"
+								title="#{idm.TI_VER_PDF}">
+								<p:graphicImage name="/images/general/pdf.png" width="24" />
+								<p:dataExporter type="pdf" target="TBFR1186" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+						</f:facet>
+						<f:facet name="header">
+							<div style="position: relative; height: 50px"></div>
+                            #{idm.TT_FR1186}
+                        </f:facet>
+						<p:column headerText="#{idm.TG_ANIO3}"
+							filterBy="#{reg.campos['ANO']}" filterMatchMode="startsWith"
+							style="text-align:center; " filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['ANO']}"
+								style="float:none;  text-align:none;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_PERIODO3}"
+							filterBy="#{reg.campos['PERIODO']}" filterMatchMode="startsWith"
+							style="text-align:center; " filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['PERIODO']}"
+								style="float:none;  text-align:none;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_FR1186_5}"
+							filterBy="#{reg.campos['TOTFACTURAPERACTUAL']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['TOTFACTURAPERACTUAL']}"
+								style="float:right;  text-align:right;"
+								converter="convertidorDoubleContinuo" />
+						</p:column>
+						<p:column width="150" headerText="Acciones"
+							style="text-align: center" exportable="false">
+							<p:commandButton icon="ui-icon-search"
+								title="#{idm.TI_VER_REGISTRO}"
+								action="#{historiafacturadosControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+								update=":FR1186_nuevo"
+								onclick="try{ PF('blockLista').show();     }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{historiafacturadosControlador.permisos[3]}"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR1186">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+			<h:form id="FR1186_nuevo"
+				style="margin-top: 2px;  display: #{historiafacturadosControlador.accion!=null?'block':'none'}">
+				<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA"
+					my="left bottom" at="left bottom" for="BTBUSQUEDA"
+					hideEffect="fade"
+					rendered="#{historiafacturadosControlador.accion!='i'}"
+					style="width: 500px">
+					<p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA" var="reg"
+						value="#{historiafacturadosControlador.listaInicialF}"
+						editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" selectionMode="single"
+						rowKey="#{reg.llave}" paginator="true" lazy="true">
+						<p:ajax event="rowSelect"
+							listener="#{historiafacturadosControlador.seleccionarFilaBusqueda}"
+							onstart="PF('blockNuevo').show()"
+							oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();    "
+							update="@form" />
+						<p:column headerText="#{idm.TG_ANIO3}"
+							filterBy="#{reg.campos['ANO']}" filterMatchMode="startsWith"
+							style="text-align:center; " filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['ANO']}"
+								style="float:none;  text-align:none;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_PERIODO3}"
+							filterBy="#{reg.campos['PERIODO']}" filterMatchMode="startsWith"
+							style="text-align:center; " filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['PERIODO']}"
+								style="float:none;  text-align:none;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_FR1186_5}"
+							filterBy="#{reg.campos['TOTFACTURAPERACTUAL']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['TOTFACTURAPERACTUAL']}"
+								style="float:right;  text-align:right;"
+								converter="convertidorDoubleContinuo" />
+						</p:column>
+					</p:dataTable>
+				</p:overlayPanel>
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="nuevoPanel"
+					visible="#{historiafacturadosControlador.accion!=null}"
+					widgetVar="nuevoPanel" style="border-width: 0">
+					<div
+						style="position: relative; height: 50px; padding-bottom: 80px;">
+						<div class="acme"
+							style="display:#{historiafacturadosControlador.accion=='v'?'none':'block'}">
+							<p:commandLink
+								action="#{historiafacturadosControlador.agregarRegistroNuevo(false)}"
+								rendered="#{historiafacturadosControlador.accion!='v'}"
+								update=":FR1186_nuevo,#{!historiafacturadosControlador.permisos[2]?':FR1186':'' }"
+								onclick="PF('blockNuevoGuardar').show();
+"
+								title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+								oncomplete="asignarEventoContGrande(); validarCargaGrandes(); ">
+								<center>
+									<p:graphicImage name="/images/menus/32/save.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{historiafacturadosControlador.accion=='i' or !historiafacturadosControlador.permisos[0]?'none':'block'}">
+							<p:commandLink id="BTBUSQUEDA"
+								rendered="#{historiafacturadosControlador.accion!='i' and historiafacturadosControlador.permisos[0]}"
+								title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/search.png" />
+									<div style="height: 30px">#{idm.TI_BUSCAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme">
+							<p:commandLink update=":FR1186:TBFR1186"
+								onclick="if (#{historiafacturadosControlador.varVolver}) {
+                  rcVolver();
+        } else {
+                  try {
+                            PF('TBFR1186').filter();
+                            PF('nuevoPanel').close();
+                            PF('lista').show();
+                            return false;
+                  } catch (e) {
+                            return false;
+                  }
+        }"
+								title="#{idm.TI_ATRAS}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/back.png" />
+									<div style="height: 30px">#{idm.TI_VOLVER}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<p:remoteCommand name="rcVolver" update="@form,:FR1186"
+							actionListener="#{historiafacturadosControlador.ejecutarrcVolver}" />
+						<p:panel
+							rendered="#{historiafacturadosControlador.accion!='i'  and historiafacturadosControlador.rid==null }"
+							styleClass="acme"
+							style="min-width: 350px; width:30%; padding: 10px;">
+							<center style="margin: 2px;">
+								<p:commandButton icon="ui-icon-seek-first"
+									action="#{historiafacturadosControlador.irPrimero()}"
+									title="#{idm.TI_PRIMER_REGISTRO}" update=":FR1186_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-prev"
+									action="#{historiafacturadosControlador.irAnterior()}"
+									title="#{idm.TI_REGISTRO_ANTERIOR}" update=":FR1186_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:outputLabel
+									value="#{idm.TI_REGISTRO} #{historiafacturadosControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{historiafacturadosControlador.listaInicial.rowCount} " />
+								<p:commandButton icon="ui-icon-seek-next"
+									title="#{idm.TI_REGISTRO_SIGUIENTE}"
+									action="#{historiafacturadosControlador.irSiguiente()}"
+									update=":FR1186_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-end"
+									title="#{idm.TI_ULTIMO_REGISTRO}"
+									action="#{historiafacturadosControlador.irUltimo()}"
+									update=":FR1186_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+							</center>
+						</p:panel>
+						<p:panel styleClass="acme" style="width:21%;">
+							<h:panelGrid columns="3"
+								style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+								<h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}" />
+								<p:inputText id="CPCREADO" readonly="true" widgetVar="CPCREADO"
+									value="#{historiafacturadosControlador.registro.campos['CREATED_BY']}"
+									placeholder="#{idm.TI_CREADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPCREADOF" widgetVar="CPCREADOF"
+									value="#{historiafacturadosControlador.registro.campos['DATE_CREATED']}"
+									disabled="true" />
+								<h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+								<p:inputText id="CPMODIFICADO" readonly="true"
+									widgetVar="CPMODIFICADO"
+									value="#{historiafacturadosControlador.registro.campos['MODIFIED_BY']}"
+									placeholder="#{idm.TI_MODIFICADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPMODIFICADOF" widgetVar="CPMODIFICADOF"
+									value="#{historiafacturadosControlador.registro.campos['DATE_MODIFIED']}"
+									disabled="true" />
+							</h:panelGrid>
+						</p:panel>
+					</div>
+					<p:dialog dynamic="true" closable="false" closeOnEscape="false"
+						header="#{jsfUtil.tituloMensajes}" id="DG196" widgetVar="DG196"
+						resizable="false" modal="true" width="250"
+						visible="#{historiafacturadosControlador.mostrarMens}">
+						<h:outputLabel value="#{idm.TE_DG196}" style="width: 100%;"
+							escape="false" />
+						<h:panelGrid columns="2" cellpadding="2" width="100%">
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TG_SI2}"
+										style="padding:10px; width: 48%;" ajax="false"
+										oncomplete=" if(false){ PF('DG196').hide(); PF('blockNuevo').hide();}  "
+										onclick="  if(false){ PF('blockNuevo').show(); }else{    PF('DG196').hide(); }  "
+										actionListener="#{historiafacturadosControlador.aceptarConsEntrePeriodos}" />
+									<p:commandButton value="#{idm.TI_NO}"
+										style="padding:10px; width: 48%;" ajax="false"
+										oncomplete=" if(false){ PF('DG196').hide(); PF('blockNuevo').hide();} "
+										onclick=" if(false){ PF('blockNuevo').show(); }else{    PF('DG196').hide(); }  "
+										actionListener="#{historiafacturadosControlador.cancelarConsEntrePeriodos}">
+										<p:fileDownload
+											value="#{historiafacturadosControlador.archivoDescarga}" />
+									</p:commandButton>
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<p:dialog dynamic="true" closable="true" closeOnEscape="false"
+						header="#{idm.TT_DG197}" id="DG197" widgetVar="DG197"
+						resizable="false" modal="true" width="250"
+						visible="#{historiafacturadosControlador.mostrarHistorial}"
+						onHide="restaurarCampos(['CB4581','CB4582','CB4583'])">
+						<h:outputLabel value="#{idm.TE_DG197}" style="width: 100%;"
+							escape="false" />
+						<h:panelGrid columns="2" cellpadding="2" width="100%">
+							<h:outputLabel value="#{idm.TC_CB4581}:" id="LCB4581"
+								style="display:true;" class="cont-inst-element" />
+							<p:selectOneMenu filter="true" effect="fade" id="CB4581"
+								editable="false" widgetVar="CB4581"
+								value="#{historiafacturadosControlador.anioInicial}" onchange=""
+								style="display:true;
+" class="cont-inst-element">
+								<p:ajax
+									listener="#{historiafacturadosControlador.cambiarAnioInicial}"
+									update=":FR1186_nuevo:CB4582,:FR1186_nuevo:CB4583,:FR1186_nuevo:CB4584" />
+								<f:selectItem />
+								<f:selectItems
+									value="#{historiafacturadosControlador.listaAnioInicial}"
+									var="regc" itemLabel="#{regc.campos['ANO']}"
+									itemValue="#{regc.campos['ANO']}" />
+							</p:selectOneMenu>
+							<h:outputLabel value="#{idm.TC_CB4582}:" id="LCB4582"
+								style="display:true;" class="cont-inst-element" />
+							<p:selectOneMenu filter="true" effect="fade" id="CB4582"
+								editable="false" widgetVar="CB4582"
+								value="#{historiafacturadosControlador.periodoInicial}"
+								onchange="" style="display:true;
+" class="cont-inst-element">
+								<p:ajax
+									listener="#{historiafacturadosControlador.cambiarPeriodoInicial}"
+									update=":FR1186_nuevo:CB4584" />
+								<f:selectItem />
+								<f:selectItems
+									value="#{historiafacturadosControlador.listaPeriodoInicial}"
+									var="regc" itemLabel="#{regc.campos['MES']}"
+									itemValue="#{regc.campos['MES']}" />
+							</p:selectOneMenu>
+							<h:outputLabel value="#{idm.TC_CB4583}:" id="LCB4583"
+								style="display:true;" class="cont-inst-element" />
+							<p:selectOneMenu filter="true" effect="fade" id="CB4583"
+								editable="false" widgetVar="CB4583"
+								value="#{historiafacturadosControlador.anioFinal}" onchange=""
+								style="display:true;
+" class="cont-inst-element">
+								<p:ajax
+									listener="#{historiafacturadosControlador.cambiarAnioFinal}"
+									update=":FR1186_nuevo:CB4584" />
+								<f:selectItem />
+								<f:selectItems
+									value="#{historiafacturadosControlador.listaAnioFinal}"
+									var="regc" itemLabel="#{regc.campos['ANO']}"
+									itemValue="#{regc.campos['ANO']}" />
+							</p:selectOneMenu>
+							<h:outputLabel value="#{idm.TC_CB4584}:" id="LCB4584"
+								style="display:true;" class="cont-inst-element" />
+							<p:selectOneMenu filter="true" effect="fade" id="CB4584"
+								editable="false" widgetVar="CB4584"
+								value="#{historiafacturadosControlador.periodoFinal}"
+								onchange="" style="display:true;
+" class="cont-inst-element">
+								<f:selectItem />
+								<f:selectItems
+									value="#{historiafacturadosControlador.listaPeriodoFinal}"
+									var="regc" itemLabel="#{regc.campos['MES']}"
+									itemValue="#{regc.campos['MES']}" />
+							</p:selectOneMenu>
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TG_ACEPTAR}"
+										style="padding:10px; width: 48%;" ajax="false"
+										oncomplete=" if(false){ PF('DG197').hide(); PF('blockNuevo').hide();}  "
+										onclick="    if (!validarVaciosModal(['CB4581','CB4582','CB4583'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }  if(false){ PF('blockNuevo').show(); }else{    PF('DG197').hide(); }  "
+										actionListener="#{historiafacturadosControlador.aceptarLHistoria}">
+										<p:fileDownload
+											value="#{historiafacturadosControlador.archivoDescarga}" />
+									</p:commandButton>
+									<p:button value="#{idm.TG_CANCELAR}"
+										style="padding:10px; width: 48%;" href="#"
+										onclick="PF('DG197').hide();" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<p:dialog dynamic="true" closable="false" closeOnEscape="false"
+						header="#{idm.TT_DG198}" id="DG198" widgetVar="DG198"
+						resizable="false" modal="true" width="250"
+						visible="#{historiafacturadosControlador.mostrarSelFormato}">
+						<h:outputLabel value="#{idm.TE_DG198}" style="width: 100%;"
+							escape="false" />
+						<h:panelGrid columns="2" cellpadding="2" width="100%">
+							<h:outputLabel value="#{idm.TG_FORMATO}:" id="LCB4606"
+								style="display:true;" class="cont-inst-element" />
+							<p:selectOneMenu filter="true" effect="fade" id="CB4606"
+								editable="false" widgetVar="CB4606"
+								value="#{historiafacturadosControlador.formato}" onchange=""
+								style="display:true;
+" class="cont-inst-element">
+								<f:selectItem />
+								<f:selectItem itemValue="1" itemLabel="#{idm.OD_CB4606_0}" />
+								<f:selectItem itemValue="2" itemLabel="#{idm.OD_CB4606_1}" />
+							</p:selectOneMenu>
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TG_ACEPTAR}"
+										style="padding:10px; width: 48%;" update="@form" ajax="false"
+										oncomplete=" if(false){ PF('DG198').hide(); PF('blockNuevo').hide();}  "
+										onclick="  if(false){ PF('blockNuevo').show(); }else{    PF('DG198').hide(); }  "
+										actionListener="#{historiafacturadosControlador.aceptarSeleccionarFormato}">
+										<p:fileDownload
+											value="#{historiafacturadosControlador.archivoDescarga}" />
+									</p:commandButton>
+									<p:button value="#{idm.TG_CANCELAR}"
+										style="padding:10px; width: 48%;" href="#"
+										onclick="PF('DG198').hide();" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<div id="PL2284" class="formDefault"
+						style="position: relative; height: 420px;">
+						<h:panelGroup id="SF161"
+							style="position: absolute; width:866px; height: auto; left: 0px;   top: 184px; ">
+							<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}"
+								id="dlg161" widgetVar="dlg161" resizable="false" modal="true"
+								rendered="#{historiafacturadosControlador.permisos[0]}"
+								position="center top" onHide="restaurarCampos(['CP35910'])">
+								<h:panelGrid columns="2" cellpadding="2">
+									<h:outputLabel value="#{idm.TG_ID2}:" id="LCP35908"
+										class="cont-inst-element" />
+									<p:inputText id="CP35908" widgetVar="CP35908"
+										styleClass="inputTab"
+										value="#{historiafacturadosControlador.registroSub.campos['CONCEPTO']}"
+										label="LCP35908" style=" width: 95%; float: left;"
+										class="cont-inst-element">
+									</p:inputText>
+									<h:outputLabel value="#{idm.TG_CONCEPTO4}:" id="LCP35909"
+										class="cont-inst-element" />
+									<p:inputText id="CP35909" widgetVar="CP35909"
+										styleClass="inputTab"
+										value="#{historiafacturadosControlador.registroSub.campos['NOMBRE']}"
+										label="LCP35909" style=" width: 95%; float: left;"
+										class="cont-inst-element" maxlength="40">
+									</p:inputText>
+									<h:outputLabel value="#{idm.TG_VALOR4}:" id="LCP35910"
+										class="cont-inst-element" />
+									<pe:inputNumber id="CP35910" widgetVar="CP35910"
+										value="#{historiafacturadosControlador.registroSub.campos['VALOR']}"
+										label="LCP35910" decimalPlaces="2" thousandSeparator=","
+										decimalSeparator="." styleClass="inputTab"
+										maxValue="999999999999999999.99"
+										minValue="-999999999999999999.99"
+										converter="convertidorDouble" style=" width: 95%;float: left;"
+										class="cont-inst-element">
+									</pe:inputNumber>
+									<f:facet name="footer">
+										<center>
+											<p:commandButton value="#{idm.TI_GUARDAR}"
+												style="padding:10px;"
+												update=":FR1186_nuevo:alert,tablePL2285,dlg161,"
+												actionListener="#{historiafacturadosControlador.agregarRegistroSubSubtemphistoria}"
+												oncomplete="PF('dlg161').hide();PF('blockNuevoGuardar').hide();"
+												onclick="    if (!validarVaciosModal(['CP35910'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockNuevoGuardar').show();" />
+											<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+												href="#" onclick="PF('dlg161').hide();" />
+										</center>
+									</f:facet>
+								</h:panelGrid>
+							</p:dialog>
+							<div id="PL2285" class="
+"
+								style="position: relative; height: 157px;">
+								<p:remoteCommand name="refreshTabPL2285" update="tablePL2285" />
+								<p:dataTable id="tablePL2285" var="reg"
+									value="#{historiafacturadosControlador.listaSubtemphistoria}"
+									emptyMessage="#{idm.TI_EMPTY_MESSAGE}" scrollable="true"
+									scrollHeight="157" scrollWidth="866" rowIndexVar="rowNun"
+									editable="true" widgetVar="tablePL2285" tabindex="1">
+									<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+									<p:ajax event="rowEdit"
+										update=":FR1186_nuevo:alert,tablePL2285,"
+										onstart="PF('blockNuevoGuardar').show()"
+										oncomplete="refreshTabPL2285(); PF('blockNuevoGuardar').hide();  mostarEditor();"
+										listener="#{historiafacturadosControlador.editarRegSubSubtemphistoria}" />
+									<p:ajax event="rowEditCancel" update="tablePL2285
+"
+										listener="#{historiafacturadosControlador.cancelarEdicionSubtemphistoria}"
+										oncomplete=" mostarEditor();" />
+									<f:facet name="header">    
+			#{idm.TT_SF161}
+                                            </f:facet>
+									<p:column headerText="#{idm.TG_ID2}" width="10%"
+										rendered="true" style="
+" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['CONCEPTO']}" />
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="CP35908" styleClass="inputTab"
+													value="#{reg.campos['CONCEPTO']}" style="width:100%">
+												</p:inputText>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TG_CONCEPTO4}" width="70%"
+										rendered="true" style="
+" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['NOMBRE']}" />
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="CP35909" styleClass="inputTab"
+													value="#{reg.campos['NOMBRE']}" style="width:100%"
+													maxlength="40">
+												</p:inputText>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TG_VALOR4}" width="20%"
+										rendered="true" style="
+" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['VALOR']}"
+													converter="convertidorDoubleContinuo"
+													style="text-align:  right; float:  right" />
+											</f:facet>
+											<f:facet name="input">
+												<pe:inputNumber id="CP35910" value="#{reg.campos['VALOR']}"
+													styleClass="inputTab" style="width:100%" decimalPlaces="2"
+													thousandSeparator="," decimalSeparator="."
+													maxValue="999999999999999999.99"
+													minValue="-999999999999999999.99"
+													converter="convertidorDouble">
+												</pe:inputNumber>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:columnGroup type="footer">
+										<p:row style="height: 0px; border: none">
+											<p:column style="border:1px solid transparent;"
+												rendered="true" />
+											<p:column style="border:1px solid transparent;"
+												rendered="true" />
+											<p:column style="border:1px solid transparent;"
+												rendered="true" />
+										</p:row>
+										<p:row>
+											<p:column id="LP211" footerText="#{idm.TT_LP211}" colspan="2"
+												style="text-align: right; font-weight: normal; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+											<p:column id="LP210"
+												footerText="#{historiafacturadosControlador.registro.campos['TOTFACTURAPERACTUAL']}"
+												colspan="1"
+												style="text-align: right; font-weight: normal; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+										</p:row>
+									</p:columnGroup>
+								</p:dataTable>
+							</div>
+						</h:panelGroup>
+						<p:inputText id="CP35907" widgetVar="CP35907"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['INTERVALOFACT']}"
+							readonly="true" tabindex="25"
+							style="position: absolute; width:217px; height: 24px; text-decoration:none; left: 648px;   top: 69px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:selectBooleanCheckbox id="CK1025" widgetVar="CK1025"
+							value="#{historiafacturadosControlador.registro.campos['CONSUMOMANUAL']}"
+							disabled="true" tabindex="16"
+							style="position: absolute;  left: 65px;   top: 165px; display:block; ">
+						</p:selectBooleanCheckbox>
+						<p:selectBooleanCheckbox id="CK1026" widgetVar="CK1026"
+							value="#{historiafacturadosControlador.registro.campos['PAGOTERCERIZADO']}"
+							disabled="true" tabindex="22"
+							style="position: absolute;  left: 606px;   top: 165px; display:block; ">
+						</p:selectBooleanCheckbox>
+						<h:outputLabel id="LB29841" value="#{idm.TT_LB29841}"
+							style="position: absolute; width:74px; height: 24px; left: 791px;   top: 138px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29842" value="#{idm.TT_LB29842}"
+							style="position: absolute; width:108px; height: 24px; left: 432px;   top: 46px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29843" value="#{idm.TT_LB29843}"
+							style="position: absolute; width:106px; height: 24px; left: 216px;   top: 46px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29844" value="#{idm.TT_LB29844}"
+							style="position: absolute; width:217px; height: 24px; left: 648px;   top: 92px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29845" value="#{idm.TG_FECHA_DE_PAGO}"
+							style="position: absolute; width:217px; height: 24px; left: 216px;   top: 92px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29846" value="#{idm.TT_LB29846}"
+							style="position: absolute; width:217px; height: 24px; left: 648px;   top: 0px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29847" value="#{idm.TT_LB29847}"
+							style="position: absolute; width:217px; height: 24px; left: 432px;   top: 0px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29848" value="#{idm.TT_LB29848}"
+							style="position: absolute; width:217px; height: 24px; left: 216px;   top: 0px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29849" value="#{idm.TG_PERIODO}"
+							style="position: absolute; width:75px; height: 24px; left: 142px;   top: 46px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29850" value="#{idm.TT_LB29850}"
+							style="position: absolute; width:72px; height: 24px; left: 71px;   top: 46px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29851" value="#{idm.TT_LB29851}"
+							style="position: absolute; width:217px; height: 24px; left: 0px;   top: 0px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29852" value="#{idm.TT_LB29852}"
+							style="position: absolute; width:72px; height: 24px; left: 0px;   top: 46px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29853" value="#{idm.TT_LB29853}"
+							style="position: absolute; width:112px; height: 24px; left: 321px;   top: 46px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29854" value="#{idm.TT_LB29854}"
+							style="position: absolute; width:217px; height: 24px; left: 432px;   top: 92px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29855" value="#{idm.TT_LB29855}"
+							style="position: absolute; width:144px; height: 24px; left: 0px;   top: 138px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29856" value="#{idm.TT_LB29856}"
+							style="position: absolute; width:144px; height: 24px; left: 143px;   top: 138px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29857" value="#{idm.TT_LB29857}"
+							style="position: absolute; width:147px; height: 24px; left: 286px;   top: 138px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29858" value="#{idm.TT_LB29858}"
+							style="position: absolute; width:144px; height: 24px; left: 432px;   top: 138px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29859" value="#{idm.TT_LB29859}"
+							style="position: absolute; width:144px; height: 24px; left: 648px;   top: 138px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29860" value="#{idm.TG_PROMEDIO}"
+							style="position: absolute; width:110px; height: 24px; left: 539px;   top: 46px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29861" value="#{idm.TT_LB29861}"
+							style="position: absolute; width:74px; height: 24px; left: 575px;   top: 138px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29862" value="#{idm.TT_LB29862}"
+							style="position: absolute; width:217px; height: 24px; left: 0px;   top: 92px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<h:outputLabel id="LB29863" value="#{idm.TT_LB29863}"
+							style="position: absolute; width:217px; height: 24px; left: 648px;   top: 46px; text-align: center; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+						<p:inputText id="CP35888" widgetVar="CP35888"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['CONSUMO']}"
+							readonly="true" tabindex="6"
+							style="position: absolute; width:108px; height: 24px; text-decoration:none; left: 432px;   top: 69px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP35889" widgetVar="CP35889"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['LECTURA']}"
+							readonly="true" tabindex="4"
+							style="position: absolute; width:106px; height: 24px; text-decoration:none; left: 216px;   top: 69px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP35890" widgetVar="CP35890"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['PAQUETEPAGOPERPROCESO']}"
+							readonly="true" tabindex="3"
+							style="position: absolute; width:217px; height: 24px; text-decoration:none; left: 648px;   top: 115px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:calendar locale="es" navigator="true" mask="true"
+							pattern="dd/MM/yyyy" id="CP35891" widgetVar="CP35891"
+							value="#{historiafacturadosControlador.registro.campos['FECHAPAGOPERPROCESO']}"
+							disabled="true" tabindex="5"
+							style="position: absolute; width:217px; height: 24px; left: 216px;   top: 115px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+						</p:calendar>
+						<p:inputText id="CP35892" widgetVar="CP35892"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['ESTRATO']}"
+							readonly="true" tabindex="7"
+							style="position: absolute; width:217px; height: 24px; text-decoration:none; left: 648px;   top: 23px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP35893" widgetVar="CP35893"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['USO']}"
+							readonly="true" tabindex="8"
+							style="position: absolute; width:217px; height: 24px; text-decoration:none; left: 432px;   top: 23px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP35894" widgetVar="CP35894"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['CODIGOINTERNO']}"
+							readonly="true" tabindex="11"
+							style="position: absolute; width:217px; height: 24px; text-decoration:none; left: 216px;   top: 23px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP35895" widgetVar="CP35895"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['PERIODO']}"
+							readonly="true" tabindex="13"
+							style="position: absolute; width:75px; height: 24px; text-decoration:none; left: 142px;   top: 69px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP35896" widgetVar="CP35896"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['ANO']}"
+							readonly="true" tabindex="14"
+							style="position: absolute; width:72px; height: 24px; text-decoration:none; left: 71px;   top: 69px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP35897" widgetVar="CP35897"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['CODIGORUTA']}"
+							readonly="true" tabindex="9"
+							style="position: absolute; width:217px; height: 24px; text-decoration:none; left: 0px;   top: 23px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP35898" widgetVar="CP35898"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['CICLO']}"
+							readonly="true" tabindex="10"
+							style="position: absolute; width:72px; height: 24px; text-decoration:none; left: 0px;   top: 69px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP35899" widgetVar="CP35899"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['LECTURA1']}"
+							readonly="true" tabindex="12"
+							style="position: absolute; width:112px; height: 24px; text-decoration:none; left: 321px;   top: 69px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP35900" widgetVar="CP35900"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['BANCOPERPROCESO']}"
+							readonly="true" tabindex="15"
+							style="position: absolute; width:217px; height: 24px; text-decoration:none; left: 432px;   top: 115px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP35901" widgetVar="CP35901"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['CONSUMO']}"
+							readonly="true" tabindex="17"
+							style="position: absolute; width:144px; height: 24px; text-decoration:none; left: 143px;   top: 161px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP35902" widgetVar="CP35902"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['CONSUMOALC']}"
+							readonly="true" tabindex="18"
+							style="position: absolute; width:147px; height: 24px; text-decoration:none; left: 286px;   top: 161px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<pe:inputNumber id="CP35903" widgetVar="CP35903"
+							styleClass="inputTab txtRight"
+							value="#{historiafacturadosControlador.registro.campos['TERCERIZADO']}"
+							decimalPlaces="0" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="19" maxValue="99999999999999999999"
+							minValue="-99999999999999999999" converter="convertidorDouble"
+							style="position: absolute; width:144px; height: 24px; text-decoration:none; left: 432px;   top: 161px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP35904" widgetVar="CP35904"
+							styleClass="inputTab txtRight"
+							value="#{historiafacturadosControlador.registro.campos['CONVENIOS']}"
+							decimalPlaces="0" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="20" maxValue="9999999999999999999999"
+							minValue="-9999999999999999999999" converter="convertidorDouble"
+							style="position: absolute; width:144px; height: 24px; text-decoration:none; left: 648px;   top: 161px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<p:inputText id="CP35905" widgetVar="CP35905"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['CONSUMOPROM']}"
+							readonly="true" tabindex="21"
+							style="position: absolute; width:110px; height: 24px; text-decoration:none; left: 539px;   top: 69px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:calendar locale="es" navigator="true" mask="true"
+							pattern="dd/MM/yyyy" id="CP35906" widgetVar="CP35906"
+							value="#{historiafacturadosControlador.registro.campos['FECHAEXPEDICION']}"
+							disabled="true" tabindex="24"
+							style="position: absolute; width:217px; height: 24px; left: 0px;   top: 115px; text-align: center; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+						</p:calendar>
+						<p:selectBooleanCheckbox id="CK1024" widgetVar="CK1024"
+							value="#{historiafacturadosControlador.registro.campos['PAGOCONVENIOS']}"
+							disabled="true" tabindex="23"
+							style="position: absolute;  left: 822px;   top: 165px; display:block; ">
+						</p:selectBooleanCheckbox>
+					</div>
+					<div id="PL2291" class="formDefault"
+						style="position: relative; height: 49px;">
+						<p:commandButton id="BT2195" widgetVar="BT2195"
+							update=":FR1186_nuevo:DG198" tabindex="2"
+							value="#{idm.TT_BT2195}"
+							actionListener="#{historiafacturadosControlador.oprimirbtHistoricosFactura}"
+							style="position: absolute; width:120px; height: 48px; left: 746px;   top: 8px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#000000; border:#000000  solid  1px ;">
+						</p:commandButton>
+						<p:commandButton id="BT2196" widgetVar="BT2196"
+							icon="ui-iconExcel" update=":FR1186_nuevo:DG196" tabindex="2"
+							value=""
+							actionListener="#{historiafacturadosControlador.oprimirABRIR}"
+							style="position: absolute; width:48px; height: 48px; left: 690px;   top: 8px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#000000; border:#000000  solid  1px ;">
+						</p:commandButton>
+						<p:inputTextarea autoResize="false" id="CP35912"
+							widgetVar="CP35912"
+							value="#{historiafacturadosControlador.comentariosActuales}"
+							readonly="#{historiafacturadosControlador.accion=='v'?true:false}"
+							tabindex="2" styleClass="inputTab"
+							style="resize: none; position: absolute; width:681px; height: 65px; left: 0px;   top: -1px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputTextarea>
+						<h:outputLabel id="LB29865" value="#{idm.TT_LB29865}"
+							style="position: absolute; width:673px; height: 24px; left: 0px;   top: 38px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:none; background:#FFFFFF; color:#FF0000; border:#000000  solid  1px ;" />
+						<p:inputText id="CP35911" widgetVar="CP35911"
+							styleClass="inputTab"
+							value="#{historiafacturadosControlador.registro.campos['TOTFACTURAPERACTUAL']}"
+							readonly="#{historiafacturadosControlador.accion=='v'?true:false}"
+							tabindex="3"
+							style="position: absolute; width:337px; height: 24px; text-decoration:none; left: 336px;   top: 15px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:none; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<h:outputLabel id="LB29864" value="#{idm.TT_LB29864}"
+							style="position: absolute; width:337px; height: 24px; left: 0px;   top: 15px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:none; background:#DDDDDD; color:#000000; border:#000000  solid  1px ;" />
+					</div>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

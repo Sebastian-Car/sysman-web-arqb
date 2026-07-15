@@ -1,0 +1,360 @@
+﻿<data name="ippagobancoscab" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getIppagobancoscabFechasPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT TO_CHAR(PREFEC, 'DD/MM/YYYY') PREFLB  FROM IP_PAGO_BANCOSCAB WHERE COMPANIA = :COMPANIA ORDER BY PREFLB</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PREFLB":"$PREFLB"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancoscab/fechasporcompania">
+		<call-query href="getIppagobancoscabFechasPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancoscabPaquetePorFechaYBancoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT PAQUETE  FROM IP_PAGO_BANCOSCAB WHERE COMPANIA = :COMPANIA AND PREFEC BETWEEN TO_DATE(:FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS') AND TO_DATE(:FECHAFINAL,'DD/MM/YYYY HH24:MI:SS') AND PAG_BAN BETWEEN :BANCOINICIAL AND :BANCOFINAL ORDER BY PAQUETE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAQUETE":"$PAQUETE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="BANCOINICIAL" sqlType="STRING"/>
+		<param name="BANCOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancoscab/paqueteporfechaybanco">
+		<call-query href="getIppagobancoscabPaquetePorFechaYBancoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="BANCOINICIAL" query-param="BANCOINICIAL"/>
+			<with-param name="BANCOFINAL" query-param="BANCOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancoscabFechasPorCompaniaFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT TO_CHAR(PREFEC,'DD/MM/YYYY') PREFLB  FROM IP_PAGO_BANCOSCAB WHERE COMPANIA = :COMPANIA AND PREFEC &gt;= TO_DATE(:FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS') ORDER BY PREFLB</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PREFLB":"$PREFLB"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancoscab/fechasporcompaniafinal">
+		<call-query href="getIppagobancoscabFechasPorCompaniaFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancoscabPaquetePorFechaYBancoFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT PAQUETE  FROM IP_PAGO_BANCOSCAB WHERE COMPANIA = :COMPANIA AND PREFEC BETWEEN TO_DATE(:FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS') AND TO_DATE(:FECHAFINAL,'DD/MM/YYYY HH24:MI:SS') AND PAG_BAN BETWEEN :BANCOINICIAL AND :BANCOFINAL AND PAQUETE &gt;= :PAQUETEINICIAL ORDER BY PAQUETE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAQUETE":"$PAQUETE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="BANCOINICIAL" sqlType="STRING"/>
+		<param name="BANCOFINAL" sqlType="STRING"/>
+		<param name="PAQUETEINICIAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancoscab/paqueteporfechaybancofinal">
+		<call-query href="getIppagobancoscabPaquetePorFechaYBancoFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="BANCOINICIAL" query-param="BANCOINICIAL"/>
+			<with-param name="BANCOFINAL" query-param="BANCOFINAL"/>
+			<with-param name="PAQUETEINICIAL" query-param="PAQUETEINICIAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancoscabPagPorCompaniaYFechaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT PAGO_BANCOSCAB.PAG_BAN, BANCOS.NOMBREBANCO  FROM IP_PAGO_BANCOSCAB PAGO_BANCOSCAB INNER JOIN IP_BANCOS BANCOS ON PAGO_BANCOSCAB.COMPANIA = BANCOS.COMPANIA AND PAGO_BANCOSCAB.PAG_BAN = BANCOS.CODIGOBANCO WHERE PAGO_BANCOSCAB.COMPANIA = :COMPANIA AND PAGO_BANCOSCAB.PREFEC BETWEEN TO_DATE(:FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS') AND TO_DATE(:FECHAFINAL,'DD/MM/YYYY HH24:MI:SS') GROUP BY PAGO_BANCOSCAB.PREFEC, PAGO_BANCOSCAB.PAG_BAN, BANCOS.NOMBREBANCO ORDER BY PAGO_BANCOSCAB.PAG_BAN) WHERE (CASE WHEN PAG_BAN IS NULL THEN ' ' ELSE UPPER(PAG_BAN) END)  LIKE UPPER(:PAG_BAN || '%')  AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END)  LIKE UPPER( '%' || :NOMBREBANCO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAG_BAN":"$PAG_BAN","NOMBREBANCO":"$NOMBREBANCO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="PAG_BAN" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ippagobancoscab/porcompaniayfecha/pag">
+		<call-query href="getIppagobancoscabPagPorCompaniaYFechaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancoscabNumPorCompaniaYFechaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT PAGO_BANCOSCAB.PAG_BAN, BANCOS.NOMBREBANCO  FROM IP_PAGO_BANCOSCAB PAGO_BANCOSCAB INNER JOIN IP_BANCOS BANCOS ON PAGO_BANCOSCAB.COMPANIA = BANCOS.COMPANIA AND PAGO_BANCOSCAB.PAG_BAN = BANCOS.CODIGOBANCO WHERE PAGO_BANCOSCAB.COMPANIA = :COMPANIA AND PAGO_BANCOSCAB.PREFEC BETWEEN TO_DATE(:FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS') AND TO_DATE(:FECHAFINAL,'DD/MM/YYYY HH24:MI:SS') GROUP BY PAGO_BANCOSCAB.PREFEC, PAGO_BANCOSCAB.PAG_BAN, BANCOS.NOMBREBANCO ORDER BY PAGO_BANCOSCAB.PAG_BAN) WHERE (CASE WHEN PAG_BAN IS NULL THEN ' ' ELSE UPPER(PAG_BAN) END)  LIKE UPPER(:PAG_BAN || '%')  AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END)  LIKE UPPER( '%' || :NOMBREBANCO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="PAG_BAN" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancoscab/porcompaniayfecha/num">
+		<call-query href="getIppagobancoscabNumPorCompaniaYFechaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancoscabPagPorCompaniaYFechaFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT PAGO_BANCOSCAB.PAG_BAN, BANCOS.NOMBREBANCO  FROM IP_PAGO_BANCOSCAB PAGO_BANCOSCAB INNER JOIN IP_BANCOS BANCOS ON PAGO_BANCOSCAB.COMPANIA = BANCOS.COMPANIA AND PAGO_BANCOSCAB.PAG_BAN = BANCOS.CODIGOBANCO WHERE PAGO_BANCOSCAB.COMPANIA = :COMPANIA AND PAGO_BANCOSCAB.PREFEC BETWEEN TO_DATE(:FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS') AND TO_DATE(:FECHAFINAL,'DD/MM/YYYY HH24:MI:SS') AND PAGO_BANCOSCAB.PAG_BAN &gt;= :BANCOINICIAL GROUP BY PAGO_BANCOSCAB.PREFEC, PAGO_BANCOSCAB.PAG_BAN, BANCOS.NOMBREBANCO ORDER BY PAGO_BANCOSCAB.PAG_BAN) WHERE (CASE WHEN PAG_BAN IS NULL THEN ' ' ELSE UPPER(PAG_BAN) END)  LIKE UPPER(:PAG_BAN || '%')  AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END)  LIKE UPPER( '%' || :NOMBREBANCO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAG_BAN":"$PAG_BAN","NOMBREBANCO":"$NOMBREBANCO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="BANCOINICIAL" sqlType="STRING"/>
+		<param name="PAG_BAN" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ippagobancoscab/porcompaniayfechafinal/pag">
+		<call-query href="getIppagobancoscabPagPorCompaniaYFechaFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="BANCOINICIAL" query-param="BANCOINICIAL"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancoscabNumPorCompaniaYFechaFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT PAGO_BANCOSCAB.PAG_BAN, BANCOS.NOMBREBANCO  FROM IP_PAGO_BANCOSCAB PAGO_BANCOSCAB INNER JOIN IP_BANCOS BANCOS ON PAGO_BANCOSCAB.COMPANIA = BANCOS.COMPANIA AND PAGO_BANCOSCAB.PAG_BAN = BANCOS.CODIGOBANCO WHERE PAGO_BANCOSCAB.COMPANIA = :COMPANIA AND PAGO_BANCOSCAB.PREFEC BETWEEN TO_DATE(:FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS') AND TO_DATE(:FECHAFINAL,'DD/MM/YYYY HH24:MI:SS') AND PAGO_BANCOSCAB.PAG_BAN &gt;= :BANCOINICIAL GROUP BY PAGO_BANCOSCAB.PREFEC, PAGO_BANCOSCAB.PAG_BAN, BANCOS.NOMBREBANCO ORDER BY PAGO_BANCOSCAB.PAG_BAN) WHERE (CASE WHEN PAG_BAN IS NULL THEN ' ' ELSE UPPER(PAG_BAN) END)  LIKE UPPER(:PAG_BAN || '%')  AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END)  LIKE UPPER( '%' || :NOMBREBANCO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="BANCOINICIAL" sqlType="STRING"/>
+		<param name="PAG_BAN" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancoscab/porcompaniayfechafinal/num">
+		<call-query href="getIppagobancoscabNumPorCompaniaYFechaFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="BANCOINICIAL" query-param="BANCOINICIAL"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancoscabPaqPorFechasBancosInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PAGO_BANCOSCAB.PAQUETE  FROM IP_PAGO_BANCOSCAB PAGO_BANCOSCAB WHERE COMPANIA = :COMPANIA AND TRUNC(PAGO_BANCOSCAB.PREFEC) BETWEEN :FECHAINICIAL AND :FECHAFINAL AND PAGO_BANCOSCAB.PAG_BAN BETWEEN :BANCOINICIAL AND :BANCOFINAL GROUP BY PAGO_BANCOSCAB.PAQUETE ORDER BY PAQUETE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAQUETE":"$PAQUETE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="BANCOINICIAL" sqlType="STRING"/>
+		<param name="BANCOFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancoscab/paqporfechasbancosinicial">
+		<call-query href="getIppagobancoscabPaqPorFechasBancosInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="BANCOINICIAL" query-param="BANCOINICIAL"/>
+			<with-param name="BANCOFINAL" query-param="BANCOFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="insertIppagobancoscab" keyColumns="COMPANIA,PAQUETE,PAG_BAN" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_PAGO_BANCOSCAB (COMPANIA, PREFEC, PAQUETE, PAG_BAN, NROCUPONES, VLRREPORTADO, NROCUPONESACU, ACUMULADO, CREATED_BY, DATE_CREATED) VALUES (:COMPANIA, TO_DATE(:PREFEC,'DD/MM/YYYY HH24:MI:SS'), :PAQUETE, :PAG_BAN, :NROCUPONES, :VLRREPORTADO, :NROCUPONESACU, :ACUMULADO, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_PREFEC":"$PREFEC","KEY_PAQUETE":"$PAQUETE","KEY_PAG_BAN":"$PAG_BAN"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREFEC" sqlType="STRING"/>
+		<param name="PAQUETE" sqlType="STRING"/>
+		<param name="PAG_BAN" sqlType="STRING"/>
+		<param defaultValue="0" name="NROCUPONES" sqlType="STRING"/>
+		<param defaultValue="0" name="VLRREPORTADO" sqlType="STRING"/>
+		<param defaultValue="0" name="NROCUPONESACU" sqlType="STRING"/>
+		<param defaultValue="0" name="ACUMULADO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="ippagobancoscab">
+		<call-query href="insertIppagobancoscab">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREFEC" query-param="PREFEC"/>
+			<with-param name="PAQUETE" query-param="PAQUETE"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+			<with-param name="NROCUPONES" query-param="NROCUPONES"/>
+			<with-param name="VLRREPORTADO" query-param="VLRREPORTADO"/>
+			<with-param name="NROCUPONESACU" query-param="NROCUPONESACU"/>
+			<with-param name="ACUMULADO" query-param="ACUMULADO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteIppagobancoscab" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM IP_PAGO_BANCOSCAB WHERE IP_PAGO_BANCOSCAB.COMPANIA= :KEY_COMPANIA AND IP_PAGO_BANCOSCAB.PREFEC= TO_DATE(:KEY_PREFEC,'DD/MM/YYYY HH24:MI:SS')  AND IP_PAGO_BANCOSCAB.PAQUETE= :KEY_PAQUETE AND IP_PAGO_BANCOSCAB.PAG_BAN= :KEY_PAG_BAN</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_PREFEC" sqlType="STRING"/>
+		<param name="KEY_PAQUETE" sqlType="STRING"/>
+		<param name="KEY_PAG_BAN" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="ippagobancoscab">
+		<call-query href="deleteIppagobancoscab">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_PREFEC" query-param="KEY_PREFEC"/>
+			<with-param name="KEY_PAQUETE" query-param="KEY_PAQUETE"/>
+			<with-param name="KEY_PAG_BAN" query-param="KEY_PAG_BAN"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancoscabPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_PAGO_BANCOSCAB.COMPANIA, TO_CHAR(IP_PAGO_BANCOSCAB.PREFEC,'DD/MM/YYYY') PREFECLABE,(TO_CHAR(IP_PAGO_BANCOSCAB.PREFEC,'DD/MM/YYYY HH24:MI:SS')) PREFEC, IP_PAGO_BANCOSCAB.PAG_BAN, IP_BANCOS.NOMBREBANCO, IP_PAGO_BANCOSCAB.PAQUETE  FROM IP_PAGO_BANCOSCAB INNER JOIN IP_BANCOS ON IP_PAGO_BANCOSCAB.COMPANIA = IP_BANCOS.COMPANIA AND IP_PAGO_BANCOSCAB.PAG_BAN = IP_BANCOS.CODIGOBANCO WHERE IP_PAGO_BANCOSCAB.COMPANIA = :COMPANIA ORDER BY IP_PAGO_BANCOSCAB.PREFEC DESC, IP_PAGO_BANCOSCAB.PAG_BAN DESC, IP_PAGO_BANCOSCAB.PAQUETE DESC, IP_BANCOS.NOMBREBANCO) WHERE (CASE WHEN PREFECLABE IS NULL THEN ' ' ELSE UPPER(PREFECLABE) END)  LIKE UPPER( '%' || :PREFECLABE || '%')  AND (CASE WHEN PAG_BAN IS NULL THEN ' ' ELSE UPPER(PAG_BAN) END)  LIKE UPPER(:PAG_BAN || '%')  AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END)  LIKE UPPER( '%' || :NOMBREBANCO || '%')  AND (CASE WHEN PAQUETE IS NULL THEN ' ' ELSE UPPER(PAQUETE) END)  LIKE UPPER(:PAQUETE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PREFECLABE":"$PREFECLABE","PREFEC":"$PREFEC","PAG_BAN":"$PAG_BAN","NOMBREBANCO":"$NOMBREBANCO","PAQUETE":"$PAQUETE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREFECLABE" sqlType="STRING"/>
+		<param name="PAG_BAN" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="PAQUETE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ippagobancoscab">
+		<call-query href="getIppagobancoscabPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREFECLABE" query-param="PREFECLABE"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="PAQUETE" query-param="PAQUETE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancoscabNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_PAGO_BANCOSCAB.COMPANIA, TO_CHAR(IP_PAGO_BANCOSCAB.PREFEC,'DD/MM/YYYY') PREFECLABE,(TO_CHAR(IP_PAGO_BANCOSCAB.PREFEC,'DD/MM/YYYY HH24:MI:SS')) PREFEC, IP_PAGO_BANCOSCAB.PAG_BAN, IP_BANCOS.NOMBREBANCO, IP_PAGO_BANCOSCAB.PAQUETE  FROM IP_PAGO_BANCOSCAB INNER JOIN IP_BANCOS ON IP_PAGO_BANCOSCAB.COMPANIA = IP_BANCOS.COMPANIA AND IP_PAGO_BANCOSCAB.PAG_BAN = IP_BANCOS.CODIGOBANCO WHERE IP_PAGO_BANCOSCAB.COMPANIA = :COMPANIA ORDER BY IP_PAGO_BANCOSCAB.PREFEC DESC, IP_PAGO_BANCOSCAB.PAG_BAN DESC, IP_PAGO_BANCOSCAB.PAQUETE DESC, IP_BANCOS.NOMBREBANCO) WHERE (CASE WHEN PREFECLABE IS NULL THEN ' ' ELSE UPPER(PREFECLABE) END)  LIKE UPPER( '%' || :PREFECLABE || '%')  AND (CASE WHEN PAG_BAN IS NULL THEN ' ' ELSE UPPER(PAG_BAN) END)  LIKE UPPER(:PAG_BAN || '%')  AND (CASE WHEN NOMBREBANCO IS NULL THEN ' ' ELSE UPPER(NOMBREBANCO) END)  LIKE UPPER( '%' || :NOMBREBANCO || '%')  AND (CASE WHEN PAQUETE IS NULL THEN ' ' ELSE UPPER(PAQUETE) END)  LIKE UPPER(:PAQUETE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREFECLABE" sqlType="STRING"/>
+		<param name="PAG_BAN" sqlType="STRING"/>
+		<param name="NOMBREBANCO" sqlType="STRING"/>
+		<param name="PAQUETE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancoscab/numero">
+		<call-query href="getIppagobancoscabNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREFECLABE" query-param="PREFECLABE"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+			<with-param name="NOMBREBANCO" query-param="NOMBREBANCO"/>
+			<with-param name="PAQUETE" query-param="PAQUETE"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancoscabRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  IP_PAGO_BANCOSCAB.COMPANIA,(TO_CHAR(IP_PAGO_BANCOSCAB.PREFEC,'DD/MM/YYYY HH24:MI:SS')) PREFEC, IP_PAGO_BANCOSCAB.PAQUETE, IP_PAGO_BANCOSCAB.PAG_BAN, IP_PAGO_BANCOSCAB.NROCUPONES, IP_PAGO_BANCOSCAB.VLRREPORTADO, IP_PAGO_BANCOSCAB.NROCUPONESACU, IP_PAGO_BANCOSCAB.ACUMULADO, IP_PAGO_BANCOSCAB.CREATED_BY,(TO_CHAR(IP_PAGO_BANCOSCAB.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, IP_PAGO_BANCOSCAB.MODIFIED_BY,(TO_CHAR(IP_PAGO_BANCOSCAB.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, IP_BANCOS.NOMBREBANCO  FROM IP_PAGO_BANCOSCAB INNER JOIN IP_BANCOS ON IP_PAGO_BANCOSCAB.COMPANIA = IP_BANCOS.COMPANIA AND IP_PAGO_BANCOSCAB.PAG_BAN = IP_BANCOS.CODIGOBANCO WHERE IP_PAGO_BANCOSCAB.COMPANIA= :KEY_COMPANIA AND IP_PAGO_BANCOSCAB.PREFEC= TO_DATE(:KEY_PREFEC,'DD/MM/YYYY HH24:MI:SS') AND IP_PAGO_BANCOSCAB.PAQUETE= :KEY_PAQUETE AND IP_PAGO_BANCOSCAB.PAG_BAN= :KEY_PAG_BAN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PREFEC":"$PREFEC","PAQUETE":"$PAQUETE","PAG_BAN":"$PAG_BAN","NROCUPONES":"$NROCUPONES","VLRREPORTADO":"$VLRREPORTADO","NROCUPONESACU":"$NROCUPONESACU","ACUMULADO":"$ACUMULADO","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","NOMBREBANCO":"$NOMBREBANCO"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_PREFEC" sqlType="STRING"/>
+		<param name="KEY_PAQUETE" sqlType="STRING"/>
+		<param name="KEY_PAG_BAN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancoscab/data">
+		<call-query href="getIppagobancoscabRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_PREFEC" query-param="KEY_PREFEC"/>
+			<with-param name="KEY_PAQUETE" query-param="KEY_PAQUETE"/>
+			<with-param name="KEY_PAG_BAN" query-param="KEY_PAG_BAN"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIppagobancoscab" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_PAGO_BANCOSCAB SET PREFEC=TO_DATE(:PREFEC,'DD/MM/YYYY HH24:MI:SS'), PAQUETE=:PAQUETE, PAG_BAN=:PAG_BAN, NROCUPONES=:NROCUPONES, VLRREPORTADO=:VLRREPORTADO, NROCUPONESACU=:NROCUPONESACU, ACUMULADO=:ACUMULADO, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE IP_PAGO_BANCOSCAB.COMPANIA= :KEY_COMPANIA AND IP_PAGO_BANCOSCAB.PREFEC= TO_DATE(:KEY_PREFEC,'DD/MM/YYYY HH24:MI:SS')  AND IP_PAGO_BANCOSCAB.PAQUETE= :KEY_PAQUETE AND IP_PAGO_BANCOSCAB.PAG_BAN= :KEY_PAG_BAN</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="PREFEC" sqlType="STRING"/>
+		<param name="PAQUETE" sqlType="STRING"/>
+		<param name="PAG_BAN" sqlType="STRING"/>
+		<param name="NROCUPONES" sqlType="STRING"/>
+		<param name="VLRREPORTADO" sqlType="STRING"/>
+		<param name="NROCUPONESACU" sqlType="STRING"/>
+		<param name="ACUMULADO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_PREFEC" sqlType="STRING"/>
+		<param name="KEY_PAQUETE" sqlType="STRING"/>
+		<param name="KEY_PAG_BAN" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ippagobancoscab">
+		<call-query href="updateIppagobancoscab">
+			<with-param name="PREFEC" query-param="PREFEC"/>
+			<with-param name="PAQUETE" query-param="PAQUETE"/>
+			<with-param name="PAG_BAN" query-param="PAG_BAN"/>
+			<with-param name="NROCUPONES" query-param="NROCUPONES"/>
+			<with-param name="VLRREPORTADO" query-param="VLRREPORTADO"/>
+			<with-param name="NROCUPONESACU" query-param="NROCUPONESACU"/>
+			<with-param name="ACUMULADO" query-param="ACUMULADO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_PREFEC" query-param="KEY_PREFEC"/>
+			<with-param name="KEY_PAQUETE" query-param="KEY_PAQUETE"/>
+			<with-param name="KEY_PAG_BAN" query-param="KEY_PAG_BAN"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagobancoscabPaqPorFechasBancosFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PAGO_BANCOSCAB.PAQUETE  FROM IP_PAGO_BANCOSCAB PAGO_BANCOSCAB WHERE COMPANIA = :COMPANIA AND TRUNC(PAGO_BANCOSCAB.PREFEC) BETWEEN :FECHAINICIAL AND :FECHAFINAL AND PAGO_BANCOSCAB.PAG_BAN BETWEEN :BANCOINICIAL AND :BANCOFINAL AND PAGO_BANCOSCAB.PAQUETE &gt;= :PAQUETEINICIAL GROUP BY PAGO_BANCOSCAB.PAQUETE ORDER BY PAQUETE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAQUETE":"$PAQUETE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="BANCOINICIAL" sqlType="STRING"/>
+		<param name="BANCOFINAL" sqlType="STRING"/>
+		<param name="PAQUETEINICIAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagobancoscab/paqporfechasbancosfinal">
+		<call-query href="getIppagobancoscabPaqPorFechasBancosFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="BANCOINICIAL" query-param="BANCOINICIAL"/>
+			<with-param name="BANCOFINAL" query-param="BANCOFINAL"/>
+			<with-param name="PAQUETEINICIAL" query-param="PAQUETEINICIAL"/>
+
+		</call-query>
+	</resource>
+
+</data>

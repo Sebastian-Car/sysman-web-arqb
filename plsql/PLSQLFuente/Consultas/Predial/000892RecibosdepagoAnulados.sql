@@ -1,0 +1,9 @@
+SELECT DOCNUM,
+       PRECOD,
+       PREANO, 
+       TO_CHAR(PREFEC, 'DD/MM/YYYY') PREFEC
+FROM IP_RECIBOS_DE_PAGO 
+WHERE COMPANIA     = s$compania$s
+  AND NUMERO_ORDEN = 's$numeroOrden$s'
+  AND ANULADO NOT IN (0)
+  AND TRUNC(FECHAANULACION) BETWEEN 's$fechaInicial$s' AND 's$fechaFinal$s'

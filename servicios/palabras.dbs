@@ -1,0 +1,144 @@
+﻿<data name="palabras" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getPalabrasPagTodosPorPalabraQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT CONSECUTIVO, PALABRA, DESCRIPCION  FROM PALABRAS ORDER BY PALABRA) WHERE (CASE WHEN PALABRA IS NULL THEN ' ' ELSE UPPER(PALABRA) END)  LIKE UPPER(:PALABRA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO(type:integer)","PALABRA":"$PALABRA","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="PALABRA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="palabras/todosporpalabra/pag">
+		<call-query href="getPalabrasPagTodosPorPalabraQuery">
+			<with-param name="PALABRA" query-param="PALABRA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPalabrasNumTodosPorPalabraQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT CONSECUTIVO, PALABRA, DESCRIPCION  FROM PALABRAS ORDER BY PALABRA) WHERE (CASE WHEN PALABRA IS NULL THEN ' ' ELSE UPPER(PALABRA) END)  LIKE UPPER(:PALABRA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="PALABRA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="palabras/todosporpalabra/num">
+		<call-query href="getPalabrasNumTodosPorPalabraQuery">
+			<with-param name="PALABRA" query-param="PALABRA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getPalabrasTodasPorPalabraQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PALABRA  FROM PALABRAS</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PALABRA":"$PALABRA"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="palabras/todasporpalabra">
+		<call-query href="getPalabrasTodasPorPalabraQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="insertPalabras" keyColumns="CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PALABRAS (CONSECUTIVO, PALABRA, DESCRIPCION, DATE_CREATED, CREATED_BY) VALUES (:CONSECUTIVO, :PALABRA, :DESCRIPCION, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_CONSECUTIVO":"$CONSECUTIVO(type:integer)"}]}}		</result>
+		<param defaultValue="0" name="CONSECUTIVO" sqlType="STRING"/>
+		<param defaultValue="" name="PALABRA" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="palabras">
+		<call-query href="insertPalabras">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="PALABRA" query-param="PALABRA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deletePalabras" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM PALABRAS WHERE PALABRAS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_CONSECUTIVO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="palabras">
+		<call-query href="deletePalabras">
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPalabrasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CONSECUTIVO, PALABRA, DESCRIPCION  FROM PALABRAS ORDER BY CONSECUTIVO) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN PALABRA IS NULL THEN ' ' ELSE UPPER(PALABRA) END)  LIKE UPPER( '%' || :PALABRA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO(type:integer)","PALABRA":"$PALABRA","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="PALABRA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="palabras">
+		<call-query href="getPalabrasPaginaQuery">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="PALABRA" query-param="PALABRA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPalabrasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CONSECUTIVO, PALABRA, DESCRIPCION  FROM PALABRAS ORDER BY CONSECUTIVO) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN PALABRA IS NULL THEN ' ' ELSE UPPER(PALABRA) END)  LIKE UPPER( '%' || :PALABRA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="PALABRA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="palabras/numero">
+		<call-query href="getPalabrasNumeroQuery">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="PALABRA" query-param="PALABRA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePalabras" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PALABRAS SET CONSECUTIVO=:CONSECUTIVO, PALABRA=:PALABRA, DESCRIPCION=:DESCRIPCION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PALABRAS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="PALABRA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="palabras">
+		<call-query href="updatePalabras">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="PALABRA" query-param="PALABRA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+
+</data>

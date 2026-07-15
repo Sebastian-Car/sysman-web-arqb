@@ -1,0 +1,104 @@
+﻿<data name="regiones" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getRegionesTodosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  REGION, NOMBRE  FROM REGIONES</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"REGION":"$REGION","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="regiones/todos">
+		<call-query href="getRegionesTodosQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="insertRegiones" keyColumns="REGION" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO REGIONES (REGION, NOMBRE, DATE_CREATED, CREATED_BY) VALUES (:REGION, :NOMBRE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_REGION":"$REGION"}]}}		</result>
+		<param name="REGION" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="regiones">
+		<call-query href="insertRegiones">
+			<with-param name="REGION" query-param="REGION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteRegiones" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM REGIONES WHERE REGIONES.REGION= :KEY_REGION</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_REGION" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="regiones">
+		<call-query href="deleteRegiones">
+			<with-param name="KEY_REGION" query-param="KEY_REGION"/>
+
+		</call-query>
+	</resource>
+	<query id="getRegionesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  REGION, NOMBRE  FROM REGIONES ORDER BY REGION) WHERE (CASE WHEN REGION IS NULL THEN ' ' ELSE UPPER(REGION) END)  LIKE UPPER( '%' || :REGION || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"REGION":"$REGION","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="REGION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="regiones">
+		<call-query href="getRegionesPaginaQuery">
+			<with-param name="REGION" query-param="REGION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getRegionesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  REGION, NOMBRE  FROM REGIONES ORDER BY REGION) WHERE (CASE WHEN REGION IS NULL THEN ' ' ELSE UPPER(REGION) END)  LIKE UPPER( '%' || :REGION || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="REGION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="regiones/numero">
+		<call-query href="getRegionesNumeroQuery">
+			<with-param name="REGION" query-param="REGION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateRegiones" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE REGIONES SET REGION=:REGION, NOMBRE=:NOMBRE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE REGIONES.REGION= :KEY_REGION</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="REGION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_REGION" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="regiones">
+		<call-query href="updateRegiones">
+			<with-param name="REGION" query-param="REGION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_REGION" query-param="KEY_REGION"/>
+
+		</call-query>
+	</resource>
+
+</data>

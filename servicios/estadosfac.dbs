@@ -1,0 +1,115 @@
+﻿<data name="estadosfac" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getEstadosfacPagTodosEstadosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT ESTADOFAC.NUMERO, ESTADOFAC.PREFIJO, ESTADOFAC.ESTADO, ESTADOFAC.TOTAL,(TO_CHAR(ESTADOFAC.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, ESTADOFAC.OBSERVACION FROM ESTADOFAC ORDER BY ESTADOFAC.NUMERO DESC) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN PREFIJO IS NULL THEN ' ' ELSE UPPER(PREFIJO) END) LIKE UPPER(CONCAT(CONCAT('%',:PREFIJO), '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END) LIKE UPPER(CONCAT(CONCAT('%',:TOTAL), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END) LIKE UPPER(CONCAT(CONCAT('%',:OBSERVACION), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","PREFIJO":"$PREFIJO","ESTADO":"$ESTADO","TOTAL":"$TOTAL","FECHA":"$FECHA","OBSERVACION":"$OBSERVACION"}]}}		</result>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PREFIJO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="estadosfac/todosestados/pag">
+		<call-query href="getEstadosfacPagTodosEstadosQuery">
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEstadosfacNumTodosEstadosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT ESTADOFAC.NUMERO, ESTADOFAC.PREFIJO, ESTADOFAC.ESTADO, ESTADOFAC.TOTAL,(TO_CHAR(ESTADOFAC.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, ESTADOFAC.OBSERVACION FROM ESTADOFAC ORDER BY ESTADOFAC.NUMERO DESC) INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN PREFIJO IS NULL THEN ' ' ELSE UPPER(PREFIJO) END) LIKE UPPER(CONCAT(CONCAT('%',:PREFIJO), '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END) LIKE UPPER(CONCAT(CONCAT('%',:TOTAL), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END) LIKE UPPER(CONCAT(CONCAT('%',:OBSERVACION), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="PREFIJO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="estadosfac/todosestados/num">
+		<call-query href="getEstadosfacNumTodosEstadosQuery">
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEstadosfacTodosLosDatos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ESTADOFAC</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+ 
+	</query>
+	<resource method="DELETE" path="estadosfac/todoslosdatos">
+		<call-query href="deleteEstadosfacTodosLosDatos">
+ 
+		</call-query>
+	</resource>
+	<query id="getEstadosfacFacturasNoExitosasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT NUMERO, ESTADO, PREFIJO ,TOTAL , TO_CHAR(FECHA,'YYYYMMDD') FECHA FROM ESTADOFAC WHERE ESTADO NOT IN ('EXITOSA')</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","ESTADO":"$ESTADO","PREFIJO":"$PREFIJO","TOTAL":"$TOTAL","FECHA":"$FECHA"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="estadosfac/facturasnoexitosas">
+		<call-query href="getEstadosfacFacturasNoExitosasQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getEstadosfacGetestadotodossinpagQuery"  useConfig="sysmandsunist">
+		<sql>SELECT ESTADOFAC.NUMERO, ESTADOFAC.PREFIJO, ESTADOFAC.ESTADO, ESTADOFAC.TOTAL,(TO_CHAR(ESTADOFAC.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, ESTADOFAC.OBSERVACION FROM ESTADOFAC ORDER BY ESTADOFAC.NUMERO DESC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","PREFIJO":"$PREFIJO","ESTADO":"$ESTADO","TOTAL":"$TOTAL","FECHA":"$FECHA","OBSERVACION":"$OBSERVACION"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="estadosfac/getestadotodossinpag">
+		<call-query href="getEstadosfacGetestadotodossinpagQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="insertEstadosfac" keyColumns="NUMERO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ESTADOFAC (ESTADO, TERCERO, NUMERO, TOTAL, FECHA, OBSERVACION, PREFIJO, DATE_CREATED, CREATED_BY) VALUES (:ESTADO, :TERCERO, :NUMERO, :TOTAL, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :OBSERVACION, :PREFIJO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_NUMERO":"$NUMERO"}]}}		</result>
+		<param defaultValue="" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="TERCERO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param defaultValue="0" name="TOTAL" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACION" sqlType="STRING"/>
+		<param defaultValue="" name="PREFIJO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="estadosfac">
+		<call-query href="insertEstadosfac">
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TERCERO" query-param="TERCERO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+
+</data>

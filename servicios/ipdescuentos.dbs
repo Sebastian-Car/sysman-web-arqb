@@ -1,0 +1,126 @@
+﻿<data name="ipdescuentos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertIpdescuentos" keyColumns="COMPANIA,ANO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_DESCUENTOS (COMPANIA, ANO, PORCENTAJEDESCUENTO, CREATED_BY, FECHALIMITESUPERIOR, DATE_CREATED, FECHALIMITEINFERIOR, FECHALIMITE) VALUES (:COMPANIA, :ANO, :PORCENTAJEDESCUENTO, :CREATED_BY, TO_DATE(:FECHALIMITESUPERIOR,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHALIMITEINFERIOR,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHALIMITE,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_FECHALIMITE":"$FECHALIMITE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param defaultValue="0" name="PORCENTAJEDESCUENTO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param defaultValue="" name="FECHALIMITESUPERIOR" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param defaultValue="" name="FECHALIMITEINFERIOR" sqlType="STRING"/>
+		<param name="FECHALIMITE" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="ipdescuentos">
+		<call-query href="insertIpdescuentos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PORCENTAJEDESCUENTO" query-param="PORCENTAJEDESCUENTO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="FECHALIMITESUPERIOR" query-param="FECHALIMITESUPERIOR"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="FECHALIMITEINFERIOR" query-param="FECHALIMITEINFERIOR"/>
+			<with-param name="FECHALIMITE" query-param="FECHALIMITE"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteIpdescuentos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM IP_DESCUENTOS WHERE IP_DESCUENTOS.COMPANIA= :KEY_COMPANIA AND IP_DESCUENTOS.ANO= :KEY_ANO AND IP_DESCUENTOS.FECHALIMITE= TO_DATE(:KEY_FECHALIMITE,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_FECHALIMITE" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="ipdescuentos">
+		<call-query href="deleteIpdescuentos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_FECHALIMITE" query-param="KEY_FECHALIMITE"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpdescuentosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, ANO , PORCENTAJEDESCUENTO,(TO_CHAR(FECHALIMITESUPERIOR,'DD/MM/YYYY HH24:MI:SS')) FECHALIMITESUPERIOR,(TO_CHAR(FECHALIMITEINFERIOR,'DD/MM/YYYY HH24:MI:SS')) FECHALIMITEINFERIOR,(TO_CHAR(FECHALIMITE,'DD/MM/YYYY HH24:MI:SS')) FECHALIMITE FROM IP_DESCUENTOS WHERE COMPANIA = :COMPANIA ORDER BY ANO DESC) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN PORCENTAJEDESCUENTO IS NULL THEN ' ' ELSE UPPER(PORCENTAJEDESCUENTO) END)  LIKE UPPER( '%' || :PORCENTAJEDESCUENTO || '%')  AND (CASE WHEN FECHALIMITE IS NULL THEN ' ' ELSE UPPER(FECHALIMITE) END)  LIKE UPPER(:FECHALIMITE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","PORCENTAJEDESCUENTO":"$PORCENTAJEDESCUENTO","FECHALIMITESUPERIOR":"$FECHALIMITESUPERIOR","FECHALIMITEINFERIOR":"$FECHALIMITEINFERIOR","FECHALIMITE":"$FECHALIMITE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PORCENTAJEDESCUENTO" sqlType="STRING"/>
+		<param name="FECHALIMITE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ipdescuentos">
+		<call-query href="getIpdescuentosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PORCENTAJEDESCUENTO" query-param="PORCENTAJEDESCUENTO"/>
+			<with-param name="FECHALIMITE" query-param="FECHALIMITE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpdescuentosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, ANO , PORCENTAJEDESCUENTO,(TO_CHAR(FECHALIMITESUPERIOR,'DD/MM/YYYY HH24:MI:SS')) FECHALIMITESUPERIOR,(TO_CHAR(FECHALIMITEINFERIOR,'DD/MM/YYYY HH24:MI:SS')) FECHALIMITEINFERIOR,(TO_CHAR(FECHALIMITE,'DD/MM/YYYY HH24:MI:SS')) FECHALIMITE FROM IP_DESCUENTOS WHERE COMPANIA = :COMPANIA ORDER BY ANO DESC) WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN PORCENTAJEDESCUENTO IS NULL THEN ' ' ELSE UPPER(PORCENTAJEDESCUENTO) END)  LIKE UPPER( '%' || :PORCENTAJEDESCUENTO || '%')  AND (CASE WHEN FECHALIMITE IS NULL THEN ' ' ELSE UPPER(FECHALIMITE) END)  LIKE UPPER( '%' || :FECHALIMITE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PORCENTAJEDESCUENTO" sqlType="STRING"/>
+		<param name="FECHALIMITE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipdescuentos/numero">
+		<call-query href="getIpdescuentosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PORCENTAJEDESCUENTO" query-param="PORCENTAJEDESCUENTO"/>
+			<with-param name="FECHALIMITE" query-param="FECHALIMITE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpdescuentos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_DESCUENTOS SET COMPANIA=:COMPANIA, ANO=:ANO, PORCENTAJEDESCUENTO=:PORCENTAJEDESCUENTO, MODIFIED_BY=:MODIFIED_BY, FECHALIMITESUPERIOR=TO_DATE(:FECHALIMITESUPERIOR,'DD/MM/YYYY HH24:MI:SS'), DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), FECHALIMITEINFERIOR=TO_DATE(:FECHALIMITEINFERIOR,'DD/MM/YYYY HH24:MI:SS'), FECHALIMITE=:FECHALIMITE WHERE IP_DESCUENTOS.COMPANIA= :KEY_COMPANIA AND IP_DESCUENTOS.ANO= :KEY_ANO AND IP_DESCUENTOS.FECHALIMITE= TO_DATE(:KEY_FECHALIMITE,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PORCENTAJEDESCUENTO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="FECHALIMITESUPERIOR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="FECHALIMITEINFERIOR" sqlType="STRING"/>
+		<param name="FECHALIMITE" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_FECHALIMITE" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipdescuentos">
+		<call-query href="updateIpdescuentos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PORCENTAJEDESCUENTO" query-param="PORCENTAJEDESCUENTO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="FECHALIMITESUPERIOR" query-param="FECHALIMITESUPERIOR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="FECHALIMITEINFERIOR" query-param="FECHALIMITEINFERIOR"/>
+			<with-param name="FECHALIMITE" query-param="FECHALIMITE"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_FECHALIMITE" query-param="KEY_FECHALIMITE"/>
+
+		</call-query>
+	</resource>
+
+</data>

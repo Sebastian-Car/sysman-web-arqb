@@ -1,0 +1,423 @@
+﻿<data name="cmarchivotransacciones" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getCmarchivotransaccionesPorcausarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(CAUSADO) POR_CAUSAR FROM CM_ARCHIVO_TRANSACCIONES WHERE COMPANIA=:COMPANIA AND CONSECUTIVO_RIPS=:CONSECUTIVO AND CAUSADO =0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"POR_CAUSAR":"$POR_CAUSAR(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmarchivotransacciones/porcausar">
+		<call-query href="getCmarchivotransaccionesPorcausarQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmarchivotransaccionesPagListaPrecausacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CONSECUTIVO_RIPS, COD_PREST_SERV_SALUD, NOMBRE_RAZON_SOCIAL,(TO_CHAR(FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIAL, SUM(VALOR_NETO_A_PAGAR_ENTI_CONTR)VALOR_PAGAR FROM CM_ARCHIVO_TRANSACCIONES WHERE COMPANIA = :COMPANIA GROUP BY CONSECUTIVO_RIPS, COD_PREST_SERV_SALUD, NOMBRE_RAZON_SOCIAL,FECHA_INICIAL) INI WHERE (CASE WHEN CONSECUTIVO_RIPS IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO_RIPS) END) LIKE UPPER(CONCAT(:CONSECUTIVO_RIPS, '%')) AND (CASE WHEN COD_PREST_SERV_SALUD IS NULL THEN ' ' ELSE UPPER(COD_PREST_SERV_SALUD) END) LIKE UPPER(CONCAT(CONCAT('%',:COD_PREST_SERV_SALUD), '%')) AND (CASE WHEN NOMBRE_RAZON_SOCIAL IS NULL THEN ' ' ELSE UPPER(NOMBRE_RAZON_SOCIAL) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_RAZON_SOCIAL), '%')) AND (CASE WHEN FECHA_INICIAL IS NULL THEN ' ' ELSE UPPER(FECHA_INICIAL) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA_INICIAL), '%')) AND (CASE WHEN VALOR_PAGAR IS NULL THEN ' ' ELSE UPPER(VALOR_PAGAR) END) LIKE UPPER(CONCAT(CONCAT('%',:VALOR_PAGAR), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO_RIPS":"$CONSECUTIVO_RIPS(type:integer)","COD_PREST_SERV_SALUD":"$COD_PREST_SERV_SALUD","NOMBRE_RAZON_SOCIAL":"$NOMBRE_RAZON_SOCIAL","FECHA_INICIAL":"$FECHA_INICIAL","VALOR_PAGAR":"$VALOR_PAGAR(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO_RIPS" sqlType="STRING"/>
+		<param name="COD_PREST_SERV_SALUD" sqlType="STRING"/>
+		<param name="NOMBRE_RAZON_SOCIAL" sqlType="STRING"/>
+		<param name="FECHA_INICIAL" sqlType="STRING"/>
+		<param name="VALOR_PAGAR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cmarchivotransacciones/listaprecausacion/pag">
+		<call-query href="getCmarchivotransaccionesPagListaPrecausacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO_RIPS" query-param="CONSECUTIVO_RIPS"/>
+			<with-param name="COD_PREST_SERV_SALUD" query-param="COD_PREST_SERV_SALUD"/>
+			<with-param name="NOMBRE_RAZON_SOCIAL" query-param="NOMBRE_RAZON_SOCIAL"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="VALOR_PAGAR" query-param="VALOR_PAGAR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmarchivotransaccionesNumListaPrecausacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CONSECUTIVO_RIPS, COD_PREST_SERV_SALUD, NOMBRE_RAZON_SOCIAL,(TO_CHAR(FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIAL, SUM(VALOR_NETO_A_PAGAR_ENTI_CONTR)VALOR_PAGAR FROM CM_ARCHIVO_TRANSACCIONES WHERE COMPANIA = :COMPANIA GROUP BY CONSECUTIVO_RIPS, COD_PREST_SERV_SALUD, NOMBRE_RAZON_SOCIAL,FECHA_INICIAL) INI WHERE (CASE WHEN CONSECUTIVO_RIPS IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO_RIPS) END) LIKE UPPER(CONCAT(:CONSECUTIVO_RIPS, '%')) AND (CASE WHEN COD_PREST_SERV_SALUD IS NULL THEN ' ' ELSE UPPER(COD_PREST_SERV_SALUD) END) LIKE UPPER(CONCAT(CONCAT('%',:COD_PREST_SERV_SALUD), '%')) AND (CASE WHEN NOMBRE_RAZON_SOCIAL IS NULL THEN ' ' ELSE UPPER(NOMBRE_RAZON_SOCIAL) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_RAZON_SOCIAL), '%')) AND (CASE WHEN FECHA_INICIAL IS NULL THEN ' ' ELSE UPPER(FECHA_INICIAL) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA_INICIAL), '%')) AND (CASE WHEN VALOR_PAGAR IS NULL THEN ' ' ELSE UPPER(VALOR_PAGAR) END) LIKE UPPER(CONCAT(CONCAT('%',:VALOR_PAGAR), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO_RIPS" sqlType="STRING"/>
+		<param name="COD_PREST_SERV_SALUD" sqlType="STRING"/>
+		<param name="NOMBRE_RAZON_SOCIAL" sqlType="STRING"/>
+		<param name="FECHA_INICIAL" sqlType="STRING"/>
+		<param name="VALOR_PAGAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmarchivotransacciones/listaprecausacion/num">
+		<call-query href="getCmarchivotransaccionesNumListaPrecausacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO_RIPS" query-param="CONSECUTIVO_RIPS"/>
+			<with-param name="COD_PREST_SERV_SALUD" query-param="COD_PREST_SERV_SALUD"/>
+			<with-param name="NOMBRE_RAZON_SOCIAL" query-param="NOMBRE_RAZON_SOCIAL"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="VALOR_PAGAR" query-param="VALOR_PAGAR"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmarchivotransaccionesFacturasACausarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CM_ARCHIVO_TRANSACCIONES.NUM_FACTURA, CM_ARCHIVO_TRANSACCIONES.COD_PREST_SERV_SALUD, CM_CAUSACION_AUTOMATICA.CODIGO TIPO_COMPROBANTE, CM_IMPORTARRIPS.RADICADO, CM_CAUSACION_AUTOMATICA.TIPO_COMPROBANTE NOMBRE_TIPO_COMPROBANTE FROM CM_ARCHIVO_TRANSACCIONES INNER JOIN CM_IMPORTARRIPS ON CM_IMPORTARRIPS.COMPANIA = CM_ARCHIVO_TRANSACCIONES.COMPANIA AND CM_IMPORTARRIPS.CONSECUTIVO = CM_ARCHIVO_TRANSACCIONES.CONSECUTIVO_RIPS INNER JOIN CM_CAUSACION_AUTOMATICA ON CM_CAUSACION_AUTOMATICA.COMPANIA = CM_ARCHIVO_TRANSACCIONES.COMPANIA AND CM_CAUSACION_AUTOMATICA.TIPO_COMPROBANTE = CM_ARCHIVO_TRANSACCIONES.TIPO_COMPROBANTE WHERE CM_ARCHIVO_TRANSACCIONES.COMPANIA = :COMPANIA AND CM_ARCHIVO_TRANSACCIONES.CONSECUTIVO_RIPS = :CONSECUTIVO AND CM_ARCHIVO_TRANSACCIONES.APROBADO NOT IN ( 0 ) AND CM_ARCHIVO_TRANSACCIONES.CAUSADO IN ( 0 )</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUM_FACTURA":"$NUM_FACTURA","COD_PREST_SERV_SALUD":"$COD_PREST_SERV_SALUD","TIPO_COMPROBANTE":"$TIPO_COMPROBANTE","RADICADO":"$RADICADO","NOMBRE_TIPO_COMPROBANTE":"$NOMBRE_TIPO_COMPROBANTE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmarchivotransacciones/facturasacausar">
+		<call-query href="getCmarchivotransaccionesFacturasACausarQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCmarchivotransaccionesCausacionFactura" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CM_ARCHIVO_TRANSACCIONES SET CAUSADO_POR=:CAUSADO_POR, CAUSADO_FECHA=TO_DATE(:CAUSADO_FECHA,'DD/MM/YYYY HH24:MI:SS'), CAUSADO=:CAUSADO,NUMERO_COMPROBANTE = :NUMERO_COMP WHERE CONSECUTIVO_RIPS =:CONSECUTIVO AND COMPANIA =:COMPANIA AND COD_PREST_SERV_SALUD =:COD_PREST_SERV_SALUD AND NUM_FACTURA =:NUM_FACTURA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CAUSADO_POR" sqlType="STRING"/>
+		<param name="CAUSADO_FECHA" sqlType="STRING"/>
+		<param name="CAUSADO" sqlType="STRING"/>
+		<param name="NUMERO_COMP" sqlType="STRING"/>									  
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_PREST_SERV_SALUD" sqlType="STRING"/>
+		<param name="NUM_FACTURA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cmarchivotransacciones/causacionfactura">
+		<call-query href="updateCmarchivotransaccionesCausacionFactura">
+			<with-param name="CAUSADO_POR" query-param="CAUSADO_POR"/>
+			<with-param name="CAUSADO_FECHA" query-param="CAUSADO_FECHA"/>
+			<with-param name="CAUSADO" query-param="CAUSADO"/>
+		    <with-param name="NUMERO_COMP" query-param="NUMERO_COMP"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_PREST_SERV_SALUD" query-param="COD_PREST_SERV_SALUD"/>
+			<with-param name="NUM_FACTURA" query-param="NUM_FACTURA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCmarchivotransaccionesCausacionXCuenta" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CM_ARCHIVO_TRANSACCIONES SET CAUSADO_POR=:CAUSADO_POR, CAUSADO_FECHA=TO_DATE(:CAUSADO_FECHA,'DD/MM/YYYY HH24:MI:SS'), CAUSADO=:CAUSADO WHERE CONSECUTIVO_RIPS =:CONSECUTIVO AND COMPANIA =:COMPANIA AND COD_PREST_SERV_SALUD =:COD_PREST_SERV_SALUD</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CAUSADO_POR" sqlType="STRING"/>
+		<param name="CAUSADO_FECHA" sqlType="STRING"/>
+		<param name="CAUSADO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_PREST_SERV_SALUD" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cmarchivotransacciones/updatecmarchivotransaccionescausacionxcuenta">
+		<call-query href="updateCmarchivotransaccionesCausacionXCuenta">
+			<with-param name="CAUSADO_POR" query-param="CAUSADO_POR"/>
+			<with-param name="CAUSADO_FECHA" query-param="CAUSADO_FECHA"/>
+			<with-param name="CAUSADO" query-param="CAUSADO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_PREST_SERV_SALUD" query-param="COD_PREST_SERV_SALUD"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCmarchivotransaccionesUpdatecmarchivotransaccionescausacionxcuenta" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CM_ARCHIVO_TRANSACCIONES SET CAUSADO_POR=:CAUSADO_POR, CAUSADO_FECHA=TO_DATE(:CAUSADO_FECHA,'DD/MM/YYYY HH24:MI:SS'), CAUSADO=:CAUSADO,NUMERO_COMPROBANTE = :NUMERO_COMP WHERE CONSECUTIVO_RIPS =:CONSECUTIVO AND COMPANIA =:COMPANIA AND COD_PREST_SERV_SALUD =:COD_PREST_SERV_SALUD</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CAUSADO_POR" sqlType="STRING"/>
+		<param name="CAUSADO_FECHA" sqlType="STRING"/>
+		<param name="CAUSADO" sqlType="STRING"/>
+		<param name="NUMERO_COMP" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_PREST_SERV_SALUD" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cmarchivotransacciones/updatecmarchivotransaccionescausacionxcuenta">
+		<call-query href="updateCmarchivotransaccionesUpdatecmarchivotransaccionescausacionxcuenta">
+			<with-param name="CAUSADO_POR" query-param="CAUSADO_POR"/>
+			<with-param name="CAUSADO_FECHA" query-param="CAUSADO_FECHA"/>
+			<with-param name="CAUSADO" query-param="CAUSADO"/>
+			<with-param name="NUMERO_COMP" query-param="NUMERO_COMP"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_PREST_SERV_SALUD" query-param="COD_PREST_SERV_SALUD"/>
+
+		</call-query>
+	</resource>	
+	<query id="insertCmarchivotransacciones" keyColumns="CONSECUTIVO_RIPS,COMPANIA,COD_PREST_SERV_SALUD,NUM_FACTURA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CM_ARCHIVO_TRANSACCIONES (COMPANIA, COD_PREST_SERV_SALUD, NOMBRE_RAZON_SOCIAL, TIPO_IDENTI_PREST_SERV_SALUD, NUM_IDENTIF_PRESTADOR, NUM_FACTURA, FECHA_EXP_FACTURA, FECHA_INICIAL, FECHA_FINAL, COD_ENTIDAD_ADMINISTRADORA, NOMBRE_ENTIDAD_ADMINISTRADORA, NUMERO_CONTRATO, PLAN_BENEFICIOS, NUMERO_POLIZA, VALOR_TOT_PAGO_COMPARTIDO, VALOR_COMISION, VALOR_TOTAL_DESCUENTOS, VALOR_NETO_A_PAGAR_ENTI_CONTR, VALIDADO, OBSERVACION_VALIDACION, BORRADO_LOGICO, CONSECUTIVO_RIPS, APROBADO, APROBADO_POR, APROBADO_FECHA, CAUSADO, CAUSADO_POR, CAUSADO_FECHA, COMPANIA_COMPROBANTE, NUMERO_COMPROBANTE, TIPO_COMPROBANTE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :COD_PREST_SERV_SALUD, :NOMBRE_RAZON_SOCIAL, :TIPO_IDENTI_PREST_SERV_SALUD, :NUM_IDENTIF_PRESTADOR, :NUM_FACTURA, TO_DATE(:FECHA_EXP_FACTURA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHA_FINAL,'DD/MM/YYYY HH24:MI:SS'), :COD_ENTIDAD_ADMINISTRADORA, :NOMBRE_ENTIDAD_ADMINISTRADORA, :NUMERO_CONTRATO, :PLAN_BENEFICIOS, :NUMERO_POLIZA, :VALOR_TOT_PAGO_COMPARTIDO, :VALOR_COMISION, :VALOR_TOTAL_DESCUENTOS, :VALOR_NETO_A_PAGAR_ENTI_CONTR, :VALIDADO, :OBSERVACION_VALIDACION, :BORRADO_LOGICO, :CONSECUTIVO_RIPS, :APROBADO, :APROBADO_POR, TO_DATE(:APROBADO_FECHA,'DD/MM/YYYY HH24:MI:SS'), :CAUSADO, :CAUSADO_POR, TO_DATE(:CAUSADO_FECHA,'DD/MM/YYYY HH24:MI:SS'), :COMPANIA_COMPROBANTE, :NUMERO_COMPROBANTE, :TIPO_COMPROBANTE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_CONSECUTIVO_RIPS":"$CONSECUTIVO_RIPS(type:integer)","KEY_COMPANIA":"$COMPANIA","KEY_COD_PREST_SERV_SALUD":"$COD_PREST_SERV_SALUD","KEY_NUM_FACTURA":"$NUM_FACTURA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_PREST_SERV_SALUD" sqlType="STRING"/>
+		<param name="NOMBRE_RAZON_SOCIAL" sqlType="STRING"/>
+		<param name="TIPO_IDENTI_PREST_SERV_SALUD" sqlType="STRING"/>
+		<param defaultValue="" name="NUM_IDENTIF_PRESTADOR" sqlType="STRING"/>
+		<param name="NUM_FACTURA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_EXP_FACTURA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_INICIAL" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_FINAL" sqlType="STRING"/>
+		<param defaultValue="" name="COD_ENTIDAD_ADMINISTRADORA" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE_ENTIDAD_ADMINISTRADORA" sqlType="STRING"/>
+		<param defaultValue="" name="NUMERO_CONTRATO" sqlType="STRING"/>
+		<param defaultValue="" name="PLAN_BENEFICIOS" sqlType="STRING"/>
+		<param defaultValue="" name="NUMERO_POLIZA" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_TOT_PAGO_COMPARTIDO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_COMISION" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_TOTAL_DESCUENTOS" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_NETO_A_PAGAR_ENTI_CONTR" sqlType="STRING"/>
+		<param defaultValue="0" name="VALIDADO" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACION_VALIDACION" sqlType="STRING"/>
+		<param defaultValue="0" name="BORRADO_LOGICO" sqlType="STRING"/>
+		<param name="CONSECUTIVO_RIPS" sqlType="STRING"/>
+		<param defaultValue="0" name="APROBADO" sqlType="STRING"/>
+		<param defaultValue="" name="APROBADO_POR" sqlType="STRING"/>
+		<param defaultValue="" name="APROBADO_FECHA" sqlType="STRING"/>
+		<param defaultValue="0" name="CAUSADO" sqlType="STRING"/>
+		<param defaultValue="" name="CAUSADO_POR" sqlType="STRING"/>
+		<param defaultValue="" name="CAUSADO_FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="COMPANIA_COMPROBANTE" sqlType="STRING"/>
+		<param defaultValue="0" name="NUMERO_COMPROBANTE" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_COMPROBANTE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="cmarchivotransacciones">
+		<call-query href="insertCmarchivotransacciones">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_PREST_SERV_SALUD" query-param="COD_PREST_SERV_SALUD"/>
+			<with-param name="NOMBRE_RAZON_SOCIAL" query-param="NOMBRE_RAZON_SOCIAL"/>
+			<with-param name="TIPO_IDENTI_PREST_SERV_SALUD" query-param="TIPO_IDENTI_PREST_SERV_SALUD"/>
+			<with-param name="NUM_IDENTIF_PRESTADOR" query-param="NUM_IDENTIF_PRESTADOR"/>
+			<with-param name="NUM_FACTURA" query-param="NUM_FACTURA"/>
+			<with-param name="FECHA_EXP_FACTURA" query-param="FECHA_EXP_FACTURA"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="FECHA_FINAL" query-param="FECHA_FINAL"/>
+			<with-param name="COD_ENTIDAD_ADMINISTRADORA" query-param="COD_ENTIDAD_ADMINISTRADORA"/>
+			<with-param name="NOMBRE_ENTIDAD_ADMINISTRADORA" query-param="NOMBRE_ENTIDAD_ADMINISTRADORA"/>
+			<with-param name="NUMERO_CONTRATO" query-param="NUMERO_CONTRATO"/>
+			<with-param name="PLAN_BENEFICIOS" query-param="PLAN_BENEFICIOS"/>
+			<with-param name="NUMERO_POLIZA" query-param="NUMERO_POLIZA"/>
+			<with-param name="VALOR_TOT_PAGO_COMPARTIDO" query-param="VALOR_TOT_PAGO_COMPARTIDO"/>
+			<with-param name="VALOR_COMISION" query-param="VALOR_COMISION"/>
+			<with-param name="VALOR_TOTAL_DESCUENTOS" query-param="VALOR_TOTAL_DESCUENTOS"/>
+			<with-param name="VALOR_NETO_A_PAGAR_ENTI_CONTR" query-param="VALOR_NETO_A_PAGAR_ENTI_CONTR"/>
+			<with-param name="VALIDADO" query-param="VALIDADO"/>
+			<with-param name="OBSERVACION_VALIDACION" query-param="OBSERVACION_VALIDACION"/>
+			<with-param name="BORRADO_LOGICO" query-param="BORRADO_LOGICO"/>
+			<with-param name="CONSECUTIVO_RIPS" query-param="CONSECUTIVO_RIPS"/>
+			<with-param name="APROBADO" query-param="APROBADO"/>
+			<with-param name="APROBADO_POR" query-param="APROBADO_POR"/>
+			<with-param name="APROBADO_FECHA" query-param="APROBADO_FECHA"/>
+			<with-param name="CAUSADO" query-param="CAUSADO"/>
+			<with-param name="CAUSADO_POR" query-param="CAUSADO_POR"/>
+			<with-param name="CAUSADO_FECHA" query-param="CAUSADO_FECHA"/>
+			<with-param name="COMPANIA_COMPROBANTE" query-param="COMPANIA_COMPROBANTE"/>
+			<with-param name="NUMERO_COMPROBANTE" query-param="NUMERO_COMPROBANTE"/>
+			<with-param name="TIPO_COMPROBANTE" query-param="TIPO_COMPROBANTE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCmarchivotransacciones" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CM_ARCHIVO_TRANSACCIONES WHERE CM_ARCHIVO_TRANSACCIONES.CONSECUTIVO_RIPS= :KEY_CONSECUTIVO_RIPS AND CM_ARCHIVO_TRANSACCIONES.COMPANIA= :KEY_COMPANIA AND CM_ARCHIVO_TRANSACCIONES.COD_PREST_SERV_SALUD= :KEY_COD_PREST_SERV_SALUD AND CM_ARCHIVO_TRANSACCIONES.NUM_FACTURA= :KEY_NUM_FACTURA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_CONSECUTIVO_RIPS" sqlType="INTEGER"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_PREST_SERV_SALUD" sqlType="STRING"/>
+		<param name="KEY_NUM_FACTURA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="cmarchivotransacciones">
+		<call-query href="deleteCmarchivotransacciones">
+			<with-param name="KEY_CONSECUTIVO_RIPS" query-param="KEY_CONSECUTIVO_RIPS"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_PREST_SERV_SALUD" query-param="KEY_COD_PREST_SERV_SALUD"/>
+			<with-param name="KEY_NUM_FACTURA" query-param="KEY_NUM_FACTURA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmarchivotransaccionesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT AF.COMPANIA, AF.CONSECUTIVO_RIPS, IR.RADICADO, AF.NUM_FACTURA, AF.COD_PREST_SERV_SALUD, AF.NOMBRE_RAZON_SOCIAL, AF.NUM_IDENTIF_PRESTADOR, AF.VALOR_TOT_PAGO_COMPARTIDO, AF.VALOR_COMISION, AF.VALOR_TOTAL_DESCUENTOS, AF.VALOR_NETO_A_PAGAR_ENTI_CONTR,(CASE AF.APROBADO WHEN 0 THEN 'false' ELSE 'true' END) APROBADO, AF.APROBADO_POR, TO_CHAR( AF.APROBADO_FECHA, 'DD/MM/YYYY' ) APROBADO_FECHA,(CASE AF.CAUSADO WHEN 0 THEN 'false' ELSE 'true' END) CAUSADO, AF.CAUSADO_POR, TO_CHAR( AF.CAUSADO_FECHA, 'DD/MM/YYYY' ) CAUSADO_FECHA, AF.COMPANIA_COMPROBANTE, AF.NUMERO_COMPROBANTE, CA.CODIGO COMPROBANTE, CA.TIPO_COMPROBANTE NOMBRE_TIPO_COMPROBANTE FROM CM_ARCHIVO_TRANSACCIONES AF INNER JOIN CM_IMPORTARRIPS IR ON IR.COMPANIA = AF.COMPANIA AND AF.CONSECUTIVO_RIPS = IR.CONSECUTIVO AND IR.ESTADO NOT IN ( 'P', 'F' ) LEFT JOIN CM_CAUSACION_AUTOMATICA CA ON CA.COMPANIA = AF.COMPANIA AND CA.TIPO_COMPROBANTE = AF.TIPO_COMPROBANTE WHERE AF.CONSECUTIVO_RIPS = :CONSECUTIVO) INI WHERE (CASE WHEN CONSECUTIVO_RIPS IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO_RIPS) END) LIKE UPPER(CONCAT(:CONSECUTIVO_RIPS, '%')) AND (CASE WHEN RADICADO IS NULL THEN ' ' ELSE UPPER(RADICADO) END) LIKE UPPER(CONCAT(:RADICADO, '%')) AND (CASE WHEN NUM_FACTURA IS NULL THEN ' ' ELSE UPPER(NUM_FACTURA) END) LIKE UPPER(CONCAT(CONCAT('%',:NUM_FACTURA), '%')) AND (CASE WHEN COD_PREST_SERV_SALUD IS NULL THEN ' ' ELSE UPPER(COD_PREST_SERV_SALUD) END) LIKE UPPER(CONCAT(CONCAT('%',:COD_PREST_SERV_SALUD), '%')) AND (CASE WHEN NOMBRE_RAZON_SOCIAL IS NULL THEN ' ' ELSE UPPER(NOMBRE_RAZON_SOCIAL) END) LIKE UPPER(CONCAT(:NOMBRE_RAZON_SOCIAL, '%')) AND (CASE WHEN VALOR_TOT_PAGO_COMPARTIDO IS NULL THEN ' ' ELSE UPPER(VALOR_TOT_PAGO_COMPARTIDO) END) LIKE UPPER(CONCAT(:VALOR_TOT_PAGO_COMPARTIDO, '%')) AND (CASE WHEN VALOR_COMISION IS NULL THEN ' ' ELSE UPPER(VALOR_COMISION) END) LIKE UPPER(CONCAT(:VALOR_COMISION, '%')) AND (CASE WHEN VALOR_TOTAL_DESCUENTOS IS NULL THEN ' ' ELSE UPPER(VALOR_TOTAL_DESCUENTOS) END) LIKE UPPER(CONCAT(:VALOR_TOTAL_DESCUENTOS, '%')) AND (CASE WHEN VALOR_NETO_A_PAGAR_ENTI_CONTR IS NULL THEN ' ' ELSE UPPER(VALOR_NETO_A_PAGAR_ENTI_CONTR) END) LIKE UPPER(CONCAT(:VALOR_NETO_A_PAGAR_ENTI_CONTR, '%')) AND (CASE WHEN APROBADO IS NULL THEN ' ' ELSE UPPER(APROBADO) END) LIKE UPPER(CONCAT(CONCAT('%',:APROBADO), '%')) AND (CASE WHEN APROBADO_POR IS NULL THEN ' ' ELSE UPPER(APROBADO_POR) END) LIKE UPPER(CONCAT(:APROBADO_POR, '%')) AND (CASE WHEN APROBADO_FECHA IS NULL THEN ' ' ELSE UPPER(APROBADO_FECHA) END) LIKE UPPER(CONCAT(:APROBADO_FECHA, '%')) AND (CASE WHEN CAUSADO IS NULL THEN ' ' ELSE UPPER(CAUSADO) END) LIKE UPPER(CONCAT(CONCAT('%',:CAUSADO), '%')) AND (CASE WHEN CAUSADO_POR IS NULL THEN ' ' ELSE UPPER(CAUSADO_POR) END) LIKE UPPER(CONCAT(:CAUSADO_POR, '%')) AND (CASE WHEN CAUSADO_FECHA IS NULL THEN ' ' ELSE UPPER(CAUSADO_FECHA) END) LIKE UPPER(CONCAT(:CAUSADO_FECHA, '%')) AND (CASE WHEN COMPANIA_COMPROBANTE IS NULL THEN ' ' ELSE UPPER(COMPANIA_COMPROBANTE) END) LIKE UPPER(CONCAT(CONCAT('%',:COMPANIA_COMPROBANTE), '%')) AND (CASE WHEN NUMERO_COMPROBANTE IS NULL THEN ' ' ELSE UPPER(NUMERO_COMPROBANTE) END) LIKE UPPER(CONCAT(:NUMERO_COMPROBANTE, '%')) AND (CASE WHEN NOMBRE_TIPO_COMPROBANTE IS NULL THEN ' ' ELSE UPPER(NOMBRE_TIPO_COMPROBANTE) END) LIKE UPPER(CONCAT(:NOMBRE_TIPO_COMPROBANTE, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO_RIPS":"$CONSECUTIVO_RIPS(type:integer)","RADICADO":"$RADICADO","NUM_FACTURA":"$NUM_FACTURA","COD_PREST_SERV_SALUD":"$COD_PREST_SERV_SALUD","NOMBRE_RAZON_SOCIAL":"$NOMBRE_RAZON_SOCIAL","NUM_IDENTIF_PRESTADOR":"$NUM_IDENTIF_PRESTADOR","VALOR_TOT_PAGO_COMPARTIDO":"$VALOR_TOT_PAGO_COMPARTIDO","VALOR_COMISION":"$VALOR_COMISION","VALOR_TOTAL_DESCUENTOS":"$VALOR_TOTAL_DESCUENTOS","VALOR_NETO_A_PAGAR_ENTI_CONTR":"$VALOR_NETO_A_PAGAR_ENTI_CONTR","APROBADO":"$APROBADO(type:boolean)","APROBADO_POR":"$APROBADO_POR","APROBADO_FECHA":"$APROBADO_FECHA","CAUSADO":"$CAUSADO(type:boolean)","CAUSADO_POR":"$CAUSADO_POR","CAUSADO_FECHA":"$CAUSADO_FECHA","COMPANIA_COMPROBANTE":"$COMPANIA_COMPROBANTE","NUMERO_COMPROBANTE":"$NUMERO_COMPROBANTE(type:long)","COMPROBANTE":"$COMPROBANTE","NOMBRE_TIPO_COMPROBANTE":"$NOMBRE_TIPO_COMPROBANTE"}]}}		</result>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CONSECUTIVO_RIPS" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="NUM_FACTURA" sqlType="STRING"/>
+		<param name="COD_PREST_SERV_SALUD" sqlType="STRING"/>
+		<param name="NOMBRE_RAZON_SOCIAL" sqlType="STRING"/>
+		<param name="VALOR_TOT_PAGO_COMPARTIDO" sqlType="STRING"/>
+		<param name="VALOR_COMISION" sqlType="STRING"/>
+		<param name="VALOR_TOTAL_DESCUENTOS" sqlType="STRING"/>
+		<param name="VALOR_NETO_A_PAGAR_ENTI_CONTR" sqlType="STRING"/>
+		<param name="APROBADO" sqlType="STRING"/>
+		<param name="APROBADO_POR" sqlType="STRING"/>
+		<param name="APROBADO_FECHA" sqlType="STRING"/>
+		<param name="CAUSADO" sqlType="STRING"/>
+		<param name="CAUSADO_POR" sqlType="STRING"/>
+		<param name="CAUSADO_FECHA" sqlType="STRING"/>
+		<param name="COMPANIA_COMPROBANTE" sqlType="STRING"/>
+		<param name="NUMERO_COMPROBANTE" sqlType="STRING"/>
+		<param name="NOMBRE_TIPO_COMPROBANTE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cmarchivotransacciones">
+		<call-query href="getCmarchivotransaccionesPaginaQuery">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CONSECUTIVO_RIPS" query-param="CONSECUTIVO_RIPS"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="NUM_FACTURA" query-param="NUM_FACTURA"/>
+			<with-param name="COD_PREST_SERV_SALUD" query-param="COD_PREST_SERV_SALUD"/>
+			<with-param name="NOMBRE_RAZON_SOCIAL" query-param="NOMBRE_RAZON_SOCIAL"/>
+			<with-param name="VALOR_TOT_PAGO_COMPARTIDO" query-param="VALOR_TOT_PAGO_COMPARTIDO"/>
+			<with-param name="VALOR_COMISION" query-param="VALOR_COMISION"/>
+			<with-param name="VALOR_TOTAL_DESCUENTOS" query-param="VALOR_TOTAL_DESCUENTOS"/>
+			<with-param name="VALOR_NETO_A_PAGAR_ENTI_CONTR" query-param="VALOR_NETO_A_PAGAR_ENTI_CONTR"/>
+			<with-param name="APROBADO" query-param="APROBADO"/>
+			<with-param name="APROBADO_POR" query-param="APROBADO_POR"/>
+			<with-param name="APROBADO_FECHA" query-param="APROBADO_FECHA"/>
+			<with-param name="CAUSADO" query-param="CAUSADO"/>
+			<with-param name="CAUSADO_POR" query-param="CAUSADO_POR"/>
+			<with-param name="CAUSADO_FECHA" query-param="CAUSADO_FECHA"/>
+			<with-param name="COMPANIA_COMPROBANTE" query-param="COMPANIA_COMPROBANTE"/>
+			<with-param name="NUMERO_COMPROBANTE" query-param="NUMERO_COMPROBANTE"/>
+			<with-param name="NOMBRE_TIPO_COMPROBANTE" query-param="NOMBRE_TIPO_COMPROBANTE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmarchivotransaccionesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT AF.COMPANIA, AF.CONSECUTIVO_RIPS, IR.RADICADO, AF.NUM_FACTURA, AF.COD_PREST_SERV_SALUD, AF.NOMBRE_RAZON_SOCIAL, AF.NUM_IDENTIF_PRESTADOR, AF.VALOR_TOT_PAGO_COMPARTIDO, AF.VALOR_COMISION, AF.VALOR_TOTAL_DESCUENTOS, AF.VALOR_NETO_A_PAGAR_ENTI_CONTR,(CASE AF.APROBADO WHEN 0 THEN 'false' ELSE 'true' END) APROBADO, AF.APROBADO_POR, TO_CHAR( AF.APROBADO_FECHA, 'DD/MM/YYYY' ) APROBADO_FECHA,(CASE AF.CAUSADO WHEN 0 THEN 'false' ELSE 'true' END) CAUSADO, AF.CAUSADO_POR, TO_CHAR( AF.CAUSADO_FECHA, 'DD/MM/YYYY' ) CAUSADO_FECHA, AF.COMPANIA_COMPROBANTE, AF.NUMERO_COMPROBANTE, CA.CODIGO COMPROBANTE, CA.TIPO_COMPROBANTE NOMBRE_TIPO_COMPROBANTE FROM CM_ARCHIVO_TRANSACCIONES AF INNER JOIN CM_IMPORTARRIPS IR ON IR.COMPANIA = AF.COMPANIA AND AF.CONSECUTIVO_RIPS = IR.CONSECUTIVO AND IR.ESTADO NOT IN ( 'P', 'F' ) LEFT JOIN CM_CAUSACION_AUTOMATICA CA ON CA.COMPANIA = AF.COMPANIA AND CA.TIPO_COMPROBANTE = AF.TIPO_COMPROBANTE WHERE AF.CONSECUTIVO_RIPS = :CONSECUTIVO) INI WHERE (CASE WHEN CONSECUTIVO_RIPS IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO_RIPS) END) LIKE UPPER(CONCAT(:CONSECUTIVO_RIPS, '%')) AND (CASE WHEN RADICADO IS NULL THEN ' ' ELSE UPPER(RADICADO) END) LIKE UPPER(CONCAT(:RADICADO, '%')) AND (CASE WHEN NUM_FACTURA IS NULL THEN ' ' ELSE UPPER(NUM_FACTURA) END) LIKE UPPER(CONCAT(CONCAT('%',:NUM_FACTURA), '%')) AND (CASE WHEN COD_PREST_SERV_SALUD IS NULL THEN ' ' ELSE UPPER(COD_PREST_SERV_SALUD) END) LIKE UPPER(CONCAT(CONCAT('%',:COD_PREST_SERV_SALUD), '%')) AND (CASE WHEN NOMBRE_RAZON_SOCIAL IS NULL THEN ' ' ELSE UPPER(NOMBRE_RAZON_SOCIAL) END) LIKE UPPER(CONCAT(:NOMBRE_RAZON_SOCIAL, '%')) AND (CASE WHEN VALOR_TOT_PAGO_COMPARTIDO IS NULL THEN ' ' ELSE UPPER(VALOR_TOT_PAGO_COMPARTIDO) END) LIKE UPPER(CONCAT(:VALOR_TOT_PAGO_COMPARTIDO, '%')) AND (CASE WHEN VALOR_COMISION IS NULL THEN ' ' ELSE UPPER(VALOR_COMISION) END) LIKE UPPER(CONCAT(:VALOR_COMISION, '%')) AND (CASE WHEN VALOR_TOTAL_DESCUENTOS IS NULL THEN ' ' ELSE UPPER(VALOR_TOTAL_DESCUENTOS) END) LIKE UPPER(CONCAT(:VALOR_TOTAL_DESCUENTOS, '%')) AND (CASE WHEN VALOR_NETO_A_PAGAR_ENTI_CONTR IS NULL THEN ' ' ELSE UPPER(VALOR_NETO_A_PAGAR_ENTI_CONTR) END) LIKE UPPER(CONCAT(:VALOR_NETO_A_PAGAR_ENTI_CONTR, '%')) AND (CASE WHEN APROBADO IS NULL THEN ' ' ELSE UPPER(APROBADO) END) LIKE UPPER(CONCAT(CONCAT('%',:APROBADO), '%')) AND (CASE WHEN APROBADO_POR IS NULL THEN ' ' ELSE UPPER(APROBADO_POR) END) LIKE UPPER(CONCAT(:APROBADO_POR, '%')) AND (CASE WHEN APROBADO_FECHA IS NULL THEN ' ' ELSE UPPER(APROBADO_FECHA) END) LIKE UPPER(CONCAT(:APROBADO_FECHA, '%')) AND (CASE WHEN CAUSADO IS NULL THEN ' ' ELSE UPPER(CAUSADO) END) LIKE UPPER(CONCAT(CONCAT('%',:CAUSADO), '%')) AND (CASE WHEN CAUSADO_POR IS NULL THEN ' ' ELSE UPPER(CAUSADO_POR) END) LIKE UPPER(CONCAT(:CAUSADO_POR, '%')) AND (CASE WHEN CAUSADO_FECHA IS NULL THEN ' ' ELSE UPPER(CAUSADO_FECHA) END) LIKE UPPER(CONCAT(:CAUSADO_FECHA, '%')) AND (CASE WHEN COMPANIA_COMPROBANTE IS NULL THEN ' ' ELSE UPPER(COMPANIA_COMPROBANTE) END) LIKE UPPER(CONCAT(CONCAT('%',:COMPANIA_COMPROBANTE), '%')) AND (CASE WHEN NUMERO_COMPROBANTE IS NULL THEN ' ' ELSE UPPER(NUMERO_COMPROBANTE) END) LIKE UPPER(CONCAT(:NUMERO_COMPROBANTE, '%')) AND (CASE WHEN NOMBRE_TIPO_COMPROBANTE IS NULL THEN ' ' ELSE UPPER(NOMBRE_TIPO_COMPROBANTE) END) LIKE UPPER(CONCAT(:NOMBRE_TIPO_COMPROBANTE, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CONSECUTIVO_RIPS" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="NUM_FACTURA" sqlType="STRING"/>
+		<param name="COD_PREST_SERV_SALUD" sqlType="STRING"/>
+		<param name="NOMBRE_RAZON_SOCIAL" sqlType="STRING"/>
+		<param name="VALOR_TOT_PAGO_COMPARTIDO" sqlType="STRING"/>
+		<param name="VALOR_COMISION" sqlType="STRING"/>
+		<param name="VALOR_TOTAL_DESCUENTOS" sqlType="STRING"/>
+		<param name="VALOR_NETO_A_PAGAR_ENTI_CONTR" sqlType="STRING"/>
+		<param name="APROBADO" sqlType="STRING"/>
+		<param name="APROBADO_POR" sqlType="STRING"/>
+		<param name="APROBADO_FECHA" sqlType="STRING"/>
+		<param name="CAUSADO" sqlType="STRING"/>
+		<param name="CAUSADO_POR" sqlType="STRING"/>
+		<param name="CAUSADO_FECHA" sqlType="STRING"/>
+		<param name="COMPANIA_COMPROBANTE" sqlType="STRING"/>
+		<param name="NUMERO_COMPROBANTE" sqlType="STRING"/>
+		<param name="NOMBRE_TIPO_COMPROBANTE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmarchivotransacciones/numero">
+		<call-query href="getCmarchivotransaccionesNumeroQuery">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CONSECUTIVO_RIPS" query-param="CONSECUTIVO_RIPS"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="NUM_FACTURA" query-param="NUM_FACTURA"/>
+			<with-param name="COD_PREST_SERV_SALUD" query-param="COD_PREST_SERV_SALUD"/>
+			<with-param name="NOMBRE_RAZON_SOCIAL" query-param="NOMBRE_RAZON_SOCIAL"/>
+			<with-param name="VALOR_TOT_PAGO_COMPARTIDO" query-param="VALOR_TOT_PAGO_COMPARTIDO"/>
+			<with-param name="VALOR_COMISION" query-param="VALOR_COMISION"/>
+			<with-param name="VALOR_TOTAL_DESCUENTOS" query-param="VALOR_TOTAL_DESCUENTOS"/>
+			<with-param name="VALOR_NETO_A_PAGAR_ENTI_CONTR" query-param="VALOR_NETO_A_PAGAR_ENTI_CONTR"/>
+			<with-param name="APROBADO" query-param="APROBADO"/>
+			<with-param name="APROBADO_POR" query-param="APROBADO_POR"/>
+			<with-param name="APROBADO_FECHA" query-param="APROBADO_FECHA"/>
+			<with-param name="CAUSADO" query-param="CAUSADO"/>
+			<with-param name="CAUSADO_POR" query-param="CAUSADO_POR"/>
+			<with-param name="CAUSADO_FECHA" query-param="CAUSADO_FECHA"/>
+			<with-param name="COMPANIA_COMPROBANTE" query-param="COMPANIA_COMPROBANTE"/>
+			<with-param name="NUMERO_COMPROBANTE" query-param="NUMERO_COMPROBANTE"/>
+			<with-param name="NOMBRE_TIPO_COMPROBANTE" query-param="NOMBRE_TIPO_COMPROBANTE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCmarchivotransacciones" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CM_ARCHIVO_TRANSACCIONES SET COMPANIA=:COMPANIA, CONSECUTIVO_RIPS=:CONSECUTIVO_RIPS, NUM_FACTURA=:NUM_FACTURA, COD_PREST_SERV_SALUD=:COD_PREST_SERV_SALUD, NOMBRE_RAZON_SOCIAL=:NOMBRE_RAZON_SOCIAL, NUM_IDENTIF_PRESTADOR=:NUM_IDENTIF_PRESTADOR, VALOR_TOT_PAGO_COMPARTIDO=:VALOR_TOT_PAGO_COMPARTIDO, VALOR_COMISION=:VALOR_COMISION, VALOR_TOTAL_DESCUENTOS=:VALOR_TOTAL_DESCUENTOS, VALOR_NETO_A_PAGAR_ENTI_CONTR=:VALOR_NETO_A_PAGAR_ENTI_CONTR, APROBADO=:APROBADO, APROBADO_POR=:APROBADO_POR, APROBADO_FECHA=TO_DATE(:APROBADO_FECHA,'DD/MM/YYYY HH24:MI:SS'), CAUSADO=:CAUSADO, CAUSADO_POR=:CAUSADO_POR, CAUSADO_FECHA=TO_DATE(:CAUSADO_FECHA,'DD/MM/YYYY HH24:MI:SS'), COMPANIA_COMPROBANTE=:COMPANIA_COMPROBANTE, NUMERO_COMPROBANTE=:NUMERO_COMPROBANTE, TIPO_COMPROBANTE=:TIPO_COMPROBANTE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CM_ARCHIVO_TRANSACCIONES.CONSECUTIVO_RIPS= :KEY_CONSECUTIVO_RIPS AND CM_ARCHIVO_TRANSACCIONES.COMPANIA= :KEY_COMPANIA AND CM_ARCHIVO_TRANSACCIONES.COD_PREST_SERV_SALUD= :KEY_COD_PREST_SERV_SALUD AND CM_ARCHIVO_TRANSACCIONES.NUM_FACTURA= :KEY_NUM_FACTURA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO_RIPS" sqlType="STRING"/>
+		<param name="NUM_FACTURA" sqlType="STRING"/>
+		<param name="COD_PREST_SERV_SALUD" sqlType="STRING"/>
+		<param name="NOMBRE_RAZON_SOCIAL" sqlType="STRING"/>
+		<param name="NUM_IDENTIF_PRESTADOR" sqlType="STRING"/>
+		<param name="VALOR_TOT_PAGO_COMPARTIDO" sqlType="STRING"/>
+		<param name="VALOR_COMISION" sqlType="STRING"/>
+		<param name="VALOR_TOTAL_DESCUENTOS" sqlType="STRING"/>
+		<param name="VALOR_NETO_A_PAGAR_ENTI_CONTR" sqlType="STRING"/>
+		<param name="APROBADO" sqlType="STRING"/>
+		<param name="APROBADO_POR" sqlType="STRING"/>
+		<param name="APROBADO_FECHA" sqlType="STRING"/>
+		<param name="CAUSADO" sqlType="STRING"/>
+		<param name="CAUSADO_POR" sqlType="STRING"/>
+		<param name="CAUSADO_FECHA" sqlType="STRING"/>
+		<param name="COMPANIA_COMPROBANTE" sqlType="STRING"/>
+		<param name="NUMERO_COMPROBANTE" sqlType="STRING"/>
+		<param name="TIPO_COMPROBANTE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO_RIPS" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_PREST_SERV_SALUD" sqlType="STRING"/>
+		<param name="KEY_NUM_FACTURA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cmarchivotransacciones">
+		<call-query href="updateCmarchivotransacciones">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO_RIPS" query-param="CONSECUTIVO_RIPS"/>
+			<with-param name="NUM_FACTURA" query-param="NUM_FACTURA"/>
+			<with-param name="COD_PREST_SERV_SALUD" query-param="COD_PREST_SERV_SALUD"/>
+			<with-param name="NOMBRE_RAZON_SOCIAL" query-param="NOMBRE_RAZON_SOCIAL"/>
+			<with-param name="NUM_IDENTIF_PRESTADOR" query-param="NUM_IDENTIF_PRESTADOR"/>
+			<with-param name="VALOR_TOT_PAGO_COMPARTIDO" query-param="VALOR_TOT_PAGO_COMPARTIDO"/>
+			<with-param name="VALOR_COMISION" query-param="VALOR_COMISION"/>
+			<with-param name="VALOR_TOTAL_DESCUENTOS" query-param="VALOR_TOTAL_DESCUENTOS"/>
+			<with-param name="VALOR_NETO_A_PAGAR_ENTI_CONTR" query-param="VALOR_NETO_A_PAGAR_ENTI_CONTR"/>
+			<with-param name="APROBADO" query-param="APROBADO"/>
+			<with-param name="APROBADO_POR" query-param="APROBADO_POR"/>
+			<with-param name="APROBADO_FECHA" query-param="APROBADO_FECHA"/>
+			<with-param name="CAUSADO" query-param="CAUSADO"/>
+			<with-param name="CAUSADO_POR" query-param="CAUSADO_POR"/>
+			<with-param name="CAUSADO_FECHA" query-param="CAUSADO_FECHA"/>
+			<with-param name="COMPANIA_COMPROBANTE" query-param="COMPANIA_COMPROBANTE"/>
+			<with-param name="NUMERO_COMPROBANTE" query-param="NUMERO_COMPROBANTE"/>
+			<with-param name="TIPO_COMPROBANTE" query-param="TIPO_COMPROBANTE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_CONSECUTIVO_RIPS" query-param="KEY_CONSECUTIVO_RIPS"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_PREST_SERV_SALUD" query-param="KEY_COD_PREST_SERV_SALUD"/>
+			<with-param name="KEY_NUM_FACTURA" query-param="KEY_NUM_FACTURA"/>
+
+		</call-query>
+	</resource>
+
+</data>

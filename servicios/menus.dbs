@@ -1,0 +1,111 @@
+﻿<data name="menus" transports="http https local">
+	<config enableOData="false" id="sysmanirisst">
+		<property name="carbon_datasource_name">SYSMANIRISST</property>
+	</config>
+	<query id="getMenusPagAplicacionQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  M.CODIGO,MD.DESCRIPCION  FROM MENU M INNER JOIN MENU_D MD ON(M.CODIGO=MD.MENU) WHERE M.APLICACION= :APLICACION ORDER BY TO_CHAR(CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(CONCAT(:CODIGO , '%'))  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER(CONCAT( CONCAT('%',  :DESCRIPCION) , '%')) ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:long)","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="menus/aplicacion/pag">
+		<call-query href="getMenusPagAplicacionQuery">
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getMenusNumAplicacionQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  M.CODIGO,MD.DESCRIPCION  FROM MENU M INNER JOIN MENU_D MD ON(M.CODIGO=MD.MENU) WHERE M.APLICACION= :APLICACION ORDER BY TO_CHAR(CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(CONCAT(:CODIGO , '%'))  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER(CONCAT( CONCAT('%',  :DESCRIPCION) , '%')) ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="menus/aplicacion/num">
+		<call-query href="getMenusNumAplicacionQuery">
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getMenusPagCodnomQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO ,NOMBRE  FROM MENU WHERE APLICACION = :APLICACION AND TIPO = :TIPO AND PARAMETRO IS NOT NULL ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="menus/codnom/pag">
+		<call-query href="getMenusPagCodnomQuery">
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getMenusNumCodnomQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO ,NOMBRE  FROM MENU WHERE APLICACION = :APLICACION AND TIPO = :TIPO AND PARAMETRO IS NOT NULL ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="menus/codnom/num">
+		<call-query href="getMenusNumCodnomQuery">
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getMenusTodoporcodQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  NOMBRE ,PARAMETRO, APLICACION  FROM MENU WHERE CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE":"$NOMBRE","PARAMETRO":"$PARAMETRO","APLICACION":"$APLICACION(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="menus/todoporcod">
+		<call-query href="getMenusTodoporcodQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateMenusCambiarurl" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>UPDATE MENU SET PARAMETRO = :URL WHERE CODIGO = :CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="URL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="menus/cambiarurl">
+		<call-query href="updateMenusCambiarurl">
+			<with-param name="URL" query-param="URL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

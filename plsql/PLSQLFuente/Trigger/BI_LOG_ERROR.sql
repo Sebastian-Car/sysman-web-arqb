@@ -1,0 +1,20 @@
+CREATE OR REPLACE TRIGGER "BI_LOG_ERROR"  
+/*
+      NAME              : BI_LOG_ERROR
+      AUTHORS           : SYSMAN  SAS
+      AUTHOR MIGRACION  : 
+      DATE MIGRADOR     : 
+      TIME              : 
+      SOURCE MODULE     : 
+      MODIFIER          : JAVIER ANDRES RODRIGUEZ RIOS
+      DATE MODIFIED     : 31/01/2017
+      TIME              : 09:05 AM
+      DESCRIPTION       : SE AJUSTA AL ESTANDAR                          
+*/ 
+BEFORE INSERT ON LOG_ERROR
+FOR EACH ROW
+BEGIN
+  SELECT SEQ_LOGERROR.NEXTVAL 
+    INTO :NEW.LOG_IDENT 
+    FROM DUAL;
+END;

@@ -1,0 +1,720 @@
+﻿<data name="predios" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getPrediosPagTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_PREDIO, NOMBRE, DIRECCION, ESCRITURA_NO, COD_PREDIAL, COD_INVENTARIO  FROM PREDIOS WHERE COMPANIA = :COMPANIA ORDER BY ID_PREDIO) WHERE (CASE WHEN ID_PREDIO IS NULL THEN ' ' ELSE UPPER(ID_PREDIO) END)  LIKE UPPER(:ID_PREDIO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_PREDIO":"$ID_PREDIO","NOMBRE":"$NOMBRE","DIRECCION":"$DIRECCION","ESCRITURA_NO":"$ESCRITURA_NO","COD_PREDIAL":"$COD_PREDIAL","COD_INVENTARIO":"$COD_INVENTARIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_PREDIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="predios/todosporcompania/pag">
+		<call-query href="getPrediosPagTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_PREDIO" query-param="ID_PREDIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosNumTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_PREDIO, NOMBRE, DIRECCION, ESCRITURA_NO, COD_PREDIAL, COD_INVENTARIO  FROM PREDIOS WHERE COMPANIA = :COMPANIA ORDER BY ID_PREDIO) WHERE (CASE WHEN ID_PREDIO IS NULL THEN ' ' ELSE UPPER(ID_PREDIO) END)  LIKE UPPER(:ID_PREDIO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_PREDIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="predios/todosporcompania/num">
+		<call-query href="getPrediosNumTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_PREDIO" query-param="ID_PREDIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePrediosNombre" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PREDIOS SET NOMBRE = :NOMBRE, MODIFIED_BY = :MODIFIED_BY, DATE_MODIFIED = :DATE_MODIFIED WHERE COMPANIA = :KEY_COMPANIA AND ID_PREDIO = :KEY_PREDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_PREDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="predios/nombre">
+		<call-query href="updatePrediosNombre">
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_PREDIO" query-param="KEY_PREDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosPagTodosOrdenadosPorSerie_placaInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_PREDIO ID, SERIE_PLACA,NOMBRE  FROM PREDIOS WHERE COMPANIA = :COMPANIA ORDER BY SERIE_PLACA) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER(:SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","SERIE_PLACA":"$SERIE_PLACA(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="predios/todosordenadosporserie_placainicial/pag">
+		<call-query href="getPrediosPagTodosOrdenadosPorSerie_placaInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosNumTodosOrdenadosPorSerie_placaInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_PREDIO ID, SERIE_PLACA,NOMBRE  FROM PREDIOS WHERE COMPANIA = :COMPANIA ORDER BY SERIE_PLACA) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="predios/todosordenadosporserie_placainicial/num">
+		<call-query href="getPrediosNumTodosOrdenadosPorSerie_placaInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosPagTodosOrdenadosPorNombreInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_PREDIO ID, SERIE_PLACA,NOMBRE  FROM PREDIOS WHERE COMPANIA = :COMPANIA ORDER BY NOMBRE) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER(:SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","SERIE_PLACA":"$SERIE_PLACA(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="predios/todosordenadospornombreinicial/pag">
+		<call-query href="getPrediosPagTodosOrdenadosPorNombreInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosNumTodosOrdenadosPorNombreInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_PREDIO ID, SERIE_PLACA,NOMBRE  FROM PREDIOS WHERE COMPANIA = :COMPANIA ORDER BY NOMBRE) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="predios/todosordenadospornombreinicial/num">
+		<call-query href="getPrediosNumTodosOrdenadosPorNombreInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosPagTodosOrdenadosPorId_predioInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_PREDIO ID, SERIE_PLACA,NOMBRE  FROM PREDIOS WHERE COMPANIA = :COMPANIA ORDER BY ID_PREDIO) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER(:SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","SERIE_PLACA":"$SERIE_PLACA(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="predios/todosordenadosporid_predioinicial/pag">
+		<call-query href="getPrediosPagTodosOrdenadosPorId_predioInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosNumTodosOrdenadosPorId_predioInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_PREDIO ID, SERIE_PLACA,NOMBRE  FROM PREDIOS WHERE COMPANIA = :COMPANIA ORDER BY ID_PREDIO) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="predios/todosordenadosporid_predioinicial/num">
+		<call-query href="getPrediosNumTodosOrdenadosPorId_predioInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertPredios" keyColumns="COMPANIA,ID_PREDIO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PREDIOS (EXT_LINDEROS_FRENTE, ACC_ADOQUIN, SUCURSAL, PREDIO_IRREGULAR, NOTARIA, ACC_PRINCIPAL, RUTA_FOTO, EXT_LINDEROS_IZQ, NECESITA_INVENTARIO, CREATED_BY, PREDIO_PLANO, DESC_LINDEROS_IZQ, FECHA_ESCRITURA, DPTO_ESCRITURA, ESCRITURA_NO, MODALIDAD, DESC_LINDEROS_FONDO, COD_PREDIAL, CIUDAD_ESCRITURA, PREDIO_REGULAR, PREDIO_INCLINADO, COD_FOTO, ACC_SECUNDARIA, NOMBRE, ID_PREDIO, COD_INVENTARIO, ANO_CONSTRUCCION, DIRECCION, DESTINACION, DESC_LINDEROS_FRENTE, DESC_LINDEROS_DER, MATR_INMOVILIARIA, RESPONSABLE, COMPANIA, PAIS, TIPO_PREDIO, EXT_LINDEROS_FONDO, COD_PLANO, OBSERVACIONES, UBICACION, ACC_RIGIDO, DATE_CREATED, ACC_ASFALTO, SERIE_PLACA, EXT_LINDEROS_DER, AREA_ESCRITURA, RUTA_PLANO, ENCUESTA_VALOR) VALUES (:EXT_LINDEROS_FRENTE, :ACC_ADOQUIN, :SUCURSAL, :PREDIO_IRREGULAR, :NOTARIA, :ACC_PRINCIPAL, :RUTA_FOTO, :EXT_LINDEROS_IZQ, :NECESITA_INVENTARIO, :CREATED_BY, :PREDIO_PLANO, :DESC_LINDEROS_IZQ, TO_DATE(:FECHA_ESCRITURA,'DD/MM/YYYY HH24:MI:SS'), :DPTO_ESCRITURA, :ESCRITURA_NO, :MODALIDAD, :DESC_LINDEROS_FONDO, :COD_PREDIAL, :CIUDAD_ESCRITURA, :PREDIO_REGULAR, :PREDIO_INCLINADO, :COD_FOTO, :ACC_SECUNDARIA, :NOMBRE, :ID_PREDIO, :COD_INVENTARIO, :ANO_CONSTRUCCION, :DIRECCION, :DESTINACION, :DESC_LINDEROS_FRENTE, :DESC_LINDEROS_DER, :MATR_INMOVILIARIA, :RESPONSABLE, :COMPANIA, :PAIS, :TIPO_PREDIO, :EXT_LINDEROS_FONDO, :COD_PLANO, :OBSERVACIONES, :UBICACION, :ACC_RIGIDO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :ACC_ASFALTO, :SERIE_PLACA, :EXT_LINDEROS_DER, :AREA_ESCRITURA, :RUTA_PLANO, :ENCUESTA_VALOR)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_PREDIO":"$ID_PREDIO"}]}}		</result>
+		<param defaultValue="0" name="EXT_LINDEROS_FRENTE" sqlType="STRING"/>
+		<param defaultValue="0" name="ACC_ADOQUIN" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="0" name="PREDIO_IRREGULAR" sqlType="STRING"/>
+		<param name="NOTARIA" sqlType="STRING"/>
+		<param defaultValue="0" name="ACC_PRINCIPAL" sqlType="STRING"/>
+		<param defaultValue="" name="RUTA_FOTO" sqlType="STRING"/>
+		<param defaultValue="0" name="EXT_LINDEROS_IZQ" sqlType="STRING"/>
+		<param defaultValue="0" name="NECESITA_INVENTARIO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param defaultValue="0" name="PREDIO_PLANO" sqlType="STRING"/>
+		<param defaultValue="" name="DESC_LINDEROS_IZQ" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_ESCRITURA" sqlType="STRING"/>
+		<param name="DPTO_ESCRITURA" sqlType="STRING"/>
+		<param defaultValue="" name="ESCRITURA_NO" sqlType="STRING"/>
+		<param name="MODALIDAD" sqlType="STRING"/>
+		<param defaultValue="" name="DESC_LINDEROS_FONDO" sqlType="STRING"/>
+		<param name="COD_PREDIAL" sqlType="STRING"/>
+		<param name="CIUDAD_ESCRITURA" sqlType="STRING"/>
+		<param defaultValue="0" name="PREDIO_REGULAR" sqlType="STRING"/>
+		<param defaultValue="0" name="PREDIO_INCLINADO" sqlType="STRING"/>
+		<param defaultValue="" name="COD_FOTO" sqlType="STRING"/>
+		<param defaultValue="0" name="ACC_SECUNDARIA" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param name="ID_PREDIO" sqlType="STRING"/>
+		<param name="COD_INVENTARIO" sqlType="STRING"/>
+		<param name="ANO_CONSTRUCCION" sqlType="STRING"/>
+		<param defaultValue="" name="DIRECCION" sqlType="STRING"/>
+		<param defaultValue="" name="DESTINACION" sqlType="STRING"/>
+		<param defaultValue="" name="DESC_LINDEROS_FRENTE" sqlType="STRING"/>
+		<param defaultValue="" name="DESC_LINDEROS_DER" sqlType="STRING"/>
+		<param defaultValue="" name="MATR_INMOVILIARIA" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="RESPONSABLE" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="TIPO_PREDIO" sqlType="STRING"/>
+		<param defaultValue="0" name="EXT_LINDEROS_FONDO" sqlType="STRING"/>
+		<param defaultValue="" name="COD_PLANO" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="UBICACION" sqlType="STRING"/>
+		<param defaultValue="0" name="ACC_RIGIDO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param defaultValue="0" name="ACC_ASFALTO" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param defaultValue="0" name="EXT_LINDEROS_DER" sqlType="STRING"/>
+		<param defaultValue="0" name="AREA_ESCRITURA" sqlType="STRING"/>
+		<param defaultValue="" name="RUTA_PLANO" sqlType="STRING"/>
+		<param defaultValue="" name="ENCUESTA_VALOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="predios">
+		<call-query href="insertPredios">
+			<with-param name="EXT_LINDEROS_FRENTE" query-param="EXT_LINDEROS_FRENTE"/>
+			<with-param name="ACC_ADOQUIN" query-param="ACC_ADOQUIN"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="PREDIO_IRREGULAR" query-param="PREDIO_IRREGULAR"/>
+			<with-param name="NOTARIA" query-param="NOTARIA"/>
+			<with-param name="ACC_PRINCIPAL" query-param="ACC_PRINCIPAL"/>
+			<with-param name="RUTA_FOTO" query-param="RUTA_FOTO"/>
+			<with-param name="EXT_LINDEROS_IZQ" query-param="EXT_LINDEROS_IZQ"/>
+			<with-param name="NECESITA_INVENTARIO" query-param="NECESITA_INVENTARIO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="PREDIO_PLANO" query-param="PREDIO_PLANO"/>
+			<with-param name="DESC_LINDEROS_IZQ" query-param="DESC_LINDEROS_IZQ"/>
+			<with-param name="FECHA_ESCRITURA" query-param="FECHA_ESCRITURA"/>
+			<with-param name="DPTO_ESCRITURA" query-param="DPTO_ESCRITURA"/>
+			<with-param name="ESCRITURA_NO" query-param="ESCRITURA_NO"/>
+			<with-param name="MODALIDAD" query-param="MODALIDAD"/>
+			<with-param name="DESC_LINDEROS_FONDO" query-param="DESC_LINDEROS_FONDO"/>
+			<with-param name="COD_PREDIAL" query-param="COD_PREDIAL"/>
+			<with-param name="CIUDAD_ESCRITURA" query-param="CIUDAD_ESCRITURA"/>
+			<with-param name="PREDIO_REGULAR" query-param="PREDIO_REGULAR"/>
+			<with-param name="PREDIO_INCLINADO" query-param="PREDIO_INCLINADO"/>
+			<with-param name="COD_FOTO" query-param="COD_FOTO"/>
+			<with-param name="ACC_SECUNDARIA" query-param="ACC_SECUNDARIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="ID_PREDIO" query-param="ID_PREDIO"/>
+			<with-param name="COD_INVENTARIO" query-param="COD_INVENTARIO"/>
+			<with-param name="ANO_CONSTRUCCION" query-param="ANO_CONSTRUCCION"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="DESTINACION" query-param="DESTINACION"/>
+			<with-param name="DESC_LINDEROS_FRENTE" query-param="DESC_LINDEROS_FRENTE"/>
+			<with-param name="DESC_LINDEROS_DER" query-param="DESC_LINDEROS_DER"/>
+			<with-param name="MATR_INMOVILIARIA" query-param="MATR_INMOVILIARIA"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="TIPO_PREDIO" query-param="TIPO_PREDIO"/>
+			<with-param name="EXT_LINDEROS_FONDO" query-param="EXT_LINDEROS_FONDO"/>
+			<with-param name="COD_PLANO" query-param="COD_PLANO"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="UBICACION" query-param="UBICACION"/>
+			<with-param name="ACC_RIGIDO" query-param="ACC_RIGIDO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="ACC_ASFALTO" query-param="ACC_ASFALTO"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="EXT_LINDEROS_DER" query-param="EXT_LINDEROS_DER"/>
+			<with-param name="AREA_ESCRITURA" query-param="AREA_ESCRITURA"/>
+			<with-param name="RUTA_PLANO" query-param="RUTA_PLANO"/>
+			<with-param name="ENCUESTA_VALOR" query-param="ENCUESTA_VALOR"/>
+
+		</call-query>
+	</resource>
+	<query id="deletePredios" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM PREDIOS WHERE PREDIOS.COMPANIA= :KEY_COMPANIA AND PREDIOS.ID_PREDIO= :KEY_ID_PREDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_PREDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="predios">
+		<call-query href="deletePredios">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_PREDIO" query-param="KEY_ID_PREDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, ID_PREDIO, NOMBRE, DIRECCION, UBICACION, COD_PREDIAL, SERIE_PLACA, COD_INVENTARIO  FROM PREDIOS WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_PREDIO IS NULL THEN ' ' ELSE UPPER(ID_PREDIO) END)  LIKE UPPER( '%' || :ID_PREDIO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN DIRECCION IS NULL THEN ' ' ELSE UPPER(DIRECCION) END)  LIKE UPPER( '%' || :DIRECCION || '%')  AND (CASE WHEN UBICACION IS NULL THEN ' ' ELSE UPPER(UBICACION) END)  LIKE UPPER(:UBICACION || '%')  AND (CASE WHEN COD_PREDIAL IS NULL THEN ' ' ELSE UPPER(COD_PREDIAL) END)  LIKE UPPER( '%' || :COD_PREDIAL || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN COD_INVENTARIO IS NULL THEN ' ' ELSE UPPER(COD_INVENTARIO) END)  LIKE UPPER( '%' || :COD_INVENTARIO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_PREDIO":"$ID_PREDIO","NOMBRE":"$NOMBRE","DIRECCION":"$DIRECCION","UBICACION":"$UBICACION","COD_PREDIAL":"$COD_PREDIAL","SERIE_PLACA":"$SERIE_PLACA(type:long)","COD_INVENTARIO":"$COD_INVENTARIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_PREDIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DIRECCION" sqlType="STRING"/>
+		<param name="UBICACION" sqlType="STRING"/>
+		<param name="COD_PREDIAL" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="COD_INVENTARIO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="predios">
+		<call-query href="getPrediosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_PREDIO" query-param="ID_PREDIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="UBICACION" query-param="UBICACION"/>
+			<with-param name="COD_PREDIAL" query-param="COD_PREDIAL"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="COD_INVENTARIO" query-param="COD_INVENTARIO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, ID_PREDIO, NOMBRE, DIRECCION, UBICACION, COD_PREDIAL, SERIE_PLACA, COD_INVENTARIO  FROM PREDIOS WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_PREDIO IS NULL THEN ' ' ELSE UPPER(ID_PREDIO) END)  LIKE UPPER( '%' || :ID_PREDIO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN DIRECCION IS NULL THEN ' ' ELSE UPPER(DIRECCION) END)  LIKE UPPER( '%' || :DIRECCION || '%')  AND (CASE WHEN UBICACION IS NULL THEN ' ' ELSE UPPER(UBICACION) END)  LIKE UPPER( '%' || :UBICACION || '%')  AND (CASE WHEN COD_PREDIAL IS NULL THEN ' ' ELSE UPPER(COD_PREDIAL) END)  LIKE UPPER( '%' || :COD_PREDIAL || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN COD_INVENTARIO IS NULL THEN ' ' ELSE UPPER(COD_INVENTARIO) END)  LIKE UPPER( '%' || :COD_INVENTARIO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_PREDIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DIRECCION" sqlType="STRING"/>
+		<param name="UBICACION" sqlType="STRING"/>
+		<param name="COD_PREDIAL" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="COD_INVENTARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="predios/numero">
+		<call-query href="getPrediosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_PREDIO" query-param="ID_PREDIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="UBICACION" query-param="UBICACION"/>
+			<with-param name="COD_PREDIAL" query-param="COD_PREDIAL"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="COD_INVENTARIO" query-param="COD_INVENTARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, ID_PREDIO, NOMBRE, DIRECCION, UBICACION, DESTINACION, USO_ACTUAL, ESCRITURA_NO,(TO_CHAR(FECHA_ESCRITURA,'DD/MM/YYYY HH24:MI:SS')) FECHA_ESCRITURA, NOTARIA, PAIS, DPTO_ESCRITURA, CIUDAD_ESCRITURA, MODALIDAD, AREA_ESCRITURA, MATR_INMOVILIARIA, COD_PREDIAL, TIPO_PREDIO,(CASE ACC_PRINCIPAL WHEN 0 THEN 'false' ELSE 'true' END) ACC_PRINCIPAL,(CASE ACC_SECUNDARIA WHEN 0 THEN 'false' ELSE 'true' END) ACC_SECUNDARIA,(CASE ACC_ASFALTO WHEN 0 THEN 'false' ELSE 'true' END) ACC_ASFALTO,(CASE ACC_RIGIDO WHEN 0 THEN 'false' ELSE 'true' END) ACC_RIGIDO,(CASE ACC_ADOQUIN WHEN 0 THEN 'false' ELSE 'true' END) ACC_ADOQUIN,(CASE PREDIO_REGULAR WHEN 0 THEN 'false' ELSE 'true' END) PREDIO_REGULAR,(CASE PREDIO_IRREGULAR WHEN 0 THEN 'false' ELSE 'true' END) PREDIO_IRREGULAR,(CASE PREDIO_INCLINADO WHEN 0 THEN 'false' ELSE 'true' END) PREDIO_INCLINADO,(CASE PREDIO_PLANO WHEN 0 THEN 'false' ELSE 'true' END) PREDIO_PLANO,(CASE NECESITA_INVENTARIO WHEN 0 THEN 'false' ELSE 'true' END) NECESITA_INVENTARIO, ANO_CONSTRUCCION, PRECIO_TERRENO, VALOR_CONSTRUCCION, VALOR_TOTAL, EXT_LINDEROS_FRENTE, EXT_LINDEROS_FONDO, EXT_LINDEROS_DER, EXT_LINDEROS_IZQ, DESC_LINDEROS_FRENTE, DESC_LINDEROS_FONDO, DESC_LINDEROS_DER, DESC_LINDEROS_IZQ, RESPONSABLE, SUCURSAL, ENCUESTA_VALOR, COD_FOTO, RUTA_FOTO, COD_PLANO, RUTA_PLANO,(CASE USO_PUBLICO WHEN 0 THEN 'false' ELSE 'true' END) USO_PUBLICO, OBSERVACIONES, SERIE_PLACA, COD_INVENTARIO, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM PREDIOS WHERE PREDIOS.COMPANIA= :KEY_COMPANIA AND PREDIOS.ID_PREDIO= :KEY_ID_PREDIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_PREDIO":"$ID_PREDIO","NOMBRE":"$NOMBRE","DIRECCION":"$DIRECCION","UBICACION":"$UBICACION","DESTINACION":"$DESTINACION","USO_ACTUAL":"$USO_ACTUAL","ESCRITURA_NO":"$ESCRITURA_NO","FECHA_ESCRITURA":"$FECHA_ESCRITURA","NOTARIA":"$NOTARIA","PAIS":"$PAIS","DPTO_ESCRITURA":"$DPTO_ESCRITURA","CIUDAD_ESCRITURA":"$CIUDAD_ESCRITURA","MODALIDAD":"$MODALIDAD","AREA_ESCRITURA":"$AREA_ESCRITURA","MATR_INMOVILIARIA":"$MATR_INMOVILIARIA","COD_PREDIAL":"$COD_PREDIAL","TIPO_PREDIO":"$TIPO_PREDIO","ACC_PRINCIPAL":"$ACC_PRINCIPAL(type:boolean)","ACC_SECUNDARIA":"$ACC_SECUNDARIA(type:boolean)","ACC_ASFALTO":"$ACC_ASFALTO(type:boolean)","ACC_RIGIDO":"$ACC_RIGIDO(type:boolean)","ACC_ADOQUIN":"$ACC_ADOQUIN(type:boolean)","PREDIO_REGULAR":"$PREDIO_REGULAR(type:boolean)","PREDIO_IRREGULAR":"$PREDIO_IRREGULAR(type:boolean)","PREDIO_INCLINADO":"$PREDIO_INCLINADO(type:boolean)","PREDIO_PLANO":"$PREDIO_PLANO(type:boolean)","NECESITA_INVENTARIO":"$NECESITA_INVENTARIO(type:boolean)","ANO_CONSTRUCCION":"$ANO_CONSTRUCCION(type:integer)","PRECIO_TERRENO":"$PRECIO_TERRENO","VALOR_CONSTRUCCION":"$VALOR_CONSTRUCCION","VALOR_TOTAL":"$VALOR_TOTAL","EXT_LINDEROS_FRENTE":"$EXT_LINDEROS_FRENTE","EXT_LINDEROS_FONDO":"$EXT_LINDEROS_FONDO","EXT_LINDEROS_DER":"$EXT_LINDEROS_DER","EXT_LINDEROS_IZQ":"$EXT_LINDEROS_IZQ","DESC_LINDEROS_FRENTE":"$DESC_LINDEROS_FRENTE","DESC_LINDEROS_FONDO":"$DESC_LINDEROS_FONDO","DESC_LINDEROS_DER":"$DESC_LINDEROS_DER","DESC_LINDEROS_IZQ":"$DESC_LINDEROS_IZQ","RESPONSABLE":"$RESPONSABLE","SUCURSAL":"$SUCURSAL","ENCUESTA_VALOR":"$ENCUESTA_VALOR","COD_FOTO":"$COD_FOTO","RUTA_FOTO":"$RUTA_FOTO","COD_PLANO":"$COD_PLANO","RUTA_PLANO":"$RUTA_PLANO","USO_PUBLICO":"$USO_PUBLICO(type:boolean)","OBSERVACIONES":"$OBSERVACIONES","SERIE_PLACA":"$SERIE_PLACA(type:long)","COD_INVENTARIO":"$COD_INVENTARIO","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_PREDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="predios/data">
+		<call-query href="getPrediosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_PREDIO" query-param="KEY_ID_PREDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePredios" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PREDIOS SET EXT_LINDEROS_FRENTE=:EXT_LINDEROS_FRENTE, ACC_ADOQUIN=:ACC_ADOQUIN, SUCURSAL=:SUCURSAL, NOTARIA=:NOTARIA, PREDIO_IRREGULAR=:PREDIO_IRREGULAR, RUTA_FOTO=:RUTA_FOTO, NECESITA_INVENTARIO=:NECESITA_INVENTARIO, FECHA_ESCRITURA=TO_DATE(:FECHA_ESCRITURA,'DD/MM/YYYY HH24:MI:SS'), ESCRITURA_NO=:ESCRITURA_NO, USO_ACTUAL=:USO_ACTUAL, MODIFIED_BY=:MODIFIED_BY, DESC_LINDEROS_FONDO=:DESC_LINDEROS_FONDO, COD_FOTO=:COD_FOTO, NOMBRE=:NOMBRE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), COD_INVENTARIO=:COD_INVENTARIO, DESTINACION=:DESTINACION, DESC_LINDEROS_DER=:DESC_LINDEROS_DER, DESC_LINDEROS_FRENTE=:DESC_LINDEROS_FRENTE, MATR_INMOVILIARIA=:MATR_INMOVILIARIA, PAIS=:PAIS, EXT_LINDEROS_FONDO=:EXT_LINDEROS_FONDO, COD_PLANO=:COD_PLANO, UBICACION=:UBICACION, OBSERVACIONES=:OBSERVACIONES, ACC_RIGIDO=:ACC_RIGIDO, ACC_ASFALTO=:ACC_ASFALTO, PRECIO_TERRENO=:PRECIO_TERRENO, ACC_PRINCIPAL=:ACC_PRINCIPAL, EXT_LINDEROS_IZQ=:EXT_LINDEROS_IZQ, ENCUESTA_VALOR=:ENCUESTA_VALOR, PREDIO_PLANO=:PREDIO_PLANO, DESC_LINDEROS_IZQ=:DESC_LINDEROS_IZQ, DPTO_ESCRITURA=:DPTO_ESCRITURA, MODALIDAD=:MODALIDAD, VALOR_TOTAL=:VALOR_TOTAL, COD_PREDIAL=:COD_PREDIAL, CIUDAD_ESCRITURA=:CIUDAD_ESCRITURA, PREDIO_REGULAR=:PREDIO_REGULAR, PREDIO_INCLINADO=:PREDIO_INCLINADO, ACC_SECUNDARIA=:ACC_SECUNDARIA, VALOR_CONSTRUCCION=:VALOR_CONSTRUCCION, ANO_CONSTRUCCION=:ANO_CONSTRUCCION, DIRECCION=:DIRECCION, RESPONSABLE=:RESPONSABLE, TIPO_PREDIO=:TIPO_PREDIO, USO_PUBLICO=:USO_PUBLICO, SERIE_PLACA=:SERIE_PLACA, EXT_LINDEROS_DER=:EXT_LINDEROS_DER, AREA_ESCRITURA=:AREA_ESCRITURA, RUTA_PLANO=:RUTA_PLANO WHERE PREDIOS.COMPANIA= :KEY_COMPANIA AND PREDIOS.ID_PREDIO= :KEY_ID_PREDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="EXT_LINDEROS_FRENTE" sqlType="STRING"/>
+		<param name="ACC_ADOQUIN" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="NOTARIA" sqlType="STRING"/>
+		<param name="PREDIO_IRREGULAR" sqlType="STRING"/>
+		<param name="RUTA_FOTO" sqlType="STRING"/>
+		<param name="NECESITA_INVENTARIO" sqlType="STRING"/>
+		<param name="FECHA_ESCRITURA" sqlType="STRING"/>
+		<param name="ESCRITURA_NO" sqlType="STRING"/>
+		<param name="USO_ACTUAL" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DESC_LINDEROS_FONDO" sqlType="STRING"/>
+		<param name="COD_FOTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="COD_INVENTARIO" sqlType="STRING"/>
+		<param name="DESTINACION" sqlType="STRING"/>
+		<param name="DESC_LINDEROS_DER" sqlType="STRING"/>
+		<param name="DESC_LINDEROS_FRENTE" sqlType="STRING"/>
+		<param name="MATR_INMOVILIARIA" sqlType="STRING"/>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="EXT_LINDEROS_FONDO" sqlType="STRING"/>
+		<param name="COD_PLANO" sqlType="STRING"/>
+		<param name="UBICACION" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="ACC_RIGIDO" sqlType="STRING"/>
+		<param name="ACC_ASFALTO" sqlType="STRING"/>
+		<param name="PRECIO_TERRENO" sqlType="STRING"/>
+		<param name="ACC_PRINCIPAL" sqlType="STRING"/>
+		<param name="EXT_LINDEROS_IZQ" sqlType="STRING"/>
+		<param name="ENCUESTA_VALOR" sqlType="STRING"/>
+		<param name="PREDIO_PLANO" sqlType="STRING"/>
+		<param name="DESC_LINDEROS_IZQ" sqlType="STRING"/>
+		<param name="DPTO_ESCRITURA" sqlType="STRING"/>
+		<param name="MODALIDAD" sqlType="STRING"/>
+		<param name="VALOR_TOTAL" sqlType="STRING"/>
+		<param name="COD_PREDIAL" sqlType="STRING"/>
+		<param name="CIUDAD_ESCRITURA" sqlType="STRING"/>
+		<param name="PREDIO_REGULAR" sqlType="STRING"/>
+		<param name="PREDIO_INCLINADO" sqlType="STRING"/>
+		<param name="ACC_SECUNDARIA" sqlType="STRING"/>
+		<param name="VALOR_CONSTRUCCION" sqlType="STRING"/>
+		<param name="ANO_CONSTRUCCION" sqlType="STRING"/>
+		<param name="DIRECCION" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="TIPO_PREDIO" sqlType="STRING"/>
+		<param name="USO_PUBLICO" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="EXT_LINDEROS_DER" sqlType="STRING"/>
+		<param name="AREA_ESCRITURA" sqlType="STRING"/>
+		<param name="RUTA_PLANO" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_PREDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="predios">
+		<call-query href="updatePredios">
+			<with-param name="EXT_LINDEROS_FRENTE" query-param="EXT_LINDEROS_FRENTE"/>
+			<with-param name="ACC_ADOQUIN" query-param="ACC_ADOQUIN"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="NOTARIA" query-param="NOTARIA"/>
+			<with-param name="PREDIO_IRREGULAR" query-param="PREDIO_IRREGULAR"/>
+			<with-param name="RUTA_FOTO" query-param="RUTA_FOTO"/>
+			<with-param name="NECESITA_INVENTARIO" query-param="NECESITA_INVENTARIO"/>
+			<with-param name="FECHA_ESCRITURA" query-param="FECHA_ESCRITURA"/>
+			<with-param name="ESCRITURA_NO" query-param="ESCRITURA_NO"/>
+			<with-param name="USO_ACTUAL" query-param="USO_ACTUAL"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DESC_LINDEROS_FONDO" query-param="DESC_LINDEROS_FONDO"/>
+			<with-param name="COD_FOTO" query-param="COD_FOTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="COD_INVENTARIO" query-param="COD_INVENTARIO"/>
+			<with-param name="DESTINACION" query-param="DESTINACION"/>
+			<with-param name="DESC_LINDEROS_DER" query-param="DESC_LINDEROS_DER"/>
+			<with-param name="DESC_LINDEROS_FRENTE" query-param="DESC_LINDEROS_FRENTE"/>
+			<with-param name="MATR_INMOVILIARIA" query-param="MATR_INMOVILIARIA"/>
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="EXT_LINDEROS_FONDO" query-param="EXT_LINDEROS_FONDO"/>
+			<with-param name="COD_PLANO" query-param="COD_PLANO"/>
+			<with-param name="UBICACION" query-param="UBICACION"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="ACC_RIGIDO" query-param="ACC_RIGIDO"/>
+			<with-param name="ACC_ASFALTO" query-param="ACC_ASFALTO"/>
+			<with-param name="PRECIO_TERRENO" query-param="PRECIO_TERRENO"/>
+			<with-param name="ACC_PRINCIPAL" query-param="ACC_PRINCIPAL"/>
+			<with-param name="EXT_LINDEROS_IZQ" query-param="EXT_LINDEROS_IZQ"/>
+			<with-param name="ENCUESTA_VALOR" query-param="ENCUESTA_VALOR"/>
+			<with-param name="PREDIO_PLANO" query-param="PREDIO_PLANO"/>
+			<with-param name="DESC_LINDEROS_IZQ" query-param="DESC_LINDEROS_IZQ"/>
+			<with-param name="DPTO_ESCRITURA" query-param="DPTO_ESCRITURA"/>
+			<with-param name="MODALIDAD" query-param="MODALIDAD"/>
+			<with-param name="VALOR_TOTAL" query-param="VALOR_TOTAL"/>
+			<with-param name="COD_PREDIAL" query-param="COD_PREDIAL"/>
+			<with-param name="CIUDAD_ESCRITURA" query-param="CIUDAD_ESCRITURA"/>
+			<with-param name="PREDIO_REGULAR" query-param="PREDIO_REGULAR"/>
+			<with-param name="PREDIO_INCLINADO" query-param="PREDIO_INCLINADO"/>
+			<with-param name="ACC_SECUNDARIA" query-param="ACC_SECUNDARIA"/>
+			<with-param name="VALOR_CONSTRUCCION" query-param="VALOR_CONSTRUCCION"/>
+			<with-param name="ANO_CONSTRUCCION" query-param="ANO_CONSTRUCCION"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="TIPO_PREDIO" query-param="TIPO_PREDIO"/>
+			<with-param name="USO_PUBLICO" query-param="USO_PUBLICO"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="EXT_LINDEROS_DER" query-param="EXT_LINDEROS_DER"/>
+			<with-param name="AREA_ESCRITURA" query-param="AREA_ESCRITURA"/>
+			<with-param name="RUTA_PLANO" query-param="RUTA_PLANO"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_PREDIO" query-param="KEY_ID_PREDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosPagTodosOrdenadosPorSerie_placaFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_PREDIO ID, SERIE_PLACA,NOMBRE  FROM PREDIOS WHERE COMPANIA = :COMPANIA AND SERIE_PLACA &gt;= :ELEMENTOINICIAL ORDER BY SERIE_PLACA) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER(:SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","SERIE_PLACA":"$SERIE_PLACA(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTOINICIAL" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="predios/todosordenadosporserie_placafinal/pag">
+		<call-query href="getPrediosPagTodosOrdenadosPorSerie_placaFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTOINICIAL" query-param="ELEMENTOINICIAL"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosNumTodosOrdenadosPorSerie_placaFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_PREDIO ID, SERIE_PLACA,NOMBRE  FROM PREDIOS WHERE COMPANIA = :COMPANIA AND SERIE_PLACA &gt;= :ELEMENTOINICIAL ORDER BY SERIE_PLACA) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTOINICIAL" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="predios/todosordenadosporserie_placafinal/num">
+		<call-query href="getPrediosNumTodosOrdenadosPorSerie_placaFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTOINICIAL" query-param="ELEMENTOINICIAL"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosPagTodosOrdenadosPorNombreFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_PREDIO ID, SERIE_PLACA,NOMBRE  FROM PREDIOS WHERE COMPANIA = :COMPANIA AND NOMBRE &gt;= :ELEMENTOINICIAL ORDER BY NOMBRE) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER(:SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","SERIE_PLACA":"$SERIE_PLACA(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTOINICIAL" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="predios/todosordenadospornombrefinal/pag">
+		<call-query href="getPrediosPagTodosOrdenadosPorNombreFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTOINICIAL" query-param="ELEMENTOINICIAL"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosNumTodosOrdenadosPorNombreFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_PREDIO ID, SERIE_PLACA,NOMBRE  FROM PREDIOS WHERE COMPANIA = :COMPANIA AND NOMBRE &gt;= :ELEMENTOINICIAL ORDER BY NOMBRE) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTOINICIAL" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="predios/todosordenadospornombrefinal/num">
+		<call-query href="getPrediosNumTodosOrdenadosPorNombreFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTOINICIAL" query-param="ELEMENTOINICIAL"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosPagTodosOrdenadosPorId_predioFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_PREDIO ID, SERIE_PLACA,NOMBRE  FROM PREDIOS WHERE COMPANIA = :COMPANIA AND ID_PREDIO &gt;= :ELEMENTOINICIAL ORDER BY ID_PREDIO) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER(:SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","SERIE_PLACA":"$SERIE_PLACA(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTOINICIAL" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="predios/todosordenadosporid_prediofinal/pag">
+		<call-query href="getPrediosPagTodosOrdenadosPorId_predioFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTOINICIAL" query-param="ELEMENTOINICIAL"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosNumTodosOrdenadosPorId_predioFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_PREDIO ID, SERIE_PLACA,NOMBRE  FROM PREDIOS WHERE COMPANIA = :COMPANIA AND ID_PREDIO &gt;= :ELEMENTOINICIAL ORDER BY ID_PREDIO) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTOINICIAL" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="predios/todosordenadosporid_prediofinal/num">
+		<call-query href="getPrediosNumTodosOrdenadosPorId_predioFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTOINICIAL" query-param="ELEMENTOINICIAL"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosPagTodosConElementoPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  PREDIOS.ID_PREDIO SELECCION , PREDIOS.NOMBRE , PREDIOS.DIRECCION , PREDIOS.ESCRITURA_NO , PREDIOS.COD_PREDIAL , PREDIOS.SERIE_PLACA , DEVOLUTIVO.ELEMENTO ,(CASE DEVOLUTIVO.PLACAANULADA WHEN 0 THEN 'false' ELSE 'true' END) PLACAANULADA FROM PREDIOS LEFT JOIN DEVOLUTIVO ON PREDIOS.COMPANIA = DEVOLUTIVO.COMPANIA AND PREDIOS.SERIE_PLACA = DEVOLUTIVO.SERIE WHERE PREDIOS.COMPANIA = :COMPANIA ORDER BY ID_PREDIO) WHERE (CASE WHEN SELECCION IS NULL THEN ' ' ELSE UPPER(SELECCION) END)  LIKE UPPER(:SELECCION || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SELECCION":"$SELECCION","NOMBRE":"$NOMBRE","DIRECCION":"$DIRECCION","ESCRITURA_NO":"$ESCRITURA_NO","COD_PREDIAL":"$COD_PREDIAL","SERIE_PLACA":"$SERIE_PLACA(type:long)","ELEMENTO":"$ELEMENTO","PLACAANULADA":"$PLACAANULADA(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SELECCION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="predios/todosconelementoporcompania/pag">
+		<call-query href="getPrediosPagTodosConElementoPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SELECCION" query-param="SELECCION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosNumTodosConElementoPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  PREDIOS.ID_PREDIO SELECCION , PREDIOS.NOMBRE , PREDIOS.DIRECCION , PREDIOS.ESCRITURA_NO , PREDIOS.COD_PREDIAL , PREDIOS.SERIE_PLACA , DEVOLUTIVO.ELEMENTO ,(CASE DEVOLUTIVO.PLACAANULADA WHEN 0 THEN 'false' ELSE 'true' END) PLACAANULADA FROM PREDIOS LEFT JOIN DEVOLUTIVO ON PREDIOS.COMPANIA = DEVOLUTIVO.COMPANIA AND PREDIOS.SERIE_PLACA = DEVOLUTIVO.SERIE WHERE PREDIOS.COMPANIA = :COMPANIA ORDER BY ID_PREDIO) WHERE (CASE WHEN SELECCION IS NULL THEN ' ' ELSE UPPER(SELECCION) END)  LIKE UPPER(:SELECCION || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SELECCION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="predios/todosconelementoporcompania/num">
+		<call-query href="getPrediosNumTodosConElementoPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SELECCION" query-param="SELECCION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosCantPorSerieplacaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(*) CUENTA  FROM PREDIOS WHERE COMPANIA = :COMPANIA AND SERIE_PLACA = :SERIE_PLACA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTA":"$CUENTA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="predios/cantporserieplaca">
+		<call-query href="getPrediosCantPorSerieplacaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrediosTodosPorCompaniaSerieplacaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PREDIOS.ROWID RID, PREDIOS.ID_PREDIO, PREDIOS.SERIE_PLACA, PREDIOS.COMPANIA  FROM PREDIOS WHERE PREDIOS.COMPANIA= :COMPANIA AND PREDIOS.SERIE_PLACA= :SERIE_PLACA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RID":"$RID","ID_PREDIO":"$ID_PREDIO","SERIE_PLACA":"$SERIE_PLACA(type:long)","COMPANIA":"$COMPANIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="predios/todosporcompaniaserieplaca">
+		<call-query href="getPrediosTodosPorCompaniaSerieplacaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePrediosPrecioYValor" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PREDIOS SET PRECIO_TERRENO   = :PRECIO,   VALOR_CONSTRUCCION = :VALOR,   VALOR_TOTAL        = :TOTAL,   MODIFIED_BY        = :MODIFIED_BY,    DATE_MODIFIED      = :DATE_MODIFIED WHERE COMPANIA       = :COMPANIA AND ID_PREDIO        = :PREDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="PRECIO" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="predios/precioyvalor">
+		<call-query href="updatePrediosPrecioYValor">
+			<with-param name="PRECIO" query-param="PRECIO"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+
+		</call-query>
+	</resource>
+
+</data>

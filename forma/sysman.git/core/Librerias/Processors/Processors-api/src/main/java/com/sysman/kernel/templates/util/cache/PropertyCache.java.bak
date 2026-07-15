@@ -1,0 +1,95 @@
+/*
+* PropertyServiceUtil
+*
+* 1.0
+*
+* 09/09/2016
+*
+* Copyright Stefanini Sysman
+*/
+package com.sysman.kernel.templates.util.cache;
+
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.ResourceBundle;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+
+import com.sysman.kernel.api.commons.util.enums.SignEnum;
+import com.sysman.kernel.templates.beans.DataPattern;
+import com.sysman.kernel.templates.processors.StringProcessor;
+import com.sysman.kernel.templates.util.enums.PatternEnum;
+
+/**
+ * @author Erwin José Tirado Baldovino
+ * 
+ * @version 1.0
+ * 
+ * Clase que obtiene de un properties y mantiene en cache la configuración con 
+ * el listado de patrones a aplicar e información necesaria para realizar el
+ * refactoring.
+ */ 
+public class PropertyCache {
+	
+	private static PropertyCache service = new PropertyCache();
+	private static Map<String,Map<String, DataPattern>> patternsMap = new TreeMap<>();
+		
+	private PropertyCache() {
+		 super();
+	} 
+	 
+	/**
+	 * Obtener instancia única para recuperar información e servicios.
+	 */
+	public static PropertyCache getInstance() {
+		return service;
+	}
+	
+	/* Cargar de archivo de propiedades una configuración establecida*/
+	private static void load(String bundle) {		
+		Map<String, DataPattern> patterns = new TreeMap<>();
+		ResourceBundle rb = ResourceBundle.getBundle(bundle);
+		Enumeration<String> e = rb.getKeys();
+		while (e.hasMoreElements()) {
+			String variable = e.nextElement().trim();
+			int pos = variable.lastIndexOf(SignEnum.POINT.getValue());
+			String key = variable.substring(0, pos).trim();
+			String replaceKey = variable.substring(pos + 1).trim();
+			DataPattern pBean = patterns.get(key);
+			if (pBean == null) {
+				pBean = new DataPattern();
+			}
+			if (PatternEnum.REPLACEMENT.getPattern().equals(replaceKey)) {
+				pBean.setPatternKey(variable);
+				pBean.setPattern(rb.getString(variable));
+			} else if (PatternEnum.REPLACEMENT.getReplace().equals(replaceKey)) {
+				pBean.setReplaceKey(variable);
+				pBean.setReplace(rb.getString(variable));
+			} else if (PatternEnum.REPLACEMENT.getParam().equals(replaceKey)) {
+				pBean.setParamKey(variable);
+				pBean.setParam(rb.getString(variable));
+			} else if (PatternEnum.REPLACEMENT.getPatternHome().equals(replaceKey)) {
+				pBean.setPatternHomeKey(variable);
+				pBean.setPatternHome(rb.getString(variable));
+			} else if (PatternEnum.REPLACEMENT.getReplaceHome().equals(replaceKey)) {
+				pBean.setPatternHomeKey(variable);
+				pBean.setReplaceHome(rb.getString(variable));
+			}
+			patterns.put(key, pBean);
+		}
+		patternsMap.put(bundle, patterns);
+	}
+
+	/**
+	 * Obtener listado de objetos PatternBean con información de patrones y
+	 * reemplazos respectivos.
+	 */
+	public Map<String, DataPattern> getPatterns(String bundle) {
+		Map<String, DataPattern> patternsBean = patternsMap.get(bundle);
+		if (patternsBean == null) {
+			load(bundle);
+			return patternsMap.get(bundle);
+		}
+		return patternsBean;
+	}
+}

@@ -1,0 +1,274 @@
+﻿<data name="ordendecomprappto" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getOrdendecomprapptoNumeroPorTipocpteQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ORDENDECOMPRAPPTO.NUMEROPPTO  FROM ORDENDECOMPRAPPTO WHERE ORDENDECOMPRAPPTO.COMPANIA = :COMPANIA AND ORDENDECOMPRAPPTO.NUMEROPPTO IN (SELECT NUMEROPPTO FROM ORDENDECOMPRAPPTO WHERE COMPANIA = :COMPANIA AND TIPOPPTO = :TIPOCPTE AND NUMERO = :NUMERO )</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMEROPPTO":"$NUMEROPPTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCPTE" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordendecomprappto/numeroportipocpte">
+		<call-query href="getOrdendecomprapptoNumeroPorTipocpteQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCPTE" query-param="TIPOCPTE"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdendecomprapptoCadenaRubroNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT LISTAGG(RUBRONOM,',') WITHIN GROUP( ORDER BY COMPANIA,CLASEORDEN,NUMERO ) RUBRONOMBRE FROM ( SELECT DISTINCT ORDENDECOMPRAPPTO.COMPANIA, ORDENDECOMPRAPPTO.CLASEORDEN, ORDENDECOMPRAPPTO.NUMERO, CONCAT( ORDENDECOMPRAPPTO.RUBRO ,CONCAT( ' ' ,CONCAT( CASE WHEN ORDENDECOMPRAPPTO.AUXILIAR = PCK_DATOS.FC_CONS_AUXILIAR THEN '' ELSE ORDENDECOMPRAPPTO.AUXILIAR END , CONCAT( ' ', PLAN_PRESUPUESTAL.NOMBRE)))) RUBRONOM FROM ORDENDECOMPRAPPTO INNER JOIN PLAN_PRESUPUESTAL ON ORDENDECOMPRAPPTO.COMPANIA = PLAN_PRESUPUESTAL.COMPANIA AND ORDENDECOMPRAPPTO.ANOPPTO = PLAN_PRESUPUESTAL.ANO AND ORDENDECOMPRAPPTO.RUBRO = PLAN_PRESUPUESTAL.CODIGO INNER JOIN TIPO_COMPROBPP ON ORDENDECOMPRAPPTO.COMPANIA = TIPO_COMPROBPP.COMPANIA AND ORDENDECOMPRAPPTO.TIPOPPTO =TIPO_COMPROBPP.CODIGO WHERE ORDENDECOMPRAPPTO.COMPANIA =:COMPANIA AND ORDENDECOMPRAPPTO.NUMERO =:NUMERO AND ORDENDECOMPRAPPTO.CLASEORDEN =:CLASEORDEN AND TIPO_COMPROBPP.CLASE =:TIPO ) UNICOS GROUP BY COMPANIA, CLASEORDEN, NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RUBRONOMBRE":"$RUBRONOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordendecomprappto/cadenarubronombre">
+		<call-query href="getOrdendecomprapptoCadenaRubroNombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteOrdendecomprapptoPorContrato" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ORDENDECOMPRAPPTO WHERE COMPANIA = :COMPANIA   AND CLASEORDEN = :CLASEORDEN   AND NUMERO     = :NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="ordendecomprappto/porcontrato">
+		<call-query href="deleteOrdendecomprapptoPorContrato">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteOrdendecomprapptoPorContratoYTipo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ORDENDECOMPRAPPTO WHERE COMPANIA = :COMPANIA   AND NUMERO     = :NUMERO   AND CLASEORDEN = :CLASEORDEN   AND TIPOPPTO   = :CLASE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="ordendecomprappto/porcontratoytipo">
+		<call-query href="deleteOrdendecomprapptoPorContratoYTipo">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdendecomprapptoTodosPorNumeroPptoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT ORDENDECOMPRAPPTO.NUMEROPPTO, ORDENDECOMPRAPPTO.ANOPPTO FROM ORDENDECOMPRAPPTO WHERE COMPANIA =:COMPANIA AND TIPOPPTO =:TIPOPPTO AND CONCAT(CLASEORDEN , NUMERO) IN (CONCAT(:CLASEORDEN ,:NUMERO),CONCAT(:TIPOAFECTADO ,:NUMEROAFECTADO)) ORDER BY ORDENDECOMPRAPPTO.TIPOPPTO, ORDENDECOMPRAPPTO.NUMEROPPTO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMEROPPTO":"$NUMEROPPTO","ANOPPTO":"$ANOPPTO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOPPTO" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="TIPOAFECTADO" sqlType="STRING"/>
+		<param name="NUMEROAFECTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordendecomprappto/todospornumeroppto">
+		<call-query href="getOrdendecomprapptoTodosPorNumeroPptoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOPPTO" query-param="TIPOPPTO"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="TIPOAFECTADO" query-param="TIPOAFECTADO"/>
+			<with-param name="NUMEROAFECTADO" query-param="NUMEROAFECTADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdendecomprapptoPagListarubrosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO, RUBRO  FROM ORDENDECOMPRAPPTO WHERE COMPANIA = :COMPANIA ORDER BY RUBRO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END)  LIKE UPPER(:RUBRO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","RUBRO":"$RUBRO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordendecomprappto/listarubros/pag">
+		<call-query href="getOrdendecomprapptoPagListarubrosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdendecomprapptoNumListarubrosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO, RUBRO  FROM ORDENDECOMPRAPPTO WHERE COMPANIA = :COMPANIA ORDER BY RUBRO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END)  LIKE UPPER(:RUBRO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordendecomprappto/listarubros/num">
+		<call-query href="getOrdendecomprapptoNumListarubrosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdendecomprapptoPagListarubrosfinQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NUMERO, RUBRO  FROM ORDENDECOMPRAPPTO WHERE COMPANIA= :COMPANIA AND RUBRO &gt;= :RUBROINICIAL ORDER BY RUBRO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END)  LIKE UPPER(:RUBRO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","RUBRO":"$RUBRO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="RUBROINICIAL" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordendecomprappto/listarubrosfin/pag">
+		<call-query href="getOrdendecomprapptoPagListarubrosfinQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RUBROINICIAL" query-param="RUBROINICIAL"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdendecomprapptoNumListarubrosfinQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NUMERO, RUBRO  FROM ORDENDECOMPRAPPTO WHERE COMPANIA= :COMPANIA AND RUBRO &gt;= :RUBROINICIAL ORDER BY RUBRO) WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END)  LIKE UPPER(:NUMERO || '%')  AND (CASE WHEN RUBRO IS NULL THEN ' ' ELSE UPPER(RUBRO) END)  LIKE UPPER(:RUBRO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="RUBROINICIAL" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="RUBRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordendecomprappto/listarubrosfin/num">
+		<call-query href="getOrdendecomprapptoNumListarubrosfinQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RUBROINICIAL" query-param="RUBROINICIAL"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="RUBRO" query-param="RUBRO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdendecomprapptoPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ORDENDECOMPRAPPTO.NUMEROPPTO, ORDENDECOMPRAPPTO.TIPOPPTO, TIPO_COMPROBPP.NOMBRE DESCTIPOPPTO  FROM ORDENDECOMPRAPPTO INNER JOIN TIPO_COMPROBPP ON TIPO_COMPROBPP.COMPANIA = ORDENDECOMPRAPPTO.COMPANIA AND TIPO_COMPROBPP.CODIGO = ORDENDECOMPRAPPTO.TIPOPPTO WHERE ORDENDECOMPRAPPTO.COMPANIA =:COMPANIA AND ORDENDECOMPRAPPTO.CLASEORDEN =:CLASEORDEN AND ORDENDECOMPRAPPTO.NUMERO =:NUMERO_ORDEN AND TIPO_COMPROBPP.CLASE =:TIPOPPTO GROUP BY ORDENDECOMPRAPPTO.NUMEROPPTO, ORDENDECOMPRAPPTO.TIPOPPTO, TIPO_COMPROBPP.NOMBRE) WHERE (CASE WHEN NUMEROPPTO IS NULL THEN ' ' ELSE UPPER(NUMEROPPTO) END)  LIKE UPPER( '%' || :NUMEROPPTO || '%')  AND (CASE WHEN DESCTIPOPPTO IS NULL THEN ' ' ELSE UPPER(DESCTIPOPPTO) END)  LIKE UPPER( '%' || :DESCTIPOPPTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMEROPPTO":"$NUMEROPPTO","TIPOPPTO":"$TIPOPPTO","DESCTIPOPPTO":"$DESCTIPOPPTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="TIPOPPTO" sqlType="STRING"/>
+		<param name="NUMEROPPTO" sqlType="STRING"/>
+		<param name="DESCTIPOPPTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordendecomprappto">
+		<call-query href="getOrdendecomprapptoPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="TIPOPPTO" query-param="TIPOPPTO"/>
+			<with-param name="NUMEROPPTO" query-param="NUMEROPPTO"/>
+			<with-param name="DESCTIPOPPTO" query-param="DESCTIPOPPTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdendecomprapptoNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ORDENDECOMPRAPPTO.NUMEROPPTO, ORDENDECOMPRAPPTO.TIPOPPTO, TIPO_COMPROBPP.NOMBRE DESCTIPOPPTO  FROM ORDENDECOMPRAPPTO INNER JOIN TIPO_COMPROBPP ON TIPO_COMPROBPP.COMPANIA = ORDENDECOMPRAPPTO.COMPANIA AND TIPO_COMPROBPP.CODIGO = ORDENDECOMPRAPPTO.TIPOPPTO WHERE ORDENDECOMPRAPPTO.COMPANIA =:COMPANIA AND ORDENDECOMPRAPPTO.CLASEORDEN =:CLASEORDEN AND ORDENDECOMPRAPPTO.NUMERO =:NUMERO_ORDEN AND TIPO_COMPROBPP.CLASE =:TIPOPPTO GROUP BY ORDENDECOMPRAPPTO.NUMEROPPTO, ORDENDECOMPRAPPTO.TIPOPPTO, TIPO_COMPROBPP.NOMBRE) WHERE (CASE WHEN NUMEROPPTO IS NULL THEN ' ' ELSE UPPER(NUMEROPPTO) END)  LIKE UPPER( '%' || :NUMEROPPTO || '%')  AND (CASE WHEN DESCTIPOPPTO IS NULL THEN ' ' ELSE UPPER(DESCTIPOPPTO) END)  LIKE UPPER( '%' || :DESCTIPOPPTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="TIPOPPTO" sqlType="STRING"/>
+		<param name="NUMEROPPTO" sqlType="STRING"/>
+		<param name="DESCTIPOPPTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordendecomprappto/numero">
+		<call-query href="getOrdendecomprapptoNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="TIPOPPTO" query-param="TIPOPPTO"/>
+			<with-param name="NUMEROPPTO" query-param="NUMEROPPTO"/>
+			<with-param name="DESCTIPOPPTO" query-param="DESCTIPOPPTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdendecomprapptoPagDisponibilidadesEntreAniosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT ORDENDECOMPRAPPTO.NUMEROPPTO, COMPROBANTE_PPTAL.DESCRIPCION  FROM ORDENDECOMPRAPPTO LEFT JOIN COMPROBANTE_PPTAL ON ORDENDECOMPRAPPTO.COMPANIA = COMPROBANTE_PPTAL.COMPANIA AND ORDENDECOMPRAPPTO.ANOPPTO = COMPROBANTE_PPTAL.ANO AND ORDENDECOMPRAPPTO.TIPOPPTO = COMPROBANTE_PPTAL.TIPO AND ORDENDECOMPRAPPTO.NUMEROPPTO = COMPROBANTE_PPTAL.NUMERO WHERE ORDENDECOMPRAPPTO.COMPANIA = :COMPANIA AND COMPROBANTE_PPTAL.TIPO = :TIPO AND ORDENDECOMPRAPPTO.ANOPPTO BETWEEN :ANOINICIAL AND :ANOFINAL ORDER BY ORDENDECOMPRAPPTO.NUMEROPPTO) WHERE (CASE WHEN NUMEROPPTO IS NULL THEN ' ' ELSE UPPER(NUMEROPPTO) END)  LIKE UPPER(:NUMEROPPTO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMEROPPTO":"$NUMEROPPTO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="ANOINICIAL" sqlType="STRING"/>
+		<param name="ANOFINAL" sqlType="STRING"/>
+		<param name="NUMEROPPTO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordendecomprappto/disponibilidadesentreanios/pag">
+		<call-query href="getOrdendecomprapptoPagDisponibilidadesEntreAniosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="ANOINICIAL" query-param="ANOINICIAL"/>
+			<with-param name="ANOFINAL" query-param="ANOFINAL"/>
+			<with-param name="NUMEROPPTO" query-param="NUMEROPPTO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdendecomprapptoNumDisponibilidadesEntreAniosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT ORDENDECOMPRAPPTO.NUMEROPPTO, COMPROBANTE_PPTAL.DESCRIPCION  FROM ORDENDECOMPRAPPTO LEFT JOIN COMPROBANTE_PPTAL ON ORDENDECOMPRAPPTO.COMPANIA = COMPROBANTE_PPTAL.COMPANIA AND ORDENDECOMPRAPPTO.ANOPPTO = COMPROBANTE_PPTAL.ANO AND ORDENDECOMPRAPPTO.TIPOPPTO = COMPROBANTE_PPTAL.TIPO AND ORDENDECOMPRAPPTO.NUMEROPPTO = COMPROBANTE_PPTAL.NUMERO WHERE ORDENDECOMPRAPPTO.COMPANIA = :COMPANIA AND COMPROBANTE_PPTAL.TIPO = :TIPO AND ORDENDECOMPRAPPTO.ANOPPTO BETWEEN :ANOINICIAL AND :ANOFINAL ORDER BY ORDENDECOMPRAPPTO.NUMEROPPTO) WHERE (CASE WHEN NUMEROPPTO IS NULL THEN ' ' ELSE UPPER(NUMEROPPTO) END)  LIKE UPPER(:NUMEROPPTO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="ANOINICIAL" sqlType="STRING"/>
+		<param name="ANOFINAL" sqlType="STRING"/>
+		<param name="NUMEROPPTO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordendecomprappto/disponibilidadesentreanios/num">
+		<call-query href="getOrdendecomprapptoNumDisponibilidadesEntreAniosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="ANOINICIAL" query-param="ANOINICIAL"/>
+			<with-param name="ANOFINAL" query-param="ANOFINAL"/>
+			<with-param name="NUMEROPPTO" query-param="NUMEROPPTO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+
+</data>

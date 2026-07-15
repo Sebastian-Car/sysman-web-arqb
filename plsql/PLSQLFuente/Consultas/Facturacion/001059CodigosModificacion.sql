@@ -1,0 +1,10 @@
+SELECT CODIGO,  
+             NOMBRE
+  
+FROM SP_CODIGOS_MODIFICACION
+ 
+WHERE COMPANIA = s$compania$s
+ 
+ORDER BY COMPANIA,
+ 
+         CODIGO

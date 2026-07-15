@@ -1,0 +1,30 @@
+MERGE INTO CONSULTAS FIN USING (SELECT '800682F13NuevoFormatoContratacionConsolidado' INFORME ,TO_CLOB(q'[SELECT 
+            NOCONTRATO             Numero_contrato,
+            FUENTE                 Fuente_Financiacion,   
+            OBJETO                 Objeto,
+            CLASE                  Clase_Contrato,
+            VALOR                  Valor_contrato,
+            NOMBRE_CONTRATISTA     Nombre_contatista,
+            NIT_CONTRATISTA        Nit_contratista,
+            DIS                    Numero_disponibilidad,
+            FECHA_DIS              Fecha_Disponibilidad,
+            VALOR_DIS              Valor_Disponibilidad,     
+            FECHA_FIRMA            Fecha_Firma,
+            FORMA_CONTRATACION     Forma_Contratacion,
+            FECHA_RES              Fecha_Registro,
+            RES                    Numero_Registro,
+            RUBRO                  Rubro_presupuestal,
+            VALOR_RES              Valor_Registro,
+            FECHA_APROB            Fecha_Aprobacion,
+            FECHA_INI              Fecha_inicio,
+            PLAZO                  Plazo_Ejecucion,
+            FECHA_ADI              Fecha_Adicion,
+            PLAZO_ADI              Plazo_Adicion,
+            VALOR_ADI              Valor_Adicion, 
+            VALOR_PAGOS            Valor_Pagos,
+            FECHA_TERM             Fecha_Terminacion,
+            FECHA_LIQ              Fecha_liquidacion
+FROM SIA_CONTRATACION
+WHERE        ANO=s$ano$s
+      AND MES_INICIAL>=s$mesInicial$s
+      AND MES_FINAL <=s$mesFinal$s]') CONSULTA, 99 APLICACION ,TO_CLOB(q'[]') CONSULTA_OPCIONAL, NULL CREATED_BY, NULL MODIFIED_BY  FROM DUAL ) INI ON (INI.INFORME = FIN.INFORME )  WHEN MATCHED THEN  UPDATE SET FIN.CONSULTA =  INI.CONSULTA, FIN.APLICACION =  INI.APLICACION, FIN.CONSULTA_OPCIONAL =  INI.CONSULTA_OPCIONAL, FIN.MODIFIED_BY = INI.MODIFIED_BY, FIN.DATE_MODIFIED = SYSDATE  WHEN NOT MATCHED THEN  INSERT (INFORME,CONSULTA, APLICACION,CONSULTA_OPCIONAL,CREATED_BY,DATE_CREATED)  VALUES (INI.INFORME,INI.CONSULTA, INI.APLICACION,INI.CONSULTA_OPCIONAL,INI.CREATED_BY,SYSDATE);

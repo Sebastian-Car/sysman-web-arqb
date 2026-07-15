@@ -1,0 +1,178 @@
+WITH BALANCE_BASE AS(
+SELECT 
+         SUBSTR(PLAN_CONTABLE.CODIGO,1,1) CLASE
+       , PLAN_CONTABLE.SALDOs$mesTrabajo$s saldo
+       , PLAN_CONTABLE.COMPANIA
+       , PLAN_CONTABLE.ANO
+       , PLAN_CONTABLE.SALDOs$mesTrabajo-1$s Saldo_1
+       , PLAN_CONTABLE.CODIGO
+       , PLAN_CONTABLE.NOMBRE NOMBRELOCAL
+       , PLAN_CONTABLE.DEBITOs$mesTrabajo$s Debito 
+       , PLAN_CONTABLE.CREDITOs$mesTrabajo$s Credito
+       , PLAN_CONTABLE.DEBITOs$mesTrabajo-1$s Debito_1
+       , PLAN_CONTABLE.CREDITOs$mesTrabajo-1$s Credito_1 
+       , PLAN_CONTABLE.NATURALEZA
+       , PLAN_CONTABLE.NETOs$mesTrabajo-1$s
+       , CASE WHEN PLAN_CONTABLE.NATURALEZA='D' 
+                   AND PLAN_CONTABLE.SALDOs$mesTrabajo-1$s >=0
+              THEN PLAN_CONTABLE.SALDOs$mesTrabajo-1$s
+              ELSE 0
+         END 
+         + CASE WHEN PLAN_CONTABLE.NATURALEZA='C' 
+                     AND PLAN_CONTABLE.SALDOs$mesTrabajo-1$s<0
+                THEN -PLAN_CONTABLE.SALDOs$mesTrabajo-1$s
+                ELSE 0
+           END SALDOANTDEBITO
+       , CASE WHEN PLAN_CONTABLE.NATURALEZA='C' 
+                   AND PLAN_CONTABLE.SALDOs$mesTrabajo-1$s>=0
+              THEN PLAN_CONTABLE.SALDOs$mesTrabajo-1$s
+              ELSE 0
+         END
+         +CASE WHEN PLAN_CONTABLE.NATURALEZA='D'  
+                    AND PLAN_CONTABLE.SALDOs$mesTrabajo-1$s <0
+               THEN -PLAN_CONTABLE.SALDOs$mesTrabajo-1$s
+               ELSE 0
+           END SALDOANTCREDITO
+       , CASE WHEN PLAN_CONTABLE.NATURALEZA='D' 
+                   AND PLAN_CONTABLE.SALDOs$mesTrabajo$s>=0
+              THEN PLAN_CONTABLE.SALDOs$mesTrabajo$s
+              ELSE 0
+         END
+         +CASE WHEN PLAN_CONTABLE.NATURALEZA='C' 
+                    AND PLAN_CONTABLE.SALDOs$mesTrabajo$s<0
+               THEN -PLAN_CONTABLE.SALDOs$mesTrabajo$s
+               ELSE 0
+           END SALDONUEDEBITO
+       , CASE WHEN PLAN_CONTABLE.NATURALEZA='C' 
+                   AND PLAN_CONTABLE.SALDOs$mesTrabajo$s>=0
+              THEN PLAN_CONTABLE.SALDOs$mesTrabajo$s
+              ELSE 0
+         END
+         +CASE WHEN PLAN_CONTABLE.NATURALEZA='D' 
+                    AND PLAN_CONTABLE.SALDOs$mesTrabajo$s<0
+               THEN -PLAN_CONTABLE.SALDOs$mesTrabajo$s
+               ELSE 0
+           END SALDONUECREDITO
+       , PLAN_CONTABLE.ID
+       , CASE WHEN SUBSTR(PLAN_CONTABLE.CODIGO,1,1)='0'
+              THEN 'z'||PLAN_CONTABLE.CODIGO
+              ELSE PLAN_CONTABLE.CODIGO
+         END ORDEN
+       , SUBSTR(CASE WHEN SUBSTR(PLAN_CONTABLE.CODIGO,1,1)='0'
+                     THEN 'z'||PLAN_CONTABLE.CODIGO
+                     ELSE PLAN_CONTABLE.CODIGO
+                END,0,1) CLASEORDEN
+       , PLAN_CONTABLE.CODIGO ORDENCUENTAS
+       , CASE WHEN PLAN_CONTABLE.CODIGO_NIIF IS NULL 
+       	      THEN PLAN_CONTABLE.CODIGO
+       	      ELSE PLAN_CONTABLE.CODIGO_NIIF 
+         END CODIGO_NIIF 
+FROM V_PLAN_CONTABLE PLAN_CONTABLE 
+WHERE PLAN_CONTABLE.COMPANIA = s$compania$s 
+  AND PLAN_CONTABLE.ANO      = s$ano$s 
+  AND PLAN_CONTABLE.CODIGO   BETWEEN 's$codigoInicial$s' AND 's$codigoFinal$s'
+  AND LENGTH(PLAN_CONTABLE.CODIGO)<= s$digitos$s
+)
+, BALANCE_NIIF AS(
+SELECT   SUBSTR(PLAN_CONTABLE.CODIGO,1,1) Clase
+       , PLAN_CONTABLE.SALDOs$mesTrabajo$s saldo
+       , PLAN_CONTABLE.COMPANIA
+       , PLAN_CONTABLE.ANO
+       , PLAN_CONTABLE.SALDOs$mesTrabajo-1$s Saldo_1
+       , PLAN_CONTABLE.CODIGO
+       , PLAN_CONTABLE.NOMBRE NOMBRENIIF
+       , PLAN_CONTABLE.DEBITOs$mesTrabajo$s Debito 
+       , PLAN_CONTABLE.CREDITOs$mesTrabajo$s Credito
+       , PLAN_CONTABLE.DEBITOs$mesTrabajo-1$s Debito_1
+       , PLAN_CONTABLE.CREDITOs$mesTrabajo-1$s Credito_1 
+       , PLAN_CONTABLE.NATURALEZA
+       , PLAN_CONTABLE.NETOs$mesTrabajo-1$s
+       , CASE WHEN PLAN_CONTABLE.NATURALEZA='D' 
+                   AND PLAN_CONTABLE.SALDOs$mesTrabajo-1$s >=0
+              THEN PLAN_CONTABLE.SALDOs$mesTrabajo-1$s
+              ELSE 0
+         END 
+         + CASE WHEN PLAN_CONTABLE.NATURALEZA='C' 
+                     AND PLAN_CONTABLE.SALDOs$mesTrabajo-1$s<0
+                THEN -PLAN_CONTABLE.SALDOs$mesTrabajo-1$s
+                ELSE 0
+           END SALDOANTDEBITO
+       , CASE WHEN PLAN_CONTABLE.NATURALEZA='C' 
+                   AND PLAN_CONTABLE.SALDOs$mesTrabajo-1$s>=0
+              THEN PLAN_CONTABLE.SALDOs$mesTrabajo-1$s
+              ELSE 0
+         END
+         +CASE WHEN PLAN_CONTABLE.NATURALEZA='D'  
+                    AND PLAN_CONTABLE.SALDOs$mesTrabajo-1$s <0
+                THEN -PLAN_CONTABLE.SALDOs$mesTrabajo-1$s
+                ELSE 0
+           END SALDOANTCREDITO
+       , CASE WHEN PLAN_CONTABLE.NATURALEZA='D' 
+                   AND PLAN_CONTABLE.SALDOs$mesTrabajo$s>=0
+              THEN PLAN_CONTABLE.SALDOs$mesTrabajo$s
+              ELSE 0
+         END
+         +CASE WHEN PLAN_CONTABLE.NATURALEZA='C' 
+                    AND PLAN_CONTABLE.SALDOs$mesTrabajo$s<0
+                THEN -PLAN_CONTABLE.SALDOs$mesTrabajo$s
+                ELSE 0
+           END SALDONUEDEBITO
+       , CASE WHEN PLAN_CONTABLE.NATURALEZA='C' 
+                   AND PLAN_CONTABLE.SALDOs$mesTrabajo$s>=0
+              THEN PLAN_CONTABLE.SALDOs$mesTrabajo$s
+              ELSE 0
+         END
+         +CASE WHEN PLAN_CONTABLE.NATURALEZA='D' 
+                    AND PLAN_CONTABLE.SALDOs$mesTrabajo$s<0
+               THEN -PLAN_CONTABLE.SALDOs$mesTrabajo$s
+               ELSE 0
+           END SALDONUECREDITO
+       , PLAN_CONTABLE.ID
+       , CASE WHEN SUBSTR(PLAN_CONTABLE.CODIGO,1,1)='0'
+              THEN 'z'||PLAN_CONTABLE.CODIGO
+              ELSE PLAN_CONTABLE.CODIGO
+         END ORDEN
+       , SUBSTR(CASE WHEN SUBSTR(PLAN_CONTABLE.CODIGO,1,1)='0'
+                     THEN 'z'||PLAN_CONTABLE.CODIGO
+                     ELSE PLAN_CONTABLE.CODIGO
+                END,1,1) CLASEORDEN
+       , PLAN_CONTABLE.CODIGO||PLAN_CONTABLE.NOMBRE ORDENCUENTAS  
+FROM V_PLAN_CONTABLE PLAN_CONTABLE 
+WHERE PLAN_CONTABLE.COMPANIA    = 's$companiaNiif$s' 
+  AND PLAN_CONTABLE.ANO         = s$ano$s 
+  AND PLAN_CONTABLE.CODIGO      BETWEEN 's$codigoInicial$s' AND 's$codigoFinal$s'
+  AND LENGTH(PLAN_CONTABLE.CODIGO) <= s$digitos$s
+)
+ SELECT   BALANCE_NIIF.COMPANIA
+       , BALANCE_NIIF.CLASE
+       , BALANCE_NIIF.CLASEORDEN
+       , BALANCE_NIIF.ANO
+       , BALANCE_NIIF.ID
+       , BALANCE_NIIF.ORDEN
+       , BALANCE_NIIF.ORDENCUENTAS
+       , BALANCE_NIIF.CODIGO
+       , BALANCE_NIIF.NOMBRENIIF 
+       , BALANCE_NIIF.SALDO_1
+       , BALANCE_NIIF.SALDO
+       , BALANCE_NIIF.DEBITO
+       , BALANCE_NIIF.CREDITO
+       , BALANCE_NIIF.SALDOANTDEBITO
+       , BALANCE_NIIF.SALDOANTCREDITO
+       , BALANCE_NIIF.SALDONUEDEBITO
+       , BALANCE_NIIF.SALDONUECREDITO
+       , BALANCE_BASE.CODIGO CODIGOBASE
+       , BALANCE_BASE.NOMBRELOCAL
+       , BALANCE_BASE.SALDO_1 SALDO_1BASE
+       , BALANCE_BASE.SALDO SALDOBASE
+       , BALANCE_BASE.DEBITO DEBITOBASE 
+       , BALANCE_BASE.CREDITO CREDITOBASE
+       , BALANCE_BASE.SALDOANTDEBITO SALDOANTDEBITOBASE
+       , BALANCE_BASE.SALDOANTCREDITO SALDOANTCREDITOBASE 
+       , BALANCE_BASE.SALDONUEDEBITO SALDONUEDEBITOBASE
+       , BALANCE_BASE.SALDONUECREDITO SALDONUECREDITOBASE
+       , BALANCE_NIIF.SALDO-BALANCE_BASE.SALDO DIFERENCIA
+FROM BALANCE_NIIF 
+    LEFT JOIN BALANCE_BASE 
+        ON  BALANCE_NIIF.ANO    = BALANCE_BASE.ANO 
+        AND BALANCE_NIIF.CODIGO = BALANCE_BASE.CODIGO_NIIF
+ORDER BY BALANCE_NIIF.CODIGO

@@ -1,0 +1,100 @@
+﻿<data name="chequesanulados" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getChequesanuladosTodosLosAnuladosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NUMANULAR  FROM CHEQUES_ANULADOS WHERE COMPANIA = :COMPANIA AND ANO = :ANOEGRESO AND CUENTA = :CUENTA AND NUMCHEQUERA = :NUMCHEQUERA AND NUMANULAR = :NUMEROCHEQUE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMANULAR":"$NUMANULAR(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANOEGRESO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="NUMCHEQUERA" sqlType="STRING"/>
+		<param name="NUMEROCHEQUE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="chequesanulados/todoslosanulados">
+		<call-query href="getChequesanuladosTodosLosAnuladosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANOEGRESO" query-param="ANOEGRESO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="NUMCHEQUERA" query-param="NUMCHEQUERA"/>
+			<with-param name="NUMEROCHEQUE" query-param="NUMEROCHEQUE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertChequesanulados" keyColumns="COMPANIA,ANO,NUMCHEQUERA,NUMANULAR,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CHEQUES_ANULADOS (COMPANIA, ANO, NUMCHEQUERA, NUMANULAR, CONSECUTIVO, CUENTA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :NUMCHEQUERA, :NUMANULAR, :CONSECUTIVO, :CUENTA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_NUMCHEQUERA":"$NUMCHEQUERA","KEY_NUMANULAR":"$NUMANULAR(type:integer)","KEY_CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="NUMCHEQUERA" sqlType="STRING"/>
+		<param name="NUMANULAR" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="chequesanulados">
+		<call-query href="insertChequesanulados">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NUMCHEQUERA" query-param="NUMCHEQUERA"/>
+			<with-param name="NUMANULAR" query-param="NUMANULAR"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="getChequesanuladosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA,ANO,NUMCHEQUERA,NUMANULAR,CONSECUTIVO,CUENTA  FROM CHEQUES_ANULADOS WHERE COMPANIA = :COMPANIA AND ANO = :ANO ORDER BY TO_NUMBER(CONSECUTIVO) ASC) WHERE (CASE WHEN NUMCHEQUERA IS NULL THEN ' ' ELSE UPPER(NUMCHEQUERA) END)  LIKE UPPER(:NUMCHEQUERA || '%')  AND (CASE WHEN NUMANULAR IS NULL THEN ' ' ELSE UPPER(NUMANULAR) END)  LIKE UPPER(:NUMANULAR || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN CUENTA IS NULL THEN ' ' ELSE UPPER(CUENTA) END)  LIKE UPPER(:CUENTA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","NUMCHEQUERA":"$NUMCHEQUERA","NUMANULAR":"$NUMANULAR(type:integer)","CONSECUTIVO":"$CONSECUTIVO","CUENTA":"$CUENTA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="NUMCHEQUERA" sqlType="STRING"/>
+		<param name="NUMANULAR" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="chequesanulados">
+		<call-query href="getChequesanuladosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NUMCHEQUERA" query-param="NUMCHEQUERA"/>
+			<with-param name="NUMANULAR" query-param="NUMANULAR"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getChequesanuladosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA,ANO,NUMCHEQUERA,NUMANULAR,CONSECUTIVO,CUENTA  FROM CHEQUES_ANULADOS WHERE COMPANIA = :COMPANIA AND ANO = :ANO ORDER BY TO_NUMBER(CONSECUTIVO) ASC) WHERE (CASE WHEN NUMCHEQUERA IS NULL THEN ' ' ELSE UPPER(NUMCHEQUERA) END)  LIKE UPPER(:NUMCHEQUERA || '%')  AND (CASE WHEN NUMANULAR IS NULL THEN ' ' ELSE UPPER(NUMANULAR) END)  LIKE UPPER( '%' || :NUMANULAR || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%')  AND (CASE WHEN CUENTA IS NULL THEN ' ' ELSE UPPER(CUENTA) END)  LIKE UPPER( '%' || :CUENTA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="NUMCHEQUERA" sqlType="STRING"/>
+		<param name="NUMANULAR" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="chequesanulados/numero">
+		<call-query href="getChequesanuladosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NUMCHEQUERA" query-param="NUMCHEQUERA"/>
+			<with-param name="NUMANULAR" query-param="NUMANULAR"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,207 @@
+﻿<data name="histavaluos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getHistavaluosTodosPorCompaniaIdInmuebleQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NVL(MAX(ANO),0) ULTIMOAVALUO  FROM HIST_AVALUOS WHERE COMPANIA = :COMPANIA AND ID_INMUEBLE = :ID_PREDIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ULTIMOAVALUO":"$ULTIMOAVALUO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_PREDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="histavaluos/todosporcompaniaidinmueble">
+		<call-query href="getHistavaluosTodosPorCompaniaIdInmuebleQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_PREDIO" query-param="ID_PREDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistavaluosPorPredioYAnioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, ID_INMUEBLE, ANO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, AREA_LOTE, AREA_CONSTRUCCION, LONG_CERRAMIENTO, AREA_ZONA_DURA, VAL_UNIDAD_LOTE, VAL_UNIDAD_CONSTRUCCION, VAL_UNIDAD_CERRAMIENTO, VAL_UNIDAD_ZONA_DURA, VAL_TOTAL_LOTE, VAL_TOTAL_CONSTRUCCION, VAL_TOTAL_CERRAMIENTO, VAL_TOTAL_ZONADURA, VIDA_UTIL, PLACA_LOTE, PLACA_CONSTRUCCION, PLACA_CERRAMIENTO, PLACA_ZONA_D, ESTRATO  FROM HIST_AVALUOS WHERE COMPANIA = :COMPANIA AND ID_INMUEBLE = :PREDIO AND ANO = :ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_INMUEBLE":"$ID_INMUEBLE","ANO":"$ANO(type:integer)","FECHA":"$FECHA","AREA_LOTE":"$AREA_LOTE","AREA_CONSTRUCCION":"$AREA_CONSTRUCCION","LONG_CERRAMIENTO":"$LONG_CERRAMIENTO","AREA_ZONA_DURA":"$AREA_ZONA_DURA","VAL_UNIDAD_LOTE":"$VAL_UNIDAD_LOTE","VAL_UNIDAD_CONSTRUCCION":"$VAL_UNIDAD_CONSTRUCCION","VAL_UNIDAD_CERRAMIENTO":"$VAL_UNIDAD_CERRAMIENTO","VAL_UNIDAD_ZONA_DURA":"$VAL_UNIDAD_ZONA_DURA","VAL_TOTAL_LOTE":"$VAL_TOTAL_LOTE","VAL_TOTAL_CONSTRUCCION":"$VAL_TOTAL_CONSTRUCCION","VAL_TOTAL_CERRAMIENTO":"$VAL_TOTAL_CERRAMIENTO","VAL_TOTAL_ZONADURA":"$VAL_TOTAL_ZONADURA","VIDA_UTIL":"$VIDA_UTIL","PLACA_LOTE":"$PLACA_LOTE(type:long)","PLACA_CONSTRUCCION":"$PLACA_CONSTRUCCION(type:long)","PLACA_CERRAMIENTO":"$PLACA_CERRAMIENTO(type:long)","PLACA_ZONA_D":"$PLACA_ZONA_D(type:long)","ESTRATO":"$ESTRATO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="histavaluos/porpredioyanio">
+		<call-query href="getHistavaluosPorPredioYAnioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistavaluosVerificacionPlacaAvaluoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  'X' ESTADO  FROM HIST_AVALUOS WHERE HIST_AVALUOS.COMPANIA= :COMPANIA AND (HIST_AVALUOS.PLACA_LOTE= :PLACAUNO OR HIST_AVALUOS.PLACA_CONSTRUCCION= :PLACAUNO OR HIST_AVALUOS.PLACA_CERRAMIENTO= :PLACAUNO OR HIST_AVALUOS.PLACA_ZONA_D= :PLACAUNO) UNION ALL SELECT 'X' ESTADO FROM PREDIOS WHERE COMPANIA = :COMPANIA AND SERIE_PLACA = :PLACAUNO AND SERIE_PLACA NOT IN (:PLACADOS)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ESTADO":"$ESTADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PLACAUNO" sqlType="STRING"/>
+		<param name="PLACADOS" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="histavaluos/verificacionplacaavaluo">
+		<call-query href="getHistavaluosVerificacionPlacaAvaluoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PLACAUNO" query-param="PLACAUNO"/>
+			<with-param name="PLACADOS" query-param="PLACADOS"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistavaluosTotalesInmuebleQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  HIST_AVALUOS.ID_INMUEBLE, HIST_AVALUOS.VAL_TOTAL_LOTE, (NVL(HIST_AVALUOS.VAL_TOTAL_CONSTRUCCION,0)+ NVL(HIST_AVALUOS.VAL_TOTAL_CERRAMIENTO, 0)+ NVL(HIST_AVALUOS.VAL_TOTAL_ZONADURA, 0)) VALOR_CONSTRUCCION, (NVL(HIST_AVALUOS.VAL_TOTAL_CONSTRUCCION,0)+ NVL(HIST_AVALUOS.VAL_TOTAL_CERRAMIENTO, 0)+ NVL(HIST_AVALUOS.VAL_TOTAL_LOTE, 0)+ NVL(HIST_AVALUOS.VAL_TOTAL_ZONADURA, 0)) VALOR_TOTAL, HIST_AVALUOS.ANO  FROM HIST_AVALUOS INNER JOIN (SELECT ID_INMUEBLE, MAX(ANO) ANO FROM HIST_AVALUOS GROUP BY ID_INMUEBLE) GRU ON HIST_AVALUOS.ID_INMUEBLE = GRU.ID_INMUEBLE AND HIST_AVALUOS.ANO = GRU.ANO WHERE HIST_AVALUOS.COMPANIA = :COMPANIA AND HIST_AVALUOS.ID_INMUEBLE = :PREDIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_INMUEBLE":"$ID_INMUEBLE","VAL_TOTAL_LOTE":"$VAL_TOTAL_LOTE","VALOR_CONSTRUCCION":"$VALOR_CONSTRUCCION(type:integer)","VALOR_TOTAL":"$VALOR_TOTAL(type:integer)","ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="histavaluos/totalesinmueble">
+		<call-query href="getHistavaluosTotalesInmuebleQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertHistavaluos" keyColumns="COMPANIA,ID_INMUEBLE,ANO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO HIST_AVALUOS (COMPANIA, ID_INMUEBLE, ANO, FECHA, AREA_LOTE, AREA_CONSTRUCCION, LONG_CERRAMIENTO, AREA_ZONA_DURA, VAL_UNIDAD_LOTE, VAL_UNIDAD_CONSTRUCCION, VAL_UNIDAD_CERRAMIENTO, VAL_UNIDAD_ZONA_DURA, VAL_TOTAL_LOTE, VAL_TOTAL_CONSTRUCCION, VAL_TOTAL_CERRAMIENTO, VAL_TOTAL_ZONADURA, VIDA_UTIL, PLACA_LOTE, PLACA_CONSTRUCCION, PLACA_CERRAMIENTO, PLACA_ZONA_D, ESTRATO, CREATED_BY, DATE_CREATED) VALUES (:COMPANIA, :ID_INMUEBLE, :ANO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :AREA_LOTE, :AREA_CONSTRUCCION, :LONG_CERRAMIENTO, :AREA_ZONA_DURA, :VAL_UNIDAD_LOTE, :VAL_UNIDAD_CONSTRUCCION, :VAL_UNIDAD_CERRAMIENTO, :VAL_UNIDAD_ZONA_DURA, :VAL_TOTAL_LOTE, :VAL_TOTAL_CONSTRUCCION, :VAL_TOTAL_CERRAMIENTO, :VAL_TOTAL_ZONADURA, :VIDA_UTIL, :PLACA_LOTE, :PLACA_CONSTRUCCION, :PLACA_CERRAMIENTO, :PLACA_ZONA_D, :ESTRATO, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_INMUEBLE":"$ID_INMUEBLE","KEY_ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_INMUEBLE" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param defaultValue="0" name="AREA_LOTE" sqlType="STRING"/>
+		<param defaultValue="0" name="AREA_CONSTRUCCION" sqlType="STRING"/>
+		<param defaultValue="0" name="LONG_CERRAMIENTO" sqlType="STRING"/>
+		<param defaultValue="0" name="AREA_ZONA_DURA" sqlType="STRING"/>
+		<param defaultValue="0" name="VAL_UNIDAD_LOTE" sqlType="STRING"/>
+		<param defaultValue="0" name="VAL_UNIDAD_CONSTRUCCION" sqlType="STRING"/>
+		<param defaultValue="0" name="VAL_UNIDAD_CERRAMIENTO" sqlType="STRING"/>
+		<param defaultValue="0" name="VAL_UNIDAD_ZONA_DURA" sqlType="STRING"/>
+		<param defaultValue="0" name="VAL_TOTAL_LOTE" sqlType="STRING"/>
+		<param defaultValue="0" name="VAL_TOTAL_CONSTRUCCION" sqlType="STRING"/>
+		<param defaultValue="0" name="VAL_TOTAL_CERRAMIENTO" sqlType="STRING"/>
+		<param defaultValue="0" name="VAL_TOTAL_ZONADURA" sqlType="STRING"/>
+		<param defaultValue="0" name="VIDA_UTIL" sqlType="STRING"/>
+		<param defaultValue="0" name="PLACA_LOTE" sqlType="STRING"/>
+		<param defaultValue="0" name="PLACA_CONSTRUCCION" sqlType="STRING"/>
+		<param defaultValue="0" name="PLACA_CERRAMIENTO" sqlType="STRING"/>
+		<param defaultValue="0" name="PLACA_ZONA_D" sqlType="STRING"/>
+		<param defaultValue="" name="ESTRATO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="histavaluos">
+		<call-query href="insertHistavaluos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_INMUEBLE" query-param="ID_INMUEBLE"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="AREA_LOTE" query-param="AREA_LOTE"/>
+			<with-param name="AREA_CONSTRUCCION" query-param="AREA_CONSTRUCCION"/>
+			<with-param name="LONG_CERRAMIENTO" query-param="LONG_CERRAMIENTO"/>
+			<with-param name="AREA_ZONA_DURA" query-param="AREA_ZONA_DURA"/>
+			<with-param name="VAL_UNIDAD_LOTE" query-param="VAL_UNIDAD_LOTE"/>
+			<with-param name="VAL_UNIDAD_CONSTRUCCION" query-param="VAL_UNIDAD_CONSTRUCCION"/>
+			<with-param name="VAL_UNIDAD_CERRAMIENTO" query-param="VAL_UNIDAD_CERRAMIENTO"/>
+			<with-param name="VAL_UNIDAD_ZONA_DURA" query-param="VAL_UNIDAD_ZONA_DURA"/>
+			<with-param name="VAL_TOTAL_LOTE" query-param="VAL_TOTAL_LOTE"/>
+			<with-param name="VAL_TOTAL_CONSTRUCCION" query-param="VAL_TOTAL_CONSTRUCCION"/>
+			<with-param name="VAL_TOTAL_CERRAMIENTO" query-param="VAL_TOTAL_CERRAMIENTO"/>
+			<with-param name="VAL_TOTAL_ZONADURA" query-param="VAL_TOTAL_ZONADURA"/>
+			<with-param name="VIDA_UTIL" query-param="VIDA_UTIL"/>
+			<with-param name="PLACA_LOTE" query-param="PLACA_LOTE"/>
+			<with-param name="PLACA_CONSTRUCCION" query-param="PLACA_CONSTRUCCION"/>
+			<with-param name="PLACA_CERRAMIENTO" query-param="PLACA_CERRAMIENTO"/>
+			<with-param name="PLACA_ZONA_D" query-param="PLACA_ZONA_D"/>
+			<with-param name="ESTRATO" query-param="ESTRATO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="getHistavaluosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, ID_INMUEBLE, ANO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, AREA_LOTE, AREA_CONSTRUCCION, LONG_CERRAMIENTO, AREA_ZONA_DURA, VAL_UNIDAD_LOTE, VAL_UNIDAD_CONSTRUCCION, VAL_UNIDAD_CERRAMIENTO, VAL_UNIDAD_ZONA_DURA, VAL_TOTAL_LOTE, VAL_TOTAL_CONSTRUCCION, VAL_TOTAL_CERRAMIENTO, VAL_TOTAL_ZONADURA, VIDA_UTIL, PLACA_LOTE, PLACA_CONSTRUCCION, PLACA_CERRAMIENTO, PLACA_ZONA_D, ESTRATO, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM HIST_AVALUOS WHERE HIST_AVALUOS.COMPANIA= :KEY_COMPANIA AND HIST_AVALUOS.ID_INMUEBLE= :KEY_ID_INMUEBLE AND HIST_AVALUOS.ANO= :KEY_ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_INMUEBLE":"$ID_INMUEBLE","ANO":"$ANO(type:integer)","FECHA":"$FECHA","AREA_LOTE":"$AREA_LOTE","AREA_CONSTRUCCION":"$AREA_CONSTRUCCION","LONG_CERRAMIENTO":"$LONG_CERRAMIENTO","AREA_ZONA_DURA":"$AREA_ZONA_DURA","VAL_UNIDAD_LOTE":"$VAL_UNIDAD_LOTE","VAL_UNIDAD_CONSTRUCCION":"$VAL_UNIDAD_CONSTRUCCION","VAL_UNIDAD_CERRAMIENTO":"$VAL_UNIDAD_CERRAMIENTO","VAL_UNIDAD_ZONA_DURA":"$VAL_UNIDAD_ZONA_DURA","VAL_TOTAL_LOTE":"$VAL_TOTAL_LOTE","VAL_TOTAL_CONSTRUCCION":"$VAL_TOTAL_CONSTRUCCION","VAL_TOTAL_CERRAMIENTO":"$VAL_TOTAL_CERRAMIENTO","VAL_TOTAL_ZONADURA":"$VAL_TOTAL_ZONADURA","VIDA_UTIL":"$VIDA_UTIL","PLACA_LOTE":"$PLACA_LOTE(type:long)","PLACA_CONSTRUCCION":"$PLACA_CONSTRUCCION(type:long)","PLACA_CERRAMIENTO":"$PLACA_CERRAMIENTO(type:long)","PLACA_ZONA_D":"$PLACA_ZONA_D(type:long)","ESTRATO":"$ESTRATO","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_INMUEBLE" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="histavaluos/data">
+		<call-query href="getHistavaluosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_INMUEBLE" query-param="KEY_ID_INMUEBLE"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateHistavaluos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE HIST_AVALUOS SET COMPANIA=:COMPANIA, ID_INMUEBLE=:ID_INMUEBLE, ANO=:ANO, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), AREA_LOTE=:AREA_LOTE, AREA_CONSTRUCCION=:AREA_CONSTRUCCION, LONG_CERRAMIENTO=:LONG_CERRAMIENTO, AREA_ZONA_DURA=:AREA_ZONA_DURA, VAL_UNIDAD_LOTE=:VAL_UNIDAD_LOTE, VAL_UNIDAD_CONSTRUCCION=:VAL_UNIDAD_CONSTRUCCION, VAL_UNIDAD_CERRAMIENTO=:VAL_UNIDAD_CERRAMIENTO, VAL_UNIDAD_ZONA_DURA=:VAL_UNIDAD_ZONA_DURA, VAL_TOTAL_LOTE=:VAL_TOTAL_LOTE, VAL_TOTAL_CONSTRUCCION=:VAL_TOTAL_CONSTRUCCION, VAL_TOTAL_CERRAMIENTO=:VAL_TOTAL_CERRAMIENTO, VAL_TOTAL_ZONADURA=:VAL_TOTAL_ZONADURA, VIDA_UTIL=:VIDA_UTIL, PLACA_LOTE=:PLACA_LOTE, PLACA_CONSTRUCCION=:PLACA_CONSTRUCCION, PLACA_CERRAMIENTO=:PLACA_CERRAMIENTO, PLACA_ZONA_D=:PLACA_ZONA_D, ESTRATO=:ESTRATO, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE HIST_AVALUOS.COMPANIA= :KEY_COMPANIA AND HIST_AVALUOS.ID_INMUEBLE= :KEY_ID_INMUEBLE AND HIST_AVALUOS.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_INMUEBLE" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="AREA_LOTE" sqlType="STRING"/>
+		<param name="AREA_CONSTRUCCION" sqlType="STRING"/>
+		<param name="LONG_CERRAMIENTO" sqlType="STRING"/>
+		<param name="AREA_ZONA_DURA" sqlType="STRING"/>
+		<param name="VAL_UNIDAD_LOTE" sqlType="STRING"/>
+		<param name="VAL_UNIDAD_CONSTRUCCION" sqlType="STRING"/>
+		<param name="VAL_UNIDAD_CERRAMIENTO" sqlType="STRING"/>
+		<param name="VAL_UNIDAD_ZONA_DURA" sqlType="STRING"/>
+		<param name="VAL_TOTAL_LOTE" sqlType="STRING"/>
+		<param name="VAL_TOTAL_CONSTRUCCION" sqlType="STRING"/>
+		<param name="VAL_TOTAL_CERRAMIENTO" sqlType="STRING"/>
+		<param name="VAL_TOTAL_ZONADURA" sqlType="STRING"/>
+		<param name="VIDA_UTIL" sqlType="STRING"/>
+		<param name="PLACA_LOTE" sqlType="STRING"/>
+		<param name="PLACA_CONSTRUCCION" sqlType="STRING"/>
+		<param name="PLACA_CERRAMIENTO" sqlType="STRING"/>
+		<param name="PLACA_ZONA_D" sqlType="STRING"/>
+		<param name="ESTRATO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_INMUEBLE" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="histavaluos">
+		<call-query href="updateHistavaluos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_INMUEBLE" query-param="ID_INMUEBLE"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="AREA_LOTE" query-param="AREA_LOTE"/>
+			<with-param name="AREA_CONSTRUCCION" query-param="AREA_CONSTRUCCION"/>
+			<with-param name="LONG_CERRAMIENTO" query-param="LONG_CERRAMIENTO"/>
+			<with-param name="AREA_ZONA_DURA" query-param="AREA_ZONA_DURA"/>
+			<with-param name="VAL_UNIDAD_LOTE" query-param="VAL_UNIDAD_LOTE"/>
+			<with-param name="VAL_UNIDAD_CONSTRUCCION" query-param="VAL_UNIDAD_CONSTRUCCION"/>
+			<with-param name="VAL_UNIDAD_CERRAMIENTO" query-param="VAL_UNIDAD_CERRAMIENTO"/>
+			<with-param name="VAL_UNIDAD_ZONA_DURA" query-param="VAL_UNIDAD_ZONA_DURA"/>
+			<with-param name="VAL_TOTAL_LOTE" query-param="VAL_TOTAL_LOTE"/>
+			<with-param name="VAL_TOTAL_CONSTRUCCION" query-param="VAL_TOTAL_CONSTRUCCION"/>
+			<with-param name="VAL_TOTAL_CERRAMIENTO" query-param="VAL_TOTAL_CERRAMIENTO"/>
+			<with-param name="VAL_TOTAL_ZONADURA" query-param="VAL_TOTAL_ZONADURA"/>
+			<with-param name="VIDA_UTIL" query-param="VIDA_UTIL"/>
+			<with-param name="PLACA_LOTE" query-param="PLACA_LOTE"/>
+			<with-param name="PLACA_CONSTRUCCION" query-param="PLACA_CONSTRUCCION"/>
+			<with-param name="PLACA_CERRAMIENTO" query-param="PLACA_CERRAMIENTO"/>
+			<with-param name="PLACA_ZONA_D" query-param="PLACA_ZONA_D"/>
+			<with-param name="ESTRATO" query-param="ESTRATO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_INMUEBLE" query-param="KEY_ID_INMUEBLE"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+
+</data>

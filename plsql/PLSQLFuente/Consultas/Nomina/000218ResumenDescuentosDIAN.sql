@@ -1,0 +1,6 @@
+SELECT 
+       DISTINCT COMPANIA, 
+       ID_DE_PROCESO 
+ FROM  PERIODOS 
+ WHERE COMPANIA = s$compania$s
+   AND ID_DE_PROCESO = s$idProceso$s

@@ -1,0 +1,104 @@
+﻿<data name="conceptosagr" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getConceptosagrTodosPorCodagrYNombreagrQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CONCEPTOS_AGR.CODAGR, CONCEPTOS_AGR.NOMBRECONCEPTOAGR  FROM CONCEPTOS_AGR ORDER BY CONCEPTOS_AGR.CODAGR</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODAGR":"$CODAGR","NOMBRECONCEPTOAGR":"$NOMBRECONCEPTOAGR"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="conceptosagr/todosporcodagrynombreagr">
+		<call-query href="getConceptosagrTodosPorCodagrYNombreagrQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="insertConceptosagr" keyColumns="CODAGR" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CONCEPTOS_AGR (CODAGR, NOMBRECONCEPTOAGR, DATE_CREATED, CREATED_BY) VALUES (:CODAGR, :NOMBRECONCEPTOAGR, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_CODAGR":"$CODAGR"}]}}		</result>
+		<param name="CODAGR" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRECONCEPTOAGR" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="conceptosagr">
+		<call-query href="insertConceptosagr">
+			<with-param name="CODAGR" query-param="CODAGR"/>
+			<with-param name="NOMBRECONCEPTOAGR" query-param="NOMBRECONCEPTOAGR"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteConceptosagr" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CONCEPTOS_AGR WHERE CONCEPTOS_AGR.CODAGR= :KEY_CODAGR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_CODAGR" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="conceptosagr">
+		<call-query href="deleteConceptosagr">
+			<with-param name="KEY_CODAGR" query-param="KEY_CODAGR"/>
+
+		</call-query>
+	</resource>
+	<query id="getConceptosagrPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CONCEPTOS_AGR.CODAGR, CONCEPTOS_AGR.NOMBRECONCEPTOAGR  FROM CONCEPTOS_AGR ORDER BY CONCEPTOS_AGR.CODAGR) WHERE (CASE WHEN CODAGR IS NULL THEN ' ' ELSE UPPER(CODAGR) END)  LIKE UPPER(:CODAGR || '%')  AND (CASE WHEN NOMBRECONCEPTOAGR IS NULL THEN ' ' ELSE UPPER(NOMBRECONCEPTOAGR) END)  LIKE UPPER( '%' || :NOMBRECONCEPTOAGR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODAGR":"$CODAGR","NOMBRECONCEPTOAGR":"$NOMBRECONCEPTOAGR"}]}}		</result>
+		<param name="CODAGR" sqlType="STRING"/>
+		<param name="NOMBRECONCEPTOAGR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="conceptosagr">
+		<call-query href="getConceptosagrPaginaQuery">
+			<with-param name="CODAGR" query-param="CODAGR"/>
+			<with-param name="NOMBRECONCEPTOAGR" query-param="NOMBRECONCEPTOAGR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getConceptosagrNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CONCEPTOS_AGR.CODAGR, CONCEPTOS_AGR.NOMBRECONCEPTOAGR  FROM CONCEPTOS_AGR ORDER BY CONCEPTOS_AGR.CODAGR) WHERE (CASE WHEN CODAGR IS NULL THEN ' ' ELSE UPPER(CODAGR) END)  LIKE UPPER(:CODAGR || '%')  AND (CASE WHEN NOMBRECONCEPTOAGR IS NULL THEN ' ' ELSE UPPER(NOMBRECONCEPTOAGR) END)  LIKE UPPER( '%' || :NOMBRECONCEPTOAGR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODAGR" sqlType="STRING"/>
+		<param name="NOMBRECONCEPTOAGR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="conceptosagr/numero">
+		<call-query href="getConceptosagrNumeroQuery">
+			<with-param name="CODAGR" query-param="CODAGR"/>
+			<with-param name="NOMBRECONCEPTOAGR" query-param="NOMBRECONCEPTOAGR"/>
+
+		</call-query>
+	</resource>
+	<query id="updateConceptosagr" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CONCEPTOS_AGR SET CODAGR=:CODAGR, NOMBRECONCEPTOAGR=:NOMBRECONCEPTOAGR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CONCEPTOS_AGR.CODAGR= :KEY_CODAGR</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODAGR" sqlType="STRING"/>
+		<param name="NOMBRECONCEPTOAGR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_CODAGR" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="conceptosagr">
+		<call-query href="updateConceptosagr">
+			<with-param name="CODAGR" query-param="CODAGR"/>
+			<with-param name="NOMBRECONCEPTOAGR" query-param="NOMBRECONCEPTOAGR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_CODAGR" query-param="KEY_CODAGR"/>
+
+		</call-query>
+	</resource>
+
+</data>

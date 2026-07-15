@@ -1,0 +1,166 @@
+﻿<data name="dnodos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getDnodosNododestinonombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DN.NODO_DESTINO ,N.NOMBRE,(CASE N.IND_ARCHIVO_CENTRAL WHEN 0 THEN 'false' ELSE 'true' END) IND_ARCHIVO_CENTRAL,(CASE DN.DEVOLUTIVO WHEN 0 THEN 'false' ELSE 'true' END) DEVOLUTIVO FROM D_NODOS DN INNER JOIN NODOS N ON DN.COMPANIA = N.COMPANIA AND DN.PROCESO = N.CODIGO_PROCESO AND DN.NODO_DESTINO = N.CODIGO WHERE DN.COMPANIA = :COMPANIA AND DN.PROCESO = :PROCESO AND DN.NODO_ORIGEN = :NODO_ORIGEN AND DN.ESTADO = :ESTADO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NODO_DESTINO":"$NODO_DESTINO","NOMBRE":"$NOMBRE","IND_ARCHIVO_CENTRAL":"$IND_ARCHIVO_CENTRAL(type:boolean)","DEVOLUTIVO":"$DEVOLUTIVO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NODO_ORIGEN" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dnodos/nododestinonombre">
+		<call-query href="getDnodosNododestinonombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NODO_ORIGEN" query-param="NODO_ORIGEN"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertDnodos" keyColumns="COMPANIA,NODO_ORIGEN,NODO_DESTINO,PROCESO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO D_NODOS (COMPANIA, PROCESO, NODO_ORIGEN, NODO_DESTINO, OPERACION, ESTADO, DEVOLUTIVO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :PROCESO, :NODO_ORIGEN, :NODO_DESTINO, :OPERACION, :ESTADO, :DEVOLUTIVO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_NODO_ORIGEN":"$NODO_ORIGEN","KEY_NODO_DESTINO":"$NODO_DESTINO","KEY_PROCESO":"$PROCESO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NODO_ORIGEN" sqlType="STRING"/>
+		<param name="NODO_DESTINO" sqlType="STRING"/>
+		<param name="OPERACION" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="0" name="DEVOLUTIVO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="dnodos">
+		<call-query href="insertDnodos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NODO_ORIGEN" query-param="NODO_ORIGEN"/>
+			<with-param name="NODO_DESTINO" query-param="NODO_DESTINO"/>
+			<with-param name="OPERACION" query-param="OPERACION"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="DEVOLUTIVO" query-param="DEVOLUTIVO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteDnodos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM D_NODOS WHERE D_NODOS.COMPANIA= :KEY_COMPANIA AND D_NODOS.NODO_ORIGEN= :KEY_NODO_ORIGEN AND D_NODOS.NODO_DESTINO= :KEY_NODO_DESTINO AND D_NODOS.PROCESO= :KEY_PROCESO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NODO_ORIGEN" sqlType="STRING"/>
+		<param name="KEY_NODO_DESTINO" sqlType="STRING"/>
+		<param name="KEY_PROCESO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="dnodos">
+		<call-query href="deleteDnodos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NODO_ORIGEN" query-param="KEY_NODO_ORIGEN"/>
+			<with-param name="KEY_NODO_DESTINO" query-param="KEY_NODO_DESTINO"/>
+			<with-param name="KEY_PROCESO" query-param="KEY_PROCESO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDnodosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DN.COMPANIA, DN.PROCESO, DN.NODO_ORIGEN, DN.NODO_DESTINO, CONCAT('(',CONCAT(DN.PROCESO,CONCAT(') ',P.NOMBRE) ) ) PROCESO_NOM, CONCAT('(',CONCAT(DN.NODO_ORIGEN,CONCAT(') ',NO.NOMBRE) ) ) NODO_O_NOM, CONCAT('(',CONCAT(DN.NODO_DESTINO,CONCAT(') ',ND.NOMBRE) ) ) NODO_D_NOM, DN.OPERACION, TOP.NOMBRE OPERACION_NOM,(CASE DN.DEVOLUTIVO WHEN 0 THEN 'false' ELSE 'true' END) DEVOLUTIVO, DN.ESTADO, TE.NOMBRE ESTADO_NOM FROM D_NODOS DN INNER JOIN PROCESOS P ON DN.COMPANIA = P.COMPANIA AND DN.PROCESO = P.CODIGO INNER JOIN NODOS NO ON DN.COMPANIA = NO.COMPANIA AND DN.PROCESO = NO.CODIGO_PROCESO AND DN.NODO_ORIGEN = NO.CODIGO INNER JOIN NODOS ND ON DN.COMPANIA = ND.COMPANIA AND DN.PROCESO = ND.CODIGO_PROCESO AND DN.NODO_DESTINO = ND.CODIGO INNER JOIN TIPOS TE ON DN.ESTADO = TE.ID INNER JOIN TIPOS TOP ON DN.OPERACION = TOP.ID WHERE DN.COMPANIA =:COMPANIA AND DN.PROCESO =:PROCESO ORDER BY DN.NODO_ORIGEN, DN.NODO_DESTINO) INI WHERE (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN NODO_O_NOM IS NULL THEN ' ' ELSE UPPER(NODO_O_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_O_NOM), '%')) AND (CASE WHEN NODO_D_NOM IS NULL THEN ' ' ELSE UPPER(NODO_D_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_D_NOM), '%')) AND (CASE WHEN OPERACION_NOM IS NULL THEN ' ' ELSE UPPER(OPERACION_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:OPERACION_NOM), '%')) AND (CASE WHEN DEVOLUTIVO IS NULL THEN ' ' ELSE UPPER(DEVOLUTIVO) END) LIKE UPPER(CONCAT(CONCAT('%',:DEVOLUTIVO), '%')) AND (CASE WHEN ESTADO_NOM IS NULL THEN ' ' ELSE UPPER(ESTADO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO_NOM), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PROCESO":"$PROCESO","NODO_ORIGEN":"$NODO_ORIGEN","NODO_DESTINO":"$NODO_DESTINO","PROCESO_NOM":"$PROCESO_NOM","NODO_O_NOM":"$NODO_O_NOM","NODO_D_NOM":"$NODO_D_NOM","OPERACION":"$OPERACION(type:integer)","OPERACION_NOM":"$OPERACION_NOM","DEVOLUTIVO":"$DEVOLUTIVO(type:boolean)","ESTADO":"$ESTADO(type:integer)","ESTADO_NOM":"$ESTADO_NOM"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="NODO_O_NOM" sqlType="STRING"/>
+		<param name="NODO_D_NOM" sqlType="STRING"/>
+		<param name="OPERACION_NOM" sqlType="STRING"/>
+		<param name="DEVOLUTIVO" sqlType="STRING"/>
+		<param name="ESTADO_NOM" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dnodos">
+		<call-query href="getDnodosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="NODO_O_NOM" query-param="NODO_O_NOM"/>
+			<with-param name="NODO_D_NOM" query-param="NODO_D_NOM"/>
+			<with-param name="OPERACION_NOM" query-param="OPERACION_NOM"/>
+			<with-param name="DEVOLUTIVO" query-param="DEVOLUTIVO"/>
+			<with-param name="ESTADO_NOM" query-param="ESTADO_NOM"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDnodosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DN.COMPANIA, DN.PROCESO, DN.NODO_ORIGEN, DN.NODO_DESTINO, CONCAT('(',CONCAT(DN.PROCESO,CONCAT(') ',P.NOMBRE) ) ) PROCESO_NOM, CONCAT('(',CONCAT(DN.NODO_ORIGEN,CONCAT(') ',NO.NOMBRE) ) ) NODO_O_NOM, CONCAT('(',CONCAT(DN.NODO_DESTINO,CONCAT(') ',ND.NOMBRE) ) ) NODO_D_NOM, DN.OPERACION, TOP.NOMBRE OPERACION_NOM,(CASE DN.DEVOLUTIVO WHEN 0 THEN 'false' ELSE 'true' END) DEVOLUTIVO, DN.ESTADO, TE.NOMBRE ESTADO_NOM FROM D_NODOS DN INNER JOIN PROCESOS P ON DN.COMPANIA = P.COMPANIA AND DN.PROCESO = P.CODIGO INNER JOIN NODOS NO ON DN.COMPANIA = NO.COMPANIA AND DN.PROCESO = NO.CODIGO_PROCESO AND DN.NODO_ORIGEN = NO.CODIGO INNER JOIN NODOS ND ON DN.COMPANIA = ND.COMPANIA AND DN.PROCESO = ND.CODIGO_PROCESO AND DN.NODO_DESTINO = ND.CODIGO INNER JOIN TIPOS TE ON DN.ESTADO = TE.ID INNER JOIN TIPOS TOP ON DN.OPERACION = TOP.ID WHERE DN.COMPANIA =:COMPANIA AND DN.PROCESO =:PROCESO ORDER BY DN.NODO_ORIGEN, DN.NODO_DESTINO) INI WHERE (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN NODO_O_NOM IS NULL THEN ' ' ELSE UPPER(NODO_O_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_O_NOM), '%')) AND (CASE WHEN NODO_D_NOM IS NULL THEN ' ' ELSE UPPER(NODO_D_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_D_NOM), '%')) AND (CASE WHEN OPERACION_NOM IS NULL THEN ' ' ELSE UPPER(OPERACION_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:OPERACION_NOM), '%')) AND (CASE WHEN DEVOLUTIVO IS NULL THEN ' ' ELSE UPPER(DEVOLUTIVO) END) LIKE UPPER(CONCAT(CONCAT('%',:DEVOLUTIVO), '%')) AND (CASE WHEN ESTADO_NOM IS NULL THEN ' ' ELSE UPPER(ESTADO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO_NOM), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="NODO_O_NOM" sqlType="STRING"/>
+		<param name="NODO_D_NOM" sqlType="STRING"/>
+		<param name="OPERACION_NOM" sqlType="STRING"/>
+		<param name="DEVOLUTIVO" sqlType="STRING"/>
+		<param name="ESTADO_NOM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dnodos/numero">
+		<call-query href="getDnodosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="NODO_O_NOM" query-param="NODO_O_NOM"/>
+			<with-param name="NODO_D_NOM" query-param="NODO_D_NOM"/>
+			<with-param name="OPERACION_NOM" query-param="OPERACION_NOM"/>
+			<with-param name="DEVOLUTIVO" query-param="DEVOLUTIVO"/>
+			<with-param name="ESTADO_NOM" query-param="ESTADO_NOM"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDnodos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE D_NODOS SET PROCESO=:PROCESO, NODO_ORIGEN=:NODO_ORIGEN, NODO_DESTINO=:NODO_DESTINO, OPERACION=:OPERACION, ESTADO=:ESTADO, DEVOLUTIVO=:DEVOLUTIVO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE D_NODOS.COMPANIA= :KEY_COMPANIA AND D_NODOS.NODO_ORIGEN= :KEY_NODO_ORIGEN AND D_NODOS.NODO_DESTINO= :KEY_NODO_DESTINO AND D_NODOS.PROCESO= :KEY_PROCESO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NODO_ORIGEN" sqlType="STRING"/>
+		<param name="NODO_DESTINO" sqlType="STRING"/>
+		<param name="OPERACION" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="DEVOLUTIVO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NODO_ORIGEN" sqlType="STRING"/>
+		<param name="KEY_NODO_DESTINO" sqlType="STRING"/>
+		<param name="KEY_PROCESO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="dnodos">
+		<call-query href="updateDnodos">
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NODO_ORIGEN" query-param="NODO_ORIGEN"/>
+			<with-param name="NODO_DESTINO" query-param="NODO_DESTINO"/>
+			<with-param name="OPERACION" query-param="OPERACION"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="DEVOLUTIVO" query-param="DEVOLUTIVO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NODO_ORIGEN" query-param="KEY_NODO_ORIGEN"/>
+			<with-param name="KEY_NODO_DESTINO" query-param="KEY_NODO_DESTINO"/>
+			<with-param name="KEY_PROCESO" query-param="KEY_PROCESO"/>
+
+		</call-query>
+	</resource>
+
+</data>

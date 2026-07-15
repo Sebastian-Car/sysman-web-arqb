@@ -1,0 +1,586 @@
+﻿<data name="procesos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getProcesosPagProcesosporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CODIGO, NOMBRE  FROM PROCESOS WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesosporcompania/pag">
+		<call-query href="getProcesosPagProcesosporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosNumProcesosporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CODIGO, NOMBRE  FROM PROCESOS WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesosporcompania/num">
+		<call-query href="getProcesosNumProcesosporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosPagCodnomQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM PROCESOS WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="procesos/codnom/pag">
+		<call-query href="getProcesosPagCodnomQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosNumCodnomQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM PROCESOS WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesos/codnom/num">
+		<call-query href="getProcesosNumCodnomQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosCodnombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PROCESOS.CODIGO, CONCAT('(', CONCAT(PROCESOS.CODIGO, CONCAT(') ', PROCESOS.NOMBRE))) NOMBRE, URLSERVICIO.CODIGO CODIGO_URL, URLSERVICIO.URL  FROM PROCESOS LEFT JOIN URLSERVICIO ON PROCESOS.COMPANIA = URLSERVICIO.COMPANIA AND PROCESOS.TRAE_DEUDA = URLSERVICIO.CODIGO WHERE PROCESOS.COMPANIA = :COMPANIA ORDER BY PROCESOS.CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","CODIGO_URL":"$CODIGO_URL(type:integer)","URL":"$URL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesos/codnombre">
+		<call-query href="getProcesosCodnombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosNodointermedioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE NODO_INTERMEDIO WHEN 0 THEN 'false' ELSE 'true' END) NODO_INTERMEDIO FROM PROCESOS WHERE COMPANIA = :COMPANIA AND CODIGO = :PROCESO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NODO_INTERMEDIO":"$NODO_INTERMEDIO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesos/nodointermedio">
+		<call-query href="getProcesosNodointermedioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosProcesosporusuarioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT PROCESOS.CODIGO, CONCAT('(', CONCAT(PROCESOS.CODIGO, CONCAT(') ', PROCESOS.NOMBRE))) NOMBRE, URLSERVICIO.CODIGO CODIGO_URL, URLSERVICIO.URL  FROM PROCESOS INNER JOIN NODOS ON PROCESOS.COMPANIA = NODOS.COMPANIA AND PROCESOS.CODIGO = NODOS.CODIGO_PROCESO INNER JOIN NODO_RACI ON NODOS.COMPANIA = NODO_RACI.COMPANIA AND NODOS.CODIGO_PROCESO = NODO_RACI.CODIGO_PROCESO AND NODOS.CODIGO = NODO_RACI.CODIGO_NODO INNER JOIN ROLES ON NODO_RACI.COMPANIA = ROLES.COMPANIA AND NODO_RACI.CODIGO_ROL = ROLES.CODIGO_ROL LEFT JOIN ROL_USUARIO ON ROLES.COMPANIA = ROL_USUARIO.COMPANIA AND ROLES.CODIGO_ROL = ROL_USUARIO.CODIGO_ROL LEFT JOIN URLSERVICIO ON PROCESOS.COMPANIA = URLSERVICIO.COMPANIA AND PROCESOS.TRAE_DEUDA = URLSERVICIO.CODIGO WHERE ROLES.COMPANIA = :COMPANIA AND NODO_RACI.CODIGO_RACI = 10 AND ROL_USUARIO.USUARIO = :USUARIO ORDER BY PROCESOS.CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","CODIGO_URL":"$CODIGO_URL(type:integer)","URL":"$URL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesosporusuario">
+		<call-query href="getProcesosProcesosporusuarioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosPagProcesosjudicialesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, NOMBRE FROM PROCESOS WHERE COMPANIA = :COMPANIA AND CODIGO IN ('20000','20001','20002','20003')) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesosjudiciales/pag">
+		<call-query href="getProcesosPagProcesosjudicialesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosNumProcesosjudicialesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, NOMBRE FROM PROCESOS WHERE COMPANIA = :COMPANIA AND CODIGO IN ('20000','20001','20002','20003')) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesosjudiciales/num">
+		<call-query href="getProcesosNumProcesosjudicialesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertProcesos" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PROCESOS (COMPANIA, CODIGO, NOMBRE, DESCRIPCION, PREFIJO, VERSION, REVISO_CARGO, REVISO_NOMBRE, MODIFICO_CARGO, MODIFICO_NOMBRE, TITULO_CALIDAD, FECHA_CREACION, REVISO_FECHA, MODIFICO_FECHA, ELABORO_CARGO, ELABORO_NOMBRE, ELABORO_FECHA, NODO_INTERMEDIO, RUTA_IMG_WF, ARCHIVO_CENTRAL, TRAE_DEUDA, MONITOR_ADMIN, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :NOMBRE, :DESCRIPCION, :PREFIJO, :VERSION, :REVISO_CARGO, :REVISO_NOMBRE, :MODIFICO_CARGO, :MODIFICO_NOMBRE, :TITULO_CALIDAD, TO_DATE(:FECHA_CREACION,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:REVISO_FECHA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:MODIFICO_FECHA,'DD/MM/YYYY HH24:MI:SS'), :ELABORO_CARGO, :ELABORO_NOMBRE, TO_DATE(:ELABORO_FECHA,'DD/MM/YYYY HH24:MI:SS'), :NODO_INTERMEDIO, :RUTA_IMG_WF, :ARCHIVO_CENTRAL, :TRAE_DEUDA, :MONITOR_ADMIN, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="" name="PREFIJO" sqlType="STRING"/>
+		<param defaultValue="" name="VERSION" sqlType="STRING"/>
+		<param defaultValue="" name="REVISO_CARGO" sqlType="STRING"/>
+		<param defaultValue="" name="REVISO_NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="MODIFICO_CARGO" sqlType="STRING"/>
+		<param defaultValue="" name="MODIFICO_NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="TITULO_CALIDAD" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_CREACION" sqlType="STRING"/>
+		<param defaultValue="" name="REVISO_FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="MODIFICO_FECHA" sqlType="STRING"/>
+		<param name="ELABORO_CARGO" sqlType="STRING"/>
+		<param name="ELABORO_NOMBRE" sqlType="STRING"/>
+		<param name="ELABORO_FECHA" sqlType="STRING"/>
+		<param defaultValue="0" name="NODO_INTERMEDIO" sqlType="STRING"/>
+		<param defaultValue="" name="RUTA_IMG_WF" sqlType="STRING"/>
+		<param defaultValue="0" name="ARCHIVO_CENTRAL" sqlType="STRING"/>
+		<param defaultValue="" name="TRAE_DEUDA" sqlType="STRING"/>
+		<param defaultValue="0" name="MONITOR_ADMIN" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="procesos">
+		<call-query href="insertProcesos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="VERSION" query-param="VERSION"/>
+			<with-param name="REVISO_CARGO" query-param="REVISO_CARGO"/>
+			<with-param name="REVISO_NOMBRE" query-param="REVISO_NOMBRE"/>
+			<with-param name="MODIFICO_CARGO" query-param="MODIFICO_CARGO"/>
+			<with-param name="MODIFICO_NOMBRE" query-param="MODIFICO_NOMBRE"/>
+			<with-param name="TITULO_CALIDAD" query-param="TITULO_CALIDAD"/>
+			<with-param name="FECHA_CREACION" query-param="FECHA_CREACION"/>
+			<with-param name="REVISO_FECHA" query-param="REVISO_FECHA"/>
+			<with-param name="MODIFICO_FECHA" query-param="MODIFICO_FECHA"/>
+			<with-param name="ELABORO_CARGO" query-param="ELABORO_CARGO"/>
+			<with-param name="ELABORO_NOMBRE" query-param="ELABORO_NOMBRE"/>
+			<with-param name="ELABORO_FECHA" query-param="ELABORO_FECHA"/>
+			<with-param name="NODO_INTERMEDIO" query-param="NODO_INTERMEDIO"/>
+			<with-param name="RUTA_IMG_WF" query-param="RUTA_IMG_WF"/>
+			<with-param name="ARCHIVO_CENTRAL" query-param="ARCHIVO_CENTRAL"/>
+			<with-param name="TRAE_DEUDA" query-param="TRAE_DEUDA"/>
+			<with-param name="MONITOR_ADMIN" query-param="MONITOR_ADMIN"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteProcesos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM PROCESOS WHERE PROCESOS.COMPANIA= :KEY_COMPANIA AND PROCESOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="procesos">
+		<call-query href="deleteProcesos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, CODIGO , NOMBRE,(CASE NODO_INTERMEDIO WHEN 0 THEN 'false' ELSE 'true' END) NODO_INTERMEDIO,(CASE ARCHIVO_CENTRAL WHEN 0 THEN 'false' ELSE 'true' END) ARCHIVO_CENTRAL FROM PROCESOS WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN NODO_INTERMEDIO IS NULL THEN ' ' ELSE UPPER(NODO_INTERMEDIO) END) LIKE UPPER(CONCAT(:NODO_INTERMEDIO, '%')) AND (CASE WHEN ARCHIVO_CENTRAL IS NULL THEN ' ' ELSE UPPER(ARCHIVO_CENTRAL) END) LIKE UPPER(CONCAT(CONCAT('%',:ARCHIVO_CENTRAL), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","NODO_INTERMEDIO":"$NODO_INTERMEDIO(type:boolean)","ARCHIVO_CENTRAL":"$ARCHIVO_CENTRAL(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NODO_INTERMEDIO" sqlType="STRING"/>
+		<param name="ARCHIVO_CENTRAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="procesos">
+		<call-query href="getProcesosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NODO_INTERMEDIO" query-param="NODO_INTERMEDIO"/>
+			<with-param name="ARCHIVO_CENTRAL" query-param="ARCHIVO_CENTRAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, CODIGO , NOMBRE,(CASE NODO_INTERMEDIO WHEN 0 THEN 'false' ELSE 'true' END) NODO_INTERMEDIO,(CASE ARCHIVO_CENTRAL WHEN 0 THEN 'false' ELSE 'true' END) ARCHIVO_CENTRAL FROM PROCESOS WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN NODO_INTERMEDIO IS NULL THEN ' ' ELSE UPPER(NODO_INTERMEDIO) END) LIKE UPPER(CONCAT(:NODO_INTERMEDIO, '%')) AND (CASE WHEN ARCHIVO_CENTRAL IS NULL THEN ' ' ELSE UPPER(ARCHIVO_CENTRAL) END) LIKE UPPER(CONCAT(CONCAT('%',:ARCHIVO_CENTRAL), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NODO_INTERMEDIO" sqlType="STRING"/>
+		<param name="ARCHIVO_CENTRAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesos/numero">
+		<call-query href="getProcesosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NODO_INTERMEDIO" query-param="NODO_INTERMEDIO"/>
+			<with-param name="ARCHIVO_CENTRAL" query-param="ARCHIVO_CENTRAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COMPANIA , CODIGO , NOMBRE , DESCRIPCION , CREATED_BY , MODIFIED_BY ,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, PREFIJO , VERSION , REVISO_CARGO , REVISO_NOMBRE , MODIFICO_CARGO , MODIFICO_NOMBRE , TITULO_CALIDAD ,(TO_CHAR(FECHA_CREACION,'DD/MM/YYYY HH24:MI:SS')) FECHA_CREACION,(TO_CHAR(REVISO_FECHA,'DD/MM/YYYY HH24:MI:SS')) REVISO_FECHA,(TO_CHAR(MODIFICO_FECHA,'DD/MM/YYYY HH24:MI:SS')) MODIFICO_FECHA, ELABORO_CARGO , ELABORO_NOMBRE ,(TO_CHAR(ELABORO_FECHA,'DD/MM/YYYY HH24:MI:SS')) ELABORO_FECHA,(CASE NODO_INTERMEDIO WHEN 0 THEN 'false' ELSE 'true' END) NODO_INTERMEDIO, RUTA_IMG_WF,(CASE ARCHIVO_CENTRAL WHEN 0 THEN 'false' ELSE 'true' END) ARCHIVO_CENTRAL,TRAE_DEUDA,(CASE MONITOR_ADMIN WHEN 0 THEN 'false' ELSE 'true' END) MONITOR_ADMIN FROM PROCESOS WHERE PROCESOS.COMPANIA= :KEY_COMPANIA AND PROCESOS.CODIGO= :KEY_CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","DESCRIPCION":"$DESCRIPCION","CREATED_BY":"$CREATED_BY","MODIFIED_BY":"$MODIFIED_BY","DATE_CREATED":"$DATE_CREATED","DATE_MODIFIED":"$DATE_MODIFIED","PREFIJO":"$PREFIJO","VERSION":"$VERSION","REVISO_CARGO":"$REVISO_CARGO","REVISO_NOMBRE":"$REVISO_NOMBRE","MODIFICO_CARGO":"$MODIFICO_CARGO","MODIFICO_NOMBRE":"$MODIFICO_NOMBRE","TITULO_CALIDAD":"$TITULO_CALIDAD","FECHA_CREACION":"$FECHA_CREACION","REVISO_FECHA":"$REVISO_FECHA","MODIFICO_FECHA":"$MODIFICO_FECHA","ELABORO_CARGO":"$ELABORO_CARGO","ELABORO_NOMBRE":"$ELABORO_NOMBRE","ELABORO_FECHA":"$ELABORO_FECHA","NODO_INTERMEDIO":"$NODO_INTERMEDIO(type:boolean)","RUTA_IMG_WF":"$RUTA_IMG_WF","ARCHIVO_CENTRAL":"$ARCHIVO_CENTRAL(type:boolean)","TRAE_DEUDA":"$TRAE_DEUDA(type:integer)","MONITOR_ADMIN":"$MONITOR_ADMIN(type:boolean)"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesos/data">
+		<call-query href="getProcesosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateProcesos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PROCESOS SET CODIGO=:CODIGO, NOMBRE=:NOMBRE, DESCRIPCION=:DESCRIPCION, PREFIJO=:PREFIJO, VERSION=:VERSION, REVISO_CARGO=:REVISO_CARGO, REVISO_NOMBRE=:REVISO_NOMBRE, MODIFICO_CARGO=:MODIFICO_CARGO, MODIFICO_NOMBRE=:MODIFICO_NOMBRE, TITULO_CALIDAD=:TITULO_CALIDAD, FECHA_CREACION=TO_DATE(:FECHA_CREACION,'DD/MM/YYYY HH24:MI:SS'), REVISO_FECHA=TO_DATE(:REVISO_FECHA,'DD/MM/YYYY HH24:MI:SS'), MODIFICO_FECHA=TO_DATE(:MODIFICO_FECHA,'DD/MM/YYYY HH24:MI:SS'), ELABORO_CARGO=:ELABORO_CARGO, ELABORO_NOMBRE=:ELABORO_NOMBRE, ELABORO_FECHA=TO_DATE(:ELABORO_FECHA,'DD/MM/YYYY HH24:MI:SS'), NODO_INTERMEDIO=:NODO_INTERMEDIO, RUTA_IMG_WF=:RUTA_IMG_WF, ARCHIVO_CENTRAL=:ARCHIVO_CENTRAL, TRAE_DEUDA=:TRAE_DEUDA, MONITOR_ADMIN=:MONITOR_ADMIN, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PROCESOS.COMPANIA= :KEY_COMPANIA AND PROCESOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PREFIJO" sqlType="STRING"/>
+		<param name="VERSION" sqlType="STRING"/>
+		<param name="REVISO_CARGO" sqlType="STRING"/>
+		<param name="REVISO_NOMBRE" sqlType="STRING"/>
+		<param name="MODIFICO_CARGO" sqlType="STRING"/>
+		<param name="MODIFICO_NOMBRE" sqlType="STRING"/>
+		<param name="TITULO_CALIDAD" sqlType="STRING"/>
+		<param name="FECHA_CREACION" sqlType="STRING"/>
+		<param name="REVISO_FECHA" sqlType="STRING"/>
+		<param name="MODIFICO_FECHA" sqlType="STRING"/>
+		<param name="ELABORO_CARGO" sqlType="STRING"/>
+		<param name="ELABORO_NOMBRE" sqlType="STRING"/>
+		<param name="ELABORO_FECHA" sqlType="STRING"/>
+		<param name="NODO_INTERMEDIO" sqlType="STRING"/>
+		<param name="RUTA_IMG_WF" sqlType="STRING"/>
+		<param name="ARCHIVO_CENTRAL" sqlType="STRING"/>
+		<param name="TRAE_DEUDA" sqlType="STRING"/>
+		<param name="MONITOR_ADMIN" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="procesos">
+		<call-query href="updateProcesos">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="VERSION" query-param="VERSION"/>
+			<with-param name="REVISO_CARGO" query-param="REVISO_CARGO"/>
+			<with-param name="REVISO_NOMBRE" query-param="REVISO_NOMBRE"/>
+			<with-param name="MODIFICO_CARGO" query-param="MODIFICO_CARGO"/>
+			<with-param name="MODIFICO_NOMBRE" query-param="MODIFICO_NOMBRE"/>
+			<with-param name="TITULO_CALIDAD" query-param="TITULO_CALIDAD"/>
+			<with-param name="FECHA_CREACION" query-param="FECHA_CREACION"/>
+			<with-param name="REVISO_FECHA" query-param="REVISO_FECHA"/>
+			<with-param name="MODIFICO_FECHA" query-param="MODIFICO_FECHA"/>
+			<with-param name="ELABORO_CARGO" query-param="ELABORO_CARGO"/>
+			<with-param name="ELABORO_NOMBRE" query-param="ELABORO_NOMBRE"/>
+			<with-param name="ELABORO_FECHA" query-param="ELABORO_FECHA"/>
+			<with-param name="NODO_INTERMEDIO" query-param="NODO_INTERMEDIO"/>
+			<with-param name="RUTA_IMG_WF" query-param="RUTA_IMG_WF"/>
+			<with-param name="ARCHIVO_CENTRAL" query-param="ARCHIVO_CENTRAL"/>
+			<with-param name="TRAE_DEUDA" query-param="TRAE_DEUDA"/>
+			<with-param name="MONITOR_ADMIN" query-param="MONITOR_ADMIN"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosPagProcesostipotramiteiniQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DISTINCT PROCESOS.CODIGO, PROCESOS.NOMBRE FROM PROCESOS INNER JOIN TIPOTRAMITES ON PROCESOS.COMPANIA = TIPOTRAMITES.COMPANIA AND PROCESOS.CODIGO = TIPOTRAMITES.PROCESOS WHERE PROCESOS.COMPANIA = :COMPANIA AND NUMERACION_UNICA NOT IN (0) ORDER BY PROCESOS.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesostipotramiteini/pag">
+		<call-query href="getProcesosPagProcesostipotramiteiniQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosNumProcesostipotramiteiniQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DISTINCT PROCESOS.CODIGO, PROCESOS.NOMBRE FROM PROCESOS INNER JOIN TIPOTRAMITES ON PROCESOS.COMPANIA = TIPOTRAMITES.COMPANIA AND PROCESOS.CODIGO = TIPOTRAMITES.PROCESOS WHERE PROCESOS.COMPANIA = :COMPANIA AND NUMERACION_UNICA NOT IN (0) ORDER BY PROCESOS.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesostipotramiteini/num">
+		<call-query href="getProcesosNumProcesostipotramiteiniQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosPagProcesostipotramiteifinQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DISTINCT PROCESOS.CODIGO, PROCESOS.NOMBRE FROM PROCESOS INNER JOIN TIPOTRAMITES ON PROCESOS.COMPANIA = TIPOTRAMITES.COMPANIA AND PROCESOS.CODIGO = TIPOTRAMITES.PROCESOS WHERE PROCESOS.COMPANIA = :COMPANIA AND PROCESOS.CODIGO &gt;= :NUMERO AND NUMERACION_UNICA NOT IN (0) ORDER BY PROCESOS.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesostipotramiteifin/pag">
+		<call-query href="getProcesosPagProcesostipotramiteifinQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosNumProcesostipotramiteifinQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DISTINCT PROCESOS.CODIGO, PROCESOS.NOMBRE FROM PROCESOS INNER JOIN TIPOTRAMITES ON PROCESOS.COMPANIA = TIPOTRAMITES.COMPANIA AND PROCESOS.CODIGO = TIPOTRAMITES.PROCESOS WHERE PROCESOS.COMPANIA = :COMPANIA AND PROCESOS.CODIGO &gt;= :NUMERO AND NUMERACION_UNICA NOT IN (0) ORDER BY PROCESOS.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesostipotramiteifin/num">
+		<call-query href="getProcesosNumProcesostipotramiteifinQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosPagProcesosporcompaniainiQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT PROCESOS.CODIGO, PROCESOS.NOMBRE FROM PROCESOS WHERE PROCESOS.COMPANIA = :COMPANIA ORDER BY PROCESOS.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesosporcompaniaini/pag">
+		<call-query href="getProcesosPagProcesosporcompaniainiQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosNumProcesosporcompaniainiQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT PROCESOS.CODIGO, PROCESOS.NOMBRE FROM PROCESOS WHERE PROCESOS.COMPANIA = :COMPANIA ORDER BY PROCESOS.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesosporcompaniaini/num">
+		<call-query href="getProcesosNumProcesosporcompaniainiQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosPagProcesosporcompaniafinQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT PROCESOS.CODIGO, PROCESOS.NOMBRE FROM PROCESOS WHERE PROCESOS.COMPANIA = :COMPANIA AND PROCESOS.CODIGO &gt;= :NUMERO ORDER BY PROCESOS.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesosporcompaniafin/pag">
+		<call-query href="getProcesosPagProcesosporcompaniafinQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosNumProcesosporcompaniafinQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT PROCESOS.CODIGO, PROCESOS.NOMBRE FROM PROCESOS WHERE PROCESOS.COMPANIA = :COMPANIA AND PROCESOS.CODIGO &gt;= :NUMERO ORDER BY PROCESOS.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesosporcompaniafin/num">
+		<call-query href="getProcesosNumProcesosporcompaniafinQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosPagProcesospornumeracioniniQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DISTINCT P.CODIGO, P.NOMBRE FROM TIPOTRAMITES TT INNER JOIN PROCESOS P ON TT.COMPANIA = P.COMPANIA AND TT.PROCESOS = P.CODIGO WHERE P.COMPANIA = :COMPANIA AND TT.NUMERACION_UNICA IN (:NUMERACION_UNICA) ORDER BY P.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERACION_UNICA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesospornumeracionini/pag">
+		<call-query href="getProcesosPagProcesospornumeracioniniQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERACION_UNICA" query-param="NUMERACION_UNICA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosNumProcesospornumeracioniniQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DISTINCT P.CODIGO, P.NOMBRE FROM TIPOTRAMITES TT INNER JOIN PROCESOS P ON TT.COMPANIA = P.COMPANIA AND TT.PROCESOS = P.CODIGO WHERE P.COMPANIA = :COMPANIA AND TT.NUMERACION_UNICA IN (:NUMERACION_UNICA) ORDER BY P.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERACION_UNICA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesospornumeracionini/num">
+		<call-query href="getProcesosNumProcesospornumeracioniniQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERACION_UNICA" query-param="NUMERACION_UNICA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosPagProcesospornumeracionfinQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DISTINCT P.CODIGO, P.NOMBRE FROM TIPOTRAMITES TT INNER JOIN PROCESOS P ON TT.COMPANIA = P.COMPANIA AND TT.PROCESOS = P.CODIGO WHERE P.COMPANIA = :COMPANIA AND P.CODIGO &gt;= :NUMERO AND TT.NUMERACION_UNICA IN (:NUMERACION_UNICA) ORDER BY P.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="NUMERACION_UNICA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesospornumeracionfin/pag">
+		<call-query href="getProcesosPagProcesospornumeracionfinQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="NUMERACION_UNICA" query-param="NUMERACION_UNICA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosNumProcesospornumeracionfinQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DISTINCT P.CODIGO, P.NOMBRE FROM TIPOTRAMITES TT INNER JOIN PROCESOS P ON TT.COMPANIA = P.COMPANIA AND TT.PROCESOS = P.CODIGO WHERE P.COMPANIA = :COMPANIA AND P.CODIGO &gt;= :NUMERO AND TT.NUMERACION_UNICA IN (:NUMERACION_UNICA) ORDER BY P.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="NUMERACION_UNICA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesos/procesospornumeracionfin/num">
+		<call-query href="getProcesosNumProcesospornumeracionfinQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="NUMERACION_UNICA" query-param="NUMERACION_UNICA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+
+</data>

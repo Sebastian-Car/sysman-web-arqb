@@ -1,0 +1,76 @@
+CREATE OR REPLACE TRIGGER "BU_DEPENDENCIA"  
+/*
+      NAME              : BU_DEPENDENCIA
+      AUTHORS           : SYSMAN  SAS
+      AUTHOR MIGRACION  : 
+      DATE MIGRADOR     : 
+      TIME              : 
+      SOURCE MODULE     : 
+      MODIFIER          : JAVIER ANDRES RODRIGUEZ RIOS
+      DATE MODIFIED     : 31/01/2017
+      TIME              : 11:45 AM
+      DESCRIPTION       : SE AJUSTA AL ESTANDAR                          
+*/
+BEFORE UPDATE OF CLASE_BODEGA 
+              ON DEPENDENCIA
+FOR EACH ROW 
+DECLARE  
+  MI_I          NUMBER;
+  MI_ES_ADMIN   PCK_SUBTIPOS.TI_ENTERO;
+BEGIN
+
+    IF NVL(:OLD.NOMBRE, 'X') <> NVL(:NEW.NOMBRE, 'X') THEN
+     BEGIN
+     SELECT G.ES_ADMINISTRADOR
+      INTO MI_ES_ADMIN
+      FROM USUARIO U
+      INNER JOIN USUARIO_D UD ON U.CODIGO = UD.USUARIO
+      INNER JOIN USUARIO G ON UD.GRUPO = G.CODIGO
+     WHERE U.CODIGO = :NEW.MODIFIED_BY
+       AND UD.APLICACION = 10
+       AND ROWNUM = 1;
+       EXCEPTION WHEN NO_DATA_FOUND THEN
+        MI_ES_ADMIN:=0;
+      END;
+     BEGIN
+        IF MI_ES_ADMIN = 0 THEN
+          RAISE PCK_EXCEPCIONES.EXC_ALMACEN;
+        END IF;
+      EXCEPTION WHEN PCK_EXCEPCIONES.EXC_ALMACEN THEN
+        PCK_ERR_MSG.RAISE_WITH_MSG(
+                    UN_EXC_COD    => SQLCODE
+                   ,UN_TABLAERROR => 'DEPENDENCIA'
+                   ,UN_ERROR_COD  => PCK_ERRORES.ERR_ALM_CAMBIAR_NOMBRE_DEP
+             );
+      END;
+    END IF;
+    IF NVL(:OLD.CODIGO, 'X')         <> NVL(:NEW.CODIGO, 'X')
+         OR :OLD.MOVIMIENTO  <> :NEW.MOVIMIENTO
+         OR NVL(:OLD.CENTRODECOSTO, 'X') <> NVL(:NEW.CENTRODECOSTO, 'X')
+         OR NVL(:OLD.CLASE_BODEGA, 'X') <> NVL(:NEW.CLASE_BODEGA, 'X')
+      THEN
+      BEGIN
+        SELECT COUNT(COMPANIA)
+          INTO MI_I
+          FROM MOVIMIENTO
+         WHERE COMPANIA            = :NEW.COMPANIA
+           AND (DEPENDENCIA_ORIGEN     = :NEW.CODIGO
+                OR DEPENDENCIA_DESTINO = :NEW.CODIGO);
+      EXCEPTION WHEN NO_DATA_FOUND THEN
+        MI_I:=0;
+      END;
+      BEGIN
+        IF MI_I>0 THEN
+          RAISE PCK_EXCEPCIONES.EXC_ALMACEN;
+          --RAISE_APPLICATION_ERROR(-20000,'No es posible modificar este campo debido a que ya existen movimientos con esta dependencia.');
+        END IF;
+      EXCEPTION WHEN PCK_EXCEPCIONES.EXC_ALMACEN THEN
+        PCK_ERR_MSG.RAISE_WITH_MSG(
+                    UN_EXC_COD    => SQLCODE
+                   ,UN_TABLAERROR => 'DEPENDENCIA'
+                   ,UN_ERROR_COD  => PCK_ERRORES.ERR_ALMACEN_MOV_DEPENDE
+             );
+      END;
+    END IF;
+  --NULL;
+END;

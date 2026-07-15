@@ -1,0 +1,65 @@
+﻿<data name="fotosaccidentes" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getFotosaccidentesImgsAccidentesPorPlacaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  FOTOSACCIDENTES.COMPANIA, FOTOSACCIDENTES.REGISTRO, FOTOSACCIDENTES.ARCHIVO RUTA, SUBSTR(FOTOSACCIDENTES.ARCHIVO, INSTR(FOTOSACCIDENTES.ARCHIVO, :SEPARADOR, -1) + 1, LENGTH(FOTOSACCIDENTES.ARCHIVO)) ARCHIVO, FOTOSACCIDENTES.VIGENCIA, FOTOSACCIDENTES.NUM_ARCHIVO  FROM FOTOSACCIDENTES WHERE COMPANIA=:COMPANIA AND REGISTRO =:PLACA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","REGISTRO":"$REGISTRO","RUTA":"$RUTA","ARCHIVO":"$ARCHIVO","VIGENCIA":"$VIGENCIA(type:integer)","NUM_ARCHIVO":"$NUM_ARCHIVO(type:integer)"}]}}		</result>
+		<param name="SEPARADOR" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PLACA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="fotosaccidentes/imgsaccidentesporplaca">
+		<call-query href="getFotosaccidentesImgsAccidentesPorPlacaQuery">
+			<with-param name="SEPARADOR" query-param="SEPARADOR"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PLACA" query-param="PLACA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertFotosaccidentes" keyColumns="COMPANIA,REGISTRO,ARCHIVO,VIGENCIA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO FOTOSACCIDENTES (VIGENCIA, COMPANIA, ARCHIVO, REGISTRO, DATE_CREATED, CREATED_BY) VALUES (:VIGENCIA, :COMPANIA, :ARCHIVO, :REGISTRO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_REGISTRO":"$REGISTRO","KEY_ARCHIVO":"$ARCHIVO","KEY_VIGENCIA":"$VIGENCIA(type:integer)"}]}}		</result>
+		<param defaultValue="0" name="VIGENCIA" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ARCHIVO" sqlType="STRING"/>
+		<param name="REGISTRO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="fotosaccidentes">
+		<call-query href="insertFotosaccidentes">
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ARCHIVO" query-param="ARCHIVO"/>
+			<with-param name="REGISTRO" query-param="REGISTRO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteFotosaccidentes" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM FOTOSACCIDENTES WHERE FOTOSACCIDENTES.COMPANIA= :KEY_COMPANIA AND FOTOSACCIDENTES.REGISTRO= :KEY_REGISTRO AND FOTOSACCIDENTES.ARCHIVO= :KEY_ARCHIVO AND FOTOSACCIDENTES.VIGENCIA= :KEY_VIGENCIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_REGISTRO" sqlType="STRING"/>
+		<param name="KEY_ARCHIVO" sqlType="STRING"/>
+		<param name="KEY_VIGENCIA" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="fotosaccidentes">
+		<call-query href="deleteFotosaccidentes">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_REGISTRO" query-param="KEY_REGISTRO"/>
+			<with-param name="KEY_ARCHIVO" query-param="KEY_ARCHIVO"/>
+			<with-param name="KEY_VIGENCIA" query-param="KEY_VIGENCIA"/>
+
+		</call-query>
+	</resource>
+
+</data>

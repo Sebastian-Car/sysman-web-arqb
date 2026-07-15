@@ -1,0 +1,962 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pt="http://java.sun.com/jsf/passthrough"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+	>
+        <ui:define name="script">
+        <script>
+            function loadDetalle() {
+                if("#{escalafonsControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+    </ui:define>   
+ <ui:define name="titulo">
+        <title>#{idm.TG_ESCALAFON3}</title>
+    </ui:define>
+    <ui:define name="contenido">
+        <f:event type="preRenderView" listener="#{escalafonsControlador.cargarLista}" />
+        <section class="radius" >
+            <h:form id="FR45" >
+                <p:growl id="alert" showDetail="true" sticky="false" widgetVar="alert" life="5000" autoUpdate="false" escape="false"/>  
+                <p:panel id="lista" widgetVar="lista"   visible="#{escalafonsControlador.accion==null}" > 
+                    <p:confirmDialog global="true" showEffect="fade"    id="confFR45" widgetVar="confFR45"  rendered="#{escalafonsControlador.permisos[1]}">
+                        <p:commandButton value="#{idm.TI_SI}"  type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                        <p:commandButton value="#{idm.TI_NO}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                    </p:confirmDialog>
+                    <p:dataTable id="TBFR45" widgetVar="TBFR45"  var="reg" value="#{escalafonsControlador.listaInicial}"  
+                                 editable="true" 
+                                 emptyMessage="#{idm.TI_EMPTY_MESSAGE}" 
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}" 
+                                 currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+                                 rows="10"
+                                 rowIndexVar="rowIndex"
+                                 paginator="true"
+	           lazy="true">
+                        <f:facet name="{Exporters}" rendered="#{escalafonsControlador.permisos[4] }" >
+                            <h:commandLink rendered="#{escalafonsControlador.permisos[4] }" title="#{idm.TI_VER_EXCEL}">
+                                <p:graphicImage name="/images/general/excel.png" width="24"/>
+                                <p:dataExporter type="xls" target="TBFR45" fileName="Datos"  encoding="ISO-8859-1"  />
+                            </h:commandLink>
+                            <h:commandLink rendered="#{escalafonsControlador.permisos[4] }" title="#{idm.TI_VER_PDF}">
+                                <p:graphicImage name="/images/general/pdf.png" width="24"/>
+                                <p:dataExporter type="pdf" target="TBFR45" fileName="Datos"  encoding="ISO-8859-1"/>
+                            </h:commandLink>
+                        </f:facet>
+                        <f:facet name="header">
+                            <div style="position: relative; height: 50px">
+                                <h:panelGroup class="acme" rendered="#{escalafonsControlador.permisos[0] }">
+                                    <p:commandLink action="#{escalafonsControlador.cargarRegistroNuevo}" 
+                                                   update=":FR45_nuevo:nuevoPanel"
+                                                   rendered="#{escalafonsControlador.permisos[0]}"
+                                                   onclick="try { PF('blockLista').show(); PF('TBCB6932').nuevo=true;} catch (e) { }"
+                                                   oncomplete="try{ asignarEventoContGrande();
+validarCargaGrandes();
+  PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+                                                   title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;" 
+                                                   id="btNuevo">
+                                        <center><p:graphicImage name="/images/menus/32/add.png"/>
+                                            <div>#{idm.TI_NUEVO}</div>
+                                        </center>
+                                    </p:commandLink>
+                                </h:panelGroup>
+                                <div class="acme">
+                                    <h:outputLink value="#{request.contextPath}/menu.sysman"  title="#{idm.TI_VOLVER}" style="padding-top: 10px;" >  
+		<center><p:graphicImage name="/images/menus/32/close.png"/>
+                                            <div>#{idm.TI_CERRAR}</div>
+                                        </center>
+                                    </h:outputLink>
+                                </div>
+                            </div>
+                            #{idm.TG_ESCALAFON3}
+                        </f:facet>
+<p:column headerText="#{idm.TG_CODIGO7}" filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith" style="text-align:center; "  width="30%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['CODIGO']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_NOMBRE3}" filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith" style="text-align:center; "  width="70%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['NOMBRE']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column width="150"  headerText="Acciones" style="text-align: center" exportable="false">
+ <p:commandButton icon="ui-icon-search"   title="#{idm.TI_VER_REGISTRO}" 
+                                             action="#{escalafonsControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+                                             update=":FR45_nuevo"
+                                             onclick="try{ PF('blockLista').show();  PF('TBCB6932').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+                                             rendered="#{escalafonsControlador.permisos[3]}"
+                                             oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+                                <f:param name="rowIndex" value="#{rowIndex}" />
+                            </p:commandButton>
+	<p:commandButton icon="ui-icon-document-b"   title="#{idm.TI_EDITAR_REGISTRO}" 
+                                             action="#{escalafonsControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+                                             update=":FR45_nuevo"
+                                             onclick="try{ PF('blockLista').show();  PF('TBCB6932').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+                                             rendered="#{escalafonsControlador.permisos[2] }"
+                                             oncomplete="try{asignarEventoContGrande();
+validarCargaGrandes();
+ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+                                <f:param name="rowIndex" value="#{rowIndex}" />
+                            </p:commandButton>
+	       <p:commandButton icon="ui-icon-trash"   title="#{idm.TI_ELIMINAR_REGISTRO}" 
+		 onclick="PF('blockListaGuardar').show()"
+                                             action="#{escalafonsControlador.eliminarReg(reg)}" 
+                                             update=":FR45:TBFR45,:FR45:alert"
+                                             rendered="#{escalafonsControlador.permisos[1] }"
+                                             oncomplete=" PF('blockListaGuardar').hide();">
+                                <p:confirm header="#{sessionBean.tituloMensajes}" message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                    <p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR45">
+#{idm.TI_CARGANDO}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                    <p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                </p:panel>
+            </h:form>
+<h:form id="FR45_nuevo"    style="margin-top: -20px;"      >
+	<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA" my="left bottom" at="left bottom"  for="BTBUSQUEDA"  hideEffect="fade" rendered="#{escalafonsControlador.accion!='i'}"  style="width: 500px"   >
+                    <p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA"  var="reg" value="#{escalafonsControlador.listaInicialF}"
+                                 editable="true"
+                                 emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+                                 currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+                                 rows="10"
+                                 rowIndexVar="rowIndex"
+                                 selectionMode="single"
+                                 rowKey="#{reg.llave}"
+                                 paginator="true"
+                                 lazy="true">
+                        <p:ajax event="rowSelect" listener="#{escalafonsControlador.seleccionarFilaBusqueda}" onstart="PF('blockNuevo').show()" oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();   vaciarSubforms(['PL113']); " update="@form"  />
+	<p:column headerText="#{idm.TG_NOMBRE3}" filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith" style="text-align:center; "  width="70%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['NOMBRE']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+                    </p:dataTable>
+                </p:overlayPanel>
+               <p:growl id="alert" showDetail="true" sticky="false" widgetVar="alert" life="5000" autoUpdate="false"  escape="false" />  
+                <p:panel id="nuevoPanel"   visible="#{escalafonsControlador.accion!=null}" widgetVar="nuevoPanel"  >
+	<div style="position: relative; height: 50px; padding-bottom: 80px;  " >
+	<div class="acme" style="display:#{escalafonsControlador.accion=='v'?'none':'block'}">
+                            <p:commandLink action="#{escalafonsControlador.agregarRegistroNuevo(false)}" rendered="#{escalafonsControlador.accion!='v'}"
+                                           update=":FR45_nuevo,#{!escalafonsControlador.permisos[2]?':FR45':'' }"
+                                          onclick="if (!validarVacios(['CB92','CB93','CP543','CP544'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+                                          title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+ oncomplete="asignarEventoContGrande(); validarCargaGrandes(); " >
+                                <center><p:graphicImage name="/images/menus/32/save.png"/>
+                                    <div style="height: 30px">#{idm.TI_GUARDAR}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+	<div class="acme" style="display:#{escalafonsControlador.accion=='v' or !escalafonsControlador.permisos[0]?'none':'block'}">
+                            <p:commandLink action="#{escalafonsControlador.guardarNuevo}" rendered="#{escalafonsControlador.accion!='v' and escalafonsControlador.permisos[0]}"
+                                           update=":FR45_nuevo"
+	                      onclick="if (!validarVacios(['CB92','CB93','CP543','CP544'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{escalafonsControlador.accion!='i'  and escalafonsControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+                                           oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+                                           title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}" style="padding-top: 10px;" >
+                                <center><p:graphicImage name="/images/menus/32/savenew.png"/>
+                                    <div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+ <div class="acme" style="display:#{escalafonsControlador.accion=='i' or !escalafonsControlador.permisos[0]?'none':'block'}">
+                            <p:commandLink id="BTBUSQUEDA" rendered="#{escalafonsControlador.accion!='i' and escalafonsControlador.permisos[0]}"
+                                           title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;"  >
+                                <center><p:graphicImage name="/images/menus/32/search.png"/>
+                                    <div style="height: 30px">#{idm.TI_BUSCAR}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+ 	<div class="acme" >
+                            <p:commandLink update=":FR45:TBFR45"
+                                           onclick="try {
+		           PF('TBFR45').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+                                           title="#{idm.TI_ATRAS}" style="padding-top: 10px;" >
+                                <center><p:graphicImage name="/images/menus/32/back.png"/>
+                                    <div style="height: 30px">#{idm.TI_VOLVER}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+                        <p:panel rendered="#{escalafonsControlador.accion!='i'  and escalafonsControlador.rid==null }" styleClass="acme" style="min-width: 350px; width:30%; padding: 10px;">
+                            <center style="margin: 2px;"> 
+                                <p:commandButton icon="ui-icon-seek-first"   
+                                                 action="#{escalafonsControlador.irPrimero()}"
+                                                 title="#{idm.TI_PRIMER_REGISTRO}" 
+                                                 update=":FR45_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); vaciarSubforms(['PL113']);"
+                                                 >
+                                </p:commandButton>
+                                <p:commandButton icon="ui-icon-seek-prev"   
+                                                 action="#{escalafonsControlador.irAnterior()}"
+                                                 title="#{idm.TI_REGISTRO_ANTERIOR}" 
+                                                 update=":FR45_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); vaciarSubforms(['PL113']);"
+                                                 >
+                                </p:commandButton>
+	           <p:outputLabel value="#{idm.TI_REGISTRO} #{escalafonsControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{escalafonsControlador.listaInicial.rowCount} " />
+                                <p:commandButton icon="ui-icon-seek-next"   
+                                                 title="#{idm.TI_REGISTRO_SIGUIENTE}" 
+                                                 action="#{escalafonsControlador.irSiguiente()}"
+                                                 update=":FR45_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); vaciarSubforms(['PL113']);">
+                                </p:commandButton>
+                                <p:commandButton icon="ui-icon-seek-end"
+                                                 title="#{idm.TI_ULTIMO_REGISTRO}" 
+                                                 action="#{escalafonsControlador.irUltimo()}"
+                                                 update=":FR45_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); vaciarSubforms(['PL113']);">
+                                </p:commandButton>
+                            </center>
+                        </p:panel>
+	   <p:panel styleClass="acme" style="width:21%; min-width:260px">
+                            <h:panelGrid columns="3"  style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+                                <h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}"/>
+                                <p:inputText id="CPCREADO"  readonly="true" widgetVar="CPCREADO"
+                                             value="#{escalafonsControlador.registro.campos['CREATED_BY']}"   placeholder="#{idm.TI_CREADOR}" disabled="true"/>
+                                <p:calendar   locale="es"  style="width: 60%" pattern="dd/MM/yyyy"  id="CPCREADOF"  widgetVar="CPCREADOF" value="#{escalafonsControlador.registro.campos['DATE_CREATED']}" disabled="true" />
+                                <h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+                                <p:inputText id="CPMODIFICADO"  readonly="true" widgetVar="CPMODIFICADO"
+                                             value="#{escalafonsControlador.registro.campos['MODIFIED_BY']}"   placeholder="#{idm.TI_MODIFICADOR}" disabled="true"/>
+                                <p:calendar   locale="es"  style="width: 60%" pattern="dd/MM/yyyy"  id="CPMODIFICADOF" widgetVar="CPMODIFICADOF" value="#{escalafonsControlador.registro.campos['DATE_MODIFIED']}" disabled="true" />
+                            </h:panelGrid>
+                        </p:panel>
+                    </div>
+<div id="PL110" class="
+" style="position: relative; height: 34px; ">
+<h:outputLabel id="LB512" value="#{idm.TT_LB512}"       style="position: absolute; width:200px; height: 29px; left: 19px;   top: 4px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+</div>
+<div id="PL111" class="
+" style="position: relative; height: 780px; ">
+<h:panelGroup id="SF12"  style="position: absolute; width:1085px; height: 300px; left: 14px;   top: 212px; "   >
+<div id="PL112" class="
+" style="position: relative; height: 48px; ">
+<h:outputLabel id="LB514" value="#{idm.TT_LB514}"       style="position: absolute; width:1203px; height: 28px; left: 10px;   top: 0px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#0000FF; border:#000000  none  1px ;"   />
+</div>
+<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}" id="dlg12" widgetVar="dlg12" resizable="false" modal="true"   rendered="#{escalafonsControlador.permisos[0]}"  onHide="restaurarCampos(['CP545','CP546','CP547','CP548','CP549','CP550','CP551','CP552','CP553','CP554','CP555','CP556','CP557','CB4638'])"  >
+                <h:panelGrid columns="2" cellpadding="2">
+                            <h:outputLabel  value="#{idm.TG_ANIO3}:" id="LCB4638"       class="cont-inst-element"/>
+<p:selectOneMenu filter="true"  effect="fade" id="CB4638"    editable="false"      widgetVar="CB4638"    value="#{escalafonsControlador.registroSub.campos['ANO']}"     onchange="" style="
+"  class="cont-inst-element">
+<f:selectItem/>
+ 		<f:selectItems value="#{escalafonsControlador.listaAno}" var="regc" itemLabel="#{regc.campos['NUMERO']}" itemValue="#{regc.campos['NUMERO']}" />                                   
+                           </p:selectOneMenu>
+<h:outputLabel  value="#{idm.TC_CP545}:" id="LCP545"        class="cont-inst-element"/>
+                    <p:inputText id="CP545"    widgetVar="CP545"  styleClass="inputTab"      value="#{escalafonsControlador.registroSub.campos['ID_DE_CATEGORIA']}" 
+ label="LCP545"   style=" width: 95%; float: left;"  class="cont-inst-element" maxlength="3"  
+  >
+	</p:inputText>
+<h:outputLabel  value="#{idm.TC_CP546}:" id="LCP546"        class="cont-inst-element"/>
+                    <p:inputText id="CP546"    widgetVar="CP546"  styleClass="inputTab"      value="#{escalafonsControlador.registroSub.campos['NOMBRE_CATEGORIA']}" 
+ label="LCP546"   style=" width: 95%; float: left;"  class="cont-inst-element" maxlength="50"  
+  >
+	</p:inputText>
+<h:outputLabel  value="#{idm.TG_SALARIO_BASE2}:" id="LCP547"      class="cont-inst-element"/>
+<pe:inputNumber id="CP547" widgetVar="CP547" 
+ value="#{escalafonsControlador.registroSub.campos['SALARIO_BASE']}"  label="LCP547" 
+decimalPlaces="2" thousandSeparator="," decimalSeparator="."  
+styleClass="inputTab"
+maxValue="999999999999999999.99"
+minValue="-999999999999999999.99"
+converter="convertidorDouble"
+style=" width: 95%;float: left;"  
+class="cont-inst-element"
+>
+<p:ajax  event="change"  listener="#{escalafonsControlador.cambiarSalarioBase}" update="@([id$=CP62345])"      />					
+</pe:inputNumber>
+<h:outputLabel  value="#{idm.TC_CP62345}:" id="LCP62345"   rendered="#{escalafonsControlador.visibleJornal}"   class="cont-inst-element"/>
+<pe:inputNumber id="CP62345" widgetVar="CP62345" 
+ rendered="#{escalafonsControlador.visibleJornal}"
+ value="#{escalafonsControlador.registroSub.campos['VALORJORNAL']}"  label="LCP62345" 
+decimalPlaces="2" thousandSeparator="," decimalSeparator="."  
+styleClass="inputTab"
+maxValue="999999999999999999.99"
+minValue="-999999999999999999.99"
+converter="convertidorDouble"
+readonly="true"
+style=" width: 95%;float: left;"  
+class="cont-inst-element"
+>
+</pe:inputNumber>
+<h:outputLabel  value="#{idm.TG_GRADO}:" id="LCP549"      class="cont-inst-element"/>
+<pe:inputNumber id="CP549" widgetVar="CP549" 
+ value="#{escalafonsControlador.registroSub.campos['GRADO']}"  label="LCP549" 
+decimalPlaces="2" thousandSeparator="," decimalSeparator="."  
+styleClass="inputTab"
+maxValue="999999999999999999.99"
+minValue="-999999999999999999.99"
+converter="convertidorDouble"
+style=" width: 95%;float: left;"  
+class="cont-inst-element"
+>
+</pe:inputNumber>
+<h:outputLabel  value="#{idm.TG_SALARIO_ANTERIOR}:" id="LCP548"      class="cont-inst-element"/>
+<pe:inputNumber id="CP548" widgetVar="CP548" 
+ value="#{escalafonsControlador.registroSub.campos['SALARIOANTERIOR']}"  label="LCP548" 
+decimalPlaces="2" thousandSeparator="," decimalSeparator="."  
+styleClass="inputTab"
+maxValue="999999999999999999.99"
+minValue="-999999999999999999.99"
+converter="convertidorDouble"
+style=" width: 95%;float: left;"  
+class="cont-inst-element"
+>
+</pe:inputNumber>
+<h:outputLabel  value="#{idm.TC_CP550}:" id="LCP550"      class="cont-inst-element"/>
+<pe:inputNumber id="CP550" widgetVar="CP550" 
+ value="#{escalafonsControlador.registroSub.campos['GASTOSREPRESENTACION']}"  label="LCP550" 
+decimalPlaces="6" thousandSeparator="," decimalSeparator="."  
+styleClass="inputTab"
+maxValue="999.999999"
+minValue="-999.999999"
+converter="convertidorDouble"
+style=" width: 95%;float: left;"  
+class="cont-inst-element"
+>
+</pe:inputNumber>
+<h:outputLabel  value="#{idm.TC_CP555}:" id="LCP555"      class="cont-inst-element"/>
+<pe:inputNumber id="CP555" widgetVar="CP555" 
+ value="#{escalafonsControlador.registroSub.campos['PRIMATECNICA']}"  label="LCP555" 
+decimalPlaces="2" thousandSeparator="," decimalSeparator="."  
+styleClass="inputTab"
+maxValue="999.99"
+minValue="-999.99"
+converter="convertidorDouble"
+style=" width: 95%;float: left;"  
+class="cont-inst-element"
+>
+</pe:inputNumber>
+<h:outputLabel  value="#{idm.TC_CP551}:" id="LCP551"        class="cont-inst-element"/>
+                    <p:inputText id="CP551"    widgetVar="CP551"  styleClass="inputTab"      value="#{escalafonsControlador.registroSub.campos['CODIGOGRADO']}" 
+ label="LCP551"   style=" width: 95%; float: left;"  class="cont-inst-element" maxlength="10"  
+  >
+	</p:inputText>
+<h:outputLabel  value="#{idm.TC_CP557}:" id="LCP557"      class="cont-inst-element"/>
+<pe:inputNumber id="CP557" widgetVar="CP557" 
+ value="#{escalafonsControlador.registroSub.campos['VLREXTRA']}"  label="LCP557" 
+decimalPlaces="2" thousandSeparator="," decimalSeparator="."  
+styleClass="inputTab"
+maxValue="999999999999999999.99"
+minValue="-999999999999999999.99"
+converter="convertidorDouble"
+style=" width: 95%;float: left;"  
+class="cont-inst-element"
+>
+</pe:inputNumber>
+<h:outputLabel  value="#{idm.TC_CP556}:" id="LCP556"      class="cont-inst-element"/>
+<pe:inputNumber id="CP556" widgetVar="CP556" 
+ value="#{escalafonsControlador.registroSub.campos['SUBSTRANSPORTE']}"  label="LCP556" 
+decimalPlaces="2" thousandSeparator="," decimalSeparator="."  
+styleClass="inputTab"
+maxValue="999999999999999999.99"
+minValue="-999999999999999999.99"
+converter="convertidorDouble"
+style=" width: 95%;float: left;"  
+class="cont-inst-element"
+>
+</pe:inputNumber>
+<h:outputLabel  value="#{idm.TC_CP552}:" id="LCP552"      class="cont-inst-element"/>
+<pe:inputNumber id="CP552" widgetVar="CP552" 
+ value="#{escalafonsControlador.registroSub.campos['SUBSALIMENTACION']}"  label="LCP552" 
+decimalPlaces="2" thousandSeparator="," decimalSeparator="."  
+styleClass="inputTab"
+maxValue="999999999999999999.99"
+minValue="-999999999999999999.99"
+converter="convertidorDouble"
+style=" width: 95%;float: left;"  
+class="cont-inst-element"
+>
+</pe:inputNumber>
+<h:outputLabel  value="#{idm.TC_CP49890}:" id="LCP49890"      class="cont-inst-element"/>
+<pe:inputNumber id="CP49890" widgetVar="CP49890" 
+ value="#{escalafonsControlador.registroSub.campos['BONIFICACION_DOCENTE']}"  label="LCP49890" 
+decimalPlaces="2" thousandSeparator="," decimalSeparator="."  
+styleClass="inputTab"
+maxValue="999999999999999999.99"
+minValue="-999999999999999999.99"
+converter="convertidorDouble"
+style=" width: 95%;float: left;"  
+class="cont-inst-element"
+>
+</pe:inputNumber>
+<h:outputLabel  value="#{idm.TC_CP554}:" id="LCP554"      class="cont-inst-element"/>
+<pe:inputNumber id="CP554" widgetVar="CP554" 
+ value="#{escalafonsControlador.registroSub.campos['VLR_INCREMENTO']}"  label="LCP554" 
+decimalPlaces="2" thousandSeparator="," decimalSeparator="."  
+styleClass="inputTab"
+maxValue="99.99"
+minValue="-99.99"
+converter="convertidorDouble"
+style=" width: 95%;float: left;"  
+class="cont-inst-element"
+>
+<p:ajax  event="change"  listener="#{escalafonsControlador.cambiarVlrIncremento}" update="CP553,@this,@([id$=CP553]),@([id$=CP548]),CP548"  process="@form"    />					
+</pe:inputNumber>
+<h:outputLabel  value="#{idm.TC_CP553}:" id="LCP553"      class="cont-inst-element"/>
+<pe:inputNumber id="CP553" widgetVar="CP553" 
+ value="#{escalafonsControlador.registroSub.campos['SALARIO_RETROACTIVO']}"  label="LCP553" 
+decimalPlaces="2" thousandSeparator="," decimalSeparator="."  
+styleClass="inputTab"
+maxValue="999999999999999999.99"
+minValue="-999999999999999999.99"
+converter="convertidorDouble"
+style=" width: 95%;float: left;"  
+class="cont-inst-element"
+>
+<p:ajax  event="change"  listener="#{escalafonsControlador.cambiarSalarioRetroactivo}" update="CP554,@this,@([id$=CP554]),@([id$=CP548]),CP548"  process="@form"    />					
+</pe:inputNumber>
+<h:outputLabel  value="#{idm.TC_CK1803}:" id="LCK1803"   style="display:block"   rendered="#{escalafonsControlador.visibleJornal}"  class="cont-inst-element" />
+                    <p:selectBooleanCheckbox   id="CK1803"    widgetVar="CK1803"  value="#{escalafonsControlador.registroSub.campos['CATEGORIA_REFERENCIA']}"   rendered="#{escalafonsControlador.visibleJornal}"   label="LCK1803" style="min-width: 80px; display:block"  class="cont-inst-element">
+	</p:selectBooleanCheckbox>
+                    <f:facet name="footer">
+                        <center>
+                         <p:commandButton value="#{idm.TI_GUARDAR}"  style="padding:10px;"  update=":FR45_nuevo:alert,tablePL113,dlg12," actionListener="#{escalafonsControlador.agregarRegistroSubCategorias}"
+                                         oncomplete="PF('dlg12').hide();PF('blockNuevoGuardar').hide();"  onclick="    if (!validarVaciosModal(['CP545','CP546','CP547','CP548','CP549','CP550','CP551','CP552','CP553','CP554','CP555','CP556','CP557','CB4638'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockNuevoGuardar').show();" />
+                         <p:button value="#{idm.TG_CANCELAR}"  style="padding:10px;" href="#"    onclick="PF('dlg12').hide();"/>
+                        </center>    
+                    </f:facet>  
+                </h:panelGrid>
+            </p:dialog>
+<div id="PL113" class="
+" style="position: relative; height: 300px; ">    
+<p:remoteCommand name=
+"refreshTabPL113" update="tablePL113" />
+	<p:dataTable id="tablePL113" var="reg" value="#{escalafonsControlador.listaCategorias}"    
+		emptyMessage="#{idm.TI_EMPTY_MESSAGE}"    
+		scrollable="true" 
+		scrollHeight="300"   
+		scrollWidth="1300"  
+		rowIndexVar="rowNun"  
+		 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                           currentPageReportTemplate="#{escalafonsControlador.listaCategorias!=null ? idm.TI_REPORT_TEMPLATE : idm.TI_REGISTROS}"
+                                           rows="10"
+                                           paginator="true"
+                                           lazy="true"
+		editable="true" widgetVar="tablePL113" 
+		tabindex="11"> 
+	 	<p:ajax event="rowEditInit"   oncomplete="ocultarEditor(); "/>
+		<p:ajax event="rowEdit" update=":FR45_nuevo:alert,tablePL113," onstart="PF('blockNuevoGuardar').show()"  oncomplete="refreshTabPL113();PF('tablePL113').filter(); PF('blockNuevoGuardar').hide();  mostarEditor();" listener="#{escalafonsControlador.editarRegSubCategorias}" />    
+	  	<p:ajax event="rowEditCancel" update="tablePL113
+"  listener="#{escalafonsControlador.cancelarEdicionCategorias}" oncomplete="refreshTabPL113(); mostarEditor();"/>    
+	           <f:facet name="header">    
+                                                <div style="position: relative; height: 50px">    
+                                                    <h:panelGroup class="acme" style="width: 50px;"   rendered="#{escalafonsControlador.accion=='m' 
+}"  >    
+                                                        <h:outputLink value="javascript:void(0)" onclick=" PF('dlg12').show();" title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;" tabindex="11">    
+                                                            <center><p:graphicImage name="/images/menus/32/adds.png"/>    
+                                                                <div style="font-size: 12px">#{idm.TI_NUEVO}</div>    
+                                                            </center>    
+                                                        </h:outputLink>    
+                                                    </h:panelGroup>    
+                                                 </div>    
+			#{idm.TT_SF12}
+                                            </f:facet>
+<p:column width="30" rendered="#{escalafonsControlador.accion=='m'}">
+                                <p:commandButton icon="ui-icon-trash"   title="#{idm.TI_ELIMINAR_REGISTRO}" 
+                                                 action="#{escalafonsControlador.eliminarRegSubCategorias(reg)}" 
+                                                 oncomplete="PF('blockNuevoGuardar').hide()"
+		      onclick="PF('blockNuevoGuardar').show();"
+                                                 update=":FR45_nuevo:alert,tablePL113,"
+                                                 style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;"
+>
+                                     <p:confirm header="#{sessionBean.tituloMensajes}" message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+                                </p:commandButton>
+  </p:column>
+<p:column width="30" rendered="#{escalafonsControlador.accion=='m'}" >
+                    <p:rowEditor 
+/>
+                </p:column>
+	   <p:column headerText="#{idm.TG_ANIO3}" width="70" rendered="true" filterBy="#{reg.campos['ANO']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+">   
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['ANO']}" /></f:facet>
+                        <f:facet name="input">
+						  <h:selectOneMenu  id="CB4638"  value="#{reg.campos['ANO']}" style="width:100%"    onchange="">
+						<f:selectItem/>
+                          <f:selectItems value="#{escalafonsControlador.listaAno}" var="regc" itemLabel="#{regc.campos['NUMERO']}" itemValue="#{regc.campos['NUMERO']}" /> 
+						  </h:selectOneMenu>	
+						</f:facet>
+                    </p:cellEditor>
+        </p:column>
+<p:column headerText="#{idm.TC_CP545}" width="90" 
+  filterBy="#{reg.campos['ID_DE_CATEGORIA']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"  styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['ID_DE_CATEGORIA']}" /></f:facet>
+                        <f:facet name="input">
+		<p:inputText id="CP545"    styleClass="inputTab" value="#{reg.campos['ID_DE_CATEGORIA']}" 
+  style="width:100%"    maxlength="3" 
+>
+		</p:inputText>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+<p:column headerText="#{idm.TC_CP546}" width="200" 
+  filterBy="#{reg.campos['NOMBRE_CATEGORIA']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"  styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['NOMBRE_CATEGORIA']}" /></f:facet>
+                        <f:facet name="input">
+		<p:inputText id="CP546"    styleClass="inputTab" value="#{reg.campos['NOMBRE_CATEGORIA']}" 
+  style="width:100%"    maxlength="50" 
+>
+		</p:inputText>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+     <p:column headerText="#{idm.TG_SALARIO_BASE2}" width="120"  
+ filterBy="#{reg.campos['SALARIO_BASE']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"   styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['SALARIO_BASE']}" converter="convertidorDoubleContinuo"   style="text-align:  right; float:  right"/></f:facet>
+                        <f:facet name="input">
+		<pe:inputNumber id="CP547" 
+		value="#{reg.campos['SALARIO_BASE']}" 
+		styleClass="inputTab"
+		style="width:100%" 
+		decimalPlaces="2"
+		thousandSeparator="," decimalSeparator="."  
+        		maxValue="999999999999999999.99"
+		minValue="-999999999999999999.99"
+		converter="convertidorDouble"
+		 >
+		<p:ajax  event="change"  listener="#{escalafonsControlador.cambiarSalarioBaseC(rowNun)}" update="@([id$=CP62345])"     />
+		</pe:inputNumber>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+     <p:column headerText="#{idm.TC_CP62345}" width="120"  rendered="#{escalafonsControlador.visibleJornal}" filterBy="#{reg.campos['VALORJORNAL']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"   styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['VALORJORNAL']}" converter="convertidorDoubleContinuo"   style="text-align:  right; float:  right"/></f:facet>
+                        <f:facet name="input">
+		<pe:inputNumber id="CP62345" 
+		value="#{reg.campos['VALORJORNAL']}" 
+		styleClass="inputTab"
+		style="width:100%" 
+		readonly="true"  
+		decimalPlaces="2"
+		thousandSeparator="," decimalSeparator="."  
+        		maxValue="999999999999999999.99"
+		minValue="-999999999999999999.99"
+		converter="convertidorDouble"
+		 >
+		</pe:inputNumber>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+     <p:column headerText="#{idm.TG_GRADO}" width="60"  
+ filterBy="#{reg.campos['GRADO']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"   styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['GRADO']}" converter="convertidorDoubleContinuo"   style="text-align:  right; float:  right"/></f:facet>
+                        <f:facet name="input">
+		<pe:inputNumber id="CP549" 
+		value="#{reg.campos['GRADO']}" 
+		styleClass="inputTab"
+		style="width:100%" 
+		decimalPlaces="2"
+		thousandSeparator="," decimalSeparator="."  
+        		maxValue="999999999999999999.99"
+		minValue="-999999999999999999.99"
+		converter="convertidorDouble"
+		 >
+		</pe:inputNumber>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+     <p:column headerText="#{idm.TG_SALARIO_ANTERIOR}" width="120"  
+ filterBy="#{reg.campos['SALARIOANTERIOR']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"   styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['SALARIOANTERIOR']}" converter="convertidorDoubleContinuo"   style="text-align:  right; float:  right"/></f:facet>
+                        <f:facet name="input">
+		<pe:inputNumber id="CP548" 
+		value="#{reg.campos['SALARIOANTERIOR']}" 
+		styleClass="inputTab"
+		style="width:100%" 
+		decimalPlaces="2"
+		thousandSeparator="," decimalSeparator="."  
+        		maxValue="999999999999999999.99"
+		minValue="-999999999999999999.99"
+		converter="convertidorDouble"
+		 >
+		</pe:inputNumber>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+     <p:column headerText="#{idm.TC_CP550}" width="130"  
+ filterBy="#{reg.campos['GASTOSREPRESENTACION']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"   styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['GASTOSREPRESENTACION']}" converter="convertidorDoubleContinuo"   style="text-align:  right; float:  right"/></f:facet>
+                        <f:facet name="input">
+		<pe:inputNumber id="CP550" 
+		value="#{reg.campos['GASTOSREPRESENTACION']}" 
+		styleClass="inputTab"
+		style="width:100%" 
+		decimalPlaces="6"
+		thousandSeparator="," decimalSeparator="."  
+        		maxValue="999.999999"
+		minValue="-999.999999"
+		converter="convertidorDouble"
+		 >
+		</pe:inputNumber>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+     <p:column headerText="#{idm.TC_CP555}" width="120"  
+ filterBy="#{reg.campos['PRIMATECNICA']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"   styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['PRIMATECNICA']}" converter="convertidorDoubleContinuo"   style="text-align:  right; float:  right"/></f:facet>
+                        <f:facet name="input">
+		<pe:inputNumber id="CP555" 
+		value="#{reg.campos['PRIMATECNICA']}" 
+		styleClass="inputTab"
+		style="width:100%" 
+		decimalPlaces="2"
+		thousandSeparator="," decimalSeparator="."  
+        		maxValue="999.99"
+		minValue="-999.99"
+		converter="convertidorDouble"
+		 >
+		</pe:inputNumber>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+<p:column headerText="#{idm.TC_CP551}" width="100" 
+  filterBy="#{reg.campos['CODIGOGRADO']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"  styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['CODIGOGRADO']}" /></f:facet>
+                        <f:facet name="input">
+		<p:inputText id="CP551"    styleClass="inputTab" value="#{reg.campos['CODIGOGRADO']}" 
+  style="width:100%"    maxlength="10" 
+>
+		</p:inputText>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+     <p:column headerText="#{idm.TC_CP557}" width="100"  
+ filterBy="#{reg.campos['VLREXTRA']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"   styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['VLREXTRA']}" converter="convertidorDoubleContinuo"   style="text-align:  right; float:  right"/></f:facet>
+                        <f:facet name="input">
+		<pe:inputNumber id="CP557" 
+		value="#{reg.campos['VLREXTRA']}" 
+		styleClass="inputTab"
+		style="width:100%" 
+		decimalPlaces="2"
+		thousandSeparator="," decimalSeparator="."  
+        		maxValue="999999999999999999.99"
+		minValue="-999999999999999999.99"
+		converter="convertidorDouble"
+		 >
+		</pe:inputNumber>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+     <p:column headerText="#{idm.TC_CP556}" width="100"  
+ filterBy="#{reg.campos['SUBSTRANSPORTE']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"   styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['SUBSTRANSPORTE']}" converter="convertidorDoubleContinuo"   style="text-align:  right; float:  right"/></f:facet>
+                        <f:facet name="input">
+		<pe:inputNumber id="CP556" 
+		value="#{reg.campos['SUBSTRANSPORTE']}" 
+		styleClass="inputTab"
+		style="width:100%" 
+		decimalPlaces="2"
+		thousandSeparator="," decimalSeparator="."  
+        		maxValue="999999999999999999.99"
+		minValue="-999999999999999999.99"
+		converter="convertidorDouble"
+		 >
+		</pe:inputNumber>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+     <p:column headerText="#{idm.TC_CP552}" width="100"  
+ filterBy="#{reg.campos['SUBSALIMENTACION']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"   styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['SUBSALIMENTACION']}" converter="convertidorDoubleContinuo"   style="text-align:  right; float:  right"/></f:facet>
+                        <f:facet name="input">
+		<pe:inputNumber id="CP552" 
+		value="#{reg.campos['SUBSALIMENTACION']}" 
+		styleClass="inputTab"
+		style="width:100%" 
+		decimalPlaces="2"
+		thousandSeparator="," decimalSeparator="."  
+        		maxValue="999999999999999999.99"
+		minValue="-999999999999999999.99"
+		converter="convertidorDouble"
+		 >
+		</pe:inputNumber>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+     <p:column headerText="#{idm.TC_CP49890}" width="100"  
+ filterBy="#{reg.campos['BONIFICACION_DOCENTE']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"   styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['BONIFICACION_DOCENTE']}" converter="convertidorDoubleContinuo"   style="text-align:  right; float:  right"/></f:facet>
+                        <f:facet name="input">
+		<pe:inputNumber id="CP49890" 
+		value="#{reg.campos['BONIFICACION_DOCENTE']}" 
+		styleClass="inputTab"
+		style="width:100%" 
+		decimalPlaces="2"
+		thousandSeparator="," decimalSeparator="."  
+        		maxValue="999999999999999999.99"
+		minValue="-999999999999999999.99"
+		converter="convertidorDouble"
+		 >
+		</pe:inputNumber>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+     <p:column headerText="#{idm.TC_CP554}" width="100"  
+ filterBy="#{reg.campos['VLR_INCREMENTO']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"   styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['VLR_INCREMENTO']}" converter="convertidorDoubleContinuo"   style="text-align:  right; float:  right"/></f:facet>
+                        <f:facet name="input">
+		<pe:inputNumber id="CP554" 
+		value="#{reg.campos['VLR_INCREMENTO']}" 
+		styleClass="inputTab"
+		style="width:100%" 
+		decimalPlaces="2"
+		thousandSeparator="," decimalSeparator="."  
+        		maxValue="99.99"
+		minValue="-99.99"
+		converter="convertidorDouble"
+		 >
+		<p:ajax  event="change"  listener="#{escalafonsControlador.cambiarVlrIncrementoC(rowNun)}" update="CP553,CP554"     />
+		</pe:inputNumber>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+     <p:column headerText="#{idm.TC_CP553}" width="100"  
+ filterBy="#{reg.campos['SALARIO_RETROACTIVO']}"  filterStyle="width:100%"   filterMatchMode="contains" style="
+"   styleClass="
+">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['SALARIO_RETROACTIVO']}" converter="convertidorDoubleContinuo"   style="text-align:  right; float:  right"/></f:facet>
+                        <f:facet name="input">
+		<pe:inputNumber id="CP553" 
+		value="#{reg.campos['SALARIO_RETROACTIVO']}" 
+		styleClass="inputTab"
+		style="width:100%" 
+		decimalPlaces="2"
+		thousandSeparator="," decimalSeparator="."  
+        		maxValue="999999999999999999.99"
+		minValue="-999999999999999999.99"
+		converter="convertidorDouble"
+		 >
+		<p:ajax  event="change"  listener="#{escalafonsControlador.cambiarSalarioRetroactivoC(rowNun)}" update="CP554,CP553"     />
+		</pe:inputNumber>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+<p:column headerText="#{idm.TC_CK1803}" width="90" rendered="#{escalafonsControlador.visibleJornal}" 
+  filterBy="#{reg.campos['CATEGORIA_REFERENCIA']}"    filterMatchMode="exact"     styleClass="
+">
+<f:facet name="filter">
+                                <p:selectOneMenu onchange="PF('tablePL113').filter()" >
+                                    <f:selectItem itemLabel="Todos" itemValue=""  />
+                                    <f:selectItem itemLabel="#{idm.TI_SI}" itemValue="true" />
+                                    <f:selectItem itemLabel="#{idm.TI_NO}" itemValue="false" />
+                               </p:selectOneMenu>
+                            </f:facet>
+	<p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['CATEGORIA_REFERENCIA']=='false'? 'No':'Si'}" /></f:facet>
+                        <f:facet name="input">
+		<center>
+			<h:selectBooleanCheckbox  id="CK1803" value="#{reg.campos['CATEGORIA_REFERENCIA']}"  >
+			</h:selectBooleanCheckbox>
+		</center>
+	</f:facet>
+                    </p:cellEditor>
+                </p:column>
+<p:column width="30" rendered="#{escalafonsControlador.accion=='m'}" >
+                    <p:rowEditor 
+/>
+                </p:column>
+<p:column width="30" rendered="#{escalafonsControlador.accion=='m'}">
+                                <p:commandButton icon="ui-icon-trash"   title="#{idm.TI_ELIMINAR_REGISTRO}" 
+                                                 action="#{escalafonsControlador.eliminarRegSubCategorias(reg)}" 
+                                                 oncomplete="PF('blockNuevoGuardar').hide(); refreshTabPL113();"
+		      onclick="PF('blockNuevoGuardar').show();"
+                                                 update=":FR45_nuevo:alert,tablePL113,"
+                                                 style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;"
+		      tabindex="11"
+>
+                                     <p:confirm header="#{sessionBean.tituloMensajes}" message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+                                </p:commandButton>
+  </p:column>
+            </p:dataTable>
+</div>
+</h:panelGroup><h:outputLabel id="LB50237" value="#{idm.TT_LB50237}"       style="position: absolute; width:182px; height: 20px; left: 29px;   top: 117px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<p:commandButton id="BT44"   widgetVar="BT44"         disabled="#{escalafonsControlador.accion=='v'?true:false}"     update="alert,FR45_nuevo:tablePL113"     tabindex="8"  value="#{idm.TT_BT44}"   actionListener="#{escalafonsControlador.oprimircmdActualizaSalarioAnterior}"   style="position: absolute; width:365px; height: 33px; left: 658px;   top: 44px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{escalafonsControlador.visibleNomina == true ? 'block' :'none'};  color:#0000FF; border:#AAAAAA  solid  1px;"  >
+</p:commandButton>
+<p:commandButton id="BT45"   widgetVar="BT45"         disabled="#{escalafonsControlador.accion=='v'?true:false}"     update="alert,FR45_nuevo:tablePL113"     tabindex="9"  value="#{idm.TT_BT45}"   actionListener="#{escalafonsControlador.oprimircmdActualizarRetro}"   style="position: absolute; width:365px; height: 33px; left: 658px;   top: 87px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{escalafonsControlador.visibleNomina == true ? 'block' :'none'};  color:#0000FF; border:#AAAAAA  solid  1px;"  >
+</p:commandButton>
+<p:selectBooleanCheckbox id="CK66"  widgetVar="CK66"  
+value="#{escalafonsControlador.registro.campos['CONTRATO']}" disabled="#{escalafonsControlador.accion=='v'?true:false}" 
+tabindex="7"  style="position: absolute;  left: 216px;   top: 143px; display:block; "
+>
+</p:selectBooleanCheckbox>
+<p:selectOneMenu filter="true" editable="false"       effect="fade" id="CB92"   widgetVar="CB92"  value="#{escalafonsControlador.registro.campos['CODSIDEF']}" disabled="#{escalafonsControlador.accion=='v'?true:false}"  tabindex="4"  
+ style="position: absolute; width:183px; height: 22px; left: 216px;   top: 65px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;"
+>
+      <f:selectItem/>
+       <f:selectItem itemValue="1" itemLabel="#{idm.OD_CB92_0}"/>
+<f:selectItem itemValue="2" itemLabel="#{idm.OD_CB92_1}"/>
+<f:selectItem itemValue="3" itemLabel="#{idm.OD_CB92_2}"/>
+<f:selectItem itemValue="4" itemLabel="#{idm.OD_CB92_3}"/>
+<f:selectItem itemValue="5" itemLabel="#{idm.OD_CB92_4}"/>
+<f:selectItem itemValue="6" itemLabel="#{idm.OD_CB92_5}"/>
+<f:selectItem itemValue="7" itemLabel="#{idm.OD_CB92_6}"/>
+</p:selectOneMenu>
+<p:selectOneMenu filter="true" editable="false"       effect="fade" id="CB93"   widgetVar="CB93"  value="#{escalafonsControlador.registro.campos['CODCMD']}" disabled="#{escalafonsControlador.accion=='v'?true:false}"  tabindex="5"  
+ style="position: absolute; width:183px; height: 20px; left: 216px;   top: 92px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;"
+>
+      <f:selectItem/>
+       <f:selectItem itemValue="1" itemLabel="#{idm.OD_CB93_0}"/>
+<f:selectItem itemValue="2" itemLabel="#{idm.OD_CB93_1}"/>
+<f:selectItem itemValue="3" itemLabel="#{idm.OD_CB93_2}"/>
+<f:selectItem itemValue="4" itemLabel="#{idm.OD_CB93_3}"/>
+<f:selectItem itemValue="5" itemLabel="#{idm.OD_CB93_4}"/>
+<f:selectItem itemValue="6" itemLabel="#{idm.OD_CB93_5}"/>
+<f:selectItem itemValue="7" itemLabel="#{idm.OD_CB93_6}"/>
+</p:selectOneMenu>
+<h:outputLabel id="LB513" value="#{idm.TG_NIVEL3}"       style="position: absolute; width:182px; height: 22px; left: 29px;   top: 11px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB515" value="#{idm.TT_LB515}"       style="position: absolute; width:182px; height: 22px; left: 29px;   top: 65px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB516" value="#{idm.TT_LB516}"       style="position: absolute; width:182px; height: 20px; left: 29px;   top: 143px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB517" value="#{idm.TG_DESCRIPCION8}"       style="position: absolute; width:182px; height: 22px; left: 29px;   top: 38px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB520" value="#{idm.TT_LB520}"       style="position: absolute; width:182px; height: 20px; left: 29px;   top: 92px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<p:inputText id="CP543"   widgetVar="CP543"  
+styleClass="inputTab"
+value="#{escalafonsControlador.registro.campos['CODIGO']}"  
+  placeholder="#{idm.AC_CP543}" readonly="#{escalafonsControlador.accion!='i'?true:false or  escalafonsControlador.accion=='v'?true:false}" tabindex="2" 
+maxlength="2"
+  style="position: absolute; width:122px; height: 22px; text-decoration:none; left: 216px;   top: 11px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputText id="CP544"   widgetVar="CP544"  
+styleClass="inputTab"
+value="#{escalafonsControlador.registro.campos['NOMBRE']}"  
+  placeholder="#{idm.AC_CP544}" readonly="#{escalafonsControlador.accion=='v'?true:false}" tabindex="3" 
+maxlength="50"
+  style="position: absolute; width:351px; height: 22px; text-decoration:none; left: 216px;   top: 38px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:commandButton id="BT2829"   widgetVar="BT2829"         disabled="#{escalafonsControlador.accion=='v'?true:false}"     update="alert,FR45_nuevo:tablePL113"     tabindex="10"  value="#{idm.TT_BT2829}"   actionListener="#{escalafonsControlador.oprimirBtnRedondearAlPeso}"   style="position: absolute; width:365px; height: 33px; left: 658px;   top: 130px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{escalafonsControlador.visibleNomina == true ? 'block' :'none'};  color:#0000FF; border:#AAAAAA  solid  1px;"  >
+</p:commandButton>
+<p:commandButton id="BT4362"   widgetVar="BT4362"         disabled="#{escalafonsControlador.accion=='v'?true:false}"     update="alert,FR45_nuevo:tablePL113"     tabindex="10"  value="#{idm.TT_BT4362}"   actionListener="#{escalafonsControlador.oprimirBtnRedondearAlMil}"   style="position: absolute; width:365px; height: 33px; left: 658px;   top: 173px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{escalafonsControlador.visibleNomina == true ? 'block' :'none'};  color:#0000FF; border:#AAAAAA  solid  1px;"  >
+</p:commandButton>
+<p:inputText id="CB6932" widgetVar="CB6932" onfocus="if(!false){PF('BTCB6932').jq.focus();}" onclick="if(!false){PF('PLCB6932').show();}" value="#{escalafonsControlador.registro.campos['CGR_CODIGO']}"   disabled="#{escalafonsControlador.accion=='v'?true:false}" tabindex="-1"    
+style="cursor:pointer; position: absolute; width:143px; height: 20px; left: 216px;   top: 117px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />   
+	<p:commandButton id="BTCB6932"   onblur="PF('CB6932').jq.blur();"  onfocus="PF('CB6932').jq.addClass('ui-state-focus');" widgetVar="BTCB6932"   disabled="#{escalafonsControlador.accion=='v'?true:false}" type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"    
+                                                     style="position: absolute; width:25px; height:  20px; left: 357px;   top: 117px; display:block; "     tabindex="6"    />   
+	<p:overlayPanel widgetVar="PLCB6932" id="PLCB6932" onShow="if(PF('TBCB6932').nuevo){ PF('TBCB6932').filter(); PF('TBCB6932').nuevo=false;}"  onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB6932').jq.focus();}"  my="left" at="left"  for="BTCB6932" hideEffect="fade" rendered= "#{escalafonsControlador.accion!='v'}"  style="width: 400px"   >   
+		<p:dataTable id="TBCB6932" widgetVar="TBCB6932"  var="reg" value="#{escalafonsControlador.listaEscalafonCgr}"     
+                                                     editable="true"    
+                                                     emptyMessage="#{idm.TI_EMPTY_MESSAGE}"    
+                                                     currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"   
+                                                     rows="11"   
+                                                     rowIndexVar="rowIndex"   
+                                                     selectionMode="single"   
+                                                     rowKey="#{reg.campos['CODIGO']}"   
+                                                     paginator="true"   
+                                                     lazy="true">   
+			<p:ajax event="rowSelect" listener="#{escalafonsControlador.seleccionarFilaEscalafonCgr}" update=":FR45_nuevo:CB6932,"    
+  oncomplete="PF('PLCB6932').hide(); "  />   
+			<p:column headerText="#{idm.TG_CODIGO7}" style="text-align:center; "  width="30%" filterBy="#{reg.campos['CODIGO']}" filterMatchMode="contains" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['CODIGO']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.TG_NOMBRE3}" style="text-align:center; "  width="70%" filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['NOMBRE']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+		</p:dataTable>   
+    </p:overlayPanel>   
+<p:commandButton id="BT43"   widgetVar="BT43"        disabled="#{escalafonsControlador.accion=='v'?true:false}"        ajax="false"  tabindex="1"  value="#{idm.TT_BT43}"   actionListener="#{escalafonsControlador.oprimircmdConsultarEmpleados}"   style="position: absolute; width:365px; height: 33px; left: 658px;   top: 5px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{escalafonsControlador.visibleNomina == true ? 'block' :'none'};  color:#0000FF; border:#AAAAAA  solid  1px;" >
+<p:fileDownload value="#{escalafonsControlador.archivoDescarga}" />
+</p:commandButton>
+</div>
+                   <p:blockUI block="nuevoPanel" widgetVar="blockNuevo"  trigger="FR45_nuevo:tablePL113">
+#{idm.TI_CARGANDO}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                    <p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                </p:panel>
+            </h:form>
+        </section>
+    </ui:define>
+</ui:composition>

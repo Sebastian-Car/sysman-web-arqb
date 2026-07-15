@@ -1,0 +1,33 @@
+SELECT 
+  ID_DE_EMPLEADO                    CODIGO
+ ,ANO
+ ,MES
+ ,ID_DE_CARGO                       CARGO
+ ,NOMBRE_DE_CARGO
+ ,DEPENDENCIA
+ ,NOMBRE_DEPENDENCIA                NOMBREDEPENDENCIA
+ ,PERIODO
+ ,NOMBRECOMPLETO                    NOM_EMPLEADO
+ ,NUMERO_DCTO                       CEDULA
+ ,SUM (DEVENGOS )                   DEVENGOS
+ ,SUM(DESCUENTOS)                   DESCUENTOS
+ ,(SUM(DEVENGOS) - SUM(DESCUENTOS)) NETO
+ ,SALARIOBASEHISTORICO              C001  
+FROM V_VOLANTES  
+WHERE COMPANIA		 = s$compania$s 
+  AND ID_DE_PROCESO  = s$procesoNomina$s 
+  AND ANO            = s$anioNomina$s 
+  AND MES            = s$mesNomina$s 
+  AND PERIODO        = s$periodoNomina$s 
+GROUP BY 
+  ID_DE_EMPLEADO
+ ,ANO
+ ,MES
+ ,ID_DE_CARGO
+ ,NOMBRE_DE_CARGO
+ ,DEPENDENCIA
+ ,NOMBRE_DEPENDENCIA
+ ,PERIODO
+ ,NOMBRECOMPLETO
+ ,NUMERO_DCTO
+ ,SALARIOBASEHISTORICO

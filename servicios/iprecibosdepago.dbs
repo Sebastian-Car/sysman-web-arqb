@@ -1,0 +1,883 @@
+﻿<data name="iprecibosdepago" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getIprecibosdepagoPagAnulacionRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PREANO,(TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECPAG,'DD/MM/YYYY HH24:MI:SS')) PREFECPAG, IP_RECIBOS_DE_PAGO.PRECOD, IP_RECIBOS_DE_PAGO.PAG_BANPAG, IP_RECIBOS_DE_PAGO.PAQUETEPAG, NVL(IP_RECIBOS_DE_PAGO.ACUERDO, 0)ACUERDO  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD IS NOT NULL AND IP_RECIBOS_DE_PAGO.NUMERO_ORDEN = :NUMERO_ORDEN AND IP_RECIBOS_DE_PAGO.ANULADO IN(0) AND IP_RECIBOS_DE_PAGO.PAGO NOT IN(0) ORDER BY IP_RECIBOS_DE_PAGO.DOCNUM) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PRECOD IS NULL THEN ' ' ELSE UPPER(PRECOD) END)  LIKE UPPER( '%' || :PRECOD || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DOCNUM":"$DOCNUM","PREANO":"$PREANO(type:integer)","PREFECPAG":"$PREFECPAG","PRECOD":"$PRECOD","PAG_BANPAG":"$PAG_BANPAG","PAQUETEPAG":"$PAQUETEPAG","ACUERDO":"$ACUERDO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/anulacionregistro/pag">
+		<call-query href="getIprecibosdepagoPagAnulacionRegistroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoNumAnulacionRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PREANO,(TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECPAG,'DD/MM/YYYY HH24:MI:SS')) PREFECPAG, IP_RECIBOS_DE_PAGO.PRECOD, IP_RECIBOS_DE_PAGO.PAG_BANPAG, IP_RECIBOS_DE_PAGO.PAQUETEPAG, NVL(IP_RECIBOS_DE_PAGO.ACUERDO, 0)ACUERDO  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD IS NOT NULL AND IP_RECIBOS_DE_PAGO.NUMERO_ORDEN = :NUMERO_ORDEN AND IP_RECIBOS_DE_PAGO.ANULADO IN(0) AND IP_RECIBOS_DE_PAGO.PAGO NOT IN(0) ORDER BY IP_RECIBOS_DE_PAGO.DOCNUM) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PRECOD IS NULL THEN ' ' ELSE UPPER(PRECOD) END)  LIKE UPPER( '%' || :PRECOD || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/anulacionregistro/num">
+		<call-query href="getIprecibosdepagoNumAnulacionRegistroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoPagCargarReciboSoportePorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PREANOF, IP_RECIBOS_DE_PAGO.PREANOI, IP_RECIBOS_DE_PAGO.PREVAL PREVAL, IP_RECIBOS_DE_PAGO.C13 TOTALDESC  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD = :CODIGO AND IP_RECIBOS_DE_PAGO.PAGO IN(0) AND IP_RECIBOS_DE_PAGO.ANULADO IN(0) AND IP_RECIBOS_DE_PAGO.ESABONO IN(0) AND IP_RECIBOS_DE_PAGO.ESACUERDO IN(0) AND IP_RECIBOS_DE_PAGO.ESCUOTA IN(0) AND IP_RECIBOS_DE_PAGO.ACUERDO IS NULL) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER( '%' || :DOCNUM || '%')  AND (CASE WHEN PREANOF IS NULL THEN ' ' ELSE UPPER(PREANOF) END)  LIKE UPPER( '%' || :PREANOF || '%')  AND (CASE WHEN PREANOI IS NULL THEN ' ' ELSE UPPER(PREANOI) END)  LIKE UPPER( '%' || :PREANOI || '%')  AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END)  LIKE UPPER( '%' || :PREVAL || '%')  AND (CASE WHEN TOTALDESC IS NULL THEN ' ' ELSE UPPER(TOTALDESC) END)  LIKE UPPER( '%' || :TOTALDESC || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DOCNUM":"$DOCNUM","PREANOF":"$PREANOF(type:integer)","PREANOI":"$PREANOI(type:integer)","PREVAL":"$PREVAL","TOTALDESC":"$TOTALDESC"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PREANOF" sqlType="STRING"/>
+		<param name="PREANOI" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="TOTALDESC" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/cargarrecibosoporteporcodigo/pag">
+		<call-query href="getIprecibosdepagoPagCargarReciboSoportePorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PREANOF" query-param="PREANOF"/>
+			<with-param name="PREANOI" query-param="PREANOI"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="TOTALDESC" query-param="TOTALDESC"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoNumCargarReciboSoportePorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PREANOF, IP_RECIBOS_DE_PAGO.PREANOI, IP_RECIBOS_DE_PAGO.PREVAL PREVAL, IP_RECIBOS_DE_PAGO.C13 TOTALDESC  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD = :CODIGO AND IP_RECIBOS_DE_PAGO.PAGO IN(0) AND IP_RECIBOS_DE_PAGO.ANULADO IN(0) AND IP_RECIBOS_DE_PAGO.ESABONO IN(0) AND IP_RECIBOS_DE_PAGO.ESACUERDO IN(0) AND IP_RECIBOS_DE_PAGO.ESCUOTA IN(0) AND IP_RECIBOS_DE_PAGO.ACUERDO IS NULL) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER( '%' || :DOCNUM || '%')  AND (CASE WHEN PREANOF IS NULL THEN ' ' ELSE UPPER(PREANOF) END)  LIKE UPPER( '%' || :PREANOF || '%')  AND (CASE WHEN PREANOI IS NULL THEN ' ' ELSE UPPER(PREANOI) END)  LIKE UPPER( '%' || :PREANOI || '%')  AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END)  LIKE UPPER( '%' || :PREVAL || '%')  AND (CASE WHEN TOTALDESC IS NULL THEN ' ' ELSE UPPER(TOTALDESC) END)  LIKE UPPER( '%' || :TOTALDESC || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PREANOF" sqlType="STRING"/>
+		<param name="PREANOI" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="TOTALDESC" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/cargarrecibosoporteporcodigo/num">
+		<call-query href="getIprecibosdepagoNumCargarReciboSoportePorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PREANOF" query-param="PREANOF"/>
+			<with-param name="PREANOI" query-param="PREANOI"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="TOTALDESC" query-param="TOTALDESC"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoPagOrigengrillafacturacontroladorQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_RECIBOS_DE_PAGO.COMPANIA, IP_RECIBOS_DE_PAGO.DOCNUM , IP_RECIBOS_DE_PAGO.PREANOI , IP_RECIBOS_DE_PAGO.PREANO , TO_CHAR(IP_RECIBOS_DE_PAGO.PREFEC,'DD/MM/YYYY') PREFEC, TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECLIM,'DD/MM/YYYY') PREFECLIM, IP_RECIBOS_DE_PAGO.PREVAL , IP_RECIBOS_DE_PAGO.AVALUO ,(CASE IP_RECIBOS_DE_PAGO.PAGO WHEN 0 THEN 'false' ELSE 'true' END) PAGO, TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECPAG,'DD/MM/YYYY') PREFECPAG, IP_RECIBOS_DE_PAGO.PAG_BANPAG , IP_RECIBOS_DE_PAGO.PAQUETEPAG ,(CASE IP_RECIBOS_DE_PAGO.ESABONO WHEN 0 THEN 'false' ELSE 'true' END) ESABONO,(CASE IP_RECIBOS_DE_PAGO.ESCUOTA WHEN 0 THEN 'false' ELSE 'true' END) ESCUOTA,(CASE IP_RECIBOS_DE_PAGO.ESACUERDO WHEN 0 THEN 'false' ELSE 'true' END) ESACUERDO, IP_RECIBOS_DE_PAGO.PREUSU , TO_CHAR(IP_RECIBOS_DE_PAGO.MODFEC ,'DD/MM/YYYY') MODFEC, IP_RECIBOS_DE_PAGO.USUARIO_REGRECAUDO , TO_CHAR(IP_RECIBOS_DE_PAGO.FECHA_REGRECAUDO ,'DD/MM/YYYY') FECHA_REGRECAUDO,(CASE IP_RECIBOS_DE_PAGO.ANULADO WHEN 0 THEN 'false' ELSE 'true' END) ANULADO, IP_RECIBOS_DE_PAGO.ANULADO_POR , TO_CHAR(IP_RECIBOS_DE_PAGO.FECHAANULACION,'DD/MM/YYYY') FECHAANULACION, IP_RECIBOS_DE_PAGO.PRECOD , IP_RECIBOS_DE_PAGO.TRPFOR , IP_RECIBOS_DE_PAGO.PAG_BAN , IP_RECIBOS_DE_PAGO.PREANOF  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD = :CODIGO AND IP_RECIBOS_DE_PAGO.NUMERO_ORDEN = :NUMERO_ORDEN ORDER BY IP_RECIBOS_DE_PAGO.PREFEC DESC, TO_NUMBER(IP_RECIBOS_DE_PAGO.DOCNUM) DESC) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PREANOI IS NULL THEN ' ' ELSE UPPER(PREANOI) END)  LIKE UPPER(:PREANOI || '%')  AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER(:PREANO || '%')  AND (CASE WHEN PREFEC IS NULL THEN ' ' ELSE UPPER(PREFEC) END)  LIKE UPPER( '%' || :PREFEC || '%')  AND (CASE WHEN PREFECLIM IS NULL THEN ' ' ELSE UPPER(PREFECLIM) END)  LIKE UPPER( '%' || :PREFECLIM || '%')  AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END)  LIKE UPPER(:PREVAL || '%')  AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END)  LIKE UPPER(:AVALUO || '%')  AND (CASE WHEN PAGO IS NULL THEN ' ' ELSE UPPER(PAGO) END)  LIKE UPPER(:PAGO || '%')  AND (CASE WHEN PREFECPAG IS NULL THEN ' ' ELSE UPPER(PREFECPAG) END)  LIKE UPPER( '%' || :PREFECPAG || '%')  AND (CASE WHEN PAG_BANPAG IS NULL THEN ' ' ELSE UPPER(PAG_BANPAG) END)  LIKE UPPER(:PAG_BANPAG || '%')  AND (CASE WHEN PAQUETEPAG IS NULL THEN ' ' ELSE UPPER(PAQUETEPAG) END)  LIKE UPPER(:PAQUETEPAG || '%')  AND (CASE WHEN ESABONO IS NULL THEN ' ' ELSE UPPER(ESABONO) END)  LIKE UPPER(:ESABONO || '%')  AND (CASE WHEN ESCUOTA IS NULL THEN ' ' ELSE UPPER(ESCUOTA) END)  LIKE UPPER(:ESCUOTA || '%')  AND (CASE WHEN ESACUERDO IS NULL THEN ' ' ELSE UPPER(ESACUERDO) END)  LIKE UPPER(:ESACUERDO || '%')  AND (CASE WHEN PREUSU IS NULL THEN ' ' ELSE UPPER(PREUSU) END)  LIKE UPPER( '%' || :PREUSU || '%')  AND (CASE WHEN MODFEC IS NULL THEN ' ' ELSE UPPER(MODFEC) END)  LIKE UPPER( '%' || :MODFEC || '%')  AND (CASE WHEN USUARIO_REGRECAUDO IS NULL THEN ' ' ELSE UPPER(USUARIO_REGRECAUDO) END)  LIKE UPPER( '%' || :USUARIO_REGRECAUDO || '%')  AND (CASE WHEN FECHA_REGRECAUDO IS NULL THEN ' ' ELSE UPPER(FECHA_REGRECAUDO) END)  LIKE UPPER( '%' || :FECHA_REGRECAUDO || '%')  AND (CASE WHEN ANULADO IS NULL THEN ' ' ELSE UPPER(ANULADO) END)  LIKE UPPER(:ANULADO || '%')  AND (CASE WHEN ANULADO_POR IS NULL THEN ' ' ELSE UPPER(ANULADO_POR) END)  LIKE UPPER( '%' || :ANULADO_POR || '%')  AND (CASE WHEN FECHAANULACION IS NULL THEN ' ' ELSE UPPER(FECHAANULACION) END)  LIKE UPPER( '%' || :FECHAANULACION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","DOCNUM":"$DOCNUM","PREANOI":"$PREANOI(type:integer)","PREANO":"$PREANO(type:integer)","PREFEC":"$PREFEC","PREFECLIM":"$PREFECLIM","PREVAL":"$PREVAL","AVALUO":"$AVALUO","PAGO":"$PAGO(type:boolean)","PREFECPAG":"$PREFECPAG","PAG_BANPAG":"$PAG_BANPAG","PAQUETEPAG":"$PAQUETEPAG","ESABONO":"$ESABONO(type:boolean)","ESCUOTA":"$ESCUOTA(type:boolean)","ESACUERDO":"$ESACUERDO(type:boolean)","PREUSU":"$PREUSU","MODFEC":"$MODFEC","USUARIO_REGRECAUDO":"$USUARIO_REGRECAUDO","FECHA_REGRECAUDO":"$FECHA_REGRECAUDO","ANULADO":"$ANULADO(type:boolean)","ANULADO_POR":"$ANULADO_POR","FECHAANULACION":"$FECHAANULACION","PRECOD":"$PRECOD","TRPFOR":"$TRPFOR","PAG_BAN":"$PAG_BAN","PREANOF":"$PREANOF(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PREANOI" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="PREFEC" sqlType="STRING"/>
+		<param name="PREFECLIM" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="PAGO" sqlType="STRING"/>
+		<param name="PREFECPAG" sqlType="STRING"/>
+		<param name="PAG_BANPAG" sqlType="STRING"/>
+		<param name="PAQUETEPAG" sqlType="STRING"/>
+		<param name="ESABONO" sqlType="STRING"/>
+		<param name="ESCUOTA" sqlType="STRING"/>
+		<param name="ESACUERDO" sqlType="STRING"/>
+		<param name="PREUSU" sqlType="STRING"/>
+		<param name="MODFEC" sqlType="STRING"/>
+		<param name="USUARIO_REGRECAUDO" sqlType="STRING"/>
+		<param name="FECHA_REGRECAUDO" sqlType="STRING"/>
+		<param name="ANULADO" sqlType="STRING"/>
+		<param name="ANULADO_POR" sqlType="STRING"/>
+		<param name="FECHAANULACION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/origengrillafacturacontrolador/pag">
+		<call-query href="getIprecibosdepagoPagOrigengrillafacturacontroladorQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PREANOI" query-param="PREANOI"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="PREFEC" query-param="PREFEC"/>
+			<with-param name="PREFECLIM" query-param="PREFECLIM"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="PAGO" query-param="PAGO"/>
+			<with-param name="PREFECPAG" query-param="PREFECPAG"/>
+			<with-param name="PAG_BANPAG" query-param="PAG_BANPAG"/>
+			<with-param name="PAQUETEPAG" query-param="PAQUETEPAG"/>
+			<with-param name="ESABONO" query-param="ESABONO"/>
+			<with-param name="ESCUOTA" query-param="ESCUOTA"/>
+			<with-param name="ESACUERDO" query-param="ESACUERDO"/>
+			<with-param name="PREUSU" query-param="PREUSU"/>
+			<with-param name="MODFEC" query-param="MODFEC"/>
+			<with-param name="USUARIO_REGRECAUDO" query-param="USUARIO_REGRECAUDO"/>
+			<with-param name="FECHA_REGRECAUDO" query-param="FECHA_REGRECAUDO"/>
+			<with-param name="ANULADO" query-param="ANULADO"/>
+			<with-param name="ANULADO_POR" query-param="ANULADO_POR"/>
+			<with-param name="FECHAANULACION" query-param="FECHAANULACION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoNumOrigengrillafacturacontroladorQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_RECIBOS_DE_PAGO.COMPANIA, IP_RECIBOS_DE_PAGO.DOCNUM , IP_RECIBOS_DE_PAGO.PREANOI , IP_RECIBOS_DE_PAGO.PREANO , TO_CHAR(IP_RECIBOS_DE_PAGO.PREFEC,'DD/MM/YYYY') PREFEC, TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECLIM,'DD/MM/YYYY') PREFECLIM, IP_RECIBOS_DE_PAGO.PREVAL , IP_RECIBOS_DE_PAGO.AVALUO ,(CASE IP_RECIBOS_DE_PAGO.PAGO WHEN 0 THEN 'false' ELSE 'true' END) PAGO, TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECPAG,'DD/MM/YYYY') PREFECPAG, IP_RECIBOS_DE_PAGO.PAG_BANPAG , IP_RECIBOS_DE_PAGO.PAQUETEPAG ,(CASE IP_RECIBOS_DE_PAGO.ESABONO WHEN 0 THEN 'false' ELSE 'true' END) ESABONO,(CASE IP_RECIBOS_DE_PAGO.ESCUOTA WHEN 0 THEN 'false' ELSE 'true' END) ESCUOTA,(CASE IP_RECIBOS_DE_PAGO.ESACUERDO WHEN 0 THEN 'false' ELSE 'true' END) ESACUERDO, IP_RECIBOS_DE_PAGO.PREUSU , TO_CHAR(IP_RECIBOS_DE_PAGO.MODFEC ,'DD/MM/YYYY') MODFEC, IP_RECIBOS_DE_PAGO.USUARIO_REGRECAUDO , TO_CHAR(IP_RECIBOS_DE_PAGO.FECHA_REGRECAUDO ,'DD/MM/YYYY') FECHA_REGRECAUDO,(CASE IP_RECIBOS_DE_PAGO.ANULADO WHEN 0 THEN 'false' ELSE 'true' END) ANULADO, IP_RECIBOS_DE_PAGO.ANULADO_POR , TO_CHAR(IP_RECIBOS_DE_PAGO.FECHAANULACION,'DD/MM/YYYY') FECHAANULACION, IP_RECIBOS_DE_PAGO.PRECOD , IP_RECIBOS_DE_PAGO.TRPFOR , IP_RECIBOS_DE_PAGO.PAG_BAN , IP_RECIBOS_DE_PAGO.PREANOF  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD = :CODIGO AND IP_RECIBOS_DE_PAGO.NUMERO_ORDEN = :NUMERO_ORDEN ORDER BY IP_RECIBOS_DE_PAGO.PREFEC DESC, TO_NUMBER(IP_RECIBOS_DE_PAGO.DOCNUM) DESC) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PREANOI IS NULL THEN ' ' ELSE UPPER(PREANOI) END)  LIKE UPPER( '%' || :PREANOI || '%')  AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER( '%' || :PREANO || '%')  AND (CASE WHEN PREFEC IS NULL THEN ' ' ELSE UPPER(PREFEC) END)  LIKE UPPER( '%' || :PREFEC || '%')  AND (CASE WHEN PREFECLIM IS NULL THEN ' ' ELSE UPPER(PREFECLIM) END)  LIKE UPPER( '%' || :PREFECLIM || '%')  AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END)  LIKE UPPER( '%' || :PREVAL || '%')  AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END)  LIKE UPPER( '%' || :AVALUO || '%')  AND (CASE WHEN PAGO IS NULL THEN ' ' ELSE UPPER(PAGO) END)  LIKE UPPER( '%' || :PAGO || '%')  AND (CASE WHEN PREFECPAG IS NULL THEN ' ' ELSE UPPER(PREFECPAG) END)  LIKE UPPER( '%' || :PREFECPAG || '%')  AND (CASE WHEN PAG_BANPAG IS NULL THEN ' ' ELSE UPPER(PAG_BANPAG) END)  LIKE UPPER( '%' || :PAG_BANPAG || '%')  AND (CASE WHEN PAQUETEPAG IS NULL THEN ' ' ELSE UPPER(PAQUETEPAG) END)  LIKE UPPER( '%' || :PAQUETEPAG || '%')  AND (CASE WHEN ESABONO IS NULL THEN ' ' ELSE UPPER(ESABONO) END)  LIKE UPPER( '%' || :ESABONO || '%')  AND (CASE WHEN ESCUOTA IS NULL THEN ' ' ELSE UPPER(ESCUOTA) END)  LIKE UPPER( '%' || :ESCUOTA || '%')  AND (CASE WHEN ESACUERDO IS NULL THEN ' ' ELSE UPPER(ESACUERDO) END)  LIKE UPPER( '%' || :ESACUERDO || '%')  AND (CASE WHEN PREUSU IS NULL THEN ' ' ELSE UPPER(PREUSU) END)  LIKE UPPER( '%' || :PREUSU || '%')  AND (CASE WHEN MODFEC IS NULL THEN ' ' ELSE UPPER(MODFEC) END)  LIKE UPPER( '%' || :MODFEC || '%')  AND (CASE WHEN USUARIO_REGRECAUDO IS NULL THEN ' ' ELSE UPPER(USUARIO_REGRECAUDO) END)  LIKE UPPER( '%' || :USUARIO_REGRECAUDO || '%')  AND (CASE WHEN FECHA_REGRECAUDO IS NULL THEN ' ' ELSE UPPER(FECHA_REGRECAUDO) END)  LIKE UPPER( '%' || :FECHA_REGRECAUDO || '%')  AND (CASE WHEN ANULADO IS NULL THEN ' ' ELSE UPPER(ANULADO) END)  LIKE UPPER( '%' || :ANULADO || '%')  AND (CASE WHEN ANULADO_POR IS NULL THEN ' ' ELSE UPPER(ANULADO_POR) END)  LIKE UPPER( '%' || :ANULADO_POR || '%')  AND (CASE WHEN FECHAANULACION IS NULL THEN ' ' ELSE UPPER(FECHAANULACION) END)  LIKE UPPER( '%' || :FECHAANULACION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PREANOI" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="PREFEC" sqlType="STRING"/>
+		<param name="PREFECLIM" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="PAGO" sqlType="STRING"/>
+		<param name="PREFECPAG" sqlType="STRING"/>
+		<param name="PAG_BANPAG" sqlType="STRING"/>
+		<param name="PAQUETEPAG" sqlType="STRING"/>
+		<param name="ESABONO" sqlType="STRING"/>
+		<param name="ESCUOTA" sqlType="STRING"/>
+		<param name="ESACUERDO" sqlType="STRING"/>
+		<param name="PREUSU" sqlType="STRING"/>
+		<param name="MODFEC" sqlType="STRING"/>
+		<param name="USUARIO_REGRECAUDO" sqlType="STRING"/>
+		<param name="FECHA_REGRECAUDO" sqlType="STRING"/>
+		<param name="ANULADO" sqlType="STRING"/>
+		<param name="ANULADO_POR" sqlType="STRING"/>
+		<param name="FECHAANULACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/origengrillafacturacontrolador/num">
+		<call-query href="getIprecibosdepagoNumOrigengrillafacturacontroladorQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PREANOI" query-param="PREANOI"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="PREFEC" query-param="PREFEC"/>
+			<with-param name="PREFECLIM" query-param="PREFECLIM"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="PAGO" query-param="PAGO"/>
+			<with-param name="PREFECPAG" query-param="PREFECPAG"/>
+			<with-param name="PAG_BANPAG" query-param="PAG_BANPAG"/>
+			<with-param name="PAQUETEPAG" query-param="PAQUETEPAG"/>
+			<with-param name="ESABONO" query-param="ESABONO"/>
+			<with-param name="ESCUOTA" query-param="ESCUOTA"/>
+			<with-param name="ESACUERDO" query-param="ESACUERDO"/>
+			<with-param name="PREUSU" query-param="PREUSU"/>
+			<with-param name="MODFEC" query-param="MODFEC"/>
+			<with-param name="USUARIO_REGRECAUDO" query-param="USUARIO_REGRECAUDO"/>
+			<with-param name="FECHA_REGRECAUDO" query-param="FECHA_REGRECAUDO"/>
+			<with-param name="ANULADO" query-param="ANULADO"/>
+			<with-param name="ANULADO_POR" query-param="ANULADO_POR"/>
+			<with-param name="FECHAANULACION" query-param="FECHAANULACION"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoPagFactsExpPorPredioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_RECIBOS_DE_PAGO.COMPANIA, IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PRECOD, IP_RECIBOS_DE_PAGO.PREANO,(TO_CHAR(IP_RECIBOS_DE_PAGO.PREFEC,'DD/MM/YYYY HH24:MI:SS')) PREFEC,(TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECLIM,'DD/MM/YYYY HH24:MI:SS')) PREFECLIM, IP_RECIBOS_DE_PAGO.PREVAL, IP_RECIBOS_DE_PAGO.PREUSU,(TO_CHAR(IP_RECIBOS_DE_PAGO.MODFEC,'DD/MM/YYYY HH24:MI:SS')) MODFEC, IP_RECIBOS_DE_PAGO.AVALUO, IP_RECIBOS_DE_PAGO.TRPFOR, IP_RECIBOS_DE_PAGO.PAG_BAN,(CASE IP_RECIBOS_DE_PAGO.ANULADO WHEN 0 THEN 'false' ELSE 'true' END) ANULADO,(CASE IP_RECIBOS_DE_PAGO.PAGO WHEN 0 THEN 'false' ELSE 'true' END) PAGO, IP_RECIBOS_DE_PAGO.PAG_BANPAG,(TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECPAG,'DD/MM/YYYY HH24:MI:SS')) PREFECPAG, IP_RECIBOS_DE_PAGO.PAQUETEPAG  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD = :CODIGO ORDER BY IP_RECIBOS_DE_PAGO.PREFEC, IP_RECIBOS_DE_PAGO.DOCNUM) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER( '%' || :DOCNUM || '%')  AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER( '%' || :PREANO || '%')  AND (CASE WHEN PREFEC IS NULL THEN ' ' ELSE UPPER(PREFEC) END)  LIKE UPPER( '%' || :PREFEC || '%')  AND (CASE WHEN PREFECLIM IS NULL THEN ' ' ELSE UPPER(PREFECLIM) END)  LIKE UPPER( '%' || :PREFECLIM || '%')  AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END)  LIKE UPPER( '%' || :PREVAL || '%')  AND (CASE WHEN PREUSU IS NULL THEN ' ' ELSE UPPER(PREUSU) END)  LIKE UPPER( '%' || :PREUSU || '%')  AND (CASE WHEN MODFEC IS NULL THEN ' ' ELSE UPPER(MODFEC) END)  LIKE UPPER( '%' || :MODFEC || '%')  AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END)  LIKE UPPER( '%' || :AVALUO || '%')  AND (CASE WHEN ANULADO IS NULL THEN ' ' ELSE UPPER(ANULADO) END)  LIKE UPPER( '%' || :ANULADO || '%')  AND (CASE WHEN PAGO IS NULL THEN ' ' ELSE UPPER(PAGO) END)  LIKE UPPER( '%' || :PAGO || '%')  AND (CASE WHEN PAG_BANPAG IS NULL THEN ' ' ELSE UPPER(PAG_BANPAG) END)  LIKE UPPER( '%' || :PAG_BANPAG || '%')  AND (CASE WHEN PREFECPAG IS NULL THEN ' ' ELSE UPPER(PREFECPAG) END)  LIKE UPPER( '%' || :PREFECPAG || '%')  AND (CASE WHEN PAQUETEPAG IS NULL THEN ' ' ELSE UPPER(PAQUETEPAG) END)  LIKE UPPER( '%' || :PAQUETEPAG || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","DOCNUM":"$DOCNUM","PRECOD":"$PRECOD","PREANO":"$PREANO(type:integer)","PREFEC":"$PREFEC","PREFECLIM":"$PREFECLIM","PREVAL":"$PREVAL","PREUSU":"$PREUSU","MODFEC":"$MODFEC","AVALUO":"$AVALUO","TRPFOR":"$TRPFOR","PAG_BAN":"$PAG_BAN","ANULADO":"$ANULADO(type:boolean)","PAGO":"$PAGO(type:boolean)","PAG_BANPAG":"$PAG_BANPAG","PREFECPAG":"$PREFECPAG","PAQUETEPAG":"$PAQUETEPAG"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="PREFEC" sqlType="STRING"/>
+		<param name="PREFECLIM" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="PREUSU" sqlType="STRING"/>
+		<param name="MODFEC" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="ANULADO" sqlType="STRING"/>
+		<param name="PAGO" sqlType="STRING"/>
+		<param name="PAG_BANPAG" sqlType="STRING"/>
+		<param name="PREFECPAG" sqlType="STRING"/>
+		<param name="PAQUETEPAG" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/factsexpporpredio/pag">
+		<call-query href="getIprecibosdepagoPagFactsExpPorPredioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="PREFEC" query-param="PREFEC"/>
+			<with-param name="PREFECLIM" query-param="PREFECLIM"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="PREUSU" query-param="PREUSU"/>
+			<with-param name="MODFEC" query-param="MODFEC"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="ANULADO" query-param="ANULADO"/>
+			<with-param name="PAGO" query-param="PAGO"/>
+			<with-param name="PAG_BANPAG" query-param="PAG_BANPAG"/>
+			<with-param name="PREFECPAG" query-param="PREFECPAG"/>
+			<with-param name="PAQUETEPAG" query-param="PAQUETEPAG"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoNumFactsExpPorPredioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_RECIBOS_DE_PAGO.COMPANIA, IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PRECOD, IP_RECIBOS_DE_PAGO.PREANO,(TO_CHAR(IP_RECIBOS_DE_PAGO.PREFEC,'DD/MM/YYYY HH24:MI:SS')) PREFEC,(TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECLIM,'DD/MM/YYYY HH24:MI:SS')) PREFECLIM, IP_RECIBOS_DE_PAGO.PREVAL, IP_RECIBOS_DE_PAGO.PREUSU,(TO_CHAR(IP_RECIBOS_DE_PAGO.MODFEC,'DD/MM/YYYY HH24:MI:SS')) MODFEC, IP_RECIBOS_DE_PAGO.AVALUO, IP_RECIBOS_DE_PAGO.TRPFOR, IP_RECIBOS_DE_PAGO.PAG_BAN,(CASE IP_RECIBOS_DE_PAGO.ANULADO WHEN 0 THEN 'false' ELSE 'true' END) ANULADO,(CASE IP_RECIBOS_DE_PAGO.PAGO WHEN 0 THEN 'false' ELSE 'true' END) PAGO, IP_RECIBOS_DE_PAGO.PAG_BANPAG,(TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECPAG,'DD/MM/YYYY HH24:MI:SS')) PREFECPAG, IP_RECIBOS_DE_PAGO.PAQUETEPAG  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD = :CODIGO ORDER BY IP_RECIBOS_DE_PAGO.PREFEC, IP_RECIBOS_DE_PAGO.DOCNUM) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER( '%' || :DOCNUM || '%')  AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER( '%' || :PREANO || '%')  AND (CASE WHEN PREFEC IS NULL THEN ' ' ELSE UPPER(PREFEC) END)  LIKE UPPER( '%' || :PREFEC || '%')  AND (CASE WHEN PREFECLIM IS NULL THEN ' ' ELSE UPPER(PREFECLIM) END)  LIKE UPPER( '%' || :PREFECLIM || '%')  AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END)  LIKE UPPER( '%' || :PREVAL || '%')  AND (CASE WHEN PREUSU IS NULL THEN ' ' ELSE UPPER(PREUSU) END)  LIKE UPPER( '%' || :PREUSU || '%')  AND (CASE WHEN MODFEC IS NULL THEN ' ' ELSE UPPER(MODFEC) END)  LIKE UPPER( '%' || :MODFEC || '%')  AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END)  LIKE UPPER( '%' || :AVALUO || '%')  AND (CASE WHEN ANULADO IS NULL THEN ' ' ELSE UPPER(ANULADO) END)  LIKE UPPER( '%' || :ANULADO || '%')  AND (CASE WHEN PAGO IS NULL THEN ' ' ELSE UPPER(PAGO) END)  LIKE UPPER( '%' || :PAGO || '%')  AND (CASE WHEN PAG_BANPAG IS NULL THEN ' ' ELSE UPPER(PAG_BANPAG) END)  LIKE UPPER( '%' || :PAG_BANPAG || '%')  AND (CASE WHEN PREFECPAG IS NULL THEN ' ' ELSE UPPER(PREFECPAG) END)  LIKE UPPER( '%' || :PREFECPAG || '%')  AND (CASE WHEN PAQUETEPAG IS NULL THEN ' ' ELSE UPPER(PAQUETEPAG) END)  LIKE UPPER( '%' || :PAQUETEPAG || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="PREFEC" sqlType="STRING"/>
+		<param name="PREFECLIM" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="PREUSU" sqlType="STRING"/>
+		<param name="MODFEC" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="ANULADO" sqlType="STRING"/>
+		<param name="PAGO" sqlType="STRING"/>
+		<param name="PAG_BANPAG" sqlType="STRING"/>
+		<param name="PREFECPAG" sqlType="STRING"/>
+		<param name="PAQUETEPAG" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/factsexpporpredio/num">
+		<call-query href="getIprecibosdepagoNumFactsExpPorPredioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="PREFEC" query-param="PREFEC"/>
+			<with-param name="PREFECLIM" query-param="PREFECLIM"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="PREUSU" query-param="PREUSU"/>
+			<with-param name="MODFEC" query-param="MODFEC"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="ANULADO" query-param="ANULADO"/>
+			<with-param name="PAGO" query-param="PAGO"/>
+			<with-param name="PAG_BANPAG" query-param="PAG_BANPAG"/>
+			<with-param name="PREFECPAG" query-param="PREFECPAG"/>
+			<with-param name="PAQUETEPAG" query-param="PAQUETEPAG"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoPagFacturascontotalporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_RECIBOS_DE_PAGO.DOCNUM, IP_USUARIOS_PREDIAL.NOMBRE, IP_RECIBOS_DE_PAGO.PRECOD, IP_RECIBOS_DE_PAGO.VALOR_APORTE,(CASE IP_RECIBOS_DE_PAGO.INDAPORTE WHEN 0 THEN 'false' ELSE 'true' END) INDAPORTE, IP_RECIBOS_DE_PAGO.PROYECTO_APORTE,(CASE IP_RECIBOS_DE_PAGO.ANULADO WHEN 0 THEN 'false' ELSE 'true' END) ANULADO,(CASE IP_RECIBOS_DE_PAGO.PAGO WHEN 0 THEN 'false' ELSE 'true' END) PAGO, IP_RECIBOS_DE_PAGO.PREVAL, IP_RECIBOS_DE_PAGO.C1 + IP_RECIBOS_DE_PAGO.C2 + IP_RECIBOS_DE_PAGO.C3 + IP_RECIBOS_DE_PAGO.C4 + IP_RECIBOS_DE_PAGO.C5 + IP_RECIBOS_DE_PAGO.C6 + IP_RECIBOS_DE_PAGO.C7 + IP_RECIBOS_DE_PAGO.C8 + IP_RECIBOS_DE_PAGO.C9 + IP_RECIBOS_DE_PAGO.C10 + IP_RECIBOS_DE_PAGO.C11 + IP_RECIBOS_DE_PAGO.C12 + IP_RECIBOS_DE_PAGO.C13 + IP_RECIBOS_DE_PAGO.C14 + IP_RECIBOS_DE_PAGO.C15 + IP_RECIBOS_DE_PAGO.C16 + IP_RECIBOS_DE_PAGO.C17 + IP_RECIBOS_DE_PAGO.C18 + IP_RECIBOS_DE_PAGO.C19 + IP_RECIBOS_DE_PAGO.C20 - DECODE(:CONCEPTO ,1,IP_RECIBOS_DE_PAGO.C1 ,2,IP_RECIBOS_DE_PAGO.C2 ,3,IP_RECIBOS_DE_PAGO.C3 ,4,IP_RECIBOS_DE_PAGO.C4 ,5,IP_RECIBOS_DE_PAGO.C5 ,6,IP_RECIBOS_DE_PAGO.C6 ,7,IP_RECIBOS_DE_PAGO.C7 ,8,IP_RECIBOS_DE_PAGO.C8 ,9,IP_RECIBOS_DE_PAGO.C9 ,10,IP_RECIBOS_DE_PAGO.C10 ,11,IP_RECIBOS_DE_PAGO.C11 ,12,IP_RECIBOS_DE_PAGO.C12 ,13,IP_RECIBOS_DE_PAGO.C13 ,13,IP_RECIBOS_DE_PAGO.C14 ,15,IP_RECIBOS_DE_PAGO.C15 ,16,IP_RECIBOS_DE_PAGO.C16 ,17,IP_RECIBOS_DE_PAGO.C17 ,18,IP_RECIBOS_DE_PAGO.C18 ,19,IP_RECIBOS_DE_PAGO.C19 ,20,IP_RECIBOS_DE_PAGO.C20) VLRTOTAL  FROM IP_RECIBOS_DE_PAGO INNER JOIN IP_USUARIOS_PREDIAL ON IP_RECIBOS_DE_PAGO.COMPANIA = IP_USUARIOS_PREDIAL.COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD = IP_USUARIOS_PREDIAL.CODIGO AND IP_RECIBOS_DE_PAGO.NUMERO_ORDEN = IP_USUARIOS_PREDIAL.NUMERO_ORDEN WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA ORDER BY DOCNUM) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DOCNUM":"$DOCNUM","NOMBRE":"$NOMBRE","PRECOD":"$PRECOD","VALOR_APORTE":"$VALOR_APORTE","INDAPORTE":"$INDAPORTE(type:boolean)","PROYECTO_APORTE":"$PROYECTO_APORTE","ANULADO":"$ANULADO(type:boolean)","PAGO":"$PAGO(type:boolean)","PREVAL":"$PREVAL","VLRTOTAL":"$VLRTOTAL(type:integer)"}]}}		</result>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/facturascontotalporcompania/pag">
+		<call-query href="getIprecibosdepagoPagFacturascontotalporcompaniaQuery">
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoNumFacturascontotalporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_RECIBOS_DE_PAGO.DOCNUM, IP_USUARIOS_PREDIAL.NOMBRE, IP_RECIBOS_DE_PAGO.PRECOD, IP_RECIBOS_DE_PAGO.VALOR_APORTE,(CASE IP_RECIBOS_DE_PAGO.INDAPORTE WHEN 0 THEN 'false' ELSE 'true' END) INDAPORTE, IP_RECIBOS_DE_PAGO.PROYECTO_APORTE,(CASE IP_RECIBOS_DE_PAGO.ANULADO WHEN 0 THEN 'false' ELSE 'true' END) ANULADO,(CASE IP_RECIBOS_DE_PAGO.PAGO WHEN 0 THEN 'false' ELSE 'true' END) PAGO, IP_RECIBOS_DE_PAGO.PREVAL, IP_RECIBOS_DE_PAGO.C1 + IP_RECIBOS_DE_PAGO.C2 + IP_RECIBOS_DE_PAGO.C3 + IP_RECIBOS_DE_PAGO.C4 + IP_RECIBOS_DE_PAGO.C5 + IP_RECIBOS_DE_PAGO.C6 + IP_RECIBOS_DE_PAGO.C7 + IP_RECIBOS_DE_PAGO.C8 + IP_RECIBOS_DE_PAGO.C9 + IP_RECIBOS_DE_PAGO.C10 + IP_RECIBOS_DE_PAGO.C11 + IP_RECIBOS_DE_PAGO.C12 + IP_RECIBOS_DE_PAGO.C13 + IP_RECIBOS_DE_PAGO.C14 + IP_RECIBOS_DE_PAGO.C15 + IP_RECIBOS_DE_PAGO.C16 + IP_RECIBOS_DE_PAGO.C17 + IP_RECIBOS_DE_PAGO.C18 + IP_RECIBOS_DE_PAGO.C19 + IP_RECIBOS_DE_PAGO.C20 - DECODE(:CONCEPTO ,1,IP_RECIBOS_DE_PAGO.C1 ,2,IP_RECIBOS_DE_PAGO.C2 ,3,IP_RECIBOS_DE_PAGO.C3 ,4,IP_RECIBOS_DE_PAGO.C4 ,5,IP_RECIBOS_DE_PAGO.C5 ,6,IP_RECIBOS_DE_PAGO.C6 ,7,IP_RECIBOS_DE_PAGO.C7 ,8,IP_RECIBOS_DE_PAGO.C8 ,9,IP_RECIBOS_DE_PAGO.C9 ,10,IP_RECIBOS_DE_PAGO.C10 ,11,IP_RECIBOS_DE_PAGO.C11 ,12,IP_RECIBOS_DE_PAGO.C12 ,13,IP_RECIBOS_DE_PAGO.C13 ,13,IP_RECIBOS_DE_PAGO.C14 ,15,IP_RECIBOS_DE_PAGO.C15 ,16,IP_RECIBOS_DE_PAGO.C16 ,17,IP_RECIBOS_DE_PAGO.C17 ,18,IP_RECIBOS_DE_PAGO.C18 ,19,IP_RECIBOS_DE_PAGO.C19 ,20,IP_RECIBOS_DE_PAGO.C20) VLRTOTAL  FROM IP_RECIBOS_DE_PAGO INNER JOIN IP_USUARIOS_PREDIAL ON IP_RECIBOS_DE_PAGO.COMPANIA = IP_USUARIOS_PREDIAL.COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD = IP_USUARIOS_PREDIAL.CODIGO AND IP_RECIBOS_DE_PAGO.NUMERO_ORDEN = IP_USUARIOS_PREDIAL.NUMERO_ORDEN WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA ORDER BY DOCNUM) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/facturascontotalporcompania/num">
+		<call-query href="getIprecibosdepagoNumFacturascontotalporcompaniaQuery">
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoPagPreanoYPrevalAnuladoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DOCNUM, PREANO, PREVAL  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA AND NUMERO_ORDEN = :NUMERO_ORDEN AND PRECOD = :CODIGO AND ANULADO IN (0) AND PAGO IN (0)) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER( '%' || :PREANO || '%')  AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END)  LIKE UPPER( '%' || :PREVAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DOCNUM":"$DOCNUM","PREANO":"$PREANO(type:integer)","PREVAL":"$PREVAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/preanoyprevalanulado/pag">
+		<call-query href="getIprecibosdepagoPagPreanoYPrevalAnuladoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoNumPreanoYPrevalAnuladoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DOCNUM, PREANO, PREVAL  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA AND NUMERO_ORDEN = :NUMERO_ORDEN AND PRECOD = :CODIGO AND ANULADO IN (0) AND PAGO IN (0)) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER( '%' || :PREANO || '%')  AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END)  LIKE UPPER( '%' || :PREVAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/preanoyprevalanulado/num">
+		<call-query href="getIprecibosdepagoNumPreanoYPrevalAnuladoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoPagPreanoprevalYTipoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DOCNUM, PREANO, PREVAL, CASE WHEN ESACUERDO NOT IN (0) THEN 'ACUERDO' ELSE CASE WHEN ESABONO NOT IN (0) THEN 'ABONO' ELSE 'VIGENCIA' END END TIPO  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA AND NUMERO_ORDEN = :NUMERO_ORDEN AND PRECOD = :CODIGO AND ANULADO NOT IN (0) AND PAGO = 0 ORDER BY PREANO, DOCNUM) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER( '%' || :PREANO || '%')  AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END)  LIKE UPPER( '%' || :PREVAL || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER(:TIPO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DOCNUM":"$DOCNUM","PREANO":"$PREANO(type:integer)","PREVAL":"$PREVAL","TIPO":"$TIPO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/preanoprevalytipo/pag">
+		<call-query href="getIprecibosdepagoPagPreanoprevalYTipoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoNumPreanoprevalYTipoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DOCNUM, PREANO, PREVAL, CASE WHEN ESACUERDO NOT IN (0) THEN 'ACUERDO' ELSE CASE WHEN ESABONO NOT IN (0) THEN 'ABONO' ELSE 'VIGENCIA' END END TIPO  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA AND NUMERO_ORDEN = :NUMERO_ORDEN AND PRECOD = :CODIGO AND ANULADO NOT IN (0) AND PAGO = 0 ORDER BY PREANO, DOCNUM) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER( '%' || :PREANO || '%')  AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END)  LIKE UPPER( '%' || :PREVAL || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER( '%' || :TIPO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/preanoprevalytipo/num">
+		<call-query href="getIprecibosdepagoNumPreanoprevalYTipoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoPagPreanoYDocnumNotInFacturaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DOCNUM,PREANO,PREVAL  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA AND NUMERO_ORDEN = :NUMERO_ORDEN AND PRECOD = :CODIGO AND DOCNUM NOT IN (:FACTURA)) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER( '%' || :PREANO || '%')  AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END)  LIKE UPPER( '%' || :PREVAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DOCNUM":"$DOCNUM","PREANO":"$PREANO(type:integer)","PREVAL":"$PREVAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="FACTURA" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/preanoydocnumnotinfactura/pag">
+		<call-query href="getIprecibosdepagoPagPreanoYDocnumNotInFacturaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="FACTURA" query-param="FACTURA"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoNumPreanoYDocnumNotInFacturaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DOCNUM,PREANO,PREVAL  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA AND NUMERO_ORDEN = :NUMERO_ORDEN AND PRECOD = :CODIGO AND DOCNUM NOT IN (:FACTURA)) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PREANO IS NULL THEN ' ' ELSE UPPER(PREANO) END)  LIKE UPPER( '%' || :PREANO || '%')  AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END)  LIKE UPPER( '%' || :PREVAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="FACTURA" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/preanoydocnumnotinfactura/num">
+		<call-query href="getIprecibosdepagoNumPreanoYDocnumNotInFacturaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="FACTURA" query-param="FACTURA"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoConsultarIndicadoresReciboQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE ESABONO WHEN 0 THEN 'false' ELSE 'true' END) ESABONO,(CASE ESACUERDO WHEN 0 THEN 'false' ELSE 'true' END) ESACUERDO,(CASE ESCUOTA WHEN 0 THEN 'false' ELSE 'true' END) ESCUOTA, PREVAL  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA AND DOCNUM = :DOCNUM</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ESABONO":"$ESABONO(type:boolean)","ESACUERDO":"$ESACUERDO(type:boolean)","ESCUOTA":"$ESCUOTA(type:boolean)","PREVAL":"$PREVAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/consultarindicadoresrecibo">
+		<call-query href="getIprecibosdepagoConsultarIndicadoresReciboQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoContarRecibosAnuladosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(DOCNUM) DNUM  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA AND NUMERO_ORDEN = :NUMERO_ORDEN AND PRECOD = :CODIGO AND ANULADO NOT IN (0) AND PAGO IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DNUM":"$DNUM(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/contarrecibosanulados">
+		<call-query href="getIprecibosdepagoContarRecibosAnuladosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoPagTodosSinPagarAnularQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PRECOD  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.ANULADO IN(0) AND IP_RECIBOS_DE_PAGO.PAGO IN(0) ORDER BY IP_RECIBOS_DE_PAGO.COMPANIA, IP_RECIBOS_DE_PAGO.DOCNUM) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PRECOD IS NULL THEN ' ' ELSE UPPER(PRECOD) END)  LIKE UPPER(:PRECOD || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DOCNUM":"$DOCNUM","PRECOD":"$PRECOD"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/todossinpagaranular/pag">
+		<call-query href="getIprecibosdepagoPagTodosSinPagarAnularQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoNumTodosSinPagarAnularQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PRECOD  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.ANULADO IN(0) AND IP_RECIBOS_DE_PAGO.PAGO IN(0) ORDER BY IP_RECIBOS_DE_PAGO.COMPANIA, IP_RECIBOS_DE_PAGO.DOCNUM) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PRECOD IS NULL THEN ' ' ELSE UPPER(PRECOD) END)  LIKE UPPER( '%' || :PRECOD || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/todossinpagaranular/num">
+		<call-query href="getIprecibosdepagoNumTodosSinPagarAnularQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoPagTodosSinPagarAnularFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PRECOD  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.ANULADO IN(0) AND IP_RECIBOS_DE_PAGO.PAGO IN(0) AND IP_RECIBOS_DE_PAGO.DOCNUM &gt;= :FACTURAINICIAL ORDER BY IP_RECIBOS_DE_PAGO.COMPANIA, IP_RECIBOS_DE_PAGO.DOCNUM) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PRECOD IS NULL THEN ' ' ELSE UPPER(PRECOD) END)  LIKE UPPER(:PRECOD || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DOCNUM":"$DOCNUM","PRECOD":"$PRECOD"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FACTURAINICIAL" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/todossinpagaranularfinal/pag">
+		<call-query href="getIprecibosdepagoPagTodosSinPagarAnularFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FACTURAINICIAL" query-param="FACTURAINICIAL"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoNumTodosSinPagarAnularFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PRECOD  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.ANULADO IN(0) AND IP_RECIBOS_DE_PAGO.PAGO IN(0) AND IP_RECIBOS_DE_PAGO.DOCNUM &gt;= :FACTURAINICIAL ORDER BY IP_RECIBOS_DE_PAGO.COMPANIA, IP_RECIBOS_DE_PAGO.DOCNUM) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PRECOD IS NULL THEN ' ' ELSE UPPER(PRECOD) END)  LIKE UPPER( '%' || :PRECOD || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FACTURAINICIAL" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/todossinpagaranularfinal/num">
+		<call-query href="getIprecibosdepagoNumTodosSinPagarAnularFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FACTURAINICIAL" query-param="FACTURAINICIAL"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoPagTodosDatosCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DOCNUM ,PRECOD,(CASE ANULADO WHEN 0 THEN 'false' ELSE 'true' END) ANULADO,(CASE PAGO WHEN 0 THEN 'false' ELSE 'true' END) PAGO, (NVL(ESABONO, 0)) ESABONO, (NVL(ESACUERDO, 0)) ESACUERDO, NCUOTA_ACUERDO, (NVL(ESCUOTA, 0)) ESCUOTA, NCUOTA,CASE PREFEC WHEN NULL THEN ' ' ELSE TO_CHAR(PREFEC,'DD/MM/YYYY') END AS PREFEC, CASE PREFECLIM WHEN NULL THEN ' ' ELSE TO_CHAR(PREFECLIM,'DD/MM/YYYY') END AS PREFECLIM, PREVAL, CASE PREFECPAG WHEN NULL THEN ' ' ELSE TO_CHAR(PREFECPAG,'DD/MM/YYYY') END AS PREFECPAG, NVL(PAG_BANPAG,' ') AS PAG_BANPAG, CASE FECHAANULACION WHEN NULL THEN ' ' ELSE TO_CHAR(FECHAANULACION,'DD/MM/YYYY') END AS FECHAANULACION, PREANOI, PREANOF, ACUERDO  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PRECOD IS NULL THEN ' ' ELSE UPPER(PRECOD) END)  LIKE UPPER(:PRECOD || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DOCNUM":"$DOCNUM","PRECOD":"$PRECOD","ANULADO":"$ANULADO(type:boolean)","PAGO":"$PAGO(type:boolean)","ESABONO":"$ESABONO(type:integer)","ESACUERDO":"$ESACUERDO(type:integer)","NCUOTA_ACUERDO":"$NCUOTA_ACUERDO","ESCUOTA":"$ESCUOTA(type:integer)","NCUOTA":"$NCUOTA","PREFEC":"$PREFEC","PREFECLIM":"$PREFECLIM","PREVAL":"$PREVAL","PREFECPAG":"$PREFECPAG","PAG_BANPAG":"$PAG_BANPAG","FECHAANULACION":"$FECHAANULACION","PREANOI":"$PREANOI(type:integer)","PREANOF":"$PREANOF(type:integer)","ACUERDO":"$ACUERDO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/todosdatoscompania/pag">
+		<call-query href="getIprecibosdepagoPagTodosDatosCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoNumTodosDatosCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DOCNUM ,PRECOD,(CASE ANULADO WHEN 0 THEN 'false' ELSE 'true' END) ANULADO,(CASE PAGO WHEN 0 THEN 'false' ELSE 'true' END) PAGO, (NVL(ESABONO, 0)) ESABONO, (NVL(ESACUERDO, 0)) ESACUERDO, NCUOTA_ACUERDO, (NVL(ESCUOTA, 0)) ESCUOTA, NCUOTA,CASE PREFEC WHEN NULL THEN ' ' ELSE TO_CHAR(PREFEC,'DD/MM/YYYY') END AS PREFEC, CASE PREFECLIM WHEN NULL THEN ' ' ELSE TO_CHAR(PREFECLIM,'DD/MM/YYYY') END AS PREFECLIM, PREVAL, CASE PREFECPAG WHEN NULL THEN ' ' ELSE TO_CHAR(PREFECPAG,'DD/MM/YYYY') END AS PREFECPAG, NVL(PAG_BANPAG,' ') AS PAG_BANPAG, CASE FECHAANULACION WHEN NULL THEN ' ' ELSE TO_CHAR(FECHAANULACION,'DD/MM/YYYY') END AS FECHAANULACION, PREANOI, PREANOF, ACUERDO  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END)  LIKE UPPER(:DOCNUM || '%')  AND (CASE WHEN PRECOD IS NULL THEN ' ' ELSE UPPER(PRECOD) END)  LIKE UPPER( '%' || :PRECOD || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/todosdatoscompania/num">
+		<call-query href="getIprecibosdepagoNumTodosDatosCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoRecibopagoporfacturaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (TO_CHAR(PREFEC,'DD/MM/YYYY HH24:MI:SS')) PREFEC,(CASE ESACUERDO WHEN 0 THEN 'false' ELSE 'true' END) ESACUERDO, ACUERDO,(CASE ESABONO WHEN 0 THEN 'false' ELSE 'true' END) ESABONO, PREVAL  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA AND DOCNUM = :NUMFACTURA AND PAGO IN (0) AND ANULADO IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PREFEC":"$PREFEC","ESACUERDO":"$ESACUERDO(type:boolean)","ACUERDO":"$ACUERDO","ESABONO":"$ESABONO(type:boolean)","PREVAL":"$PREVAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/recibopagoporfactura">
+		<call-query href="getIprecibosdepagoRecibopagoporfacturaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoCantcuentaporcodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(*) CUENTA  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA AND PRECOD = :PRECOD AND DOCNUM = :DOCNUM AND ANULADO IN (0) AND PAGO IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTA":"$CUENTA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/cantcuentaporcod">
+		<call-query href="getIprecibosdepagoCantcuentaporcodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoTotalabonoporpredioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (TO_CHAR(FECHAFACTURADO,'DD/MM/YYYY HH24:MI:SS')) FECHAFACTURADO, SUM(TOTAL) TOTALABONO, COUNT(*) CUENTA  FROM IP_FACTURADOSABONOS WHERE COMPANIA = :COMPANIA AND NUMERO_ORDEN = :NUMORDEN AND CODIGO = :PRECOD AND PAGADO IN 0 GROUP BY FECHAFACTURADO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FECHAFACTURADO":"$FECHAFACTURADO","TOTALABONO":"$TOTALABONO(type:integer)","CUENTA":"$CUENTA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMORDEN" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/totalabonoporpredio">
+		<call-query href="getIprecibosdepagoTotalabonoporpredioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMORDEN" query-param="NUMORDEN"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoReciboporcodigoynreciboQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PREVAL,(CASE ANULADO WHEN 0 THEN 'false' ELSE 'true' END) ANULADO,(CASE PAGO WHEN 0 THEN 'false' ELSE 'true' END) PAGO,(CASE ESACUERDO WHEN 0 THEN 'false' ELSE 'true' END) ESACUERDO, ACUERDO,(CASE ESABONO WHEN 0 THEN 'false' ELSE 'true' END) ESABONO,(CASE ESCUOTA WHEN 0 THEN 'false' ELSE 'true' END) ESCUOTA, NCUOTA, TIPOABONOAACUERDO, PREANO,(CASE UNICO_ANO WHEN 0 THEN 'false' ELSE 'true' END) UNICO_ANO, PREANOI, VALOR_APORTE  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA AND DOCNUM = :DOCNUM AND PRECOD = :PRECOD</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PREVAL":"$PREVAL","ANULADO":"$ANULADO(type:boolean)","PAGO":"$PAGO(type:boolean)","ESACUERDO":"$ESACUERDO(type:boolean)","ACUERDO":"$ACUERDO","ESABONO":"$ESABONO(type:boolean)","ESCUOTA":"$ESCUOTA(type:boolean)","NCUOTA":"$NCUOTA","TIPOABONOAACUERDO":"$TIPOABONOAACUERDO","PREANO":"$PREANO(type:integer)","UNICO_ANO":"$UNICO_ANO(type:boolean)","PREANOI":"$PREANOI(type:integer)","VALOR_APORTE":"$VALOR_APORTE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/reciboporcodigoynrecibo">
+		<call-query href="getIprecibosdepagoReciboporcodigoynreciboQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoPagoYAnuladoPorDocnumQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE IP_RECIBOS_DE_PAGO.PAGO WHEN 0 THEN 'false' ELSE 'true' END) PAGO,(CASE IP_RECIBOS_DE_PAGO.ANULADO WHEN 0 THEN 'false' ELSE 'true' END) ANULADO, IP_RECIBOS_DE_PAGO.PREVAL  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.NUMERO_ORDEN = :NUMERO_ORDEN AND IP_RECIBOS_DE_PAGO.DOCNUM = :DOCNUM</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAGO":"$PAGO(type:boolean)","ANULADO":"$ANULADO(type:boolean)","PREVAL":"$PREVAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/pagoyanuladopordocnum">
+		<call-query href="getIprecibosdepagoPagoYAnuladoPorDocnumQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoPagoAnulPorDocnumQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  IP_RECIBOS_DE_PAGO.DOCNUM  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD = :PREDIO AND IP_RECIBOS_DE_PAGO.ANULADO = 0 AND IP_RECIBOS_DE_PAGO.PAGO = 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DOCNUM":"$DOCNUM"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/pagoanulpordocnum">
+		<call-query href="getIprecibosdepagoPagoAnulPorDocnumQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoExisteReciboQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  'X' EXISTE  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.DOCNUM = :DOCNUM</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"EXISTE":"$EXISTE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/existerecibo">
+		<call-query href="getIprecibosdepagoExisteReciboQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoTodosLosAnuladosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE IP_RECIBOS_DE_PAGO.PAGO WHEN 0 THEN 'false' ELSE 'true' END) PAGO,(CASE IP_RECIBOS_DE_PAGO.ANULADO WHEN 0 THEN 'false' ELSE 'true' END) ANULADO FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.NUMERO_ORDEN = :NUMERO_ORDEN AND IP_RECIBOS_DE_PAGO.DOCNUM = :NUMEROFACTURA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAGO":"$PAGO(type:boolean)","ANULADO":"$ANULADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="NUMEROFACTURA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/todoslosanulados">
+		<call-query href="getIprecibosdepagoTodosLosAnuladosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="NUMEROFACTURA" query-param="NUMEROFACTURA"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoTodosPorAnuladosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE IP_RECIBOS_DE_PAGO.PAGO WHEN 0 THEN 'false' ELSE 'true' END) PAGO,(CASE IP_RECIBOS_DE_PAGO.ANULADO WHEN 0 THEN 'false' ELSE 'true' END) ANULADO, IP_RECIBOS_DE_PAGO.PREVAL  FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA = :COMPANIA AND IP_RECIBOS_DE_PAGO.NUMERO_ORDEN = :NUMERO_ORDEN AND IP_RECIBOS_DE_PAGO.DOCNUM = :NUMEROFACTURA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PAGO":"$PAGO(type:boolean)","ANULADO":"$ANULADO(type:boolean)","PREVAL":"$PREVAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="NUMEROFACTURA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/todosporanulados">
+		<call-query href="getIprecibosdepagoTodosPorAnuladosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="NUMEROFACTURA" query-param="NUMEROFACTURA"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoPagHistoricosPagosPorPredioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT * FROM ( SELECT IP_RECIBOS_DE_PAGO.PRECOD, IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PAGO, IP_RECIBOS_DE_PAGO.PAQUETEPAG, IP_RECIBOS_DE_PAGO.ANULADO, IP_RECIBOS_DE_PAGO.PREANO, IP_RECIBOS_DE_PAGO.PREANOI, IP_RECIBOS_DE_PAGO.AVALUO, IP_RECIBOS_DE_PAGO.PREVAL, IP_RECIBOS_DE_PAGO.PAG_BANPAG, TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECPAG,'DD/MM/YYYY') PREFECPAG, '1' TIPO, CASE WHEN IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; IP_RECIBOS_DE_PAGO.PREANO AND IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; 0 THEN CONCAT( TO_CHAR(IP_RECIBOS_DE_PAGO.PREANOI), CONCAT(' - ' , TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO))) ELSE TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO) END FINALPREANO FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA =:COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD =:PREDIO AND NOT IP_RECIBOS_DE_PAGO.PAGO IN (0) AND IP_RECIBOS_DE_PAGO.ANULADO IN (0) AND NOT IP_RECIBOS_DE_PAGO.ESCUOTA IN (0) UNION SELECT IP_RECIBOS_DE_PAGO.PRECOD, IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PAGO, IP_RECIBOS_DE_PAGO.PAQUETEPAG, IP_RECIBOS_DE_PAGO.ANULADO, IP_RECIBOS_DE_PAGO.PREANO, IP_RECIBOS_DE_PAGO.PREANOI, IP_RECIBOS_DE_PAGO.AVALUO, IP_RECIBOS_DE_PAGO.PREVAL, IP_RECIBOS_DE_PAGO.PAG_BANPAG, TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECPAG,'DD/MM/YYYY') PREFECPAG, '2' TIPO, CASE WHEN IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; IP_RECIBOS_DE_PAGO.PREANO AND IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; 0 THEN CONCAT(TO_CHAR(IP_RECIBOS_DE_PAGO.PREANOI),CONCAT( ' - ' , TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO))) ELSE TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO) END FINALPREANO FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA =:COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD =:PREDIO AND NOT IP_RECIBOS_DE_PAGO.PAGO IN (0) AND IP_RECIBOS_DE_PAGO.ANULADO IN (0) AND NOT IP_RECIBOS_DE_PAGO.ESABONO IN (0) UNION SELECT IP_RECIBOS_DE_PAGO.PRECOD, IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PAGO, IP_RECIBOS_DE_PAGO.PAQUETEPAG, IP_RECIBOS_DE_PAGO.ANULADO, IP_RECIBOS_DE_PAGO.PREANO, IP_RECIBOS_DE_PAGO.PREANOI, IP_RECIBOS_DE_PAGO.AVALUO, IP_RECIBOS_DE_PAGO.PREVAL, IP_RECIBOS_DE_PAGO.PAG_BANPAG, TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECPAG,'DD/MM/YYYY') PREFECPAG, '3' TIPO, CASE WHEN IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; IP_RECIBOS_DE_PAGO.PREANO AND IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; 0 THEN CONCAT(TO_CHAR(IP_RECIBOS_DE_PAGO.PREANOI),CONCAT( ' - ' , TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO))) ELSE TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO) END FINALPREANO FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA =:COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD =:PREDIO AND NOT IP_RECIBOS_DE_PAGO.PAGO IN (0) AND IP_RECIBOS_DE_PAGO.ANULADO IN (0) AND NOT IP_RECIBOS_DE_PAGO.ESACUERDO IN (0) UNION SELECT IP_RECIBOS_DE_PAGO.PRECOD, IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PAGO, IP_RECIBOS_DE_PAGO.PAQUETEPAG, IP_RECIBOS_DE_PAGO.ANULADO, IP_RECIBOS_DE_PAGO.PREANO, IP_RECIBOS_DE_PAGO.PREANOI, IP_RECIBOS_DE_PAGO.AVALUO, IP_RECIBOS_DE_PAGO.PREVAL, IP_RECIBOS_DE_PAGO.PAG_BANPAG, TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECPAG,'DD/MM/YYYY') PREFECPAG, '4' TIPO, CASE WHEN IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; IP_RECIBOS_DE_PAGO.PREANO AND IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; 0 THEN CONCAT(TO_CHAR(IP_RECIBOS_DE_PAGO.PREANOI),CONCAT( ' - ' , TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO))) ELSE TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO) END FINALPREANO FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA =:COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD =:PREDIO AND NOT IP_RECIBOS_DE_PAGO.PAGO IN (0) AND IP_RECIBOS_DE_PAGO.ANULADO IN (0) AND IP_RECIBOS_DE_PAGO.ESACUERDO IN (0) AND IP_RECIBOS_DE_PAGO.ESCUOTA IN (0) AND IP_RECIBOS_DE_PAGO.ESABONO IN (0) ) ORDER BY PREANO DESC) INI WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END) LIKE UPPER(CONCAT(CONCAT('%',:DOCNUM), '%')) AND (CASE WHEN PAQUETEPAG IS NULL THEN ' ' ELSE UPPER(PAQUETEPAG) END) LIKE UPPER(CONCAT(CONCAT('%',:PAQUETEPAG), '%')) AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END) LIKE UPPER(CONCAT(CONCAT('%',:AVALUO), '%')) AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END) LIKE UPPER(CONCAT(CONCAT('%',:PREVAL), '%')) AND (CASE WHEN PAG_BANPAG IS NULL THEN ' ' ELSE UPPER(PAG_BANPAG) END) LIKE UPPER(CONCAT(CONCAT('%',:PAG_BANPAG), '%')) AND (CASE WHEN PREFECPAG IS NULL THEN ' ' ELSE UPPER(PREFECPAG) END) LIKE UPPER(CONCAT(CONCAT('%',:PREFECPAG), '%')) AND (CASE WHEN FINALPREANO IS NULL THEN ' ' ELSE UPPER(FINALPREANO) END) LIKE UPPER(CONCAT(CONCAT('%',:FINALPREANO), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PRECOD":"$PRECOD","DOCNUM":"$DOCNUM","PAGO":"$PAGO(type:boolean)","PAQUETEPAG":"$PAQUETEPAG","ANULADO":"$ANULADO(type:boolean)","PREANO":"$PREANO(type:integer)","PREANOI":"$PREANOI(type:integer)","AVALUO":"$AVALUO","PREVAL":"$PREVAL","PAG_BANPAG":"$PAG_BANPAG","PREFECPAG":"$PREFECPAG","TIPO":"$TIPO","FINALPREANO":"$FINALPREANO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PAQUETEPAG" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="PAG_BANPAG" sqlType="STRING"/>
+		<param name="PREFECPAG" sqlType="STRING"/>
+		<param name="FINALPREANO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/historicospagosporpredio/pag">
+		<call-query href="getIprecibosdepagoPagHistoricosPagosPorPredioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PAQUETEPAG" query-param="PAQUETEPAG"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="PAG_BANPAG" query-param="PAG_BANPAG"/>
+			<with-param name="PREFECPAG" query-param="PREFECPAG"/>
+			<with-param name="FINALPREANO" query-param="FINALPREANO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoNumHistoricosPagosPorPredioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT * FROM ( SELECT IP_RECIBOS_DE_PAGO.PRECOD, IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PAGO, IP_RECIBOS_DE_PAGO.PAQUETEPAG, IP_RECIBOS_DE_PAGO.ANULADO, IP_RECIBOS_DE_PAGO.PREANO, IP_RECIBOS_DE_PAGO.PREANOI, IP_RECIBOS_DE_PAGO.AVALUO, IP_RECIBOS_DE_PAGO.PREVAL, IP_RECIBOS_DE_PAGO.PAG_BANPAG, TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECPAG,'DD/MM/YYYY') PREFECPAG, '1' TIPO, CASE WHEN IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; IP_RECIBOS_DE_PAGO.PREANO AND IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; 0 THEN CONCAT( TO_CHAR(IP_RECIBOS_DE_PAGO.PREANOI), CONCAT(' - ' , TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO))) ELSE TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO) END FINALPREANO FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA =:COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD =:PREDIO AND NOT IP_RECIBOS_DE_PAGO.PAGO IN (0) AND IP_RECIBOS_DE_PAGO.ANULADO IN (0) AND NOT IP_RECIBOS_DE_PAGO.ESCUOTA IN (0) UNION SELECT IP_RECIBOS_DE_PAGO.PRECOD, IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PAGO, IP_RECIBOS_DE_PAGO.PAQUETEPAG, IP_RECIBOS_DE_PAGO.ANULADO, IP_RECIBOS_DE_PAGO.PREANO, IP_RECIBOS_DE_PAGO.PREANOI, IP_RECIBOS_DE_PAGO.AVALUO, IP_RECIBOS_DE_PAGO.PREVAL, IP_RECIBOS_DE_PAGO.PAG_BANPAG, TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECPAG,'DD/MM/YYYY') PREFECPAG, '2' TIPO, CASE WHEN IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; IP_RECIBOS_DE_PAGO.PREANO AND IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; 0 THEN CONCAT(TO_CHAR(IP_RECIBOS_DE_PAGO.PREANOI),CONCAT( ' - ' , TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO))) ELSE TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO) END FINALPREANO FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA =:COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD =:PREDIO AND NOT IP_RECIBOS_DE_PAGO.PAGO IN (0) AND IP_RECIBOS_DE_PAGO.ANULADO IN (0) AND NOT IP_RECIBOS_DE_PAGO.ESABONO IN (0) UNION SELECT IP_RECIBOS_DE_PAGO.PRECOD, IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PAGO, IP_RECIBOS_DE_PAGO.PAQUETEPAG, IP_RECIBOS_DE_PAGO.ANULADO, IP_RECIBOS_DE_PAGO.PREANO, IP_RECIBOS_DE_PAGO.PREANOI, IP_RECIBOS_DE_PAGO.AVALUO, IP_RECIBOS_DE_PAGO.PREVAL, IP_RECIBOS_DE_PAGO.PAG_BANPAG, TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECPAG,'DD/MM/YYYY') PREFECPAG, '3' TIPO, CASE WHEN IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; IP_RECIBOS_DE_PAGO.PREANO AND IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; 0 THEN CONCAT(TO_CHAR(IP_RECIBOS_DE_PAGO.PREANOI),CONCAT( ' - ' , TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO))) ELSE TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO) END FINALPREANO FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA =:COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD =:PREDIO AND NOT IP_RECIBOS_DE_PAGO.PAGO IN (0) AND IP_RECIBOS_DE_PAGO.ANULADO IN (0) AND NOT IP_RECIBOS_DE_PAGO.ESACUERDO IN (0) UNION SELECT IP_RECIBOS_DE_PAGO.PRECOD, IP_RECIBOS_DE_PAGO.DOCNUM, IP_RECIBOS_DE_PAGO.PAGO, IP_RECIBOS_DE_PAGO.PAQUETEPAG, IP_RECIBOS_DE_PAGO.ANULADO, IP_RECIBOS_DE_PAGO.PREANO, IP_RECIBOS_DE_PAGO.PREANOI, IP_RECIBOS_DE_PAGO.AVALUO, IP_RECIBOS_DE_PAGO.PREVAL, IP_RECIBOS_DE_PAGO.PAG_BANPAG, TO_CHAR(IP_RECIBOS_DE_PAGO.PREFECPAG,'DD/MM/YYYY') PREFECPAG, '4' TIPO, CASE WHEN IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; IP_RECIBOS_DE_PAGO.PREANO AND IP_RECIBOS_DE_PAGO.PREANOI &lt;&gt; 0 THEN CONCAT(TO_CHAR(IP_RECIBOS_DE_PAGO.PREANOI),CONCAT( ' - ' , TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO))) ELSE TO_CHAR(IP_RECIBOS_DE_PAGO.PREANO) END FINALPREANO FROM IP_RECIBOS_DE_PAGO WHERE IP_RECIBOS_DE_PAGO.COMPANIA =:COMPANIA AND IP_RECIBOS_DE_PAGO.PRECOD =:PREDIO AND NOT IP_RECIBOS_DE_PAGO.PAGO IN (0) AND IP_RECIBOS_DE_PAGO.ANULADO IN (0) AND IP_RECIBOS_DE_PAGO.ESACUERDO IN (0) AND IP_RECIBOS_DE_PAGO.ESCUOTA IN (0) AND IP_RECIBOS_DE_PAGO.ESABONO IN (0) ) ORDER BY PREANO DESC) INI WHERE (CASE WHEN DOCNUM IS NULL THEN ' ' ELSE UPPER(DOCNUM) END) LIKE UPPER(CONCAT(CONCAT('%',:DOCNUM), '%')) AND (CASE WHEN PAQUETEPAG IS NULL THEN ' ' ELSE UPPER(PAQUETEPAG) END) LIKE UPPER(CONCAT(CONCAT('%',:PAQUETEPAG), '%')) AND (CASE WHEN AVALUO IS NULL THEN ' ' ELSE UPPER(AVALUO) END) LIKE UPPER(CONCAT(CONCAT('%',:AVALUO), '%')) AND (CASE WHEN PREVAL IS NULL THEN ' ' ELSE UPPER(PREVAL) END) LIKE UPPER(CONCAT(CONCAT('%',:PREVAL), '%')) AND (CASE WHEN PAG_BANPAG IS NULL THEN ' ' ELSE UPPER(PAG_BANPAG) END) LIKE UPPER(CONCAT(CONCAT('%',:PAG_BANPAG), '%')) AND (CASE WHEN PREFECPAG IS NULL THEN ' ' ELSE UPPER(PREFECPAG) END) LIKE UPPER(CONCAT(CONCAT('%',:PREFECPAG), '%')) AND (CASE WHEN FINALPREANO IS NULL THEN ' ' ELSE UPPER(FINALPREANO) END) LIKE UPPER(CONCAT(CONCAT('%',:FINALPREANO), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PAQUETEPAG" sqlType="STRING"/>
+		<param name="AVALUO" sqlType="STRING"/>
+		<param name="PREVAL" sqlType="STRING"/>
+		<param name="PAG_BANPAG" sqlType="STRING"/>
+		<param name="PREFECPAG" sqlType="STRING"/>
+		<param name="FINALPREANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/historicospagosporpredio/num">
+		<call-query href="getIprecibosdepagoNumHistoricosPagosPorPredioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PAQUETEPAG" query-param="PAQUETEPAG"/>
+			<with-param name="AVALUO" query-param="AVALUO"/>
+			<with-param name="PREVAL" query-param="PREVAL"/>
+			<with-param name="PAG_BANPAG" query-param="PAG_BANPAG"/>
+			<with-param name="PREFECPAG" query-param="PREFECPAG"/>
+			<with-param name="FINALPREANO" query-param="FINALPREANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoCodigofacturaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PRECOD  FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA AND DOCNUM =:NUMFACTURA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PRECOD":"$PRECOD"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/codigofactura">
+		<call-query href="getIprecibosdepagoCodigofacturaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+
+		</call-query>
+	</resource>
+	<query id="getIprecibosdepagoDatosfacturaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DOCNUM, PREANO, PREVAL,(TO_CHAR(PREFECLIM,'DD/MM/YYYY HH24:MI:SS')) PREFECLIM,(TO_CHAR(PREFEC,'DD/MM/YYYY HH24:MI:SS')) PREFEC FROM IP_RECIBOS_DE_PAGO WHERE COMPANIA = :COMPANIA AND PRECOD = :PRECOD AND DOCNUM = :DOCNUM AND ANULADO IN (0) AND PAGO IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DOCNUM":"$DOCNUM","PREANO":"$PREANO(type:integer)","PREVAL":"$PREVAL","PREFECLIM":"$PREFECLIM","PREFEC":"$PREFEC"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iprecibosdepago/datosfactura">
+		<call-query href="getIprecibosdepagoDatosfacturaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIprecibosdepagoAnularReciboPago" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_RECIBOS_DE_PAGO SET ANULADO = -1 WHERE COMPANIA = :COMPANIA AND DOCNUM = :DOCNUM AND PRECOD = :PRECOD</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DOCNUM" sqlType="STRING"/>
+		<param name="PRECOD" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="iprecibosdepago/anularrecibopago">
+		<call-query href="updateIprecibosdepagoAnularReciboPago">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DOCNUM" query-param="DOCNUM"/>
+			<with-param name="PRECOD" query-param="PRECOD"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,655 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+              asignarEventoContGrande();
+validarCargaGrandes();
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TT_FR1107}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<section class="radius">
+			<f:event type="preRenderView"
+				listener="#{financiablespsControlador.cargarForma}" />
+			<div id="FR1107" style="height: auto;">
+				<h:form style="height: 100%;" id="FRFR1107">
+					<p:growl id="alert" showDetail="true" sticky="false"
+						widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+					<p:dialog dynamic="true" closable="true" closeOnEscape="false"
+						header="#{sessionBean.tituloMensajes}" id="DG132"
+						widgetVar="DG132" resizable="false" modal="true" width="250"
+						visible="#{financiablespsControlador.muestraDialogo}">
+						<h:outputLabel value="#{financiablespsControlador.mensajeDialogo}"
+							style="width: 100%;" escape="false" />
+						<h:panelGrid columns="2" cellpadding="2" width="100%">
+							<f:facet name="footer">
+								<center>
+									<p:commandButton
+										value="#{financiablespsControlador.etiquetaAceptar}"
+										style="padding:10px; width: 48%;"
+										update="@([id$=alert]),:FRFR1107:TBFR1107"
+										oncomplete=" if(true){ PF('DG132').hide(); PF('blockCarga').hide();}  "
+										onclick="  if(true){ PF('blockCarga').show(); }else{    PF('DG132').hide(); }  "
+										actionListener="#{financiablespsControlador.aceptardialogoConfirmar}" />
+									<p:commandButton
+										value="#{financiablespsControlador.etiquetaCancelar}"
+										style="padding:10px; width: 48%;"
+										update="@([id$=alert]),:FRFR1107:TBFR1107"
+										oncomplete=" if(true){ PF('DG132').hide(); PF('blockCarga').hide();} "
+										onclick=" if(true){ PF('blockCarga').show(); }else{    PF('DG132').hide(); }  "
+										actionListener="#{financiablespsControlador.cancelardialogoConfirmar}" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<p:remoteCommand name="actualizarTotales" update="TBFR1107"
+						actionListener="#{financiablespsControlador.ejecutaractualizarTotales}" />
+					<div id="PL2149" class="
+"
+						style="position: relative; height: 71px;">
+						<p:inputText id="CB3634" widgetVar="CB3634"
+							onfocus="if(!false){PF('BTCB3634').jq.focus();}"
+							onclick="if(!false){PF('PLCB3634').show();}"
+							value="#{financiablespsControlador.codigoRuta}" tabindex="-1"
+							style="cursor:pointer; position: absolute; width:143px; height: 20px; left: 127px;   top: 50px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#AAAAAA  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+						<p:commandButton id="BTCB3634" onblur="PF('CB3634').jq.blur();"
+							onfocus="PF('CB3634').jq.addClass('ui-state-focus');"
+							widgetVar="BTCB3634" type="button"
+							icon="ui-icon ui-icon-triangle-1-s ui-c"
+							style="position: absolute; width:25px; height:  20px; left: 268px;   top: 50px; display:block; "
+							tabindex="2" />
+						<p:overlayPanel widgetVar="PLCB3634" id="PLCB3634"
+							onShow="if(PF('TBCB3634').nuevo){ PF('TBCB3634').filter(); PF('TBCB3634').nuevo=false;}"
+							onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB3634').jq.focus();}"
+							my="bottom" at="left bottom" for="BTCB3634" hideEffect="fade"
+							style="width: 600px">
+							<p:dataTable id="TBCB3634" widgetVar="TBCB3634" var="reg"
+								value="#{financiablespsControlador.listaUsuarios}"
+								editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+								currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+								rows="11" rowIndexVar="rowIndex" selectionMode="single"
+								rowKey="#{reg.campos['CODIGORUTA']}" paginator="true"
+								lazy="true">
+								<p:ajax event="rowSelect"
+									listener="#{financiablespsControlador.seleccionarFilaUsuarios}"
+									update=":FRFR1107:CB3634,@form"
+									oncomplete="PF('PLCB3634').hide(); " />
+								<p:column headerText="#{idm.TG_CODIGO7}"
+									style="text-align:center; " width="30%"
+									filterBy="#{reg.campos['CODIGORUTA']}"
+									filterMatchMode="startsWith" filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['CODIGORUTA']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_NOMBRE3}"
+									style="text-align:center; " width="55%"
+									filterBy="#{reg.campos['EXPR1']}" filterMatchMode="contains"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['EXPR1']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_FACTURA}"
+									style="text-align:center; " width="15%"
+									filterBy="#{reg.campos['FACTURA']}"
+									filterMatchMode="startsWith" filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['FACTURA']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+							</p:dataTable>
+						</p:overlayPanel>
+						<p:inputText id="CP32097" widgetVar="CP32097"
+							styleClass="inputTab"
+							value="#{financiablespsControlador.nombreUsuario}" tabindex="1"
+							style="position: absolute; width:376px; height: 20px; text-decoration:none; left: 297px;   top: 50px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#AAAAAA  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<h:outputLabel id="LB26091" value="#{idm.TT_LB26091}"
+							style="position: absolute; width:1110px; height: 23px; left: 0px;   top: 0px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB26090" value="#{idm.TT_LB26090}"
+							style="position: absolute; width:120px; height: 20px; left: 3px;   top: 48px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<p:overlayPanel widgetVar="PLCB3688" id="PLCB3688"
+						onShow="if(PF('TBCB3688').nuevo){ PF('TBCB3688').filter(); PF('TBCB3688').nuevo=false;}"
+						onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB3688').jq.focus();}"
+						my="left top" at="left top" for="BTCB3688" hideEffect="fade"
+						style="width: 500px">
+						<p:dataTable id="TBCB3688" widgetVar="TBCB3688" var="reg"
+							value="#{financiablespsControlador.listaConceptos}"
+							editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="11" rowIndexVar="rowIndex" selectionMode="single"
+							rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+							<p:ajax event="rowSelect"
+								listener="#{financiablespsControlador.seleccionarFilaConceptos}"
+								update=":FRFR1107:CB3688,:FRFR1107:BTCB3688,@([id$=CP32102]),@([id$=alert]),@([id$=CP32098])"
+								oncomplete="PF('PLCB3688').hide(); $('#speCB3688').remove();  " />
+							<p:column headerText="#{idm.TG_CODIGO7}"
+								style="text-align:center; " width="15%"
+								filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['CODIGO']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE3}"
+								style="text-align:center; " width="60%"
+								filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NOMBRE']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_VALOR4}"
+								style="text-align:center; " width="25%"
+								filterBy="#{reg.campos['VALOR']}" filterMatchMode="contains"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['VALOR']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+						</p:dataTable>
+					</p:overlayPanel>
+					<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}" id="dlg"
+						widgetVar="dlg" resizable="false" modal="true"
+						rendered="#{financiablespsControlador.permisos[0]}"
+						onHide="restaurarCampos(['CB3688','CP32098','CP32099','CP32100','CP32101','CP32102'])">
+						<h:panelGrid columns="2" cellpadding="2">
+							<h:outputLabel value="#{idm.TG_ANIO3}:" id="LCP32103"
+								class="cont-inst-element" />
+							<p:inputText id="CP32103" readonly="true" widgetVar="CP32103"
+								styleClass="inputTab"
+								value="#{financiablespsControlador.registro.campos['ANO']}"
+								label="LCP32103" style=" width: 95%; float: left;"
+								class="cont-inst-element">
+							</p:inputText>
+							<h:outputLabel value="#{idm.TG_PERIODO3}:" id="LCP32104"
+								class="cont-inst-element" />
+							<p:inputText id="CP32104" readonly="true" widgetVar="CP32104"
+								styleClass="inputTab"
+								value="#{financiablespsControlador.registro.campos['PERIODO']}"
+								label="LCP32104" style=" width: 95%; float: left;"
+								class="cont-inst-element">
+							</p:inputText>
+							<h:outputLabel value="#{idm.TC_CB3688}:" id="LCB3688"
+								rendered="true" class="cont-inst-element" />
+							<h:panelGroup rendered="true">
+								<p:inputText id="CB3688" widgetVar="CB3688"
+									onfocus="if(!false){PF('BTCB3688').jq.focus();}"
+									onclick="if(!false){PF('PLCB3688').show();}"
+									value="#{financiablespsControlador.registro.campos['CONCEPTO']}"
+									style="cursor:pointer; width: 80%;" tabindex="-1"
+									class="cont-inst-element" />
+								<p:commandButton id="BTCB3688" widgetVar="BTCB3688"
+									onclick="PF('PLCB3688').show();"
+									onblur="PF('CB3688').jq.blur();"
+									onfocus="PF('CB3688').jq.addClass('ui-state-focus');"
+									type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+									style="width:25px; height:  23px; top:3px; border-left-width: 0; "
+									class="cont-inst-element" />
+							</h:panelGroup>
+							<h:outputLabel value="#{idm.TG_FECHA4}:" id="LCP32105"
+								class="cont-inst-element" />
+							<p:calendar locale="es" navigator="true" mask="true"
+								disabled="true" pattern="dd/MM/yyyy" id="CP32105"
+								widgetVar="CP32105"
+								value="#{financiablespsControlador.registro.campos['DATE_CREATED']}"
+								label="LCP32105" style="float: left;" class="cont-inst-element">
+							</p:calendar>
+							<h:outputLabel value="#{idm.TG_MONTO}:" id="LCP32098"
+								class="cont-inst-element" />
+							<pe:inputNumber id="CP32098" widgetVar="CP32098"
+								value="#{financiablespsControlador.registro.campos['MONTOFINANCIAR']}"
+								label="LCP32098" decimalPlaces="2" thousandSeparator=","
+								decimalSeparator="." styleClass="inputTab"
+								maxValue="99999999999999999999.99" minValue="0"
+								converter="convertidorDouble" style=" width: 95%;float: left;"
+								class="cont-inst-element">
+								<p:ajax event="change"
+									listener="#{financiablespsControlador.cambiarMontoFinanciar}"
+									update="@([id$=CP32100]),@([id$=CP32101])" />
+							</pe:inputNumber>
+							<h:outputLabel value="#{idm.TC_CP32100}:" id="LCP32100"
+								class="cont-inst-element" />
+							<pe:inputNumber id="CP32100" widgetVar="CP32100"
+								value="#{financiablespsControlador.registro.campos['SALDOFINANCIABLE']}"
+								label="LCP32100" decimalPlaces="2" thousandSeparator=","
+								decimalSeparator="." styleClass="inputTab"
+								maxValue="99999999999999999999.99" minValue="0"
+								converter="convertidorDouble" style=" width: 95%;float: left;"
+								class="cont-inst-element">
+							</pe:inputNumber>
+							<h:outputLabel value="#{idm.TG_CUOTAS}:" id="LCP32099"
+								class="cont-inst-element" />
+							<pe:inputNumber id="CP32099" widgetVar="CP32099"
+								value="#{financiablespsControlador.registro.campos['NUMEROCUOTAS']}"
+								label="LCP32099" decimalPlaces="0" thousandSeparator=","
+								decimalSeparator="." styleClass="inputTab" maxValue="999"
+								minValue="0" converter="convertidorDouble"
+								style=" width: 95%;float: left;" class="cont-inst-element">
+								<p:ajax event="change"
+									listener="#{financiablespsControlador.cambiarNumeroCuotas}"
+									update="@([id$=CP32101])" />
+							</pe:inputNumber>
+							<h:outputLabel value="#{idm.TG_VALOR_CUOTA}:" id="LCP32101"
+								class="cont-inst-element" />
+							<pe:inputNumber id="CP32101" widgetVar="CP32101"
+								value="#{financiablespsControlador.registro.campos['VALORCUOTA']}"
+								label="LCP32101" decimalPlaces="2" thousandSeparator=","
+								decimalSeparator="." styleClass="inputTab"
+								maxValue="99999999999999999999.99" minValue="0"
+								converter="convertidorDouble" readonly="true"
+								style=" width: 95%;float: left;" class="cont-inst-element">
+							</pe:inputNumber>
+							<h:outputLabel value="#{idm.TG_CONCEPTO4}:" id="LCP32102"
+								class="cont-inst-element" />
+							<p:inputText id="CP32102" readonly="true" widgetVar="CP32102"
+								styleClass="inputTab"
+								value="#{financiablespsControlador.registro.campos['NOMBRECONCEPTO']}"
+								label="LCP32102" style=" width: 95%; float: left;"
+								class="cont-inst-element">
+							</p:inputText>
+							<h:outputLabel value="#{idm.TC_CB3636}:" id="LCB3636"
+								class="cont-inst-element" />
+							<p:selectOneMenu filter="true" effect="fade" id="CB3636"
+								editable="false" widgetVar="CB3636"
+								value="#{financiablespsControlador.registro.campos['BLOQUEADOHASTAANO']}"
+								onchange="" style="
+" class="cont-inst-element">
+								<f:selectItem />
+								<f:selectItems value="#{financiablespsControlador.listaAnios}"
+									var="regc" itemLabel="#{regc.campos['ANO']}"
+									itemValue="#{regc.campos['ANO']}" />
+							</p:selectOneMenu>
+							<h:outputLabel value="#{idm.TC_CB3637}:" id="LCB3637"
+								class="cont-inst-element" />
+							<p:selectOneMenu filter="true" effect="fade" id="CB3637"
+								editable="false" widgetVar="CB3637"
+								value="#{financiablespsControlador.registro.campos['BLOQUEADOHASTAPERIODO']}"
+								onchange="" style="
+" class="cont-inst-element">
+								<f:selectItem />
+								<f:selectItems
+									value="#{financiablespsControlador.listaPeriodos}" var="regc"
+									itemLabel="#{regc.campos['PERUNICO']}"
+									itemValue="#{regc.campos['MES']}" />
+							</p:selectOneMenu>
+							<h:outputLabel value="#{idm.TC_CK933}:" id="LCK933"
+								style="display:block" class="cont-inst-element" />
+							<p:selectBooleanCheckbox id="CK933" widgetVar="CK933"
+								value="#{financiablespsControlador.registro.campos['BLOQUEADO']}"
+								label="LCK933" style="min-width: 80px; display:block"
+								class="cont-inst-element">
+								<p:ajax event="change"
+									listener="#{financiablespsControlador.cambiarBLOQUEADO}"
+									update="@this" />
+							</p:selectBooleanCheckbox>
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TI_GUARDAR}"
+										style="padding:10px;" update="FRFR1107,"
+										actionListener="#{financiablespsControlador.agregarRegistroNuevo}"
+										oncomplete="PF('dlg').hide(); PF('blockGuardar').hide();"
+										onclick="     if (!validarVaciosModal(['CB3688','CP32098','CP32099','CP32100','CP32101','CP32102'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockGuardar').show();" />
+									<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+										href="#" onclick="PF('dlg').hide();" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<p:confirmDialog global="true" showEffect="fade">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<div id="PL2150" class="
+"
+						style="position: relative; height: auto;">
+						<center>
+							<p:inputText id="HCB3688" rendered="true" widgetVar="HCB3688"
+								value="#{financiablespsControlador.auxiliar}"
+								style="width: 0px; height: 0px; border: #ffffff; background: #FFFFFF; box-shadow: none"
+								disabled="true" />
+						</center>
+						<p:overlayPanel widgetVar="PLSCB3688" id="PLSCB3688"
+							rendered="true"
+							onShow="if(PF('TBSCB3688').nuevo){ PF('TBSCB3688').clearFilters(); PF('TBSCB3688').nuevo=false;}"
+							onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){aux= aux.replace(':BT',':'); aux=aux.replace(/:/g,'\\:'); $('#'+aux).focus();}"
+							for="HCB3688" hideEffect="fade" style="width:500px; ">
+							<p:dataTable id="TBSCB3688" widgetVar="TBSCB3688" var="reg"
+								value="#{financiablespsControlador.listaConceptosE}"
+								editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+								currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+								rows="11" rowIndexVar="rowIndex" selectionMode="single"
+								rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+								<p:ajax event="rowSelect"
+									listener="#{financiablespsControlador.seleccionarFilaConceptosE}"
+									update=":FRFR1107:HCB3688"
+									oncomplete=" aux= aux.replace(':BT',':'); aux=aux.replace(/:/g,'\\:'); $('#'+aux)[0].value=PF('HCB3688').jq[0].value;  PF('PLSCB3688').hide();  $('#'+aux).change(); ind=false; " />
+								<p:column headerText="#{idm.TG_CODIGO7}"
+									style="text-align:center; " width="15%"
+									filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['CODIGO']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_NOMBRE3}"
+									style="text-align:center; " width="60%"
+									filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NOMBRE']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_VALOR4}"
+									style="text-align:center; " width="25%"
+									filterBy="#{reg.campos['VALOR']}" filterMatchMode="contains"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['VALOR']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+							</p:dataTable>
+						</p:overlayPanel>
+						<p:remoteCommand name="refreshTab" update="TBFR1107"
+							oncomplete="PF('blockGuardar').hide();" />
+						<p:dataTable id="TBFR1107" var="reg"
+							value="#{financiablespsControlador.listaInicial}" editable="true"
+							widgetVar="TBFR1107" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="10" rowIndexVar="rowNun" paginator="true" scrollable="true"
+							scrollWidth="100%" lazy="true">
+							<f:facet name="{Exporters}"
+								rendered="#{financiablespsControlador.permisos[4] }">
+								<h:commandLink
+									rendered="#{financiablespsControlador.permisos[4] }"
+									title="#{idm.TI_VER_EXCEL}">
+									<p:graphicImage name="/images/general/excel.png" width="24" />
+									<p:dataExporter type="xls" target="TBFR1107" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+								<h:commandLink
+									rendered="#{financiablespsControlador.permisos[4] }"
+									title="#{idm.TI_VER_PDF}">
+									<p:graphicImage name="/images/general/pdf.png" width="24" />
+									<p:dataExporter type="pdf" target="TBFR1107" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+							</f:facet>
+							<p:ajax event="filter" oncomplete="actualizarTotales();" />
+							<f:facet name="header">
+								<div style="position: relative; height: 50px">
+									<h:panelGroup class="acme"
+										rendered="#{financiablespsControlador.permisos[0] and financiablespsControlador.codigoRuta!=null and financiablespsControlador.codigoRuta!='' }">
+										<h:outputLink value="javascript:void(0)"
+											onclick="
+		PF('dlg').show();
+		"
+											title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;">
+											<center>
+												<p:graphicImage name="/images/menus/32/add.png" />
+												<div>#{idm.TI_NUEVO}</div>
+											</center>
+										</h:outputLink>
+									</h:panelGroup>
+									<div class="acme">
+										<h:outputLink value="#{request.contextPath}/menu.sysman"
+											title="Volver al menú" style="padding-top: 10px;">
+											<center>
+												<p:graphicImage name="/images/menus/32/close.png" />
+												<div>#{idm.TI_CERRAR}</div>
+											</center>
+										</h:outputLink>
+									</div>
+								</div>	 
+                            #{idm.TT_FR1107}
+                            </f:facet>
+							<p:column headerText="#{idm.TG_ANIO3}"
+								filterBy="#{reg.campos['ANO']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="5%" rendered="true"
+								styleClass="
+">
+								<h:outputText value="#{reg.campos['ANO']}"
+									style="text-align:  left; float:  left" />
+							</p:column>
+							<p:column headerText="#{idm.TG_PERIODO3}"
+								filterBy="#{reg.campos['PERIODO']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="5%" rendered="true"
+								styleClass="
+">
+								<h:outputText value="#{reg.campos['PERIODO']}"
+									style="text-align:  left; float:  left" />
+							</p:column>
+							<p:column headerText="#{idm.TG_FECHA4}"
+								filterBy="#{reg.campos['DATE_CREATED']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="8%"
+								rendered="true" style="
+" styleClass="
+">
+								<h:outputText value="#{reg.campos['DATE_CREATED']}">
+									<f:convertDateTime pattern="dd/MM/yyyy"
+										timeZone="#{sessionBean.timeZone}" />
+								</h:outputText>
+							</p:column>
+							<p:column headerText="#{idm.TC_CB3688}"
+								filterBy="#{reg.campos['CONCEPTO']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="5%" rendered="true" style="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['CONCEPTO']}" />
+									</f:facet>
+									<f:facet name="input">
+										<h:panelGroup>
+											<p:inputText id="CB3688"
+												onfocus="if(!false){onfocusCBG('#{component.clientId}');}"
+												onchange="return ind;" value="#{reg.campos['CONCEPTO']}"
+												onclick="if(!false){ PF('PLSCB3688').show('#{component.clientId}');}  aux= '#{component.clientId}'; ind = true;"
+												tabindex="-1" style="cursor:pointer; width: 75%;">
+											</p:inputText>
+											<p:commandButton id="BTCB3688" type="button"
+												icon="ui-icon ui-icon-triangle-1-s ui-c"
+												onclick="PF('PLSCB3688').show('#{component.clientId}'); aux= '#{component.clientId}';  ind = true;"
+												onblur="onblurBTCBG('#{component.clientId}');"
+												onfocus="onfocusBTCBG('#{component.clientId}');"
+												style="width:25px; height:  20px; top:4px; border-left-width: 0; " />
+										</h:panelGroup>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_MONTO}"
+								filterBy="#{reg.campos['MONTOFINANCIAR']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="10%"
+								rendered="true" style="
+" styleClass="
+">
+								<h:outputText value="#{reg.campos['MONTOFINANCIAR']}"
+									converter="convertidorDoubleContinuo"
+									style="text-align:  right; float:  right" />
+							</p:column>
+							<p:column headerText="#{idm.TC_CP32100}"
+								filterBy="#{reg.campos['SALDOFINANCIABLE']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="15%"
+								rendered="true" style="
+" styleClass="
+">
+								<h:outputText value="#{reg.campos['SALDOFINANCIABLE']}"
+									converter="convertidorDoubleContinuo"
+									style="text-align:  right; float:  right" />
+							</p:column>
+							<p:column headerText="#{idm.TG_CUOTAS}"
+								filterBy="#{reg.campos['NUMEROCUOTAS']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="5%"
+								rendered="true" style="
+" styleClass="
+">
+								<h:outputText value="#{reg.campos['NUMEROCUOTAS']}"
+									converter="convertidorDoubleContinuo"
+									style="text-align:  right; float:  right" />
+							</p:column>
+							<p:column headerText="#{idm.TG_VALOR_CUOTA}"
+								filterBy="#{reg.campos['VALORCUOTA']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="10%" rendered="true"
+								style="
+" styleClass="
+">
+								<h:outputText value="#{reg.campos['VALORCUOTA']}"
+									converter="convertidorDoubleContinuo"
+									style="text-align:  right; float:  right" />
+							</p:column>
+							<p:column headerText="#{idm.TG_CONCEPTO4}"
+								filterBy="#{reg.campos['NOMBRECONCEPTO']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="12%"
+								rendered="true" style="
+" styleClass="
+">
+								<h:outputText value="#{reg.campos['NOMBRECONCEPTO']}"
+									style="text-align:  left; float:  left" />
+							</p:column>
+							<p:column headerText="#{idm.TC_CB3636}"
+								filterBy="#{reg.campos['BLOQUEADOHASTAANO']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="5%"
+								rendered="true" style="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['BLOQUEADOHASTAANO']}" />
+									</f:facet>
+									<f:facet name="input">
+										<h:selectOneMenu id="CB3636"
+											value="#{reg.campos['BLOQUEADOHASTAANO']}" style="width:100%"
+											onchange="">
+											<f:selectItem />
+											<f:selectItems
+												value="#{financiablespsControlador.listaAnios}" var="regc"
+												itemLabel="#{regc.campos['ANO']}"
+												itemValue="#{regc.campos['ANO']}" />
+										</h:selectOneMenu>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CB3637}"
+								filterBy="#{reg.campos['PERUNICO']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="10%" rendered="true"
+								style="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['PERUNICO']}" />
+									</f:facet>
+									<f:facet name="input">
+										<h:selectOneMenu id="CB3637"
+											value="#{reg.campos['BLOQUEADOHASTAPERIODO']}"
+											style="width:100%" onchange="">
+											<f:selectItem />
+											<f:selectItems
+												value="#{financiablespsControlador.listaPeriodos}"
+												var="regc" itemLabel="#{regc.campos['PERUNICO']}"
+												itemValue="#{regc.campos['MES']}" />
+										</h:selectOneMenu>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CK933}"
+								filterBy="#{reg.campos['BLOQUEADO']}" filterMatchMode="exact"
+								width="5%" rendered="true" style="
+" styleClass="
+">
+								<f:facet name="filter">
+									<p:selectOneMenu onchange="PF('TBFR1107').filter()">
+										<f:selectItem itemLabel="#{idm.TI_TODOS}" itemValue="" />
+										<f:selectItem itemLabel="#{idm.TI_SI}" itemValue="true" />
+										<f:selectItem itemLabel="#{idm.TI_NO}" itemValue="false" />
+									</p:selectOneMenu>
+								</f:facet>
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText
+											value="#{reg.campos['BLOQUEADO']=='false'? 'No':'Si'}" />
+									</f:facet>
+									<f:facet name="input">
+										<center>
+											<h:selectBooleanCheckbox id="CK933"
+												value="#{reg.campos['BLOQUEADO']}">
+											</h:selectBooleanCheckbox>
+										</center>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:columnGroup type="footer">
+								<p:row style="height: 0px; border: none">
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" />
+								</p:row>
+								<p:row>
+									<p:column id="LP189" footerText="#{idm.TG_TOTALES4}"
+										colspan="4"
+										style="text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+									<p:column id="LP192"
+										footerText="#{financiablespsControlador.totalMonto}"
+										colspan="1"
+										style="text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+									<p:column id="LP190"
+										footerText="#{financiablespsControlador.totalSaldoFin}"
+										colspan="1"
+										style="text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+									<p:column id="LP203" footerText="" colspan="1"
+										style="text-align: left; font-weight: normal; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 12px;  color:#000000; " />
+									<p:column id="LP191"
+										footerText="#{financiablespsControlador.totalCuotas}"
+										colspan="1"
+										style="text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+								</p:row>
+							</p:columnGroup>
+							<p:column width="30" exportable="false"
+								rendered="#{financiablespsControlador.permisos[1] and financiablespsControlador.permiteEliminar}">
+								<p:commandButton icon="ui-icon-trash"
+									title="#{idm.TI_ELIMINAR_REGISTRO}"
+									onclick="PF('blockGuardar').show()"
+									action="#{financiablespsControlador.eliminarReg(reg)}"
+									oncomplete="refreshTab(); PF('blockGuardar').hide();"
+									update=":FRFR1107:alert,"
+									style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;">
+									<p:confirm header="#{sessionBean.tituloMensajes}"
+										message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+								</p:commandButton>
+							</p:column>
+						</p:dataTable>
+						<p:blockUI block="FRFR1107" widgetVar="blockGuardar">
+                        #{idm.TI_GUARDANDO_CAMBIOS}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+						<p:blockUI block="FRFR1107" widgetVar="blockCarga"
+							trigger="TBFR1107,">
+                        #{idm.TI_CARGANDO}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+					</div>
+				</h:form>
+			</div>
+		</section>
+	</ui:define>
+</ui:composition>

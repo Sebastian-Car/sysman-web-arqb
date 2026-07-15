@@ -1,0 +1,206 @@
+﻿<data name="vphechogenerador" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getVphechogeneradorPagPormovimientoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  VHP.ID, VHP.COMPANIA, VHP.CODIGO, VHP.NOMBRE, VHP.TARIFA, VHP.BASE_PLUSVALIA, VHP.BASE_CONTRIBUCION, VP.ANO_BASE, VP.MES_BASE  FROM VP_HECHOS_PROYECTOS VHP INNER JOIN VP_PROYECTOS VP ON VHP.ID_PROYECTO = VP.ID WHERE VHP.COMPANIA = :COMPANIA AND VHP.ID_PROYECTO = :PROYECTO AND VHP.CLASE = :CLASE AND VHP.MOVIMIENTO NOT IN (0) ORDER BY TO_NUMBER(VHP.CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER(:NOMBRE || '%')  AND (CASE WHEN MES_BASE IS NULL THEN ' ' ELSE UPPER(MES_BASE) END)  LIKE UPPER( '%' || :MES_BASE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","TARIFA":"$TARIFA(type:long)","BASE_PLUSVALIA":"$BASE_PLUSVALIA","BASE_CONTRIBUCION":"$BASE_CONTRIBUCION","ANO_BASE":"$ANO_BASE(type:integer)","MES_BASE":"$MES_BASE(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROYECTO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MES_BASE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vphechogenerador/pormovimiento/pag">
+		<call-query href="getVphechogeneradorPagPormovimientoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROYECTO" query-param="PROYECTO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MES_BASE" query-param="MES_BASE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getVphechogeneradorNumPormovimientoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  VHP.ID, VHP.COMPANIA, VHP.CODIGO, VHP.NOMBRE, VHP.TARIFA, VHP.BASE_PLUSVALIA, VHP.BASE_CONTRIBUCION, VP.ANO_BASE, VP.MES_BASE  FROM VP_HECHOS_PROYECTOS VHP INNER JOIN VP_PROYECTOS VP ON VHP.ID_PROYECTO = VP.ID WHERE VHP.COMPANIA = :COMPANIA AND VHP.ID_PROYECTO = :PROYECTO AND VHP.CLASE = :CLASE AND VHP.MOVIMIENTO NOT IN (0) ORDER BY TO_NUMBER(VHP.CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER(:NOMBRE || '%')  AND (CASE WHEN MES_BASE IS NULL THEN ' ' ELSE UPPER(MES_BASE) END)  LIKE UPPER( '%' || :MES_BASE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROYECTO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MES_BASE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vphechogenerador/pormovimiento/num">
+		<call-query href="getVphechogeneradorNumPormovimientoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROYECTO" query-param="PROYECTO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MES_BASE" query-param="MES_BASE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertVphechogenerador" keyColumns="ID" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO VP_HECHOS_PROYECTOS (COMPANIA, CODIGO, NOMBRE, CODIGO_PROYECTO, CLASE, ID_PROYECTO, TARIFA, MOVIMIENTO, DIVIDE_ACUERDO, BASE_PLUSVALIA, CREATED_BY, DATE_CREATED) VALUES (:COMPANIA, :CODIGO, :NOMBRE, :CODIGO_PROYECTO, :CLASE, :ID_PROYECTO, :TARIFA, :MOVIMIENTO, :DIVIDE_ACUERDO, :BASE_PLUSVALIA, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_ID":"$ID"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CODIGO_PROYECTO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="ID_PROYECTO" sqlType="STRING"/>
+		<param defaultValue="" name="TARIFA" sqlType="STRING"/>
+		<param defaultValue="" name="MOVIMIENTO" sqlType="STRING"/>
+		<param defaultValue="0" name="DIVIDE_ACUERDO" sqlType="STRING"/>
+		<param defaultValue="" name="BASE_PLUSVALIA" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="vphechogenerador">
+		<call-query href="insertVphechogenerador">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CODIGO_PROYECTO" query-param="CODIGO_PROYECTO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="ID_PROYECTO" query-param="ID_PROYECTO"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="DIVIDE_ACUERDO" query-param="DIVIDE_ACUERDO"/>
+			<with-param name="BASE_PLUSVALIA" query-param="BASE_PLUSVALIA"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteVphechogenerador" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM VP_HECHOS_PROYECTOS WHERE VP_HECHOS_PROYECTOS.ID= :KEY_ID</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_ID" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="vphechogenerador">
+		<call-query href="deleteVphechogenerador">
+			<with-param name="KEY_ID" query-param="KEY_ID"/>
+
+		</call-query>
+	</resource>
+	<query id="getVphechogeneradorPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID, COMPANIA, ID_PROYECTO, CODIGO, NOMBRE, TARIFA, BASE_PLUSVALIA  FROM VP_HECHOS_PROYECTOS WHERE COMPANIA = :COMPANIA AND ID_PROYECTO = :PROYECTO AND CLASE = :CLASE ORDER BY TO_NUMBER(CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER(:NOMBRE || '%')  AND (CASE WHEN TARIFA IS NULL THEN ' ' ELSE UPPER(TARIFA) END)  LIKE UPPER(:TARIFA || '%')  AND (CASE WHEN BASE_PLUSVALIA IS NULL THEN ' ' ELSE UPPER(BASE_PLUSVALIA) END)  LIKE UPPER(:BASE_PLUSVALIA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","COMPANIA":"$COMPANIA","ID_PROYECTO":"$ID_PROYECTO","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","TARIFA":"$TARIFA(type:long)","BASE_PLUSVALIA":"$BASE_PLUSVALIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROYECTO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+		<param name="BASE_PLUSVALIA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vphechogenerador">
+		<call-query href="getVphechogeneradorPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROYECTO" query-param="PROYECTO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="BASE_PLUSVALIA" query-param="BASE_PLUSVALIA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getVphechogeneradorNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID, COMPANIA, ID_PROYECTO, CODIGO, NOMBRE, TARIFA, BASE_PLUSVALIA  FROM VP_HECHOS_PROYECTOS WHERE COMPANIA = :COMPANIA AND ID_PROYECTO = :PROYECTO AND CLASE = :CLASE ORDER BY TO_NUMBER(CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER(:NOMBRE || '%')  AND (CASE WHEN TARIFA IS NULL THEN ' ' ELSE UPPER(TARIFA) END)  LIKE UPPER(:TARIFA || '%')  AND (CASE WHEN BASE_PLUSVALIA IS NULL THEN ' ' ELSE UPPER(BASE_PLUSVALIA) END)  LIKE UPPER(:BASE_PLUSVALIA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROYECTO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+		<param name="BASE_PLUSVALIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vphechogenerador/numero">
+		<call-query href="getVphechogeneradorNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROYECTO" query-param="PROYECTO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="BASE_PLUSVALIA" query-param="BASE_PLUSVALIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getVphechogeneradorRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT VP_HECHOS_PROYECTOS.ID, VP_HECHOS_PROYECTOS.COMPANIA, VP_HECHOS_PROYECTOS.CODIGO, VP_HECHOS_PROYECTOS.NOMBRE, VP_HECHOS_PROYECTOS.CODIGO_PROYECTO, VP_HECHOS_PROYECTOS.CLASE, VP_HECHOS_PROYECTOS.ID_PROYECTO, VP_HECHOS_PROYECTOS.TARIFA,(CASE VP_HECHOS_PROYECTOS.MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO,(CASE VP_HECHOS_PROYECTOS.DIVIDE_ACUERDO WHEN 0 THEN 'false' ELSE 'true' END) DIVIDE_ACUERDO, VP_HECHOS_PROYECTOS.BASE_PLUSVALIA, VP_HECHOS_PROYECTOS.BASE_CONTRIBUCION, CONCAT(VP_HECHOS_PROYECTOS.CODIGO_PROYECTO,CONCAT(' - ',VP_PROYECTOS.DESCRIPCION) ) PRODESC, VP_HECHOS_PROYECTOS.CREATED_BY,(TO_CHAR(VP_HECHOS_PROYECTOS.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, VP_HECHOS_PROYECTOS.MODIFIED_BY,(TO_CHAR(VP_HECHOS_PROYECTOS.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM VP_HECHOS_PROYECTOS JOIN VP_PROYECTOS ON VP_HECHOS_PROYECTOS.ID_PROYECTO = VP_PROYECTOS.ID WHERE VP_HECHOS_PROYECTOS.ID= :KEY_ID</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","CODIGO_PROYECTO":"$CODIGO_PROYECTO","CLASE":"$CLASE","ID_PROYECTO":"$ID_PROYECTO","TARIFA":"$TARIFA(type:long)","MOVIMIENTO":"$MOVIMIENTO(type:boolean)","DIVIDE_ACUERDO":"$DIVIDE_ACUERDO(type:boolean)","BASE_PLUSVALIA":"$BASE_PLUSVALIA","BASE_CONTRIBUCION":"$BASE_CONTRIBUCION","PRODESC":"$PRODESC","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="KEY_ID" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vphechogenerador/data">
+		<call-query href="getVphechogeneradorRegistroQuery">
+			<with-param name="KEY_ID" query-param="KEY_ID"/>
+
+		</call-query>
+	</resource>
+	<query id="updateVphechogenerador" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE VP_HECHOS_PROYECTOS SET COMPANIA=:COMPANIA, CODIGO=:CODIGO, NOMBRE=:NOMBRE, CODIGO_PROYECTO=:CODIGO_PROYECTO, CLASE=:CLASE, ID_PROYECTO=:ID_PROYECTO, TARIFA=:TARIFA, MOVIMIENTO=:MOVIMIENTO, DIVIDE_ACUERDO=:DIVIDE_ACUERDO, BASE_PLUSVALIA=:BASE_PLUSVALIA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE VP_HECHOS_PROYECTOS.ID= :KEY_ID</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CODIGO_PROYECTO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="ID_PROYECTO" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="DIVIDE_ACUERDO" sqlType="STRING"/>
+		<param name="BASE_PLUSVALIA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_ID" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="vphechogenerador">
+		<call-query href="updateVphechogenerador">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CODIGO_PROYECTO" query-param="CODIGO_PROYECTO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="ID_PROYECTO" query-param="ID_PROYECTO"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="DIVIDE_ACUERDO" query-param="DIVIDE_ACUERDO"/>
+			<with-param name="BASE_PLUSVALIA" query-param="BASE_PLUSVALIA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_ID" query-param="KEY_ID"/>
+
+		</call-query>
+	</resource>
+
+</data>

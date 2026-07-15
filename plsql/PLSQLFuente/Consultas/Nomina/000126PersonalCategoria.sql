@@ -1,0 +1,118 @@
+WITH PRIMATECNICAAUDITORIA AS(SELECT     NOVEDADES.COMPANIA, 
+                            NOVEDADES.ID_DE_EMPLEADO, 
+                            SUM(CASE WHEN NOVEDADES.ID_DE_CONCEPTO=085
+                                     THEN NOVEDADES.VALOR 
+                                     ELSE 0 
+                                     END) VPT, 
+                            SUM(CASE WHEN NOVEDADES.ID_DE_CONCEPTO=062
+                                     THEN NOVEDADES.VALOR 
+                                     ELSE 0 
+                                     END) VRGR, 
+                            SUM(CASE WHEN NOVEDADES.ID_DE_CONCEPTO=188
+                                     THEN NOVEDADES.VALOR 
+                                     ELSE 0 
+                                     END) VRPTAG, 
+                            SUM(CASE WHEN NOVEDADES.ID_DE_CONCEPTO=189
+                                     THEN NOVEDADES.VALOR 
+                                     ELSE 0 
+                                     END) VRPTDA, 
+                            SUM(CASE WHEN NOVEDADES.ID_DE_CONCEPTO=191
+                                     THEN NOVEDADES.VALOR 
+                                     ELSE 0 
+                                     END) VRPTAGD
+                    FROM  NOVEDADES
+                    WHERE NOVEDADES.ANO               =   0 
+                      AND NOVEDADES.MES               =   0 
+                      AND NOVEDADES.PERIODO           =   0 
+                      AND NOVEDADES.ID_DE_CONCEPTO    IN  (085,086,087,062,188,189,191) 
+                    GROUP BY    NOVEDADES.COMPANIA, 
+                                NOVEDADES.ID_DE_EMPLEADO
+)
+SELECT DISTINCT     BANCOS_NOMINA.NOMBRE NOMBRE_BANCO, 
+                    PERSONAL.NOMBRECOMPLETO NOMBRECOMPLETO, 
+                    CENTRO_COSTO.NOMBRE NOMBRE_CENTRO_DE_COSTO, 
+                    TIPOS_DE_EMPLEADO.NOMBRE_TIPO, 
+                    CARGOS.NOMBRE_DEL_CARGO, 
+                    DEPENDENCIA.NOMBRE NOMBREDEPENDENCIA, 
+                    DEPENDENCIA.NOMBRE NOMBRED, 
+                    CATEGORIA.NOMBRE_CATEGORIA, 
+                    CASE WHEN(PERSONAL.ESTADO_ACTUAL=2 AND CATEGORIA.SALARIO_BASE=0) 
+                         THEN PCK_NOMINA_COM5.FC_MIMESADA(PERSONAL.ID_DE_EMPLEADO,'s$compania$s') 
+                         ELSE CATEGORIA.SALARIO_BASE END SALARIO_BASE, 
+                    CATEGORIA.SALARIO_BASE*CATEGORIA.GASTOSREPRESENTACION/100 GASTOS, 
+                    ESCALAFON.NOMBRE, 
+                    ESCALAFON.CODIGO, 
+                    CASE WHEN PERSONAL.SEXO='M' 
+                         THEN 1 
+                         ELSE ( CASE WHEN PERSONAL.SEXO='F' 
+                                THEN 2 
+                                ELSE 3 
+                                END) END VALORSEXO, 
+                    CIUDAD.NOMBRE, 
+                    ESTADO_CIVIL.DESCRIPCION, 
+                    PERSONAL.ESTADO_ACTUAL, 
+                    PERSONAL.FECHA_DE_RETIRO, 
+                    PRIMATECNICAAUDITORIA.VPT PVPT, 
+                    CATEGORIA.SALARIO_BASE*PRIMATECNICAAUDITORIA.VPT/100 VRPT, 
+                    PRIMATECNICAAUDITORIA.VRGR, 
+                    PRIMATECNICAAUDITORIA.VRPTAG, 
+                    PRIMATECNICAAUDITORIA.VRPTDA, 
+                    PRIMATECNICAAUDITORIA.VRPTAGD, 
+                    FORMANOMBRAMIENTO.NOMBREFORMA, 
+                    PERSONAL.ANO, 
+                    PERSONAL.ID_DE_EMPLEADO ID_DE_EMPLEADO, 
+                    CATEGORIA.CODIGOGRADO, 
+                    CATEGORIA.SALARIO_RETROACTIVO, 
+                    CATEGORIA.VLR_INCREMENTO, 
+                    CATEGORIA.SALARIOANTERIOR, 
+                    PERSONAL.FECHA_DE_INGRESO, 
+                    PERSONAL.NUMERO_DCTO, 
+                    PERSONAL.ID_DE_CATEGORIA, 
+                    PERSONAL.BANCO BANCO, 
+                    PERSONAL.CUENTA CUENTA, 
+                    PERSONAL.ID_CENTRO_DE_COSTO ID_CENTRO_DE_COSTO
+FROM PERSONAL 
+      LEFT JOIN CIUDAD 
+          ON  PERSONAL.PAIS_CED          = CIUDAD.PAIS 
+          AND PERSONAL.DEPARTAMENTO_CED = CIUDAD.DEPARTAMENTO
+          AND PERSONAL.EXPEDIDA         = CIUDAD.CODIGO
+      LEFT JOIN DEPENDENCIA
+          ON  PERSONAL.COMPANIA     = DEPENDENCIA.COMPANIA 
+          AND PERSONAL.DEPENDENCIA  = DEPENDENCIA.CODIGO 
+      LEFT JOIN TIPOS_DE_EMPLEADO 
+          ON  PERSONAL.COMPANIA   = TIPOS_DE_EMPLEADO.COMPANIA 
+          AND PERSONAL.ID_DE_TIPO = TIPOS_DE_EMPLEADO.ID_DE_TIPO 
+      LEFT JOIN CENTRO_COSTO 
+          ON  PERSONAL.COMPANIA           = CENTRO_COSTO.COMPANIA 
+          AND PERSONAL.ID_CENTRO_DE_COSTO = CENTRO_COSTO.CODIGO 
+         AND PERSONAL.ANO = CENTRO_COSTO.ANO
+      LEFT JOIN BANCOS_NOMINA 
+          ON  PERSONAL.COMPANIA = BANCOS_NOMINA.COMPANIA
+          AND PERSONAL.BANCO    = BANCOS_NOMINA.BANCO
+      LEFT JOIN ESTADO_CIVIL 
+          ON  PERSONAL.COMPANIA     = ESTADO_CIVIL.COMPANIA
+          AND PERSONAL.ESTADO_CIVIL = ESTADO_CIVIL.ESTADO_CIVIL
+      LEFT JOIN CARGOS 
+          ON  PERSONAL.COMPANIA    = CARGOS.COMPANIA
+          AND PERSONAL.ID_DE_CARGO = CARGOS.ID_DE_CARGO 
+      LEFT JOIN CATEGORIA 
+          ON  PERSONAL.COMPANIA 	= CATEGORIA.COMPANIA
+          AND PERSONAL.ANO      	= CATEGORIA.ANO 
+          AND PERSONAL.ESCALAFON        = CATEGORIA.ESCALAFON
+          AND PERSONAL.ID_DE_CATEGORIA  = CATEGORIA.ID_DE_CATEGORIA
+      LEFT JOIN ESCALAFON 
+          ON  PERSONAL.COMPANIA  = ESCALAFON.COMPANIA
+          AND PERSONAL.ESCALAFON = ESCALAFON.CODIGO 
+      LEFT JOIN PRIMATECNICAAUDITORIA 
+          ON  PERSONAL.COMPANIA 	    = PRIMATECNICAAUDITORIA.COMPANIA
+          AND PERSONAL.ID_DE_EMPLEADO = PRIMATECNICAAUDITORIA.ID_DE_EMPLEADO 
+      LEFT JOIN FORMANOMBRAMIENTO 
+        ON  PERSONAL.COMPANIA   = FORMANOMBRAMIENTO.COMPANIA
+        AND PERSONAL.DE_CARRERA = FORMANOMBRAMIENTO.IDFORMA 
+WHERE   PERSONAL.COMPANIA 	    = 's$compania$s'
+  AND   PERSONAL.ID_DE_EMPLEADO NOT IN (0) 
+  AND  (PERSONAL.FECHA_DE_RETIRO IS NULL  
+  OR   (PERSONAL.ESTADO_ACTUAL   = 2   
+        AND PERSONAL.FECHA_DE_RETIRO IS NOT NULL)) 
+  s$strWhere$s 
+ORDER BY BANCOS_NOMINA.NOMBRE, PERSONAL.NOMBRECOMPLETO

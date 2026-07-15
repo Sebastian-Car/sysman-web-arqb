@@ -1,0 +1,67 @@
+CREATE OR REPLACE TRIGGER "BI_PLAN_PPTAL_CUENTACNT"  
+  /*
+      NAME              : BI_PLAN_PPTAL_CUENTACNT
+      AUTHORS           : SYSMAN  SAS
+      AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ BLANCO
+      DATE MIGRADOR     : 04/02/2016
+      TIME              : 8:15 AM
+      SOURCE MODULE     : 
+      MODIFIER          : JAVIER ANDRES RODRIGUEZ RIOS
+      DATE MODIFIED     : 11:58 AM
+      TIME              : 
+      DESCRIPTION       : PERMITE CONTROLAR QUE NO SE SELECCIONEN CUENTAS O RUBROS QUE NO TENGAN INDICADORES \ 
+                          JARR - Se ajustó al estándar en el manejo de excepciones.  
+                          
+  */
+BEFORE INSERT ON PLAN_PPTAL_CUENTACNT 
+FOR EACH ROW 
+DECLARE  
+  MI_X NUMBER:= 0;
+BEGIN
+ BEGIN 
+  SELECT   MAN_CEN_CTO 
+         + MAN_AUX_TER 
+         + MAN_AUX_GEN 
+         + MAN_AUX_FUE 
+         + MAN_AUX_REF 
+         + MOVIMIENTO   
+  INTO   MI_X
+  FROM   PLAN_CONTABLE   
+  WHERE  COMPANIA = :NEW.COMPANIA
+    AND  ANO      = :NEW.ANO
+    AND  CODIGO   = :NEW.CUENTA_CONTABLE; 
+  IF MI_X=0 THEN
+    RAISE PCK_EXCEPCIONES.EXC_PRESUPUESTO;
+    --RAISE_APPLICATION_ERROR(-20000,'La cuenta seleccionada no puede tener equivalente. '||SQLERRM);
+    -- RETURN;
+  END IF;
+ EXCEPTION WHEN PCK_EXCEPCIONES.EXC_PRESUPUESTO THEN 
+  PCK_ERR_MSG.RAISE_WITH_MSG(
+             UN_EXC_COD => SQLCODE,
+             UN_ERROR_COD => PCK_ERRORES.ERR_PPTO_CUENTA_CNT_NOEQ 
+             );
+ END;
+ BEGIN
+  SELECT   MAN_CEN_CTO 
+         + MAN_AUX_TER 
+         + MAN_AUX_GEN 
+         + MAN_AUX_FUE 
+         + MAN_AUX_REF 
+         + MOVIMIENTO  
+  INTO   MI_X
+  FROM   PLAN_PRESUPUESTAL   
+  WHERE  COMPANIA = :NEW.COMPANIA
+    AND  ANO      = :NEW.ANO
+    AND  CODIGO   = :NEW.RUBRO; 
+  IF MI_X IN (0) THEN 
+    RAISE PCK_EXCEPCIONES.EXC_PRESUPUESTO;
+     --RAISE_APPLICATION_ERROR(-20000,'El rubro seleccionado no maneja movimiento ni auxiliar. '||SQLERRM);
+     --RETURN;
+  END IF;
+ EXCEPTION WHEN PCK_EXCEPCIONES.EXC_PRESUPUESTO THEN 
+  PCK_ERR_MSG.RAISE_WITH_MSG(
+             UN_EXC_COD => SQLCODE,
+             UN_ERROR_COD => PCK_ERRORES.ERR_PPTO_CUENTA_CNT_NOIND 
+             ); 
+ END;
+END;

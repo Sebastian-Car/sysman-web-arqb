@@ -1,0 +1,245 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{esfactoresporestproysControlador.titulo}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<section class="radius">
+			<f:event type="preRenderView"
+				listener="#{esfactoresporestproysControlador.cargarForma}" />
+			<div id="FR722" style="height: auto;">
+				<h:form style="height: 100%;" id="FRFR722">
+					<p:growl id="alert" showDetail="true" sticky="false"
+						widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+					<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}" id="dlg"
+						widgetVar="dlg" resizable="false" modal="true"
+						rendered="#{esfactoresporestproysControlador.permisos[0]}"
+						onHide="restaurarCampos(['CP22260','CP22261'])">
+						<h:panelGrid columns="2" cellpadding="2">
+							<h:outputLabel value="#{idm.TG_DESCRIPCION7}:" id="LCP22260"
+								class="cont-inst-element" />
+							<p:inputText id="CP22260" widgetVar="CP22260"
+								styleClass="inputTab"
+								value="#{esfactoresporestproysControlador.registro.campos['NOMBRE']}"
+								label="LCP22260" style=" width: 95%; float: left;"
+								class="cont-inst-element">
+							</p:inputText>
+							<h:outputLabel value="#{idm.TG_PUNTAJE}:" id="LCP22261"
+								class="cont-inst-element" />
+							<pe:inputNumber id="CP22261" widgetVar="CP22261"
+								value="#{esfactoresporestproysControlador.registro.campos['PUNTAJE']}"
+								label="LCP22261" decimalPlaces="0" thousandSeparator=""
+								decimalSeparator="" styleClass="inputTab"
+								converter="convertidorDouble" style=" width: 95%;float: left;"
+								class="cont-inst-element">
+							</pe:inputNumber>
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TI_GUARDAR}"
+										style="padding:10px;" update="FRFR722,"
+										actionListener="#{esfactoresporestproysControlador.agregarRegistroNuevo}"
+										oncomplete="PF('dlg').hide(); PF('blockGuardar').hide();"
+										onclick="     if (!validarVaciosModal(['CP22260','CP22261'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockGuardar').show();" />
+									<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+										href="#" onclick="PF('dlg').hide();" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<p:confirmDialog global="true" showEffect="fade">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<div id="PL1491" class="
+"
+						style="position: relative; height: auto;">
+						<p:remoteCommand name="refreshTab" update="TBFR722"
+							oncomplete="PF('blockGuardar').hide();" />
+						<p:dataTable id="TBFR722" var="reg"
+							value="#{esfactoresporestproysControlador.listaInicial}"
+							editable="true" widgetVar="TBFR722"
+							emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="10" rowIndexVar="rowNun" paginator="true" scrollable="true"
+							scrollWidth="100%" lazy="true">
+							<f:facet name="{Exporters}"
+								rendered="#{esfactoresporestproysControlador.permisos[4] }">
+								<h:commandLink
+									rendered="#{esfactoresporestproysControlador.permisos[4] }"
+									title="#{idm.TI_VER_EXCEL}">
+									<p:graphicImage name="/images/general/excel.png" width="24" />
+									<p:dataExporter type="xls" target="TBFR722" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+								<h:commandLink
+									rendered="#{esfactoresporestproysControlador.permisos[4] }"
+									title="#{idm.TI_VER_PDF}">
+									<p:graphicImage name="/images/general/pdf.png" width="24" />
+									<p:dataExporter type="pdf" target="TBFR722" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+							</f:facet>
+							<p:ajax event="rowEdit" update=":FRFR722:alert,"
+								listener="#{esfactoresporestproysControlador.editar}"
+								oncomplete="refreshTab(); mostarEditor();"
+								onstart="PF('blockGuardar').show();" />
+							<p:ajax event="rowEditCancel"
+								listener="#{esfactoresporestproysControlador.cancelarEdicion}"
+								oncomplete="  mostarEditor();" />
+							<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+							<f:facet name="header">
+								<div style="position: relative; height: 50px">
+									<h:panelGroup class="acme"
+										rendered="#{esfactoresporestproysControlador.permisos[0] and !esfactoresporestproysControlador.vobo }">
+										<h:outputLink value="javascript:void(0)"
+											onclick="
+		PF('dlg').show();
+		"
+											title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;">
+											<center>
+												<p:graphicImage name="/images/menus/32/add.png" />
+												<div>#{idm.TI_NUEVO}</div>
+											</center>
+										</h:outputLink>
+									</h:panelGroup>
+									<div class="acme">
+										<h:outputLink title="Volver al menú"
+											style="padding-top: 10px;" value="javascript:void(0)"
+											onclick="rcCerrar();">
+											<center>
+												<p:graphicImage name="/images/menus/32/close.png" />
+												<div>#{idm.TI_CERRAR}</div>
+											</center>
+										</h:outputLink>
+									</div>
+									<p:remoteCommand name="rcCerrar"
+										actionListener="#{esfactoresporestproysControlador.ejecutarrcCerrar}" />
+								</div>	 
+                            #{esfactoresporestproysControlador.titulo}
+                            </f:facet>
+							<p:column headerText="#{idm.TG_CODIGO7}"
+								filterBy="#{reg.campos['CODIGO_SUBFACTOR']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="20%"
+								rendered="true" styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['CODIGO_SUBFACTOR']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP22259" styleClass="inputTab"
+											value="#{reg.campos['CODIGO_SUBFACTOR']}" style="width:100%"
+											readonly="true">
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_DESCRIPCION7}"
+								filterBy="#{reg.campos['NOMBRE']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="50%" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['NOMBRE']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP22260" styleClass="inputTab"
+											value="#{reg.campos['NOMBRE']}" style="width:100%">
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_PUNTAJE}"
+								filterBy="#{reg.campos['PUNTAJE']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="30%" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['PUNTAJE']}"
+											style="text-align:  right; float:  right" />
+									</f:facet>
+									<f:facet name="input">
+										<pe:inputNumber id="CP22261" styleClass="inputTab"
+											value="#{reg.campos['PUNTAJE']}" decimalPlaces="0"
+											thousandSeparator="" decimalSeparator=""
+											converter="convertidorDouble" style="width: 95%">
+										</pe:inputNumber>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:columnGroup type="footer">
+								<p:row style="height: 0px; border: none">
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" rendered="true" />
+									<p:column style="border:1px solid transparent;" />
+									<p:column style="border:1px solid transparent;" />
+								</p:row>
+								<p:row>
+									<p:column id="LP159" footerText="#{idm.TG_TOTAL5}" colspan="2"
+										style="text-align: right; font-weight: normal; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+									<p:column id="LP160"
+										footerText="#{esfactoresporestproysControlador.totalPuntaje}"
+										colspan="1"
+										style="text-align: right; font-weight: normal; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px;  color:#000000; " />
+								</p:row>
+							</p:columnGroup>
+							<p:column width="30" exportable="false"
+								rendered="#{esfactoresporestproysControlador.permisos[2] and !esfactoresporestproysControlador.vobo}">
+								<p:rowEditor />
+							</p:column>
+							<p:column width="30" exportable="false"
+								rendered="#{esfactoresporestproysControlador.permisos[1] and !esfactoresporestproysControlador.vobo}">
+								<p:commandButton icon="ui-icon-trash"
+									title="#{idm.TI_ELIMINAR_REGISTRO}"
+									onclick="PF('blockGuardar').show()"
+									action="#{esfactoresporestproysControlador.eliminarReg(reg)}"
+									oncomplete="refreshTab(); PF('blockGuardar').hide();"
+									update=":FRFR722:alert,"
+									style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;">
+									<p:confirm header="#{sessionBean.tituloMensajes}"
+										message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+								</p:commandButton>
+							</p:column>
+						</p:dataTable>
+						<p:blockUI block="FRFR722" widgetVar="blockGuardar">
+                        #{idm.TI_GUARDANDO_CAMBIOS}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+						<p:blockUI block="FRFR722" widgetVar="blockCarga"
+							trigger="TBFR722,">
+                        #{idm.TI_CARGANDO}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+					</div>
+				</h:form>
+			</div>
+		</section>
+	</ui:define>
+</ui:composition>

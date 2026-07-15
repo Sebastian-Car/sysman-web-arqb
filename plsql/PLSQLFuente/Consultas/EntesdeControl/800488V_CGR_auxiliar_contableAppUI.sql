@@ -1,0 +1,81 @@
+MERGE INTO CONSULTAS FIN USING (SELECT '800488V_CGR_auxiliar_contableAppUI' INFORME ,TO_CLOB(q'[SELECT  REPLACE(REPLACE(Descripcion_Registro_Contable, CHR(13), ' ') , CHR(10), ' ') descRegContable,
+        Fecha fecha,
+        REPLACE(REPLACE(Comprobante, CHR(13), ' ') , CHR(10), ' ') comprobante,
+        numero,
+        REPLACE(REPLACE("Cheque/Transferencia", CHR(13), ' ') , CHR(10), ' ') cheque,
+        debitos,
+        creditos,
+        saldoDebito  saldoTotalDebito,
+        saldoCredito saldoTotalCredito,
+        CASE WHEN NATURALEZA ='D' AND saldoDebito>0 OR NATURALEZA ='C' AND saldoCredito>0
+          THEN saldoDebito + saldoCredito
+          ELSE CASE WHEN NATURALEZA ='C' AND saldoDebito>0 OR NATURALEZA ='D' AND saldoCredito>0 THEN 
+           -saldoDebito - saldoCredito
+           ELSE 0 END END saldoInicial,
+        2 macroCampo,
+        REPLACE(REPLACE(Doc_Ref, CHR(13), ' ') , CHR(10), ' ') docRef,
+        REPLACE(REPLACE(Centro_Costos, CHR(13), ' ') , CHR(10), ' ') centroCosto,
+        Tercero tercero,
+        Identificacion_Tercero idTercero,
+        SUBSTR(Codigo_contable,1,6) codigoContable,
+        REPLACE(REPLACE(Descripcion_codigo_contable, CHR(13), ' ') , CHR(10), ' ') descripcionCodigoContable
+
+
+
+ FROM (       
+            SELECT  
+                   TO_CHAR(DETALLE_COMPROBANTE_CNT.ANO) Anio,
+                    SUBSTR(REPLACE(COMPANIA.NITCOMPANIA, '.', ''),1,9) NIT_Entidad,
+                    COMPANIA.NOMBRE Nombre_Entidad,
+                    NVL(TO_CHAR(DETALLE_COMPROBANTE_CNT.FECHA,'YYYY-MM-DD'),'1900-01-01') Fecha,
+                    NVL(TIPO_COMPROBANTE.NOMBRE,'N/A') Comprobante,
+                    NVL(TO_CHAR(DETALLE_COMPROBANTE_CNT.COMPROBANTE),0) Numero,
+                    (CASE WHEN DETALLE_COMPROBANTE_CNT.NRO_DOCUMENTO IS NULL OR DETALLE_COMPROBANTE_CNT.NRO_DOCUMENTO = ' '
+                    THEN 'N/A'
+                    ELSE DETALLE_COMPROBANTE_CNT.NRO_DOCUMENTO END) "Cheque/Transferencia",
+                    NVL(DETALLE_COMPROBANTE_CNT.TIPO_DOCUMENTO,'N/A') Doc_Ref,
+                    NVL(CENTRO_COSTO.NOMBRE,'N/A') Centro_Costos,
+                    NVL(COMPROBANTE_CNT.DESCRIPCION,'N/A') Descripcion_Registro_Contable,
+                    NVL(TERCERO.NOMBRE,'N/A') Tercero,
+                    NVL(DETALLE_COMPROBANTE_CNT.TERCERO,0) Identificacion_Tercero,
+                    NVL(DETALLE_COMPROBANTE_CNT.CUENTA,0) Codigo_contable,
+                    NVL(PLAN_CONTABLE.NOMBRE,'N/A') Descripcion_codigo_contable,
+                   DETALLE_COMPROBANTE_CNT.VALOR_DEBITO debitos,
+                   DETALLE_COMPROBANTE_CNT.VALOR_CREDITO creditos,
+                   CASE WHEN PLAN_CONTABLE.NATURALEZA IN('D','C') AND DETALLE_COMPROBANTE_CNT.VALOR_DEBITO >0 
+                   THEN VALOR_DEBITO
+                    ELSE 0 END saldoDebito,
+                    CASE WHEN PLAN_CONTABLE.NATURALEZA IN('D','C') AND DETALLE_COMPROBANTE_CNT.VALOR_CREDITO >0 
+                   THEN VALOR_CREDITO
+                    ELSE 0 END saldoCredito,
+                    PLAN_CONTABLE.NA]') || TO_CLOB(q'[TURALEZA
+
+            FROM DETALLE_COMPROBANTE_CNT 
+              INNER JOIN COMPANIA 
+              ON DETALLE_COMPROBANTE_CNT.COMPANIA=COMPANIA.CODIGO
+             INNER JOIN TERCERO 
+                ON DETALLE_COMPROBANTE_CNT.COMPANIA = TERCERO.COMPANIA
+                AND DETALLE_COMPROBANTE_CNT.TERCERO = TERCERO.NIT 
+                AND DETALLE_COMPROBANTE_CNT.SUCURSAL = TERCERO.SUCURSAL
+              INNER JOIN COMPROBANTE_CNT 
+                ON DETALLE_COMPROBANTE_CNT.COMPANIA = COMPROBANTE_CNT.COMPANIA 
+                AND DETALLE_COMPROBANTE_CNT.TIPO_CPTE = COMPROBANTE_CNT.TIPO
+                AND DETALLE_COMPROBANTE_CNT.ANO = COMPROBANTE_CNT.ANO
+                AND DETALLE_COMPROBANTE_CNT.COMPROBANTE = COMPROBANTE_CNT.NUMERO
+            INNER JOIN TIPO_COMPROBANTE
+                ON COMPROBANTE_CNT.COMPANIA = TIPO_COMPROBANTE.COMPANIA 
+                AND COMPROBANTE_CNT.TIPO = TIPO_COMPROBANTE.CODIGO
+            INNER JOIN CENTRO_COSTO
+               ON DETALLE_COMPROBANTE_CNT.COMPANIA = CENTRO_COSTO.COMPANIA
+                AND DETALLE_COMPROBANTE_CNT.ANO = CENTRO_COSTO.ANO 
+                AND DETALLE_COMPROBANTE_CNT.CENTRO_COSTO = CENTRO_COSTO.CODIGO
+            INNER JOIN PLAN_CONTABLE
+             ON DETALLE_COMPROBANTE_CNT.COMPANIA = PLAN_CONTABLE.COMPANIA
+                AND DETALLE_COMPROBANTE_CNT.ANO = PLAN_CONTABLE.ANO 
+                AND DETALLE_COMPROBANTE_CNT.CUENTA = PLAN_CONTABLE.CODIGO
+
+              WHERE DETALLE_COMPROBANTE_CNT.COMPANIA = s$compania$s
+                    AND DETALLE_COMPROBANTE_CNT.ANO=s$ano$s  
+                    AND DETALLE_COMPROBANTE_CNT.MES BETWEEN s$mesInicial$s AND s$mesFinal$s  
+            ORDER BY    DETALLE_COMPROBANTE_CNT.CUENTA, DETALLE_COMPROBANTE_CNT.FECHA, DETALLE_COMPROBANTE_CNT.COMPROBANTE)
+]') CONSULTA, 99 APLICACION ,TO_CLOB(q'[]') CONSULTA_OPCIONAL, NULL CREATED_BY, NULL MODIFIED_BY  FROM DUAL ) INI ON (INI.INFORME = FIN.INFORME )  WHEN MATCHED THEN  UPDATE SET FIN.CONSULTA =  INI.CONSULTA, FIN.APLICACION =  INI.APLICACION, FIN.CONSULTA_OPCIONAL =  INI.CONSULTA_OPCIONAL, FIN.MODIFIED_BY = INI.MODIFIED_BY, FIN.DATE_MODIFIED = SYSDATE  WHEN NOT MATCHED THEN  INSERT (INFORME,CONSULTA, APLICACION,CONSULTA_OPCIONAL,CREATED_BY,DATE_CREATED)  VALUES (INI.INFORME,INI.CONSULTA, INI.APLICACION,INI.CONSULTA_OPCIONAL,INI.CREATED_BY,SYSDATE);

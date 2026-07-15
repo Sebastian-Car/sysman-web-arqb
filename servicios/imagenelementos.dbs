@@ -1,0 +1,168 @@
+﻿<data name="imagenelementos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getImagenelementosListaconsecutivoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CONSECUTIVO FROM IMAGEN_ELEMENTOS WHERE COMPANIA = :COMPANIA AND ELEMENTO = :ELEMENTO AND SERIE = :SERIE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="SERIE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="imagenelementos/listaconsecutivo">
+		<call-query href="getImagenelementosListaconsecutivoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="SERIE" query-param="SERIE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertImagenelementos" keyColumns="COMPANIA,ELEMENTO,SERIE,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IMAGEN_ELEMENTOS (COMPANIA, ELEMENTO, SERIE, CONSECUTIVO, RUTA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ELEMENTO, :SERIE, :CONSECUTIVO, :RUTA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ELEMENTO":"$ELEMENTO","KEY_SERIE":"$SERIE","KEY_CONSECUTIVO":"$CONSECUTIVO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param defaultValue="0" name="SERIE" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param defaultValue="" name="RUTA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="imagenelementos">
+		<call-query href="insertImagenelementos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="SERIE" query-param="SERIE"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteImagenelementos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM IMAGEN_ELEMENTOS WHERE IMAGEN_ELEMENTOS.COMPANIA= :KEY_COMPANIA AND IMAGEN_ELEMENTOS.ELEMENTO= :KEY_ELEMENTO AND IMAGEN_ELEMENTOS.SERIE= :KEY_SERIE AND IMAGEN_ELEMENTOS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ELEMENTO" sqlType="STRING"/>
+		<param name="KEY_SERIE" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="imagenelementos">
+		<call-query href="deleteImagenelementos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ELEMENTO" query-param="KEY_ELEMENTO"/>
+			<with-param name="KEY_SERIE" query-param="KEY_SERIE"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getImagenelementosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT IE.COMPANIA, IE.ELEMENTO, I.NOMBRELARGO , ( CASE WHEN IE.SERIE &gt; 0 THEN TO_CHAR(IE.SERIE) ELSE '0' END) SERIE, ( CASE I.TIPO WHEN 'C' THEN 'CONSUMO' WHEN 'D' THEN 'DEVOLUTIVO' ELSE 'CONSUMO CONTROLADO' END) TIPO, IE.CONSECUTIVO FROM IMAGEN_ELEMENTOS IE INNER JOIN INVENTARIO I ON IE.COMPANIA = I.COMPANIA AND IE.ELEMENTO = I.CODIGOELEMENTO AND I.TIPO IN ('C','D','M') AND I.TIENEMOVIMIENTO NOT IN (0) WHERE IE.COMPANIA = :COMPANIA) INI WHERE (CASE WHEN ELEMENTO IS NULL THEN ' ' ELSE UPPER(ELEMENTO) END) LIKE UPPER(CONCAT(:ELEMENTO, '%')) AND (CASE WHEN NOMBRELARGO IS NULL THEN ' ' ELSE UPPER(NOMBRELARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRELARGO), '%')) AND (CASE WHEN SERIE IS NULL THEN ' ' ELSE UPPER(SERIE) END) LIKE UPPER(CONCAT(:SERIE, '%')) AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END) LIKE UPPER(CONCAT(CONCAT('%',:TIPO), '%')) AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END) LIKE UPPER(CONCAT(:CONSECUTIVO, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ELEMENTO":"$ELEMENTO","NOMBRELARGO":"$NOMBRELARGO","SERIE":"$SERIE","TIPO":"$TIPO","CONSECUTIVO":"$CONSECUTIVO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="NOMBRELARGO" sqlType="STRING"/>
+		<param name="SERIE" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="imagenelementos">
+		<call-query href="getImagenelementosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="NOMBRELARGO" query-param="NOMBRELARGO"/>
+			<with-param name="SERIE" query-param="SERIE"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getImagenelementosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT IE.COMPANIA, IE.ELEMENTO, I.NOMBRELARGO , ( CASE WHEN IE.SERIE &gt; 0 THEN TO_CHAR(IE.SERIE) ELSE '0' END) SERIE, ( CASE I.TIPO WHEN 'C' THEN 'CONSUMO' WHEN 'D' THEN 'DEVOLUTIVO' ELSE 'CONSUMO CONTROLADO' END) TIPO, IE.CONSECUTIVO FROM IMAGEN_ELEMENTOS IE INNER JOIN INVENTARIO I ON IE.COMPANIA = I.COMPANIA AND IE.ELEMENTO = I.CODIGOELEMENTO AND I.TIPO IN ('C','D','M') AND I.TIENEMOVIMIENTO NOT IN (0) WHERE IE.COMPANIA = :COMPANIA) INI WHERE (CASE WHEN ELEMENTO IS NULL THEN ' ' ELSE UPPER(ELEMENTO) END) LIKE UPPER(CONCAT(:ELEMENTO, '%')) AND (CASE WHEN NOMBRELARGO IS NULL THEN ' ' ELSE UPPER(NOMBRELARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRELARGO), '%')) AND (CASE WHEN SERIE IS NULL THEN ' ' ELSE UPPER(SERIE) END) LIKE UPPER(CONCAT(:SERIE, '%')) AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END) LIKE UPPER(CONCAT(CONCAT('%',:TIPO), '%')) AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END) LIKE UPPER(CONCAT(:CONSECUTIVO, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="NOMBRELARGO" sqlType="STRING"/>
+		<param name="SERIE" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="imagenelementos/numero">
+		<call-query href="getImagenelementosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="NOMBRELARGO" query-param="NOMBRELARGO"/>
+			<with-param name="SERIE" query-param="SERIE"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getImagenelementosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT IMAGEN_ELEMENTOS.COMPANIA, IMAGEN_ELEMENTOS.ELEMENTO, IMAGEN_ELEMENTOS.SERIE, IMAGEN_ELEMENTOS.CONSECUTIVO, IMAGEN_ELEMENTOS.RUTA, INVENTARIO.TIPO ,(TO_CHAR(IMAGEN_ELEMENTOS.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, IMAGEN_ELEMENTOS.CREATED_BY, IMAGEN_ELEMENTOS.MODIFIED_BY,(TO_CHAR(IMAGEN_ELEMENTOS.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, INVENTARIO.NOMBRELARGO NOMBRE FROM IMAGEN_ELEMENTOS INNER JOIN INVENTARIO ON IMAGEN_ELEMENTOS.COMPANIA = INVENTARIO.COMPANIA AND IMAGEN_ELEMENTOS.ELEMENTO = INVENTARIO.CODIGOELEMENTO WHERE IMAGEN_ELEMENTOS.COMPANIA= :KEY_COMPANIA AND IMAGEN_ELEMENTOS.ELEMENTO= :KEY_ELEMENTO AND IMAGEN_ELEMENTOS.SERIE= :KEY_SERIE AND IMAGEN_ELEMENTOS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ELEMENTO":"$ELEMENTO","SERIE":"$SERIE","CONSECUTIVO":"$CONSECUTIVO(type:integer)","RUTA":"$RUTA","TIPO":"$TIPO","DATE_CREATED":"$DATE_CREATED","CREATED_BY":"$CREATED_BY","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ELEMENTO" sqlType="STRING"/>
+		<param name="KEY_SERIE" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="imagenelementos/data">
+		<call-query href="getImagenelementosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ELEMENTO" query-param="KEY_ELEMENTO"/>
+			<with-param name="KEY_SERIE" query-param="KEY_SERIE"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateImagenelementos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IMAGEN_ELEMENTOS SET COMPANIA=:COMPANIA, ELEMENTO=:ELEMENTO, SERIE=:SERIE, CONSECUTIVO=:CONSECUTIVO, RUTA=:RUTA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE IMAGEN_ELEMENTOS.COMPANIA= :KEY_COMPANIA AND IMAGEN_ELEMENTOS.ELEMENTO= :KEY_ELEMENTO AND IMAGEN_ELEMENTOS.SERIE= :KEY_SERIE AND IMAGEN_ELEMENTOS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="SERIE" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="RUTA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ELEMENTO" sqlType="STRING"/>
+		<param name="KEY_SERIE" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="imagenelementos">
+		<call-query href="updateImagenelementos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="SERIE" query-param="SERIE"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="RUTA" query-param="RUTA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ELEMENTO" query-param="KEY_ELEMENTO"/>
+			<with-param name="KEY_SERIE" query-param="KEY_SERIE"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+
+</data>

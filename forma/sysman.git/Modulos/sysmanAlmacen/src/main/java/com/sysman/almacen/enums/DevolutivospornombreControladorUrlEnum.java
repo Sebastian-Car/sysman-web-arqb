@@ -1,0 +1,42 @@
+/*
+ * DevolutivospornombreControladorUrlEnum
+ *
+ * 1.0
+ *
+ * 09/09/2016
+ *
+ * Copyright Stefanini Sysman
+ */
+package com.sysman.almacen.enums;
+
+/**
+ * @author Processors-api
+ * 
+ * @version 1.0
+ * 
+ * Enumeracion que permite clasificar cada uno de los identificadores
+ * geenerados en el refactoring y asociados al codigo legacy obtenido
+ * con patrones de busqueda.
+ */
+public enum DevolutivospornombreControladorUrlEnum {
+
+    URL8041("DEVOLUTIVOSPORNOMBRECONTROLADORURL8041", "112125"),//112017
+
+    URL8866("DEVOLUTIVOSPORNOMBRECONTROLADORURL8866", "112127");//112019
+
+    private final String key;
+    private final String value;
+
+    private DevolutivospornombreControladorUrlEnum(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}

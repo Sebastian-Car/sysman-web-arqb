@@ -1,0 +1,492 @@
+﻿<data name="dual" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getDualVerificarEstadoMesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PCK_SYSMAN_UTL.FC_VERIFICAR_ESTADOMES(:COMPANIA , :ANO ,:MES , :MODULO) ESTADO  FROM DUAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ESTADO":"$ESTADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="MODULO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dual/verificarestadomes">
+		<call-query href="getDualVerificarEstadoMesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="MODULO" query-param="MODULO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualTituloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ROWNUM CODIGO, DECODE (ROWNUM,1, 'ESTADO DE ACTIVIDAD FINANCIERA ECONOMICA Y SOCIAL', 2, 'ESTADO DE PERDIDAS Y GANANCIAS', 3, 'ESTADO DE RESULTADOS') TITULO  FROM DUAL CONNECT BY ROWNUM&lt;4</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","TITULO":"$TITULO"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/titulo">
+		<call-query href="getDualTituloQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualListaVaciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  'X' X  FROM DUAL WHERE 1 = 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"X":"$X"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/listavacia">
+		<call-query href="getDualListaVaciaQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualObservacionesCriticaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ROWNUM NUM, DECODE (ROWNUM,1, 'Superior al promedio',2,'Inferior al promedio',3,'Normal') OBSERVACION  FROM DUAL CONNECT BY ROWNUM &lt;4</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUM":"$NUM(type:integer)","OBSERVACION":"$OBSERVACION"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/observacionescritica">
+		<call-query href="getDualObservacionesCriticaQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualEstadoUsuariosSpQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DECODE(ROWNUM,1,'P', 2,'F', 3,'S') NUM, DECODE(ROWNUM,1,'Usuarios en Terreno', 2,'Usuarios Retornados a la entidad', 3,'Usuarios sin enviar a Terreno') ESTADO  FROM DUAL CONNECT BY ROWNUM&lt;4</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUM":"$NUM","ESTADO":"$ESTADO"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/estadousuariossp">
+		<call-query href="getDualEstadoUsuariosSpQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualFormatoMatriculasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ROWNUM R, CASE ROWNUM WHEN 1 THEN CASE WHEN PCK_SYSMAN_UTL.FC_PAR(:COMPANIA,'CAMBIAR NOMBRE SERVICIO ACUEDUCTO',PCK_DATOS.FC_MODULOSERVICIOSPUBLICOS,SYSDATE)='SI' THEN PCK_SYSMAN_UTL.FC_PAR(:COMPANIA,'NOMBRE SERVICIO A REMPLAZAR ACUEDUCTO',PCK_DATOS.FC_MODULOSERVICIOSPUBLICOS,SYSDATE) ELSE 'Acueducto' END WHEN 2 THEN CASE WHEN PCK_SYSMAN_UTL.FC_PAR(:COMPANIA,'CAMBIAR NOMBRE SERVICIO ALCANTARILLADO',PCK_DATOS.FC_MODULOSERVICIOSPUBLICOS,SYSDATE)='SI' THEN PCK_SYSMAN_UTL.FC_PAR(:COMPANIA,'NOMBRE SERVICIO A REMPLAZAR ALCANTARILLADO',PCK_DATOS.FC_MODULOSERVICIOSPUBLICOS,SYSDATE) ELSE 'Alcantarillado' END WHEN 3 THEN CASE WHEN PCK_SYSMAN_UTL.FC_PAR(:COMPANIA,'CAMBIAR NOMBRE SERVICIO ASEO',PCK_DATOS.FC_MODULOSERVICIOSPUBLICOS,SYSDATE)='SI' THEN PCK_SYSMAN_UTL.FC_PAR(:COMPANIA,'NOMBRE SERVICIO A REMPLAZAR ASEO',PCK_DATOS.FC_MODULOSERVICIOSPUBLICOS,SYSDATE) ELSE 'Aseo' END WHEN 4 THEN 'Varios' WHEN 5 THEN 'Todos' END MOSTRAR  FROM DUAL CONNECT BY ROWNUM&lt;=5</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"R":"$R(type:integer)","MOSTRAR":"$MOSTRAR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dual/formatomatriculas">
+		<call-query href="getDualFormatoMatriculasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualListaVaciaHojaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  'X' NOMBREHOJA  FROM DUAL WHERE 1 = 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBREHOJA":"$NOMBREHOJA"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/listavaciahoja">
+		<call-query href="getDualListaVaciaHojaQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualFechaVencimientoServicioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TO_CHAR(TO_DATE(:FECHAEXP,'DD/MM/YYYY')+(:PARFECHAVCTO *30), 'DD/MM/YYYY') AS FECHA  FROM DUAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FECHA":"$FECHA"}]}}		</result>
+		<param name="FECHAEXP" sqlType="STRING"/>
+		<param name="PARFECHAVCTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dual/fechavencimientoservicio">
+		<call-query href="getDualFechaVencimientoServicioQuery">
+			<with-param name="FECHAEXP" query-param="FECHAEXP"/>
+			<with-param name="PARFECHAVCTO" query-param="PARFECHAVCTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualTipoPredioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ROWNUM NUMERO, CASE ROWNUM WHEN 1 THEN 'Rurales' WHEN 2 THEN 'Urbanos' WHEN 3 THEN 'Todos' END NOMBRE  FROM DUAL CONNECT BY ROWNUM&lt;4</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/tipopredio">
+		<call-query href="getDualTipoPredioQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualTodosPorNumeroDeOrdenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  LPAD(ROWNUM,3,0) NUMERO  FROM DUAL CONNECT BY ROWNUM &lt;51</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/todospornumerodeorden">
+		<call-query href="getDualTodosPorNumeroDeOrdenQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualListanivelQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TO_CHAR(ROWNUM *2) NIVEL, DECODE(ROWNUM*2, 2,'SEGMENTO',4,'FAMILIA',6,'CLASE',8,'PRODUCTO') NOMBRENIVEL  FROM DUAL CONNECT BY ROWNUM &lt;= 4</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NIVEL":"$NIVEL","NOMBRENIVEL":"$NOMBRENIVEL"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/listanivel">
+		<call-query href="getDualListanivelQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualVariablesProponentesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO, DESCRIPCION  FROM (SELECT (ROWNUM-1) CODIGO, CASE ROWNUM-1 WHEN 0 THEN 'Fecha Actual' WHEN 1 THEN 'Hora Actual' WHEN 2 THEN 'Formula' WHEN 3 THEN ' ' WHEN 4 THEN 'Año Actual' WHEN 5 THEN 'Mes Actual' END DESCRIPCION FROM DUAL CONNECT BY ROWNUM &lt; 7) WHERE CODIGO BETWEEN :CODIGOUNO AND :CODIGODOS</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:double)","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="CODIGOUNO" sqlType="STRING"/>
+		<param name="CODIGODOS" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dual/variablesproponentes">
+		<call-query href="getDualVariablesProponentesQuery">
+			<with-param name="CODIGOUNO" query-param="CODIGOUNO"/>
+			<with-param name="CODIGODOS" query-param="CODIGODOS"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualTodosLosProyectosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ROWNUM CODIGO, CASE ROWNUM WHEN 1 THEN '1. Listado de proyectos y sus componentes' WHEN 2 THEN '2. Disponibilidad presupuestal y proyecto' WHEN 3 THEN '3. Proyectos financiados con recursos de regalias' WHEN 4 THEN '4. Control de proyectos de inversión social' WHEN 5 THEN '5. Listado de proyectos enviados a gestión y financiación' END NOMBRE  FROM DUAL CONNECT BY ROWNUM&lt;=5 UNION ALL SELECT ROWNUM+6 CODIGO, CASE ROWNUM+6 WHEN 7 THEN '7. Ficha de seguimiento FES' WHEN 8 THEN '8. Plan de acción' WHEN 9 THEN '9. Relación de actividades ejecutadas por localización' WHEN 10 THEN '10. Registro presupuestal y proyecto' WHEN 11 THEN '11. Rendición de cuentas Formato CDC-15' WHEN 12 THEN '12. Relación de actividades con Registro Presupuestal' WHEN 13 THEN '13. Certificado de Viabilidad del Proyecto' WHEN 14 THEN '14. Concepto de viabilidad del proyecto' WHEN 15 THEN '15. Certificado de registro' WHEN 16 THEN '16. Proyectos en ejecución' END NOMBRE FROM DUAL CONNECT BY ROWNUM &lt;=10</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:double)","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/todoslosproyectos">
+		<call-query href="getDualTodosLosProyectosQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualListadoDeInformesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO,NOMBRE  FROM (SELECT ROWNUM CODIGO, CASE ROWNUM WHEN 1 THEN '1. Listado de proyectos y sus componentes' WHEN 2 THEN '2. Disponibilidad presupuestal y proyecto' WHEN 3 THEN '3. Proyectos financiados con recursos de regalias' WHEN 4 THEN '4. Control de proyectos de inversión social' WHEN 5 THEN '5. Listado de proyectos enviados a gestión y financiación' WHEN 7 THEN '7. Ficha de seguimiento FES' WHEN 8 THEN '8. Plan de acción' WHEN 9 THEN '9. Relación de actividades ejecutadas por localización' WHEN 10 THEN '10. Registro presupuestal y proyecto' WHEN 11 THEN '11. Rendición de cuentas Formato CDC-15' WHEN 12 THEN '12. Relación de actividades con Registro Presupuestal' WHEN 13 THEN '13. Certificado de Viabilidad del Proyecto' WHEN 14 THEN '14. Concepto de viabilidad del proyecto' WHEN 15 THEN '15. Certificado de registro' WHEN 16 THEN '16. Proyectos en ejecución' END NOMBRE FROM DUAL CONNECT BY ROWNUM&lt;=16) WHERE CODIGO NOT IN (6)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/listadodeinformes">
+		<call-query href="getDualListadoDeInformesQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualListadoDeInformesSinRegpreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO,NOMBRE  FROM (SELECT ROWNUM CODIGO, CASE ROWNUM WHEN 1 THEN '1. Listado de proyectos y sus componentes' WHEN 2 THEN '2. Disponibilidad presupuestal y proyecto' WHEN 3 THEN '3. Proyectos financiados con recursos de regalias' WHEN 4 THEN '4. Control de proyectos de inversión social' WHEN 5 THEN '5. Listado de proyectos enviados a gestión y financiación' WHEN 7 THEN '7. Ficha de seguimiento FES' WHEN 8 THEN '8. Plan de acción' WHEN 9 THEN '9. Relación de actividades ejecutadas por localización' WHEN 11 THEN '11. Rendición de cuentas Formato CDC-15' WHEN 12 THEN '12. Relación de actividades con Registro Presupuestal' WHEN 13 THEN '13. Certificado de Viabilidad del Proyecto' WHEN 14 THEN '14. Concepto de viabilidad del proyecto' WHEN 15 THEN '15. Certificado de registro' WHEN 16 THEN '16. Proyectos en ejecución' END NOMBRE FROM DUAL CONNECT BY ROWNUM&lt;=16) WHERE CODIGO NOT IN (6,10)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/listadodeinformessinregpre">
+		<call-query href="getDualListadoDeInformesSinRegpreQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualPagInformesrevisionproyectosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ROWNUM CODIGO , DECODE(ROWNUM ,1 ,'Informe de Comprobantes de Programación Financiera Ejecutada' ,2 ,'Listado de Registros de Disponibilidad por Proyecto' ,3 ,'Informe de Disponibilidades Asignadas por Presupuesto' ,4 ,'Informe de Comprobantes de Programación Financiera Ejecutada por Vigencia') NOMBRE  FROM DUAL CONNECT BY ROWNUM &lt;= 4) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dual/informesrevisionproyectos/pag">
+		<call-query href="getDualPagInformesrevisionproyectosQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualNumInformesrevisionproyectosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ROWNUM CODIGO , DECODE(ROWNUM ,1 ,'Informe de Comprobantes de Programación Financiera Ejecutada' ,2 ,'Listado de Registros de Disponibilidad por Proyecto' ,3 ,'Informe de Disponibilidades Asignadas por Presupuesto' ,4 ,'Informe de Comprobantes de Programación Financiera Ejecutada por Vigencia') NOMBRE  FROM DUAL CONNECT BY ROWNUM &lt;= 4) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dual/informesrevisionproyectos/num">
+		<call-query href="getDualNumInformesrevisionproyectosQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualPagTodosPorProyectoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  'TODOS' AS ID , 'TODOS' AS NOMBRE, 'TODOS' AS VIGENCIA  FROM DUAL) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VIGENCIA IS NULL THEN ' ' ELSE UPPER(VIGENCIA) END)  LIKE UPPER(:VIGENCIA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","NOMBRE":"$NOMBRE","VIGENCIA":"$VIGENCIA"}]}}		</result>
+		<param name="ID" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VIGENCIA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dual/todosporproyecto/pag">
+		<call-query href="getDualPagTodosPorProyectoQuery">
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualNumTodosPorProyectoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  'TODOS' AS ID , 'TODOS' AS NOMBRE, 'TODOS' AS VIGENCIA  FROM DUAL) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VIGENCIA IS NULL THEN ' ' ELSE UPPER(VIGENCIA) END)  LIKE UPPER(:VIGENCIA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="ID" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VIGENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dual/todosporproyecto/num">
+		<call-query href="getDualNumTodosPorProyectoQuery">
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualPagTodosPorVigenciaNivelQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT '99999999999' AS ID, 'TODAS' AS DESCRIPCION, EXTRACT(YEAR FROM SYSDATE) VIGENCIA  FROM DUAL) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN VIGENCIA IS NULL THEN ' ' ELSE UPPER(VIGENCIA) END)  LIKE UPPER(:VIGENCIA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","DESCRIPCION":"$DESCRIPCION","VIGENCIA":"$VIGENCIA(type:integer)"}]}}		</result>
+		<param name="ID" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="VIGENCIA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dual/todosporvigencianivel/pag">
+		<call-query href="getDualPagTodosPorVigenciaNivelQuery">
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualNumTodosPorVigenciaNivelQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT '99999999999' AS ID, 'TODAS' AS DESCRIPCION, EXTRACT(YEAR FROM SYSDATE) VIGENCIA  FROM DUAL) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN VIGENCIA IS NULL THEN ' ' ELSE UPPER(VIGENCIA) END)  LIKE UPPER(:VIGENCIA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="ID" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="VIGENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dual/todosporvigencianivel/num">
+		<call-query href="getDualNumTodosPorVigenciaNivelQuery">
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="VIGENCIA" query-param="VIGENCIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualOpcionesImprePlanadqueQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ROWNUM CODIGO, DECODE(ROWNUM,1,'Agrupado por Rubro',2,'Agrupado por Dependencia',3,'Entre dependencias y consolidado por elemento',4,'Entre Dependencia y Actividad') TIPO  FROM DUAL CONNECT BY ROWNUM &lt; 5</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","TIPO":"$TIPO"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/opcionesimpreplanadque">
+		<call-query href="getDualOpcionesImprePlanadqueQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualExisteNitcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT 'X' EXISTE FROM DUAL WHERE :NITCOMPANIA IN ('800021261', '891216978', '891855138', '891280000', '830065741', '830032945', '860028093', '832000283', '811036609', '800090735', '891800031', '890704536', '800103923', '891280001', '801018833', '805018833', '800005900', '892001457', '890680053', '832001512', '800182927', '800071819', '800250721', '900322173', '890701933', '800021261', '800021261', '800021261', '800021261', '800021261', '800021261', '800098190', '800098190', '890208395', '832002386', '900227413', '890701934', '899999428', '900258798', '800079035', '899999325', '900259348', '832000776', '800177622', '822001468', '800231969', '800093257', '892099119', '800252843', '892099149', '800047635', '891800260', '822001833', '899999465', '899999413', '860009555', '899999430', '890481123', '899999714', '800095728', '899999710', '891801061', '900546589', '809006763', '830507387', '820001405', '900331439', '800026156', '891855200', '891500061', '891856294', '891808260', '800094782', '820000042', '800099196', '830005370', '891801376', '800008456', '800103659', '800094704', '891855719', '892099548', '844000755', '891801268', '899999415', '800039213', '891857861', '800028517', '844003247', '844001510', '800095568', '891800721', '890680154', '822001883', '800016757', '800013683', '900091143','900334265','800091594','890201222','891857805')</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"EXISTE":"$EXISTE"}]}}		</result>
+		<param name="NITCOMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dual/existenitcompania">
+		<call-query href="getDualExisteNitcompaniaQuery">
+			<with-param name="NITCOMPANIA" query-param="NITCOMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualOrdenesentidadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DECODE(ROWNUM, 1, 'N' ,2 ,'D' ,3 ,'M') CODIGO, DECODE(ROWNUM, 1, 'Nacional', 2, 'Departamental', 3, 'Municipal') DESCRIPCION  FROM DUAL CONNECT BY ROWNUM &lt;=3</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/ordenesentidad">
+		<call-query href="getDualOrdenesentidadQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualTiposentidadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DECODE(ROWNUM, 1, 'EC' ,2 ,'ED' ,3 ,'EP', 'ST') CODIGO, DECODE(ROWNUM, 1, 'Entidad Centralizada', 2, 'Entidad Descentralizada', 3, 'Establecimiento Público', 'Sin Tipo') DESCRIPCION  FROM DUAL CONNECT BY ROWNUM &lt;=4</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/tiposentidad">
+		<call-query href="getDualTiposentidadQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualEstadosPersonalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ROWNUM CODIGO, DECODE (ROWNUM, 1,'Activo',2,'Pensionado',3,'Retirado',4,'Suspensión Preventiva',5,'Activarlo para Ajustes Liquidación',6,'Comisión',7,'Encargos')NOMBRE  FROM DUAL CONNECT BY ROWNUM &lt; 8</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/estadospersonal">
+		<call-query href="getDualEstadosPersonalQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualDestinosireciQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ROWNUM CODIGO ,DECODE(ROWNUM,1,'Agua Potable y Saneamiento Básico' ,2,'Infancia y Adolescencia' ,3,'No Aplica') NOMBRE  FROM DUAL CONNECT BY ROWNUM &lt;= 3</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/destinosireci">
+		<call-query href="getDualDestinosireciQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualNombreColumnasPorTablaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  *  FROM ( SELECT CNAME FROM COL WHERE TNAME = :TABLA )DUAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CNAME":"$CNAME"}]}}		</result>
+		<param name="TABLA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dual/nombrecolumnasportabla">
+		<call-query href="getDualNombreColumnasPorTablaQuery">
+			<with-param name="TABLA" query-param="TABLA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ROWNUM CODIGO  FROM DUAL CONNECT BY ROWNUM &lt;=100</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/codigo">
+		<call-query href="getDualCodigoQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualInformesDeCircularUnicaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ROWNUM CODIGO , DECODE(ROWNUM , 1 ,'1.INFORME ARCHIVO TIPO 029' , 2 ,'2. INFORME ARCHIVO TIPO 030' , 3 ,'3. INFORME ARCHIVO TIPO 045' , 4 ,'4. INFORME ARCHIVO TIPO 048', 5 , '5. INFORME ARCHIVO TIPO 049', 6 ,'6. INFORME ARCHIVO TIPO 050', 7 ,'7. INFORME ARCHIVO TIPO 051', 8,'8. INFORME ARCHIVO TIPO 052', 9,'9. INFORME ARCHIVO TIPO 053', 10,'10. INFORME ARCHIVO TIPO 313', 11,'11. INFORME ARCHIVO TIPO 314', 12,'12. INFORME ARCHIVO TIPO 343', 13,'13. CUENTAS POR PAGAR PRESTACION DE SERVICIOS') NOMBRE  FROM DUAL CONNECT BY ROWNUM &lt;= 13</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/informesdecircularunica">
+		<call-query href="getDualInformesDeCircularUnicaQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualProcesosiaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ROWNUM CODIGO , DECODE(ROWNUM , 1 ,'1.F03 CUENTAS BANCARIAS' , 2 ,'2.F03 MOVIMIENTO DE BANCOS' , 3 ,'3.F03B TRASLADOS BANCARIOS', 4 ,'4.F06 EJECUCIÓN PRESUPUESTAL DE INGRESOS', 5 ,'5.F06 RELACIÓN DE INGRESOS', 6 ,'6.F07 EJECUCIÓN PRESUPUESTAL DE GASTOS', 7 ,'7.F07A RELACIÓN DE COMPROMISOS', 8 ,'8.F07B RELACIÓN DE PAGOS', 9 ,'9.F07B1 RELACION PAGOS SIN AFECTACIÓN PRESUPUESTAL', 10,'10.F10 EJECUCIÓN RESERVA PRESUPUESTAL', 11,'11.F20 ACCIONES DE CONTROL A LA CONTRATACIÓN DE SUJETOS') NOMBRE  FROM DUAL CONNECT BY ROWNUM &lt;= 11</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/procesosia">
+		<call-query href="getDualProcesosiaQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualInformesFutQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ROWNUM CODIGO , DECODE(ROWNUM , 1 ,'DESPLAZADOS' , 2 ,'CUENTAS POR PAGAR' , 3 ,'EJECUCION FONDOS SALUD', 4 ,'VIGENCIAS FUTURAS EJECUCION', 5 ,'F1_REGISTROS PRESUPUESTALES', 6 ,'F3_FUENTES REGISTROS PRESUPUESTALES', 7 ,'INGRESO RESERVAS PRESUPUESTALES', 8 ,'VICTIMAS', 9,'TESORERIA SALUD DESDE BANCOS') NOMBRE  FROM DUAL CONNECT BY ROWNUM &lt;= 9</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/informesfut">
+		<call-query href="getDualInformesFutQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualTipoActoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ROWNUM CODIGO , DECODE(ROWNUM , 1 ,'ORDENANZA' , 2 ,'ACUERDO MUNICIPAL' , 3 ,'DECRETO', 4 ,'RESOLUCION', 5 ,'OTRO TIPO ACTO ADMIN', 6 ,'NO APLICA') NOMBRE  FROM DUAL CONNECT BY ROWNUM &lt;= 6</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/tipoacto">
+		<call-query href="getDualTipoActoQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualListadode0anQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CASE WHEN :INICIA_EN_CERO = -1 THEN (ROWNUM-1) ELSE CASE WHEN :INICIA_EN_DOS = -1 THEN ROWNUM +1 ELSE ROWNUM END END SERIE  FROM DUAL CONNECT BY ROWNUM &lt;= CASE WHEN :INICIA_EN_CERO = -1 THEN TO_NUMBER(:FINAL + 1) ELSE CASE WHEN :INICIA_EN_DOS = -1 THEN TO_NUMBER(:FINAL -1) ELSE TO_NUMBER(:FINAL) END END</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SERIE":"$SERIE(type:integer)"}]}}		</result>
+		<param name="INICIA_EN_CERO" sqlType="STRING"/>
+		<param name="INICIA_EN_DOS" sqlType="STRING"/>
+		<param name="FINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dual/listadode0an">
+		<call-query href="getDualListadode0anQuery">
+			<with-param name="INICIA_EN_CERO" query-param="INICIA_EN_CERO"/>
+			<with-param name="INICIA_EN_DOS" query-param="INICIA_EN_DOS"/>
+			<with-param name="FINAL" query-param="FINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualRangoDeEdadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT TO_CHAR(EDAD) EDAD FROM( SELECT LEVEL EDAD FROM DUAL CONNECT BY LEVEL &lt;=80) WHERE EDAD BETWEEN 18 AND 80</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"EDAD":"$EDAD"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="dual/rangodeedad">
+		<call-query href="getDualRangoDeEdadQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getDualRangoDeEdadFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT TO_CHAR(EDAD) EDAD FROM( SELECT LEVEL EDAD FROM DUAL CONNECT BY LEVEL &lt;=80) WHERE EDAD &gt;=:EDADINICIAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"EDAD":"$EDAD"}]}}		</result>
+		<param name="EDADINICIAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dual/rangodeedadfinal">
+		<call-query href="getDualRangoDeEdadFinalQuery">
+			<with-param name="EDADINICIAL" query-param="EDADINICIAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualCabecerainformesiifQuery"  useConfig="sysmandsunist">
+		<sql>SELECT :CONSECUTIVO CONSECUTIVO, :FECHA_CONTABLE FECHA_CONTABLE, :TIPO_DOCUMENTO TIPO_DOCUMENTO, :NUMERO_DOCUMENTO NUMERO_DOCUMENTO, :DESCRIPCION DESCRIPCION FROM DUAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO","FECHA_CONTABLE":"$FECHA_CONTABLE","TIPO_DOCUMENTO":"$TIPO_DOCUMENTO","NUMERO_DOCUMENTO":"$NUMERO_DOCUMENTO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA_CONTABLE" sqlType="STRING"/>
+		<param name="TIPO_DOCUMENTO" sqlType="STRING"/>
+		<param name="NUMERO_DOCUMENTO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dual/cabecerainformesiif">
+		<call-query href="getDualCabecerainformesiifQuery">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA_CONTABLE" query-param="FECHA_CONTABLE"/>
+			<with-param name="TIPO_DOCUMENTO" query-param="TIPO_DOCUMENTO"/>
+			<with-param name="NUMERO_DOCUMENTO" query-param="NUMERO_DOCUMENTO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualPagListaDeudaPrediosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT '' ANO, '' TOTAL FROM DUAL) INI WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(CONCAT('%',:ANO), '%')) AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END) LIKE UPPER(CONCAT(CONCAT('%',:TOTAL), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANO":"$ANO","TOTAL":"$TOTAL"}]}}		</result>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dual/listadeudapredios/pag">
+		<call-query href="getDualPagListaDeudaPrediosQuery">
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDualNumListaDeudaPrediosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT '' ANO, '' TOTAL FROM DUAL) INI WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(CONCAT('%',:ANO), '%')) AND (CASE WHEN TOTAL IS NULL THEN ' ' ELSE UPPER(TOTAL) END) LIKE UPPER(CONCAT(CONCAT('%',:TOTAL), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TOTAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dual/listadeudapredios/num">
+		<call-query href="getDualNumListaDeudaPrediosQuery">
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TOTAL" query-param="TOTAL"/>
+
+		</call-query>
+	</resource>
+
+</data>

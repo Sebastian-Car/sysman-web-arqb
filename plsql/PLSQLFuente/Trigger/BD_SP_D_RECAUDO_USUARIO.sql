@@ -1,0 +1,56 @@
+CREATE OR REPLACE TRIGGER "BD_SP_D_RECAUDO_USUARIO" 
+  /*
+      NAME              : BD_SP_D_RECAUDO_USUARIO
+      AUTHORS           : SYSMAN  SAS
+      AUTHOR MIGRACION  : MIGUEL ANGEL ZANGUÑA HURTADO
+      DATE MIGRADOR     : 14/07/2017
+      TIME              : 10:15 AM
+      SOURCE MODULE     :
+      MODIFIER          :
+      DATE MODIFIED     :
+      TIME              :
+      DESCRIPTION       : Elimina los recaudos generales en la tabla SP_D_RECAUDO
+
+  */
+FOR DELETE ON SP_D_RECAUDO_USUARIO
+REFERENCING OLD AS OLD NEW AS NEW
+COMPOUND TRIGGER
+
+MI_TABLA           PCK_SUBTIPOS.TI_STRSQL;
+MI_CONDICION       PCK_SUBTIPOS.TI_CONDICION;
+
+/*
+BEFORE EACH ROW IS  --Ejecución antes de cada fila
+BEGIN
+END BEFORE EACH ROW;
+*/
+
+AFTER EACH ROW IS --Ejecución despues de cada fila,
+BEGIN
+
+    --Reversa los recaudos.
+    PCK_SERVICIOS_PUBLICOS_ABONOS.PR_ELIMINARRECAUDO
+        ( UN_COMPANIA        => :OLD.COMPANIA
+         ,UN_FECHARECAUDO    => :OLD.FECHA
+         ,UN_BANCO           => :OLD.BANCO
+         ,UN_PAQUETE         => :OLD.NUMEROPAQUETE
+         ,UN_CONCEPTO        => :OLD.CONCEPTO
+         ,UN_TIPO_RECAUDO    => :OLD.TIPOPAGO
+         ,UN_VALORDEUDA      => :OLD.VALORDEUDA
+         ,UN_VALORPERIODO    => :OLD.VALORPAGOPERIODO
+         ,UN_VALORFIN_ACT    => :OLD.VALORFINACT
+         ,UN_VALORFIN_ANT    => :OLD.VALORFINANT
+         ,UN_CREDITOABONADO  => :OLD.CREDITOABONADO
+         ,UN_ABONOACT        => :OLD.VALORABONOACT
+         ,UN_ABONOANT        => :OLD.VALORABONOANT
+         ,UN_USUARIO         => :OLD.CREATED_BY);
+
+END AFTER EACH ROW;
+
+/*
+AFTER STATEMENT IS --Ejecución despues de una consulta DML
+BEGIN
+END AFTER STATEMENT;
+*/
+
+END;

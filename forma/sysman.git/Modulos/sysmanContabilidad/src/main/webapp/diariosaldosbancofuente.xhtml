@@ -1,0 +1,286 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	template="/templateModal.xhtml" xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+              asignarEventoContGrande();
+validarCargaGrandes();
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TG_INFORME_DIARIO_DE_SALDOS_BANCARIOS2}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<section class="radiusModal" style="height: auto">
+			<div id="panelModal" style="position: relative; height: auto"
+				class="
+">
+				<h:form id="FR717_nuevo"
+					style="position: relative; width: 100%; height: 291px; margin: 0px">
+					<p:growl id="alert" showDetail="true" sticky="false"
+						widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+					<p:growl id="message" showDetail="true" escape="false" />
+					<p:confirmDialog global="true" showEffect="fade" id="confFR717"
+						widgetVar="confFR717">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:commandButton id="BT1364" widgetVar="BT1364"
+						onclick="if (!validarVaciosViewModal(['CP22228', 'CP22228', 'CB2495', 'CB2496', 'CB2497', 'CB2498'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                return false;
+                            }else{
+PrimeFaces.monitorDownload(mostrarEspera,ocultarEspera);
+                            }"
+						icon="ui-iconPdf" ajax="false" tabindex="7" value=""
+						actionListener="#{diariosaldosbancofuenteControlador.oprimirImprimir}"
+						style="position: absolute; width:48px; height: 48px; left: 173px;   top: 230px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#800000; border:#AAAAAA  solid  1px;">
+						<p:fileDownload
+							value="#{diariosaldosbancofuenteControlador.archivoDescarga}" />
+					</p:commandButton>
+					<p:calendar locale="es" navigator="true" mask="true"
+						pattern="dd/MM/yyyy" id="CP22229" widgetVar="CP22229"
+						value="#{diariosaldosbancofuenteControlador.fechaFinal}"
+						placeholder="#{idm.TG_DDMMYYYY}" tabindex="2"
+						style="position: absolute; width:90px; height: 20px; left: 222px;   top: 80px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+						<p:ajax event="dateSelect"
+							onstart="validarFechas('CP22228','CP22229'); return false;" />
+						<p:ajax event="change"
+							onstart="validarFechas('CP22228','CP22229'); return false;" />
+					</p:calendar>
+					<p:inputText id="CB2495" widgetVar="CB2495"
+						onfocus="if(!false){PF('BTCB2495').jq.focus();}"
+						onclick="if(!false){PF('PLCB2495').show();}"
+						value="#{diariosaldosbancofuenteControlador.cuentaInicial}"
+						tabindex="-1"
+						style="cursor:pointer; position: absolute; width:75px; height: 20px; left: 222px;   top: 109px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+					<p:commandButton id="BTCB2495" onblur="PF('CB2495').jq.blur();"
+						onfocus="PF('CB2495').jq.addClass('ui-state-focus');"
+						widgetVar="BTCB2495" type="button"
+						icon="ui-icon ui-icon-triangle-1-s ui-c"
+						style="position: absolute; width:25px; height:  20px; left: 295px;   top: 109px; display:block; "
+						tabindex="3" />
+					<p:overlayPanel widgetVar="PLCB2495" id="PLCB2495"
+						onShow="if(PF('TBCB2495').nuevo){ PF('TBCB2495').filter(); PF('TBCB2495').nuevo=false;}"
+						onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB2495').jq.focus();}"
+						my="center bottom" at="" for="BTCB2495" hideEffect="fade"
+						style="width: 350px">
+						<p:dataTable id="TBCB2495" widgetVar="TBCB2495" var="reg"
+							value="#{diariosaldosbancofuenteControlador.listaCuentaini}"
+							editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="11" rowIndexVar="rowIndex" selectionMode="single"
+							rowKey="#{reg.campos['BANCO']}" paginator="true" lazy="true">
+							<p:ajax event="rowSelect"
+								listener="#{diariosaldosbancofuenteControlador.seleccionarFilaCuentaini}"
+								update=":FR717_nuevo:CB2495,@([id$=CB2496])"
+								oncomplete="PF('PLCB2495').hide(); PF('TBCB2496').filter();" />
+							<p:column headerText="#{idm.TG_BANCO3}"
+								style="text-align:center; " width="25"
+								filterBy="#{reg.campos['BANCO']}" filterMatchMode="startsWith"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['BANCO']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE_BANCO1}"
+								style="text-align:center; " width="100"
+								filterBy="#{reg.campos['NOMBREBANCO']}"
+								filterMatchMode="contains" filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NOMBREBANCO']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+						</p:dataTable>
+					</p:overlayPanel>
+					<p:inputText id="CB2496" widgetVar="CB2496"
+						onfocus="if(!false){PF('BTCB2496').jq.focus();}"
+						onclick="if(!false){PF('PLCB2496').show();}"
+						value="#{diariosaldosbancofuenteControlador.cuentaFinal}"
+						tabindex="-1"
+						style="cursor:pointer; position: absolute; width:75px; height: 20px; left: 221px;   top: 136px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+					<p:commandButton id="BTCB2496" onblur="PF('CB2496').jq.blur();"
+						onfocus="PF('CB2496').jq.addClass('ui-state-focus');"
+						widgetVar="BTCB2496" type="button"
+						icon="ui-icon ui-icon-triangle-1-s ui-c"
+						style="position: absolute; width:25px; height:  20px; left: 294px;   top: 136px; display:block; "
+						tabindex="4" />
+					<p:overlayPanel widgetVar="PLCB2496" id="PLCB2496"
+						onShow="if(PF('TBCB2496').nuevo){ PF('TBCB2496').filter(); PF('TBCB2496').nuevo=false;}"
+						onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB2496').jq.focus();}"
+						my="center bottom" at="" for="BTCB2496" hideEffect="fade"
+						style="width: 350px">
+						<p:dataTable id="TBCB2496" widgetVar="TBCB2496" var="reg"
+							value="#{diariosaldosbancofuenteControlador.listacuentafin}"
+							editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="11" rowIndexVar="rowIndex" selectionMode="single"
+							rowKey="#{reg.campos['BANCO']}" paginator="true" lazy="true">
+							<p:ajax event="rowSelect"
+								listener="#{diariosaldosbancofuenteControlador.seleccionarFilacuentafin}"
+								update=":FR717_nuevo:CB2496,"
+								oncomplete="PF('PLCB2496').hide(); " />
+							<p:column headerText="#{idm.TG_BANCO3}"
+								style="text-align:center; " width="25"
+								filterBy="#{reg.campos['BANCO']}" filterMatchMode="startsWith"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['BANCO']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE_BANCO1}"
+								style="text-align:center; " width="100"
+								filterBy="#{reg.campos['NOMBREBANCO']}"
+								filterMatchMode="contains" filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NOMBREBANCO']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+						</p:dataTable>
+					</p:overlayPanel>
+					<p:inputText id="CB2497" widgetVar="CB2497"
+						onfocus="if(!false){PF('BTCB2497').jq.focus();}"
+						onclick="if(!false){PF('PLCB2497').show();}"
+						value="#{diariosaldosbancofuenteControlador.fuenteInicial}"
+						tabindex="-1"
+						style="cursor:pointer; position: absolute; width:120px; height: 20px; left: 221px;   top: 165px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+					<p:commandButton id="BTCB2497" onblur="PF('CB2497').jq.blur();"
+						onfocus="PF('CB2497').jq.addClass('ui-state-focus');"
+						widgetVar="BTCB2497" type="button"
+						icon="ui-icon ui-icon-triangle-1-s ui-c"
+						style="position: absolute; width:25px; height:  20px; left: 339px;   top: 165px; display:block; "
+						tabindex="5" />
+					<p:overlayPanel widgetVar="PLCB2497" id="PLCB2497"
+						onShow="if(PF('TBCB2497').nuevo){ PF('TBCB2497').filter(); PF('TBCB2497').nuevo=false;}"
+						onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB2497').jq.focus();}"
+						my="center bottom" at="" for="BTCB2497" hideEffect="fade"
+						style="width: 350px">
+						<p:dataTable id="TBCB2497" widgetVar="TBCB2497" var="reg"
+							value="#{diariosaldosbancofuenteControlador.listaFuenteInicial}"
+							editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="11" rowIndexVar="rowIndex" selectionMode="single"
+							rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+							<p:ajax event="rowSelect"
+								listener="#{diariosaldosbancofuenteControlador.seleccionarFilaFuenteInicial}"
+								update=":FR717_nuevo:CB2497,@([id$=CB2498])"
+								oncomplete="PF('PLCB2497').hide(); PF('TBCB2498').filter();" />
+							<p:column headerText="#{idm.TG_CODIGO7}"
+								style="text-align:center; " width="45"
+								filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['CODIGO']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE3}"
+								style="text-align:center; " width="100"
+								filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NOMBRE']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+						</p:dataTable>
+					</p:overlayPanel>
+					<p:inputText id="CB2498" widgetVar="CB2498"
+						onfocus="if(!false){PF('BTCB2498').jq.focus();}"
+						onclick="if(!false){PF('PLCB2498').show();}"
+						value="#{diariosaldosbancofuenteControlador.fuenteFinal}"
+						tabindex="-1"
+						style="cursor:pointer; position: absolute; width:120px; height: 20px; left: 221px;   top: 198px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+					<p:commandButton id="BTCB2498" onblur="PF('CB2498').jq.blur();"
+						onfocus="PF('CB2498').jq.addClass('ui-state-focus');"
+						widgetVar="BTCB2498" type="button"
+						icon="ui-icon ui-icon-triangle-1-s ui-c"
+						style="position: absolute; width:25px; height:  20px; left: 339px;   top: 198px; display:block; "
+						tabindex="6" />
+					<p:overlayPanel widgetVar="PLCB2498" id="PLCB2498"
+						onShow="if(PF('TBCB2498').nuevo){ PF('TBCB2498').filter(); PF('TBCB2498').nuevo=false;}"
+						onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB2498').jq.focus();}"
+						my="center bottom" at="" for="BTCB2498" hideEffect="fade"
+						style="width: 350px">
+						<p:dataTable id="TBCB2498" widgetVar="TBCB2498" var="reg"
+							value="#{diariosaldosbancofuenteControlador.listaFuenteFinal}"
+							editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="11" rowIndexVar="rowIndex" selectionMode="single"
+							rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+							<p:ajax event="rowSelect"
+								listener="#{diariosaldosbancofuenteControlador.seleccionarFilaFuenteFinal}"
+								update=":FR717_nuevo:CB2498,"
+								oncomplete="PF('PLCB2498').hide(); " />
+							<p:column headerText="#{idm.TG_CODIGO7}"
+								style="text-align:center; " width="45"
+								filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['CODIGO']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE3}"
+								style="text-align:center; " width="100"
+								filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NOMBRE']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+						</p:dataTable>
+					</p:overlayPanel>
+					<h:outputLabel id="LB18367" value="#{idm.TG_FECHA_INICIAL2}"
+						style="position: absolute; width:111px; height: 23px; left: 107px;   top: 53px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					<h:outputLabel id="LB18368" value="#{idm.TG_BANCO_INICIAL}"
+						style="position: absolute; width:115px; height: 23px; left: 103px;   top: 109px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					<h:outputLabel id="LB18369" value="#{idm.TG_BANCO_FINAL}"
+						style="position: absolute; width:115px; height: 23px; left: 102px;   top: 136px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					<h:outputLabel id="LB18370" value="#{idm.TG_FECHA_FINAL3}"
+						style="position: absolute; width:111px; height: 23px; left: 107px;   top: 80px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					<h:outputLabel id="LB18371" value="#{idm.TT_LB18371}"
+						style="position: absolute; width:121px; height: 23px; left: 97px;   top: 165px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					<h:outputLabel id="LB18372" value="#{idm.TT_LB18372}"
+						style="position: absolute; width:113px; height: 23px; left: 105px;   top: 197px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					<h:outputLabel id="LB18373"
+						value="#{idm.TG_INFORME_DIARIO_DE_SALDOS_BANCARIOS}"
+						style="position: absolute; width:345px; height: 25px; left: 43px;   top: 10px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					<p:calendar locale="es" navigator="true" mask="true"
+						pattern="dd/MM/yyyy" id="CP22228" widgetVar="CP22228"
+						value="#{diariosaldosbancofuenteControlador.fechaIncial}"
+						placeholder="#{idm.TG_DDMMYYYY}" tabindex="1"
+						style="position: absolute; width:90px; height: 20px; left: 222px;   top: 53px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+						<p:ajax event="dateSelect"
+							listener="#{diariosaldosbancofuenteControlador.cambiarFechaini}"
+							update="@([id$=CB2497]),@([id$=CB2498])" />
+						<p:ajax event="change"
+							listener="#{diariosaldosbancofuenteControlador.cambiarFechaini}"
+							update="@([id$=CB2497]),@([id$=CB2498])" />
+					</p:calendar>
+					<p:commandButton id="BT1365" widgetVar="BT1365"
+						onclick="if (!validarVaciosViewModal(['CP22228', 'CP22228', 'CB2495', 'CB2496', 'CB2497', 'CB2498'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                return false;
+                            }else{
+PrimeFaces.monitorDownload(mostrarEspera,ocultarEspera);
+                            }"
+						icon="ui-iconExcel" ajax="false" tabindex="8" value=""
+						actionListener="#{diariosaldosbancofuenteControlador.oprimirImprimirexcel}"
+						style="position: absolute; width:48px; height: 48px; left: 232px;   top: 230px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#800000; border:#AAAAAA  solid  1px;">
+						<p:fileDownload
+							value="#{diariosaldosbancofuenteControlador.archivoDescarga}" />
+					</p:commandButton>
+					<p:blockUI block="FR717_nuevo" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</h:form>
+			</div>
+		</section>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,104 @@
+﻿<data name="nattipocausa" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertNattipocausa" keyColumns="COMPANIA,CA_CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO NAT_TIPO_CAUSA (COMPANIA, CA_CODIGO, CA_NOMBRE, CREATED_BY, DATE_CREATED) VALUES (:COMPANIA, :CA_CODIGO, :CA_NOMBRE, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CA_CODIGO":"$CA_CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CA_CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="CA_NOMBRE" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="nattipocausa">
+		<call-query href="insertNattipocausa">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CA_CODIGO" query-param="CA_CODIGO"/>
+			<with-param name="CA_NOMBRE" query-param="CA_NOMBRE"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteNattipocausa" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM NAT_TIPO_CAUSA WHERE NAT_TIPO_CAUSA.COMPANIA= :KEY_COMPANIA AND NAT_TIPO_CAUSA.CA_CODIGO= :KEY_CA_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CA_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="nattipocausa">
+		<call-query href="deleteNattipocausa">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CA_CODIGO" query-param="KEY_CA_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNattipocausaPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA,CA_CODIGO,CA_NOMBRE  FROM NAT_TIPO_CAUSA WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN CA_CODIGO IS NULL THEN ' ' ELSE UPPER(CA_CODIGO) END)  LIKE UPPER(:CA_CODIGO || '%')  AND (CASE WHEN CA_NOMBRE IS NULL THEN ' ' ELSE UPPER(CA_NOMBRE) END)  LIKE UPPER( '%' || :CA_NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CA_CODIGO":"$CA_CODIGO","CA_NOMBRE":"$CA_NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CA_CODIGO" sqlType="STRING"/>
+		<param name="CA_NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="nattipocausa">
+		<call-query href="getNattipocausaPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CA_CODIGO" query-param="CA_CODIGO"/>
+			<with-param name="CA_NOMBRE" query-param="CA_NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNattipocausaNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA,CA_CODIGO,CA_NOMBRE  FROM NAT_TIPO_CAUSA WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN CA_CODIGO IS NULL THEN ' ' ELSE UPPER(CA_CODIGO) END)  LIKE UPPER(:CA_CODIGO || '%')  AND (CASE WHEN CA_NOMBRE IS NULL THEN ' ' ELSE UPPER(CA_NOMBRE) END)  LIKE UPPER( '%' || :CA_NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CA_CODIGO" sqlType="STRING"/>
+		<param name="CA_NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="nattipocausa/numero">
+		<call-query href="getNattipocausaNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CA_CODIGO" query-param="CA_CODIGO"/>
+			<with-param name="CA_NOMBRE" query-param="CA_NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateNattipocausa" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE NAT_TIPO_CAUSA SET CA_CODIGO=:CA_CODIGO, CA_NOMBRE=:CA_NOMBRE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE NAT_TIPO_CAUSA.COMPANIA= :KEY_COMPANIA AND NAT_TIPO_CAUSA.CA_CODIGO= :KEY_CA_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CA_CODIGO" sqlType="STRING"/>
+		<param name="CA_NOMBRE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CA_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="nattipocausa">
+		<call-query href="updateNattipocausa">
+			<with-param name="CA_CODIGO" query-param="CA_CODIGO"/>
+			<with-param name="CA_NOMBRE" query-param="CA_NOMBRE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CA_CODIGO" query-param="KEY_CA_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

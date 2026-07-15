@@ -1,0 +1,201 @@
+﻿<data name="detalleelementocomponente" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getDetalleelementocomponentePagPorresponsableQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT DE.RESPONSABLE CEDULA, TERCERO.NOMBRE, TERCERO.SUCURSAL  FROM DETALLE_ELEMENTOSCOMPONENTES D INNER JOIN ELEMENTOSCOMPONENTES E ON D.COMPANIA = E.COMPANIA AND D.CODIGO_ELEMENTO = E.CONSECUTIVO INNER JOIN DEVOLUTIVO DE ON D.COMPANIA = DE.COMPANIA AND D.CODIGO_COMPONENTE = DE.ELEMENTO AND D.SERIE_COMPONENTE = DE.SERIE INNER JOIN TERCERO ON DE.COMPANIA = TERCERO.COMPANIA AND DE.RESPONSABLE = TERCERO.NIT AND DE.SUCURSAL_RESPONSABLE = TERCERO.SUCURSAL WHERE DE.COMPANIA = :COMPANIA) WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END)  LIKE UPPER(:CEDULA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CEDULA":"$CEDULA","NOMBRE":"$NOMBRE","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="detalleelementocomponente/porresponsable/pag">
+		<call-query href="getDetalleelementocomponentePagPorresponsableQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDetalleelementocomponenteNumPorresponsableQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT DE.RESPONSABLE CEDULA, TERCERO.NOMBRE, TERCERO.SUCURSAL  FROM DETALLE_ELEMENTOSCOMPONENTES D INNER JOIN ELEMENTOSCOMPONENTES E ON D.COMPANIA = E.COMPANIA AND D.CODIGO_ELEMENTO = E.CONSECUTIVO INNER JOIN DEVOLUTIVO DE ON D.COMPANIA = DE.COMPANIA AND D.CODIGO_COMPONENTE = DE.ELEMENTO AND D.SERIE_COMPONENTE = DE.SERIE INNER JOIN TERCERO ON DE.COMPANIA = TERCERO.COMPANIA AND DE.RESPONSABLE = TERCERO.NIT AND DE.SUCURSAL_RESPONSABLE = TERCERO.SUCURSAL WHERE DE.COMPANIA = :COMPANIA) WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END)  LIKE UPPER(:CEDULA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="detalleelementocomponente/porresponsable/num">
+		<call-query href="getDetalleelementocomponenteNumPorresponsableQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDetalleelementocomponenteComponenteexistente" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE DETALLE_ELEMENTOSCOMPONENTES SET CODIGO_ELEMENTO = :COMPONENTE   WHERE COMPANIA      = :COMPANIA AND CODIGO_COMPONENTE = :ELEMENTO AND SERIE_COMPONENTE  = :SERIE AND CODIGO_ELEMENTO = :COMPONENTEINICIAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPONENTE" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTO" sqlType="STRING"/>
+		<param name="SERIE" sqlType="STRING"/>
+		<param name="COMPONENTEINICIAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="detalleelementocomponente/componenteexistente">
+		<call-query href="updateDetalleelementocomponenteComponenteexistente">
+			<with-param name="COMPONENTE" query-param="COMPONENTE"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTO" query-param="ELEMENTO"/>
+			<with-param name="SERIE" query-param="SERIE"/>
+			<with-param name="COMPONENTEINICIAL" query-param="COMPONENTEINICIAL"/>
+
+		</call-query>
+	</resource>
+	<query id="insertDetalleelementocomponente" keyColumns="COMPANIA,CODIGO_ELEMENTO,CODIGO_COMPONENTE,SERIE_COMPONENTE" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO DETALLE_ELEMENTOSCOMPONENTES (COMPANIA, CODIGO_ELEMENTO, CODIGO_COMPONENTE, SERIE_COMPONENTE, MATERIAL, MESESVIDAUTIL, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO_ELEMENTO, :CODIGO_COMPONENTE, :SERIE_COMPONENTE, :MATERIAL, :MESESVIDAUTIL, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO_ELEMENTO":"$CODIGO_ELEMENTO(type:integer)","KEY_CODIGO_COMPONENTE":"$CODIGO_COMPONENTE","KEY_SERIE_COMPONENTE":"$SERIE_COMPONENTE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_ELEMENTO" sqlType="STRING"/>
+		<param name="CODIGO_COMPONENTE" sqlType="STRING"/>
+		<param name="SERIE_COMPONENTE" sqlType="STRING"/>
+		<param defaultValue="0" name="MATERIAL" sqlType="STRING"/>
+		<param defaultValue="" name="MESESVIDAUTIL" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="detalleelementocomponente">
+		<call-query href="insertDetalleelementocomponente">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_ELEMENTO" query-param="CODIGO_ELEMENTO"/>
+			<with-param name="CODIGO_COMPONENTE" query-param="CODIGO_COMPONENTE"/>
+			<with-param name="SERIE_COMPONENTE" query-param="SERIE_COMPONENTE"/>
+			<with-param name="MATERIAL" query-param="MATERIAL"/>
+			<with-param name="MESESVIDAUTIL" query-param="MESESVIDAUTIL"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteDetalleelementocomponente" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM DETALLE_ELEMENTOSCOMPONENTES WHERE DETALLE_ELEMENTOSCOMPONENTES.COMPANIA= :KEY_COMPANIA AND DETALLE_ELEMENTOSCOMPONENTES.CODIGO_ELEMENTO= :KEY_CODIGO_ELEMENTO AND DETALLE_ELEMENTOSCOMPONENTES.CODIGO_COMPONENTE= :KEY_CODIGO_COMPONENTE AND DETALLE_ELEMENTOSCOMPONENTES.SERIE_COMPONENTE= :KEY_SERIE_COMPONENTE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO_ELEMENTO" sqlType="INTEGER"/>
+		<param name="KEY_CODIGO_COMPONENTE" sqlType="STRING"/>
+		<param name="KEY_SERIE_COMPONENTE" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="detalleelementocomponente">
+		<call-query href="deleteDetalleelementocomponente">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO_ELEMENTO" query-param="KEY_CODIGO_ELEMENTO"/>
+			<with-param name="KEY_CODIGO_COMPONENTE" query-param="KEY_CODIGO_COMPONENTE"/>
+			<with-param name="KEY_SERIE_COMPONENTE" query-param="KEY_SERIE_COMPONENTE"/>
+
+		</call-query>
+	</resource>
+	<query id="getDetalleelementocomponentePaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  D.COMPANIA, D.CODIGO_ELEMENTO, D.CODIGO_COMPONENTE, D.SERIE_COMPONENTE, I.NOMBRELARGO,(CASE D.MATERIAL WHEN 0 THEN 'false' ELSE 'true' END) MATERIAL, D.MESESVIDAUTIL  FROM DETALLE_ELEMENTOSCOMPONENTES D INNER JOIN INVENTARIO I ON D.COMPANIA = I.COMPANIA AND D.CODIGO_COMPONENTE = I.CODIGOELEMENTO WHERE D.COMPANIA = :COMPANIA AND D.CODIGO_ELEMENTO = :CONSECUTIVO) WHERE (CASE WHEN CODIGO_COMPONENTE IS NULL THEN ' ' ELSE UPPER(CODIGO_COMPONENTE) END)  LIKE UPPER(:CODIGO_COMPONENTE || '%')  AND (CASE WHEN SERIE_COMPONENTE IS NULL THEN ' ' ELSE UPPER(SERIE_COMPONENTE) END)  LIKE UPPER(:SERIE_COMPONENTE || '%')  AND (CASE WHEN NOMBRELARGO IS NULL THEN ' ' ELSE UPPER(NOMBRELARGO) END)  LIKE UPPER( '%' || :NOMBRELARGO || '%')  AND (CASE WHEN MATERIAL IS NULL THEN ' ' ELSE UPPER(MATERIAL) END)  LIKE UPPER(:MATERIAL || '%')  AND (CASE WHEN MESESVIDAUTIL IS NULL THEN ' ' ELSE UPPER(MESESVIDAUTIL) END)  LIKE UPPER(:MESESVIDAUTIL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO_ELEMENTO":"$CODIGO_ELEMENTO(type:integer)","CODIGO_COMPONENTE":"$CODIGO_COMPONENTE","SERIE_COMPONENTE":"$SERIE_COMPONENTE","NOMBRELARGO":"$NOMBRELARGO","MATERIAL":"$MATERIAL(type:boolean)","MESESVIDAUTIL":"$MESESVIDAUTIL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CODIGO_COMPONENTE" sqlType="STRING"/>
+		<param name="SERIE_COMPONENTE" sqlType="STRING"/>
+		<param name="NOMBRELARGO" sqlType="STRING"/>
+		<param name="MATERIAL" sqlType="STRING"/>
+		<param name="MESESVIDAUTIL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="detalleelementocomponente">
+		<call-query href="getDetalleelementocomponentePaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CODIGO_COMPONENTE" query-param="CODIGO_COMPONENTE"/>
+			<with-param name="SERIE_COMPONENTE" query-param="SERIE_COMPONENTE"/>
+			<with-param name="NOMBRELARGO" query-param="NOMBRELARGO"/>
+			<with-param name="MATERIAL" query-param="MATERIAL"/>
+			<with-param name="MESESVIDAUTIL" query-param="MESESVIDAUTIL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDetalleelementocomponenteNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  D.COMPANIA, D.CODIGO_ELEMENTO, D.CODIGO_COMPONENTE, D.SERIE_COMPONENTE, I.NOMBRELARGO,(CASE D.MATERIAL WHEN 0 THEN 'false' ELSE 'true' END) MATERIAL, D.MESESVIDAUTIL  FROM DETALLE_ELEMENTOSCOMPONENTES D INNER JOIN INVENTARIO I ON D.COMPANIA = I.COMPANIA AND D.CODIGO_COMPONENTE = I.CODIGOELEMENTO WHERE D.COMPANIA = :COMPANIA AND D.CODIGO_ELEMENTO = :CONSECUTIVO) WHERE (CASE WHEN CODIGO_COMPONENTE IS NULL THEN ' ' ELSE UPPER(CODIGO_COMPONENTE) END)  LIKE UPPER(:CODIGO_COMPONENTE || '%')  AND (CASE WHEN SERIE_COMPONENTE IS NULL THEN ' ' ELSE UPPER(SERIE_COMPONENTE) END)  LIKE UPPER(:SERIE_COMPONENTE || '%')  AND (CASE WHEN NOMBRELARGO IS NULL THEN ' ' ELSE UPPER(NOMBRELARGO) END)  LIKE UPPER( '%' || :NOMBRELARGO || '%')  AND (CASE WHEN MATERIAL IS NULL THEN ' ' ELSE UPPER(MATERIAL) END)  LIKE UPPER(:MATERIAL || '%')  AND (CASE WHEN MESESVIDAUTIL IS NULL THEN ' ' ELSE UPPER(MESESVIDAUTIL) END)  LIKE UPPER(:MESESVIDAUTIL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CODIGO_COMPONENTE" sqlType="STRING"/>
+		<param name="SERIE_COMPONENTE" sqlType="STRING"/>
+		<param name="NOMBRELARGO" sqlType="STRING"/>
+		<param name="MATERIAL" sqlType="STRING"/>
+		<param name="MESESVIDAUTIL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="detalleelementocomponente/numero">
+		<call-query href="getDetalleelementocomponenteNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CODIGO_COMPONENTE" query-param="CODIGO_COMPONENTE"/>
+			<with-param name="SERIE_COMPONENTE" query-param="SERIE_COMPONENTE"/>
+			<with-param name="NOMBRELARGO" query-param="NOMBRELARGO"/>
+			<with-param name="MATERIAL" query-param="MATERIAL"/>
+			<with-param name="MESESVIDAUTIL" query-param="MESESVIDAUTIL"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDetalleelementocomponente" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE DETALLE_ELEMENTOSCOMPONENTES SET COMPANIA=:COMPANIA, CODIGO_ELEMENTO=:CODIGO_ELEMENTO, CODIGO_COMPONENTE=:CODIGO_COMPONENTE, SERIE_COMPONENTE=:SERIE_COMPONENTE, MATERIAL=:MATERIAL, MESESVIDAUTIL=:MESESVIDAUTIL, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE DETALLE_ELEMENTOSCOMPONENTES.COMPANIA= :KEY_COMPANIA AND DETALLE_ELEMENTOSCOMPONENTES.CODIGO_ELEMENTO= :KEY_CODIGO_ELEMENTO AND DETALLE_ELEMENTOSCOMPONENTES.CODIGO_COMPONENTE= :KEY_CODIGO_COMPONENTE AND DETALLE_ELEMENTOSCOMPONENTES.SERIE_COMPONENTE= :KEY_SERIE_COMPONENTE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_ELEMENTO" sqlType="STRING"/>
+		<param name="CODIGO_COMPONENTE" sqlType="STRING"/>
+		<param name="SERIE_COMPONENTE" sqlType="STRING"/>
+		<param name="MATERIAL" sqlType="STRING"/>
+		<param name="MESESVIDAUTIL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO_ELEMENTO" sqlType="STRING"/>
+		<param name="KEY_CODIGO_COMPONENTE" sqlType="STRING"/>
+		<param name="KEY_SERIE_COMPONENTE" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="detalleelementocomponente">
+		<call-query href="updateDetalleelementocomponente">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_ELEMENTO" query-param="CODIGO_ELEMENTO"/>
+			<with-param name="CODIGO_COMPONENTE" query-param="CODIGO_COMPONENTE"/>
+			<with-param name="SERIE_COMPONENTE" query-param="SERIE_COMPONENTE"/>
+			<with-param name="MATERIAL" query-param="MATERIAL"/>
+			<with-param name="MESESVIDAUTIL" query-param="MESESVIDAUTIL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO_ELEMENTO" query-param="KEY_CODIGO_ELEMENTO"/>
+			<with-param name="KEY_CODIGO_COMPONENTE" query-param="KEY_CODIGO_COMPONENTE"/>
+			<with-param name="KEY_SERIE_COMPONENTE" query-param="KEY_SERIE_COMPONENTE"/>
+
+		</call-query>
+	</resource>
+
+</data>

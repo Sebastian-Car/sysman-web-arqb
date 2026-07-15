@@ -1,0 +1,187 @@
+﻿<data name="auditoriatablas" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getAuditoriatablasGetauditoriaxtablaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COMPANIA, NOMBRE_TABLA,(CASE IND_INSERTAR WHEN 0 THEN 'false' ELSE 'true' END) IND_INSERTAR,(CASE IND_EDITAR WHEN 0 THEN 'false' ELSE 'true' END) IND_EDITAR,(CASE IND_ELIMINAR WHEN 0 THEN 'false' ELSE 'true' END) IND_ELIMINAR FROM AUDITORIA_TABLAS WHERE COMPANIA = :COMPANIA AND NOMBRE_TABLA = :NOMBRE_TABLA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NOMBRE_TABLA":"$NOMBRE_TABLA","IND_INSERTAR":"$IND_INSERTAR(type:boolean)","IND_EDITAR":"$IND_EDITAR(type:boolean)","IND_ELIMINAR":"$IND_ELIMINAR(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE_TABLA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="auditoriatablas/getauditoriaxtabla">
+		<call-query href="getAuditoriatablasGetauditoriaxtablaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE_TABLA" query-param="NOMBRE_TABLA"/>
+
+		</call-query>
+	</resource>
+	<query id="getAuditoriatablasGetcontinuoantesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT PCK_AUDITORIA.FC_SELECT_TO_JSON(UN_TABLA =&gt; :UN_TABLA, UN_WHERE =&gt; :UN_WHERE) AS MIELEMENTO FROM DUAL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"myarray": $MIELEMENTO}]}}			</result>
+		<param name="UN_TABLA" sqlType="STRING"/>
+		<param name="UN_WHERE" sqlType="STRING"/>
+	</query>
+	<resource method="GET" path="auditoriatablas/getcontinuoantes">
+		<call-query href="getAuditoriatablasGetcontinuoantesQuery">
+			<with-param name="UN_TABLA" query-param="UN_TABLA"/>
+			<with-param name="UN_WHERE" query-param="UN_WHERE"/>
+		</call-query>
+	</resource>
+	<query id="getAuditoriatablasPagTodosxindicadorQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT NOMBRE_TABLA, CASE WHEN IND_INSERTAR NOT IN (0) THEN 'Si' ELSE 'No' END AS IND_INSERTAR, CASE WHEN IND_EDITAR NOT IN (0) THEN 'Si' ELSE 'No' END AS IND_EDITAR, CASE WHEN IND_ELIMINAR NOT IN (0) THEN 'Si' ELSE 'No' END AS IND_ELIMINAR FROM AUDITORIA_TABLAS WHERE COMPANIA = :COMPANIA AND IND_INSERTAR + IND_EDITAR + IND_ELIMINAR &lt;&gt; 0) INI WHERE (CASE WHEN NOMBRE_TABLA IS NULL THEN ' ' ELSE UPPER(NOMBRE_TABLA) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_TABLA), '%')) AND (CASE WHEN IND_INSERTAR IS NULL THEN ' ' ELSE UPPER(IND_INSERTAR) END) LIKE UPPER(CONCAT(:IND_INSERTAR, '%')) AND (CASE WHEN IND_EDITAR IS NULL THEN ' ' ELSE UPPER(IND_EDITAR) END) LIKE UPPER(CONCAT(:IND_EDITAR, '%')) AND (CASE WHEN IND_ELIMINAR IS NULL THEN ' ' ELSE UPPER(IND_ELIMINAR) END) LIKE UPPER(CONCAT(:IND_ELIMINAR, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE_TABLA":"$NOMBRE_TABLA","IND_INSERTAR":"$IND_INSERTAR","IND_EDITAR":"$IND_EDITAR","IND_ELIMINAR":"$IND_ELIMINAR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE_TABLA" sqlType="STRING"/>
+		<param name="IND_INSERTAR" sqlType="STRING"/>
+		<param name="IND_EDITAR" sqlType="STRING"/>
+		<param name="IND_ELIMINAR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="auditoriatablas/todosxindicador/pag">
+		<call-query href="getAuditoriatablasPagTodosxindicadorQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE_TABLA" query-param="NOMBRE_TABLA"/>
+			<with-param name="IND_INSERTAR" query-param="IND_INSERTAR"/>
+			<with-param name="IND_EDITAR" query-param="IND_EDITAR"/>
+			<with-param name="IND_ELIMINAR" query-param="IND_ELIMINAR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAuditoriatablasNumTodosxindicadorQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT NOMBRE_TABLA, CASE WHEN IND_INSERTAR NOT IN (0) THEN 'Si' ELSE 'No' END AS IND_INSERTAR, CASE WHEN IND_EDITAR NOT IN (0) THEN 'Si' ELSE 'No' END AS IND_EDITAR, CASE WHEN IND_ELIMINAR NOT IN (0) THEN 'Si' ELSE 'No' END AS IND_ELIMINAR FROM AUDITORIA_TABLAS WHERE COMPANIA = :COMPANIA AND IND_INSERTAR + IND_EDITAR + IND_ELIMINAR &lt;&gt; 0) INI WHERE (CASE WHEN NOMBRE_TABLA IS NULL THEN ' ' ELSE UPPER(NOMBRE_TABLA) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_TABLA), '%')) AND (CASE WHEN IND_INSERTAR IS NULL THEN ' ' ELSE UPPER(IND_INSERTAR) END) LIKE UPPER(CONCAT(:IND_INSERTAR, '%')) AND (CASE WHEN IND_EDITAR IS NULL THEN ' ' ELSE UPPER(IND_EDITAR) END) LIKE UPPER(CONCAT(:IND_EDITAR, '%')) AND (CASE WHEN IND_ELIMINAR IS NULL THEN ' ' ELSE UPPER(IND_ELIMINAR) END) LIKE UPPER(CONCAT(:IND_ELIMINAR, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE_TABLA" sqlType="STRING"/>
+		<param name="IND_INSERTAR" sqlType="STRING"/>
+		<param name="IND_EDITAR" sqlType="STRING"/>
+		<param name="IND_ELIMINAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="auditoriatablas/todosxindicador/num">
+		<call-query href="getAuditoriatablasNumTodosxindicadorQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE_TABLA" query-param="NOMBRE_TABLA"/>
+			<with-param name="IND_INSERTAR" query-param="IND_INSERTAR"/>
+			<with-param name="IND_EDITAR" query-param="IND_EDITAR"/>
+			<with-param name="IND_ELIMINAR" query-param="IND_ELIMINAR"/>
+
+		</call-query>
+	</resource>
+	<query id="getAuditoriatablasPagTodosxtablaeindicadorQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, ACCION, CONCAT(CONCAT(CONCAT(CONCAT(CODIGO, '_'),ACCION), '_'), NOMBRE_TABLA) PROCESO FROM ( SELECT '001' CODIGO, 'CREAR' ACCION, COMPANIA, NOMBRE_TABLA FROM AUDITORIA_TABLAS WHERE IND_INSERTAR NOT IN ( 0 ) UNION ALL SELECT '002', 'ACTUALIZAR', COMPANIA, NOMBRE_TABLA FROM AUDITORIA_TABLAS WHERE IND_EDITAR NOT IN ( 0 ) UNION ALL SELECT '003', 'ELIMINAR', COMPANIA, NOMBRE_TABLA FROM AUDITORIA_TABLAS WHERE IND_ELIMINAR NOT IN ( 0 ) ) WHERE COMPANIA = :COMPANIA AND NOMBRE_TABLA = :TABLA ORDER BY NOMBRE_TABLA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN ACCION IS NULL THEN ' ' ELSE UPPER(ACCION) END) LIKE UPPER(CONCAT(CONCAT('%',:ACCION), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","ACCION":"$ACCION","PROCESO":"$PROCESO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TABLA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ACCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="auditoriatablas/todosxtablaeindicador/pag">
+		<call-query href="getAuditoriatablasPagTodosxtablaeindicadorQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TABLA" query-param="TABLA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ACCION" query-param="ACCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAuditoriatablasNumTodosxtablaeindicadorQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, ACCION, CONCAT(CONCAT(CONCAT(CONCAT(CODIGO, '_'),ACCION), '_'), NOMBRE_TABLA) PROCESO FROM ( SELECT '001' CODIGO, 'CREAR' ACCION, COMPANIA, NOMBRE_TABLA FROM AUDITORIA_TABLAS WHERE IND_INSERTAR NOT IN ( 0 ) UNION ALL SELECT '002', 'ACTUALIZAR', COMPANIA, NOMBRE_TABLA FROM AUDITORIA_TABLAS WHERE IND_EDITAR NOT IN ( 0 ) UNION ALL SELECT '003', 'ELIMINAR', COMPANIA, NOMBRE_TABLA FROM AUDITORIA_TABLAS WHERE IND_ELIMINAR NOT IN ( 0 ) ) WHERE COMPANIA = :COMPANIA AND NOMBRE_TABLA = :TABLA ORDER BY NOMBRE_TABLA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN ACCION IS NULL THEN ' ' ELSE UPPER(ACCION) END) LIKE UPPER(CONCAT(CONCAT('%',:ACCION), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TABLA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ACCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="auditoriatablas/todosxtablaeindicador/num">
+		<call-query href="getAuditoriatablasNumTodosxtablaeindicadorQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TABLA" query-param="TABLA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ACCION" query-param="ACCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getAuditoriatablasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, NOMBRE_TABLA,(CASE IND_INSERTAR WHEN 0 THEN 'false' ELSE 'true' END) IND_INSERTAR,(CASE IND_EDITAR WHEN 0 THEN 'false' ELSE 'true' END) IND_EDITAR,(CASE IND_ELIMINAR WHEN 0 THEN 'false' ELSE 'true' END) IND_ELIMINAR FROM AUDITORIA_TABLAS WHERE COMPANIA = :COMPANIA ORDER BY NOMBRE_TABLA) INI WHERE (CASE WHEN NOMBRE_TABLA IS NULL THEN ' ' ELSE UPPER(NOMBRE_TABLA) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_TABLA), '%')) AND (CASE WHEN IND_INSERTAR IS NULL THEN ' ' ELSE UPPER(IND_INSERTAR) END) LIKE UPPER(CONCAT(:IND_INSERTAR, '%')) AND (CASE WHEN IND_EDITAR IS NULL THEN ' ' ELSE UPPER(IND_EDITAR) END) LIKE UPPER(CONCAT(:IND_EDITAR, '%')) AND (CASE WHEN IND_ELIMINAR IS NULL THEN ' ' ELSE UPPER(IND_ELIMINAR) END) LIKE UPPER(CONCAT(:IND_ELIMINAR, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NOMBRE_TABLA":"$NOMBRE_TABLA","IND_INSERTAR":"$IND_INSERTAR(type:boolean)","IND_EDITAR":"$IND_EDITAR(type:boolean)","IND_ELIMINAR":"$IND_ELIMINAR(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE_TABLA" sqlType="STRING"/>
+		<param name="IND_INSERTAR" sqlType="STRING"/>
+		<param name="IND_EDITAR" sqlType="STRING"/>
+		<param name="IND_ELIMINAR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="auditoriatablas">
+		<call-query href="getAuditoriatablasPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE_TABLA" query-param="NOMBRE_TABLA"/>
+			<with-param name="IND_INSERTAR" query-param="IND_INSERTAR"/>
+			<with-param name="IND_EDITAR" query-param="IND_EDITAR"/>
+			<with-param name="IND_ELIMINAR" query-param="IND_ELIMINAR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAuditoriatablasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, NOMBRE_TABLA,(CASE IND_INSERTAR WHEN 0 THEN 'false' ELSE 'true' END) IND_INSERTAR,(CASE IND_EDITAR WHEN 0 THEN 'false' ELSE 'true' END) IND_EDITAR,(CASE IND_ELIMINAR WHEN 0 THEN 'false' ELSE 'true' END) IND_ELIMINAR FROM AUDITORIA_TABLAS WHERE COMPANIA = :COMPANIA ORDER BY NOMBRE_TABLA) INI WHERE (CASE WHEN NOMBRE_TABLA IS NULL THEN ' ' ELSE UPPER(NOMBRE_TABLA) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_TABLA), '%')) AND (CASE WHEN IND_INSERTAR IS NULL THEN ' ' ELSE UPPER(IND_INSERTAR) END) LIKE UPPER(CONCAT(:IND_INSERTAR, '%')) AND (CASE WHEN IND_EDITAR IS NULL THEN ' ' ELSE UPPER(IND_EDITAR) END) LIKE UPPER(CONCAT(:IND_EDITAR, '%')) AND (CASE WHEN IND_ELIMINAR IS NULL THEN ' ' ELSE UPPER(IND_ELIMINAR) END) LIKE UPPER(CONCAT(:IND_ELIMINAR, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE_TABLA" sqlType="STRING"/>
+		<param name="IND_INSERTAR" sqlType="STRING"/>
+		<param name="IND_EDITAR" sqlType="STRING"/>
+		<param name="IND_ELIMINAR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="auditoriatablas/numero">
+		<call-query href="getAuditoriatablasNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE_TABLA" query-param="NOMBRE_TABLA"/>
+			<with-param name="IND_INSERTAR" query-param="IND_INSERTAR"/>
+			<with-param name="IND_EDITAR" query-param="IND_EDITAR"/>
+			<with-param name="IND_ELIMINAR" query-param="IND_ELIMINAR"/>
+
+		</call-query>
+	</resource>
+	<query id="updateAuditoriatablas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE AUDITORIA_TABLAS SET IND_INSERTAR=:IND_INSERTAR, IND_EDITAR=:IND_EDITAR, IND_ELIMINAR=:IND_ELIMINAR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE AUDITORIA_TABLAS.COMPANIA= :KEY_COMPANIA AND AUDITORIA_TABLAS.NOMBRE_TABLA= :KEY_NOMBRE_TABLA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="IND_INSERTAR" sqlType="STRING"/>
+		<param name="IND_EDITAR" sqlType="STRING"/>
+		<param name="IND_ELIMINAR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NOMBRE_TABLA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="auditoriatablas">
+		<call-query href="updateAuditoriatablas">
+			<with-param name="IND_INSERTAR" query-param="IND_INSERTAR"/>
+			<with-param name="IND_EDITAR" query-param="IND_EDITAR"/>
+			<with-param name="IND_ELIMINAR" query-param="IND_ELIMINAR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NOMBRE_TABLA" query-param="KEY_NOMBRE_TABLA"/>
+
+		</call-query>
+	</resource>
+
+</data>

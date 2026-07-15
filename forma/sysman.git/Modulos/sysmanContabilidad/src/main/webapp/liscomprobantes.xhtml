@@ -1,0 +1,283 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	template="/templateModal.xhtml" xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+              asignarEventoContGrande();
+validarCargaGrandes();
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TG_LISTADO_DE_COMPROBANTES_CONTABLES}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<section class="radiusModal" style="height: auto">
+			<div id="panelModal" style="position: relative; height: auto"
+				class="
+">
+				<h:form id="FR680_nuevo"
+					style="position: relative; width: 100%; height: 300px; margin: 0px">
+					<p:growl id="alert" showDetail="true" sticky="false"
+						widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+					<p:growl id="message" showDetail="true" escape="false" />
+					<p:confirmDialog global="true" showEffect="fade" id="confFR680"
+						widgetVar="confFR680">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:commandButton id="BT1298" widgetVar="BT1298"
+						onclick="if (!validarVaciosViewModal(['CB2392', 'CB2393', 'CP20926','CP20927','CB2394','CB2395'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                return false;
+                            }"
+						icon="ui-iconPdf" ajax="false" tabindex="7" value=""
+						actionListener="#{liscomprobantesControlador.oprimirImprimir}"
+						style="position: absolute; width:48px; height: 48px; left: 125px;   top: 250px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#800000; border:#AAAAAA  solid  1px;">
+						<p:fileDownload
+							value="#{liscomprobantesControlador.archivoDescarga}" />
+					</p:commandButton>
+					<p:calendar locale="es" navigator="true" mask="true"
+						pattern="dd/MM/yyyy" id="CP20927" widgetVar="CP20927"
+						value="#{liscomprobantesControlador.fechaFinal}"
+						placeholder="#{idm.TG_FECHA_FINAL2}" tabindex="4"
+						style="position: absolute; width:87px; height: 20px; left: 184px;   top: 137px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+						<p:ajax event="dateSelect"
+							onstart="if(validarFechas('CP20926','CP20927')){
+return false;
+} return false;" />
+						<p:ajax event="change"
+							onstart="if(validarFechas('CP20926','CP20927')){
+return false;
+} return false;" />
+					</p:calendar>
+					<p:inputText id="CB2392" widgetVar="CB2392"
+						onfocus="if(!false){PF('BTCB2392').jq.focus();}"
+						onclick="if(!false){PF('PLCB2392').show();}"
+						value="#{liscomprobantesControlador.tipoIncial}" tabindex="-1"
+						style="cursor:pointer; position: absolute; width:53px; height: 20px; left: 184px;   top: 38px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+					<p:commandButton id="BTCB2392" onblur="PF('CB2392').jq.blur();"
+						onfocus="PF('CB2392').jq.addClass('ui-state-focus');"
+						widgetVar="BTCB2392" type="button"
+						icon="ui-icon ui-icon-triangle-1-s ui-c"
+						style="position: absolute; width:25px; height:  20px; left: 235px;   top: 38px; display:block; "
+						tabindex="1" />
+					<p:overlayPanel widgetVar="PLCB2392" id="PLCB2392"
+						onShow="if(PF('TBCB2392').nuevo){ PF('TBCB2392').filter(); PF('TBCB2392').nuevo=false;}"
+						onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB2392').jq.focus();}"
+						my="bottom" at="left bottom" for="BTCB2392" hideEffect="fade"
+						style="width: 500px">
+						<p:dataTable id="TBCB2392" widgetVar="TBCB2392" var="reg"
+							value="#{liscomprobantesControlador.listaTipoInicial}"
+							editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="11" rowIndexVar="rowIndex" selectionMode="single"
+							rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+							<p:ajax event="rowSelect"
+								listener="#{liscomprobantesControlador.seleccionarFilaTipoInicial}"
+								update=":FR680_nuevo:CB2392,@([id$=CB2393])"
+								oncomplete="PF('PLCB2392').hide(); " />
+							<p:column headerText="#{idm.TG_CODIGO7}"
+								style="text-align:center; " width="15"
+								filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['CODIGO']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE3}"
+								style="text-align:center; " width="80"
+								filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NOMBRE']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+						</p:dataTable>
+					</p:overlayPanel>
+					<p:inputText id="CB2393" widgetVar="CB2393"
+						onfocus="if(!false){PF('BTCB2393').jq.focus();}"
+						onclick="if(!false){PF('PLCB2393').show();}"
+						value="#{liscomprobantesControlador.tipoFinal}" tabindex="-1"
+						style="cursor:pointer; position: absolute; width:53px; height: 20px; left: 184px;   top: 72px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+					<p:commandButton id="BTCB2393" onblur="PF('CB2393').jq.blur();"
+						onfocus="PF('CB2393').jq.addClass('ui-state-focus');"
+						widgetVar="BTCB2393" type="button"
+						icon="ui-icon ui-icon-triangle-1-s ui-c"
+						style="position: absolute; width:25px; height:  20px; left: 235px;   top: 72px; display:block; "
+						tabindex="2" />
+					<p:overlayPanel widgetVar="PLCB2393" id="PLCB2393"
+						onShow="if(PF('TBCB2393').nuevo){ PF('TBCB2393').filter(); PF('TBCB2393').nuevo=false;}"
+						onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB2393').jq.focus();}"
+						my="bottom" at="left bottom" for="BTCB2393" hideEffect="fade"
+						style="width: 500px">
+						<p:dataTable id="TBCB2393" widgetVar="TBCB2393" var="reg"
+							value="#{liscomprobantesControlador.listaTipoFinal}"
+							editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="11" rowIndexVar="rowIndex" selectionMode="single"
+							rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+							<p:ajax event="rowSelect"
+								listener="#{liscomprobantesControlador.seleccionarFilaTipoFinal}"
+								update=":FR680_nuevo:CB2393,"
+								oncomplete="PF('PLCB2393').hide(); " />
+							<p:column headerText="#{idm.TG_CODIGO7}"
+								style="text-align:center; " width="15"
+								filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['CODIGO']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE3}"
+								style="text-align:center; " width="80"
+								filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NOMBRE']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+						</p:dataTable>
+					</p:overlayPanel>
+					<p:inputText id="CB2394" widgetVar="CB2394"
+						onfocus="if(!false){PF('BTCB2394').jq.focus();}"
+						onclick="if(!false){PF('PLCB2394').show();}"
+						value="#{liscomprobantesControlador.terceroInicial}" tabindex="-1"
+						style="cursor:pointer; position: absolute; width:125px; height: 20px; left: 184px;   top: 168px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+					<p:commandButton id="BTCB2394" onblur="PF('CB2394').jq.blur();"
+						onfocus="PF('CB2394').jq.addClass('ui-state-focus');"
+						widgetVar="BTCB2394" type="button"
+						icon="ui-icon ui-icon-triangle-1-s ui-c"
+						style="position: absolute; width:25px; height:  20px; left: 307px;   top: 168px; display:block; "
+						tabindex="5" />
+					<p:overlayPanel widgetVar="PLCB2394" id="PLCB2394"
+						onShow="if(PF('TBCB2394').nuevo){ PF('TBCB2394').filter(); PF('TBCB2394').nuevo=false;}"
+						onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB2394').jq.focus();}"
+						my="bottom" at="left bottom" for="BTCB2394" hideEffect="fade"
+						style="width: 500px">
+						<p:dataTable id="TBCB2394" widgetVar="TBCB2394" var="reg"
+							value="#{liscomprobantesControlador.listaTerceroInicial}"
+							editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="11" rowIndexVar="rowIndex" selectionMode="single"
+							rowKey="#{reg.campos['NIT']}" paginator="true" lazy="true">
+							<p:ajax event="rowSelect"
+								listener="#{liscomprobantesControlador.seleccionarFilaTerceroInicial}"
+								update=":FR680_nuevo:CB2394,@([id$=CB2395])"
+								oncomplete="PF('PLCB2394').hide(); " />
+							<p:column headerText="#{idm.TG_NIT5}" style="text-align:center; "
+								width="40" filterBy="#{reg.campos['NIT']}"
+								filterMatchMode="startsWith" filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NIT']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE3}"
+								style="text-align:center; " width="100"
+								filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NOMBRE']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+						</p:dataTable>
+					</p:overlayPanel>
+					<p:inputText id="CB2395" widgetVar="CB2395"
+						onfocus="if(!false){PF('BTCB2395').jq.focus();}"
+						onclick="if(!false){PF('PLCB2395').show();}"
+						value="#{liscomprobantesControlador.terceroFinal}" tabindex="-1"
+						style="cursor:pointer; position: absolute; width:125px; height: 20px; left: 184px;   top: 202px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+					<p:commandButton id="BTCB2395" onblur="PF('CB2395').jq.blur();"
+						onfocus="PF('CB2395').jq.addClass('ui-state-focus');"
+						widgetVar="BTCB2395" type="button"
+						icon="ui-icon ui-icon-triangle-1-s ui-c"
+						style="position: absolute; width:25px; height:  20px; left: 307px;   top: 202px; display:block; "
+						tabindex="6" />
+					<p:overlayPanel widgetVar="PLCB2395" id="PLCB2395"
+						onShow="if(PF('TBCB2395').nuevo){ PF('TBCB2395').filter(); PF('TBCB2395').nuevo=false;}"
+						onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB2395').jq.focus();}"
+						my="bottom" at="left bottom" for="BTCB2395" hideEffect="fade"
+						style="width: 500px">
+						<p:dataTable id="TBCB2395" widgetVar="TBCB2395" var="reg"
+							value="#{liscomprobantesControlador.listaTerceroFinal}"
+							editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="11" rowIndexVar="rowIndex" selectionMode="single"
+							rowKey="#{reg.campos['NIT']}" paginator="true" lazy="true">
+							<p:ajax event="rowSelect"
+								listener="#{liscomprobantesControlador.seleccionarFilaTerceroFinal}"
+								update=":FR680_nuevo:CB2395,"
+								oncomplete="PF('PLCB2395').hide(); " />
+							<p:column headerText="#{idm.TG_NIT5}" style="text-align:center; "
+								width="40" filterBy="#{reg.campos['NIT']}"
+								filterMatchMode="startsWith" filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NIT']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE3}"
+								style="text-align:center; " width="100"
+								filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NOMBRE']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+						</p:dataTable>
+					</p:overlayPanel>
+					<h:outputLabel id="LB17278"
+						value="#{idm.TG_TIPO_COMPROBANTE_INICIAL3}"
+						style="position: absolute; width:182px; height: 23px; left: 1px;   top: 38px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					<h:outputLabel id="LB17279"
+						value="#{idm.TG_TIPO_COMPROBANTE_FINAL3}"
+						style="position: absolute; width:182px; height: 23px; left: 1px;   top: 70px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					<h:outputLabel id="LB17280" value="#{idm.TG_FECHA_INICIAL4}"
+						style="position: absolute; width:183px; height: 23px; left: 0px;   top: 103px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					<h:outputLabel id="LB17281" value="#{idm.TG_FECHA_FINAL5}"
+						style="position: absolute; width:182px; height: 23px; left: 1px;   top: 135px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					<h:outputLabel id="LB17283" value="#{idm.TG_TERCERO_INICIAL2}"
+						style="position: absolute; width:117px; height: 23px; left: 66px;   top: 168px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					<h:outputLabel id="LB17284" value="#{idm.TG_TERCERO_FINAL2}"
+						style="position: absolute; width:117px; height: 23px; left: 66px;   top: 201px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					<h:outputLabel id="LB17285" value="#{idm.TT_LB17285}"
+						style="position: absolute; width:335px; height: 25px; left: 14px;   top: 5px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					<p:calendar locale="es" navigator="true" mask="true"
+						pattern="dd/MM/yyyy" id="CP20926" widgetVar="CP20926"
+						value="#{liscomprobantesControlador.fechaInicial}"
+						placeholder="#{idm.TG_FECHA_INICIAL}" tabindex="3"
+						style="position: absolute; width:87px; height: 20px; left: 184px;   top: 104px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+						<p:ajax event="dateSelect"
+							onstart="if(validarFechas('CP20926','CP20927')){
+return false;
+} return false;" />
+						<p:ajax event="change"
+							onstart="if(validarFechas('CP20926','CP20927')){
+return false;
+} return false;" />
+					</p:calendar>
+					<p:commandButton id="BT1299" widgetVar="BT1299"
+						onclick="if (!validarVaciosViewModal(['CB2392', 'CB2393', 'CP20926','CP20927','CB2394','CB2395'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                return false;
+                            }"
+						icon="ui-iconExcel" ajax="false" tabindex="8" value=""
+						actionListener="#{liscomprobantesControlador.oprimirComando14}"
+						style="position: absolute; width:49px; height: 49px; left: 197px;   top: 250px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#800000; border:#AAAAAA  solid  1px ;">
+						<p:fileDownload
+							value="#{liscomprobantesControlador.archivoDescarga}" />
+					</p:commandButton>
+					<p:blockUI block="FR680_nuevo" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</h:form>
+			</div>
+		</section>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,224 @@
+<data name="dnododispara" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getDnododisparaValidarprocesoaprocesoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT('X') VALOR, DNP.PROCESO_DISPARA FROM D_NODO_DISPARA Dnp INNER JOIN D_NODOS DN on DN.COMPANIA = DNP.COMPANIA and DN.PROCESO = DNP.PROCESO and DN.NODO_DESTINO = DNP.NODO_DESTINO and DN.NODO_ORIGEN = DNP.NODO_ORIGEN WHERE DNP.COMPANIA = :COMPANIA AND DNP.PROCESO = :PROCESO AND DNP.NODO_DESTINO = :NODO_DESTINO GROUP BY DNP.PROCESO_DISPARA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VALOR":"$VALOR(type:integer)","PROCESO_DISPARA":"$PROCESO_DISPARA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NODO_DESTINO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dnododispara/validarprocesoaproceso">
+		<call-query href="getDnododisparaValidarprocesoaprocesoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NODO_DESTINO" query-param="NODO_DESTINO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDnododisparaProcesosdisparaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DNP.PROCESO_DISPARA PROCESO, DNP.NODO_DISPARA NODO_DESTINO, N.NOMBRE,(CASE N.IND_ARCHIVO_CENTRAL WHEN 0 THEN 'false' ELSE 'true' END) IND_ARCHIVO_CENTRAL,(CASE DN.DEVOLUTIVO WHEN 0 THEN 'false' ELSE 'true' END) DEVOLUTIVO FROM D_NODOS DN INNER JOIN D_NODO_DISPARA DNP ON DN.COMPANIA = DNP.COMPANIA AND DN.PROCESO = DNP.PROCESO AND DN.NODO_DESTINO = DNP.NODO_DESTINO INNER JOIN NODOS N ON DNP.COMPANIA = N.COMPANIA AND DNP.PROCESO_DISPARA = N.CODIGO_PROCESO AND DNP.NODO_DISPARA = N.CODIGO WHERE DNP.COMPANIA = :COMPANIA AND DNP.PROCESO = :PROCESO AND DNP.NODO_DESTINO = :NODO_ORIGEN AND DN.ESTADO = :ESTADO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PROCESO":"$PROCESO","NODO_DESTINO":"$NODO_DESTINO","NOMBRE":"$NOMBRE","IND_ARCHIVO_CENTRAL":"$IND_ARCHIVO_CENTRAL(type:boolean)","DEVOLUTIVO":"$DEVOLUTIVO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NODO_ORIGEN" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dnododispara/procesosdispara">
+		<call-query href="getDnododisparaProcesosdisparaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NODO_ORIGEN" query-param="NODO_ORIGEN"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertDnododispara" keyColumns="COMPANIA,PROCESO,NODO_ORIGEN,NODO_DESTINO,PROCESO_DISPARA,NODO_DISPARA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO D_NODO_DISPARA (COMPANIA, PROCESO, NODO_ORIGEN, NODO_DESTINO, PROCESO_DISPARA, NODO_DISPARA, TIPO_TRAMITE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :PROCESO, :NODO_ORIGEN, :NODO_DESTINO, :PROCESO_DISPARA, :NODO_DISPARA, :TIPO_TRAMITE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_PROCESO":"$PROCESO","KEY_NODO_ORIGEN":"$NODO_ORIGEN","KEY_NODO_DESTINO":"$NODO_DESTINO","KEY_PROCESO_DISPARA":"$PROCESO_DISPARA","KEY_NODO_DISPARA":"$NODO_DISPARA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NODO_ORIGEN" sqlType="STRING"/>
+		<param name="NODO_DESTINO" sqlType="STRING"/>
+		<param name="PROCESO_DISPARA" sqlType="STRING"/>
+		<param name="NODO_DISPARA" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="dnododispara">
+		<call-query href="insertDnododispara">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NODO_ORIGEN" query-param="NODO_ORIGEN"/>
+			<with-param name="NODO_DESTINO" query-param="NODO_DESTINO"/>
+			<with-param name="PROCESO_DISPARA" query-param="PROCESO_DISPARA"/>
+			<with-param name="NODO_DISPARA" query-param="NODO_DISPARA"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteDnododispara" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM D_NODO_DISPARA WHERE D_NODO_DISPARA.COMPANIA= :KEY_COMPANIA AND D_NODO_DISPARA.PROCESO= :KEY_PROCESO AND D_NODO_DISPARA.NODO_ORIGEN= :KEY_NODO_ORIGEN AND D_NODO_DISPARA.NODO_DESTINO= :KEY_NODO_DESTINO AND D_NODO_DISPARA.PROCESO_DISPARA= :KEY_PROCESO_DISPARA AND D_NODO_DISPARA.NODO_DISPARA= :KEY_NODO_DISPARA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_PROCESO" sqlType="STRING"/>
+		<param name="KEY_NODO_ORIGEN" sqlType="STRING"/>
+		<param name="KEY_NODO_DESTINO" sqlType="STRING"/>
+		<param name="KEY_PROCESO_DISPARA" sqlType="STRING"/>
+		<param name="KEY_NODO_DISPARA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="dnododispara">
+		<call-query href="deleteDnododispara">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_PROCESO" query-param="KEY_PROCESO"/>
+			<with-param name="KEY_NODO_ORIGEN" query-param="KEY_NODO_ORIGEN"/>
+			<with-param name="KEY_NODO_DESTINO" query-param="KEY_NODO_DESTINO"/>
+			<with-param name="KEY_PROCESO_DISPARA" query-param="KEY_PROCESO_DISPARA"/>
+			<with-param name="KEY_NODO_DISPARA" query-param="KEY_NODO_DISPARA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDnododisparaPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DN.COMPANIA, DN.PROCESO, DN.NODO_ORIGEN, DN.NODO_DESTINO, CONCAT('(', CONCAT(DN.PROCESO, CONCAT(') ', P.NOMBRE))) PROCESO_NOM, CONCAT('(', CONCAT(DN.NODO_ORIGEN, CONCAT(') ', NO.NOMBRE))) NODO_O_NOM, CONCAT('(', CONCAT(DN.NODO_DESTINO, CONCAT(') ', ND.NOMBRE))) NODO_D_NOM, DN.PROCESO_DISPARA, CONCAT('(', CONCAT(DN.PROCESO_DISPARA, CONCAT(') ', PD.NOMBRE))) PROCESO_NOM_DIS, DN.NODO_DISPARA, CONCAT('(', CONCAT(DN.NODO_DISPARA, CONCAT(') ', NOD.NOMBRE))) NODO_D_NOM_DIS, DN.TIPO_TRAMITE, CONCAT('(', CONCAT(DN.TIPO_TRAMITE, CONCAT(') ', TP.NOMBRE))) TRAMITE_NOM FROM D_NODO_DISPARA DN INNER JOIN PROCESOS P ON DN.COMPANIA = P.COMPANIA AND DN.PROCESO = P.CODIGO INNER JOIN NODOS NO ON DN.COMPANIA = NO.COMPANIA AND DN.PROCESO = NO.CODIGO_PROCESO AND DN.NODO_ORIGEN = NO.CODIGO INNER JOIN NODOS ND ON DN.COMPANIA = ND.COMPANIA AND DN.PROCESO = ND.CODIGO_PROCESO AND DN.NODO_DESTINO = ND.CODIGO INNER JOIN PROCESOS PD ON DN.COMPANIA = PD.COMPANIA AND DN.PROCESO_DISPARA = PD.CODIGO LEFT JOIN NODOS NOD ON DN.COMPANIA = NOD.COMPANIA AND DN.PROCESO_DISPARA = NOD.CODIGO_PROCESO AND DN.NODO_DISPARA = NOD.CODIGO INNER JOIN TIPOTRAMITES TP ON DN.COMPANIA = TP.COMPANIA AND DN.PROCESO_DISPARA = TP.PROCESOS AND DN.TIPO_TRAMITE = TP.TIPOTRAMITE WHERE DN.COMPANIA = :COMPANIA AND DN.PROCESO = :CODIGO_PROCESO AND DN.NODO_ORIGEN = :ORIGEN_NODO AND DN.NODO_DESTINO = :DESTINO_NODO) INI WHERE (CASE WHEN PROCESO IS NULL THEN ' ' ELSE UPPER(PROCESO) END) LIKE UPPER(CONCAT(:PROCESO, '%')) AND (CASE WHEN NODO_ORIGEN IS NULL THEN ' ' ELSE UPPER(NODO_ORIGEN) END) LIKE UPPER(CONCAT(:NODO_ORIGEN, '%')) AND (CASE WHEN NODO_DESTINO IS NULL THEN ' ' ELSE UPPER(NODO_DESTINO) END) LIKE UPPER(CONCAT(:NODO_DESTINO, '%')) AND (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN NODO_O_NOM IS NULL THEN ' ' ELSE UPPER(NODO_O_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_O_NOM), '%')) AND (CASE WHEN NODO_D_NOM IS NULL THEN ' ' ELSE UPPER(NODO_D_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_D_NOM), '%')) AND (CASE WHEN PROCESO_DISPARA IS NULL THEN ' ' ELSE UPPER(PROCESO_DISPARA) END) LIKE UPPER(CONCAT(:PROCESO_DISPARA, '%')) AND (CASE WHEN PROCESO_NOM_DIS IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM_DIS) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM_DIS), '%')) AND (CASE WHEN NODO_DISPARA IS NULL THEN ' ' ELSE UPPER(NODO_DISPARA) END) LIKE UPPER(CONCAT(:NODO_DISPARA, '%')) AND (CASE WHEN NODO_D_NOM_DIS IS NULL THEN ' ' ELSE UPPER(NODO_D_NOM_DIS) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_D_NOM_DIS), '%')) AND (CASE WHEN TIPO_TRAMITE IS NULL THEN ' ' ELSE UPPER(TIPO_TRAMITE) END) LIKE UPPER(CONCAT(:TIPO_TRAMITE, '%')) AND (CASE WHEN TRAMITE_NOM IS NULL THEN ' ' ELSE UPPER(TRAMITE_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:TRAMITE_NOM), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","PROCESO":"$PROCESO","NODO_ORIGEN":"$NODO_ORIGEN","NODO_DESTINO":"$NODO_DESTINO","PROCESO_NOM":"$PROCESO_NOM","NODO_O_NOM":"$NODO_O_NOM","NODO_D_NOM":"$NODO_D_NOM","PROCESO_DISPARA":"$PROCESO_DISPARA","PROCESO_NOM_DIS":"$PROCESO_NOM_DIS","NODO_DISPARA":"$NODO_DISPARA","NODO_D_NOM_DIS":"$NODO_D_NOM_DIS","TIPO_TRAMITE":"$TIPO_TRAMITE","TRAMITE_NOM":"$TRAMITE_NOM"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_PROCESO" sqlType="STRING"/>
+		<param name="ORIGEN_NODO" sqlType="STRING"/>
+		<param name="DESTINO_NODO" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NODO_ORIGEN" sqlType="STRING"/>
+		<param name="NODO_DESTINO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="NODO_O_NOM" sqlType="STRING"/>
+		<param name="NODO_D_NOM" sqlType="STRING"/>
+		<param name="PROCESO_DISPARA" sqlType="STRING"/>
+		<param name="PROCESO_NOM_DIS" sqlType="STRING"/>
+		<param name="NODO_DISPARA" sqlType="STRING"/>
+		<param name="NODO_D_NOM_DIS" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="TRAMITE_NOM" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dnododispara">
+		<call-query href="getDnododisparaPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_PROCESO" query-param="CODIGO_PROCESO"/>
+			<with-param name="ORIGEN_NODO" query-param="ORIGEN_NODO"/>
+			<with-param name="DESTINO_NODO" query-param="DESTINO_NODO"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NODO_ORIGEN" query-param="NODO_ORIGEN"/>
+			<with-param name="NODO_DESTINO" query-param="NODO_DESTINO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="NODO_O_NOM" query-param="NODO_O_NOM"/>
+			<with-param name="NODO_D_NOM" query-param="NODO_D_NOM"/>
+			<with-param name="PROCESO_DISPARA" query-param="PROCESO_DISPARA"/>
+			<with-param name="PROCESO_NOM_DIS" query-param="PROCESO_NOM_DIS"/>
+			<with-param name="NODO_DISPARA" query-param="NODO_DISPARA"/>
+			<with-param name="NODO_D_NOM_DIS" query-param="NODO_D_NOM_DIS"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="TRAMITE_NOM" query-param="TRAMITE_NOM"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDnododisparaNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DN.COMPANIA, DN.PROCESO, DN.NODO_ORIGEN, DN.NODO_DESTINO, CONCAT('(', CONCAT(DN.PROCESO, CONCAT(') ', P.NOMBRE))) PROCESO_NOM, CONCAT('(', CONCAT(DN.NODO_ORIGEN, CONCAT(') ', NO.NOMBRE))) NODO_O_NOM, CONCAT('(', CONCAT(DN.NODO_DESTINO, CONCAT(') ', ND.NOMBRE))) NODO_D_NOM, DN.PROCESO_DISPARA, CONCAT('(', CONCAT(DN.PROCESO_DISPARA, CONCAT(') ', PD.NOMBRE))) PROCESO_NOM_DIS, DN.NODO_DISPARA, CONCAT('(', CONCAT(DN.NODO_DISPARA, CONCAT(') ', NOD.NOMBRE))) NODO_D_NOM_DIS, DN.TIPO_TRAMITE, CONCAT('(', CONCAT(DN.TIPO_TRAMITE, CONCAT(') ', TP.NOMBRE))) TRAMITE_NOM FROM D_NODO_DISPARA DN INNER JOIN PROCESOS P ON DN.COMPANIA = P.COMPANIA AND DN.PROCESO = P.CODIGO INNER JOIN NODOS NO ON DN.COMPANIA = NO.COMPANIA AND DN.PROCESO = NO.CODIGO_PROCESO AND DN.NODO_ORIGEN = NO.CODIGO INNER JOIN NODOS ND ON DN.COMPANIA = ND.COMPANIA AND DN.PROCESO = ND.CODIGO_PROCESO AND DN.NODO_DESTINO = ND.CODIGO INNER JOIN PROCESOS PD ON DN.COMPANIA = PD.COMPANIA AND DN.PROCESO_DISPARA = PD.CODIGO LEFT JOIN NODOS NOD ON DN.COMPANIA = NOD.COMPANIA AND DN.PROCESO_DISPARA = NOD.CODIGO_PROCESO AND DN.NODO_DISPARA = NOD.CODIGO INNER JOIN TIPOTRAMITES TP ON DN.COMPANIA = TP.COMPANIA AND DN.PROCESO_DISPARA = TP.PROCESOS AND DN.TIPO_TRAMITE = TP.TIPOTRAMITE WHERE DN.COMPANIA = :COMPANIA AND DN.PROCESO = :CODIGO_PROCESO AND DN.NODO_ORIGEN = :ORIGEN_NODO AND DN.NODO_DESTINO = :DESTINO_NODO) INI WHERE (CASE WHEN PROCESO IS NULL THEN ' ' ELSE UPPER(PROCESO) END) LIKE UPPER(CONCAT(:PROCESO, '%')) AND (CASE WHEN NODO_ORIGEN IS NULL THEN ' ' ELSE UPPER(NODO_ORIGEN) END) LIKE UPPER(CONCAT(:NODO_ORIGEN, '%')) AND (CASE WHEN NODO_DESTINO IS NULL THEN ' ' ELSE UPPER(NODO_DESTINO) END) LIKE UPPER(CONCAT(:NODO_DESTINO, '%')) AND (CASE WHEN PROCESO_NOM IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM), '%')) AND (CASE WHEN NODO_O_NOM IS NULL THEN ' ' ELSE UPPER(NODO_O_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_O_NOM), '%')) AND (CASE WHEN NODO_D_NOM IS NULL THEN ' ' ELSE UPPER(NODO_D_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_D_NOM), '%')) AND (CASE WHEN PROCESO_DISPARA IS NULL THEN ' ' ELSE UPPER(PROCESO_DISPARA) END) LIKE UPPER(CONCAT(:PROCESO_DISPARA, '%')) AND (CASE WHEN PROCESO_NOM_DIS IS NULL THEN ' ' ELSE UPPER(PROCESO_NOM_DIS) END) LIKE UPPER(CONCAT(CONCAT('%',:PROCESO_NOM_DIS), '%')) AND (CASE WHEN NODO_DISPARA IS NULL THEN ' ' ELSE UPPER(NODO_DISPARA) END) LIKE UPPER(CONCAT(:NODO_DISPARA, '%')) AND (CASE WHEN NODO_D_NOM_DIS IS NULL THEN ' ' ELSE UPPER(NODO_D_NOM_DIS) END) LIKE UPPER(CONCAT(CONCAT('%',:NODO_D_NOM_DIS), '%')) AND (CASE WHEN TIPO_TRAMITE IS NULL THEN ' ' ELSE UPPER(TIPO_TRAMITE) END) LIKE UPPER(CONCAT(:TIPO_TRAMITE, '%')) AND (CASE WHEN TRAMITE_NOM IS NULL THEN ' ' ELSE UPPER(TRAMITE_NOM) END) LIKE UPPER(CONCAT(CONCAT('%',:TRAMITE_NOM), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_PROCESO" sqlType="STRING"/>
+		<param name="ORIGEN_NODO" sqlType="STRING"/>
+		<param name="DESTINO_NODO" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NODO_ORIGEN" sqlType="STRING"/>
+		<param name="NODO_DESTINO" sqlType="STRING"/>
+		<param name="PROCESO_NOM" sqlType="STRING"/>
+		<param name="NODO_O_NOM" sqlType="STRING"/>
+		<param name="NODO_D_NOM" sqlType="STRING"/>
+		<param name="PROCESO_DISPARA" sqlType="STRING"/>
+		<param name="PROCESO_NOM_DIS" sqlType="STRING"/>
+		<param name="NODO_DISPARA" sqlType="STRING"/>
+		<param name="NODO_D_NOM_DIS" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="TRAMITE_NOM" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dnododispara/numero">
+		<call-query href="getDnododisparaNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_PROCESO" query-param="CODIGO_PROCESO"/>
+			<with-param name="ORIGEN_NODO" query-param="ORIGEN_NODO"/>
+			<with-param name="DESTINO_NODO" query-param="DESTINO_NODO"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NODO_ORIGEN" query-param="NODO_ORIGEN"/>
+			<with-param name="NODO_DESTINO" query-param="NODO_DESTINO"/>
+			<with-param name="PROCESO_NOM" query-param="PROCESO_NOM"/>
+			<with-param name="NODO_O_NOM" query-param="NODO_O_NOM"/>
+			<with-param name="NODO_D_NOM" query-param="NODO_D_NOM"/>
+			<with-param name="PROCESO_DISPARA" query-param="PROCESO_DISPARA"/>
+			<with-param name="PROCESO_NOM_DIS" query-param="PROCESO_NOM_DIS"/>
+			<with-param name="NODO_DISPARA" query-param="NODO_DISPARA"/>
+			<with-param name="NODO_D_NOM_DIS" query-param="NODO_D_NOM_DIS"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="TRAMITE_NOM" query-param="TRAMITE_NOM"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDnododispara" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE D_NODO_DISPARA SET COMPANIA=:COMPANIA, PROCESO=:PROCESO, NODO_ORIGEN=:NODO_ORIGEN, NODO_DESTINO=:NODO_DESTINO, PROCESO_DISPARA=:PROCESO_DISPARA, NODO_DISPARA=:NODO_DISPARA, TIPO_TRAMITE=:TIPO_TRAMITE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE D_NODO_DISPARA.COMPANIA= :KEY_COMPANIA AND D_NODO_DISPARA.PROCESO= :KEY_PROCESO AND D_NODO_DISPARA.NODO_ORIGEN= :KEY_NODO_ORIGEN AND D_NODO_DISPARA.NODO_DESTINO= :KEY_NODO_DESTINO AND D_NODO_DISPARA.PROCESO_DISPARA= :KEY_PROCESO_DISPARA AND D_NODO_DISPARA.NODO_DISPARA= :KEY_NODO_DISPARA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PROCESO" sqlType="STRING"/>
+		<param name="NODO_ORIGEN" sqlType="STRING"/>
+		<param name="NODO_DESTINO" sqlType="STRING"/>
+		<param name="PROCESO_DISPARA" sqlType="STRING"/>
+		<param name="NODO_DISPARA" sqlType="STRING"/>
+		<param name="TIPO_TRAMITE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_PROCESO" sqlType="STRING"/>
+		<param name="KEY_NODO_ORIGEN" sqlType="STRING"/>
+		<param name="KEY_NODO_DESTINO" sqlType="STRING"/>
+		<param name="KEY_PROCESO_DISPARA" sqlType="STRING"/>
+		<param name="KEY_NODO_DISPARA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="dnododispara">
+		<call-query href="updateDnododispara">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PROCESO" query-param="PROCESO"/>
+			<with-param name="NODO_ORIGEN" query-param="NODO_ORIGEN"/>
+			<with-param name="NODO_DESTINO" query-param="NODO_DESTINO"/>
+			<with-param name="PROCESO_DISPARA" query-param="PROCESO_DISPARA"/>
+			<with-param name="NODO_DISPARA" query-param="NODO_DISPARA"/>
+			<with-param name="TIPO_TRAMITE" query-param="TIPO_TRAMITE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_PROCESO" query-param="KEY_PROCESO"/>
+			<with-param name="KEY_NODO_ORIGEN" query-param="KEY_NODO_ORIGEN"/>
+			<with-param name="KEY_NODO_DESTINO" query-param="KEY_NODO_DESTINO"/>
+			<with-param name="KEY_PROCESO_DISPARA" query-param="KEY_PROCESO_DISPARA"/>
+			<with-param name="KEY_NODO_DISPARA" query-param="KEY_NODO_DISPARA"/>
+
+		</call-query>
+	</resource>
+
+</data>

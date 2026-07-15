@@ -1,0 +1,114 @@
+SELECT PLAN_CONTABLE.NOMBRE, 
+      PLAN_CONTABLE.SALDOs$mes$s,
+      ROUND(PLAN_CONTABLE.SALDOs$mes$s/1000,0) AS SALDO, 
+      PLAN_CONTABLE.ID, 
+      PLAN_CONTABLE.MOVIMIENTO, 
+      PLAN_CONTABLE.COMPANIA, 
+      PLAN_CONTABLE.ANO,
+      NVL(SALDOE1.SALDO, 0) SALDOE1,
+      NVL(SALDOE2.SALDO, 0) SALDOE2
+ FROM V_PLAN_CONTABLE PLAN_CONTABLE LEFT JOIN ( SELECT NVL(ROUND(SUM(REGISTROSTOTAL-TOTALREO) + SUM(TOTALREO-PAGOS),-3)/1000,0) AS SALDO,
+             PLAN_PRESUPUESTAL.ID,
+             PLAN_PRESUPUESTAL.COMPANIA,
+             PLAN_PRESUPUESTAL.ANO
+      FROM (SELECT CASE WHEN NATURALEZA = 'C' THEN
+                            REGCONT
+                            ELSE REGNOCONTRACT END REGISTROSTOTAL,
+                   REO+MODIFREO AS TOTALREO,
+                   EJECUCIONPPT-REINTEGROS AS PAGOS,
+                   RESUMENPPTOA.ID,
+                   RESUMENPPTOA.ANO,
+                   RESUMENPPTOA.COMPANIA,
+                   PLAN_PRESUPUESTAL.FUENTE_RECURSO
+              FROM ( SELECT SUM(REG_NO_CONTRACT + MODIF_REG_NOCONT) AS REGNOCONTRACT, 
+                             SUM(REG_CONTRACT + MODIF_REG_CONT) AS REGCONT,
+                             SUM(REO) AS REO,
+                             SUM(MODIFREO) AS MODIFREO,
+                             SUM(EJECUCIONPPT) EJECUCIONPPT,
+                             SUM(REINTEGRO) AS REINTEGROS,
+                             ID,
+                             COMPANIA,
+                             ANO
+                      FROM V_RESUMENPPTO_BASE  
+                      WHERE NATURALEZA='D' 
+		      AND MES < s$mesInicial$s
+                      AND COMPANIA        = s$compania$s 
+                      AND ANO             = s$anio$s
+                      AND LENGTH(CODIGO) <= 60
+                      AND CODIGO Between 0 And 9
+                      GROUP BY ID, ANO, COMPANIA ) RESUMENPPTOA 
+                  LEFT JOIN V_PLAN_PRESUPUESTAL PLAN_PRESUPUESTAL 
+                      ON RESUMENPPTOA.COMPANIA = PLAN_PRESUPUESTAL.COMPANIA
+                      AND RESUMENPPTOA.ANO     = PLAN_PRESUPUESTAL.ANO
+                      AND RESUMENPPTOA.ID      = PLAN_PRESUPUESTAL.ID) RESUMENPPTOA_INFORMES 
+		 LEFT JOIN V_PLAN_PRESUPUESTAL PLAN_PRESUPUESTAL   
+             	    ON RESUMENPPTOA_INFORMES.COMPANIA = PLAN_PRESUPUESTAL.COMPANIA 
+                   AND RESUMENPPTOA_INFORMES.ANO      = PLAN_PRESUPUESTAL.ANO 
+                   AND RESUMENPPTOA_INFORMES.ID       = PLAN_PRESUPUESTAL.ID
+           	 LEFT JOIN FUENTE_RECURSOS 
+                    ON PLAN_PRESUPUESTAL.COMPANIA       = FUENTE_RECURSOS.COMPANIA 
+                   AND PLAN_PRESUPUESTAL.FUENTE_RECURSO = FUENTE_RECURSOS.CODIGO
+      WHERE PLAN_PRESUPUESTAL.MOVIMIENTO NOT IN (0) 
+        AND FUENTE_RECURSOS.TIPO = 's$informe$s'  
+        AND TIPOVIGENCIA         = 'VA'
+      GROUP BY PLAN_PRESUPUESTAL.ID,
+             PLAN_PRESUPUESTAL.COMPANIA,
+             PLAN_PRESUPUESTAL.ANO) SALDOE2
+        ON SALDOE2.COMPANIA = PLAN_CONTABLE.COMPANIA 
+       AND SALDOE2.ANO      = PLAN_CONTABLE.ANO 
+       AND SALDOE2.ID       = PLAN_CONTABLE.ID
+      LEFT JOIN (SELECT NVL(ROUND(SUM(REGISTROSTOTAL - TOTALREO) + SUM(TOTALREO - PAGOS),-3)/1000,0) AS SALDO,
+          PLAN_PRESUPUESTAL.ID,
+          PLAN_PRESUPUESTAL.COMPANIA,
+          PLAN_PRESUPUESTAL.ANO
+    FROM (SELECT CASE WHEN NATURALEZA = 'C' THEN
+                                  REGCONT
+                                  ELSE REGNOCONTRACT END REGISTROSTOTAL,
+                         REO+MODIFREO AS TOTALREO,
+                         EJECUCIONPPT-REINTEGROS AS PAGOS,
+                         RESUMENPPTOA.ID,
+                         RESUMENPPTOA.ANO,
+                         RESUMENPPTOA.COMPANIA,
+                         PLAN_PRESUPUESTAL.FUENTE_RECURSO
+                  FROM ( SELECT SUM(REG_NO_CONTRACT + MODIF_REG_NOCONT) AS REGNOCONTRACT, 
+                                 SUM(REG_CONTRACT + MODIF_REG_CONT) AS REGCONT,
+                                 SUM(REO) AS REO,
+                                 SUM(MODIFREO) AS MODIFREO,
+                                 SUM(EJECUCIONPPT) EJECUCIONPPT,
+                                 SUM(REINTEGRO) AS REINTEGROS,
+                                 ID,
+                                 COMPANIA,
+                                 ANO
+                           FROM V_RESUMENPPTO_BASE  
+                          WHERE NATURALEZA='D' AND MES < s$mesInicial$s
+                            AND COMPANIA        = s$compania$s 
+                            AND ANO             = s$anio$s
+                            AND LENGTH(CODIGO) <= 60
+                            AND CODIGO BETWEEN 0 AND 9
+                          GROUP BY ID, ANO, COMPANIA ) RESUMENPPTOA 
+                      LEFT JOIN V_PLAN_PRESUPUESTAL PLAN_PRESUPUESTAL 
+                           ON RESUMENPPTOA.COMPANIA = PLAN_PRESUPUESTAL.COMPANIA
+                          AND RESUMENPPTOA.ANO      = PLAN_PRESUPUESTAL.ANO
+                          AND RESUMENPPTOA.ID       = PLAN_PRESUPUESTAL.ID) RESUMENPPTOA_INFORMES 
+		     LEFT JOIN V_PLAN_PRESUPUESTAL PLAN_PRESUPUESTAL   
+            	           ON RESUMENPPTOA_INFORMES.COMPANIA = PLAN_PRESUPUESTAL.COMPANIA 
+          		  AND RESUMENPPTOA_INFORMES.ANO      = PLAN_PRESUPUESTAL.ANO 
+          		  AND RESUMENPPTOA_INFORMES.ID       = PLAN_PRESUPUESTAL.ID
+         	     LEFT JOIN FUENTE_RECURSOS 
+           		   ON PLAN_PRESUPUESTAL.COMPANIA       = FUENTE_RECURSOS.COMPANIA 
+          	          AND PLAN_PRESUPUESTAL.FUENTE_RECURSO = FUENTE_RECURSOS.CODIGO
+			  AND PLAN_PRESUPUESTAL.ANO 	       = FUENTE_RECURSOS.ANO
+    WHERE PLAN_PRESUPUESTAL.MOVIMIENTO NOT IN (0) 
+      AND FUENTE_RECURSOS.TIPO = 's$informe$s'  
+      AND TIPOVIGENCIA IN ('RC','RA')
+      GROUP BY PLAN_PRESUPUESTAL.ID,
+                 PLAN_PRESUPUESTAL.COMPANIA,
+                 PLAN_PRESUPUESTAL.ANO) SALDOE1
+        ON SALDOE1.COMPANIA = PLAN_CONTABLE.COMPANIA 
+       AND SALDOE1.ANO      = PLAN_CONTABLE.ANO 
+       AND SALDOE1.ID       = PLAN_CONTABLE.ID
+WHERE PLAN_CONTABLE.MOVIMIENTO NOT IN (0)
+  AND PLAN_CONTABLE.COMPANIA    = s$compania$s 
+  AND PLAN_CONTABLE.ANO         = s$anio$s 
+  AND PLAN_CONTABLE.CLASECUENTA = 'B'
+  s$condicion$s

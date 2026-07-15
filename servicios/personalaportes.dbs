@@ -1,0 +1,144 @@
+﻿<data name="personalaportes" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertPersonalaportes" keyColumns="COMPANIA,ID_DE_EMPLEADO,CLASE_ID_DE_FONDO,CODIGO_APORTE" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PERSONAL_APORTE (COMPANIA, ID_DE_EMPLEADO, CLASE_ID_DE_FONDO, CODIGO_APORTE, LIQUIDAR_PRIMA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ID_DE_EMPLEADO, :CLASE_ID_DE_FONDO, :CODIGO_APORTE, :LIQUIDAR_PRIMA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_DE_EMPLEADO":"$ID_DE_EMPLEADO(type:integer)","KEY_CLASE_ID_DE_FONDO":"$CLASE_ID_DE_FONDO","KEY_CODIGO_APORTE":"$CODIGO_APORTE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="CLASE_ID_DE_FONDO" sqlType="STRING"/>
+		<param name="CODIGO_APORTE" sqlType="STRING"/>
+		<param defaultValue="0" name="LIQUIDAR_PRIMA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="personalaportes">
+		<call-query href="insertPersonalaportes">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="CLASE_ID_DE_FONDO" query-param="CLASE_ID_DE_FONDO"/>
+			<with-param name="CODIGO_APORTE" query-param="CODIGO_APORTE"/>
+			<with-param name="LIQUIDAR_PRIMA" query-param="LIQUIDAR_PRIMA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deletePersonalaportes" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM PERSONAL_APORTE WHERE PERSONAL_APORTE.COMPANIA= :KEY_COMPANIA AND PERSONAL_APORTE.ID_DE_EMPLEADO= :KEY_ID_DE_EMPLEADO AND PERSONAL_APORTE.CLASE_ID_DE_FONDO= :KEY_CLASE_ID_DE_FONDO AND PERSONAL_APORTE.CODIGO_APORTE= :KEY_CODIGO_APORTE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_DE_EMPLEADO" sqlType="INTEGER"/>
+		<param name="KEY_CLASE_ID_DE_FONDO" sqlType="STRING"/>
+		<param name="KEY_CODIGO_APORTE" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="personalaportes">
+		<call-query href="deletePersonalaportes">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_DE_EMPLEADO" query-param="KEY_ID_DE_EMPLEADO"/>
+			<with-param name="KEY_CLASE_ID_DE_FONDO" query-param="KEY_CLASE_ID_DE_FONDO"/>
+			<with-param name="KEY_CODIGO_APORTE" query-param="KEY_CODIGO_APORTE"/>
+
+		</call-query>
+	</resource>
+	<query id="getPersonalaportesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT PERSONAL_APORTE.COMPANIA, PERSONAL_APORTE.ID_DE_EMPLEADO , PERSONAL.NOMBRECOMPLETO, PERSONAL_APORTE.CODIGO_APORTE, PERSONAL_APORTE.CLASE_ID_DE_FONDO , FONDO.NOMBRE_FONDO, FORMA_DESCUENTO , CASE WHEN FORMA_DESCUENTO = 'F' THEN 'Fijo' ELSE 'Porcentual' END NOMBRE_FORMA, VALOR,(CASE PERSONAL_APORTE.LIQUIDAR_PRIMA WHEN 0 THEN 'false' ELSE 'true' END) LIQUIDAR_PRIMA FROM PERSONAL_APORTE INNER JOIN CLASEFONDOAPORTE ON PERSONAL_APORTE.COMPANIA = CLASEFONDOAPORTE.COMPANIA AND PERSONAL_APORTE.CLASE_ID_DE_FONDO = CLASEFONDOAPORTE.CLASE_ID_DE_FONDO AND PERSONAL_APORTE.CODIGO_APORTE = CLASEFONDOAPORTE.CODIGO INNER JOIN PERSONAL ON PERSONAL_APORTE.COMPANIA = PERSONAL.COMPANIA AND PERSONAL_APORTE.ID_DE_EMPLEADO = PERSONAL.ID_DE_EMPLEADO INNER JOIN CLASEFONDO ON CLASEFONDOAPORTE.COMPANIA = CLASEFONDO.COMPANIA AND CLASEFONDOAPORTE.CLASE_ID_DE_FONDO = CLASEFONDO.ID INNER JOIN FONDO ON CLASEFONDO.COMPANIA = FONDO.COMPANIA AND CLASEFONDO.ID_DE_FONDO = FONDO.ID_DE_FONDO WHERE PERSONAL_APORTE.COMPANIA = :COMPANIA ORDER BY PERSONAL_APORTE.ID_DE_EMPLEADO) INI WHERE (CASE WHEN ID_DE_EMPLEADO IS NULL THEN ' ' ELSE UPPER(ID_DE_EMPLEADO) END) LIKE UPPER(CONCAT(:ID_DE_EMPLEADO, '%')) AND (CASE WHEN NOMBRECOMPLETO IS NULL THEN ' ' ELSE UPPER(NOMBRECOMPLETO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRECOMPLETO), '%')) AND (CASE WHEN CODIGO_APORTE IS NULL THEN ' ' ELSE UPPER(CODIGO_APORTE) END) LIKE UPPER(CONCAT(:CODIGO_APORTE, '%')) AND (CASE WHEN CLASE_ID_DE_FONDO IS NULL THEN ' ' ELSE UPPER(CLASE_ID_DE_FONDO) END) LIKE UPPER(CONCAT(:CLASE_ID_DE_FONDO, '%')) AND (CASE WHEN NOMBRE_FONDO IS NULL THEN ' ' ELSE UPPER(NOMBRE_FONDO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_FONDO), '%')) AND (CASE WHEN NOMBRE_FORMA IS NULL THEN ' ' ELSE UPPER(NOMBRE_FORMA) END) LIKE UPPER(CONCAT(:NOMBRE_FORMA, '%')) AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END) LIKE UPPER(CONCAT(CONCAT('%',:VALOR), '%')) AND (CASE WHEN LIQUIDAR_PRIMA IS NULL THEN ' ' ELSE UPPER(LIQUIDAR_PRIMA) END) LIKE UPPER(CONCAT(CONCAT('%',:LIQUIDAR_PRIMA), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_DE_EMPLEADO":"$ID_DE_EMPLEADO(type:integer)","NOMBRECOMPLETO":"$NOMBRECOMPLETO","CODIGO_APORTE":"$CODIGO_APORTE","CLASE_ID_DE_FONDO":"$CLASE_ID_DE_FONDO","NOMBRE_FONDO":"$NOMBRE_FONDO","FORMA_DESCUENTO":"$FORMA_DESCUENTO","NOMBRE_FORMA":"$NOMBRE_FORMA","VALOR":"$VALOR","LIQUIDAR_PRIMA":"$LIQUIDAR_PRIMA(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="NOMBRECOMPLETO" sqlType="STRING"/>
+		<param name="CODIGO_APORTE" sqlType="STRING"/>
+		<param name="CLASE_ID_DE_FONDO" sqlType="STRING"/>
+		<param name="NOMBRE_FONDO" sqlType="STRING"/>
+		<param name="NOMBRE_FORMA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="LIQUIDAR_PRIMA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="personalaportes">
+		<call-query href="getPersonalaportesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="NOMBRECOMPLETO" query-param="NOMBRECOMPLETO"/>
+			<with-param name="CODIGO_APORTE" query-param="CODIGO_APORTE"/>
+			<with-param name="CLASE_ID_DE_FONDO" query-param="CLASE_ID_DE_FONDO"/>
+			<with-param name="NOMBRE_FONDO" query-param="NOMBRE_FONDO"/>
+			<with-param name="NOMBRE_FORMA" query-param="NOMBRE_FORMA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="LIQUIDAR_PRIMA" query-param="LIQUIDAR_PRIMA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPersonalaportesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT PERSONAL_APORTE.COMPANIA, PERSONAL_APORTE.ID_DE_EMPLEADO , PERSONAL.NOMBRECOMPLETO, PERSONAL_APORTE.CODIGO_APORTE, PERSONAL_APORTE.CLASE_ID_DE_FONDO , FONDO.NOMBRE_FONDO, FORMA_DESCUENTO , CASE WHEN FORMA_DESCUENTO = 'F' THEN 'Fijo' ELSE 'Porcentual' END NOMBRE_FORMA, VALOR,(CASE PERSONAL_APORTE.LIQUIDAR_PRIMA WHEN 0 THEN 'false' ELSE 'true' END) LIQUIDAR_PRIMA FROM PERSONAL_APORTE INNER JOIN CLASEFONDOAPORTE ON PERSONAL_APORTE.COMPANIA = CLASEFONDOAPORTE.COMPANIA AND PERSONAL_APORTE.CLASE_ID_DE_FONDO = CLASEFONDOAPORTE.CLASE_ID_DE_FONDO AND PERSONAL_APORTE.CODIGO_APORTE = CLASEFONDOAPORTE.CODIGO INNER JOIN PERSONAL ON PERSONAL_APORTE.COMPANIA = PERSONAL.COMPANIA AND PERSONAL_APORTE.ID_DE_EMPLEADO = PERSONAL.ID_DE_EMPLEADO INNER JOIN CLASEFONDO ON CLASEFONDOAPORTE.COMPANIA = CLASEFONDO.COMPANIA AND CLASEFONDOAPORTE.CLASE_ID_DE_FONDO = CLASEFONDO.ID INNER JOIN FONDO ON CLASEFONDO.COMPANIA = FONDO.COMPANIA AND CLASEFONDO.ID_DE_FONDO = FONDO.ID_DE_FONDO WHERE PERSONAL_APORTE.COMPANIA = :COMPANIA ORDER BY PERSONAL_APORTE.ID_DE_EMPLEADO) INI WHERE (CASE WHEN ID_DE_EMPLEADO IS NULL THEN ' ' ELSE UPPER(ID_DE_EMPLEADO) END) LIKE UPPER(CONCAT(:ID_DE_EMPLEADO, '%')) AND (CASE WHEN NOMBRECOMPLETO IS NULL THEN ' ' ELSE UPPER(NOMBRECOMPLETO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRECOMPLETO), '%')) AND (CASE WHEN CODIGO_APORTE IS NULL THEN ' ' ELSE UPPER(CODIGO_APORTE) END) LIKE UPPER(CONCAT(:CODIGO_APORTE, '%')) AND (CASE WHEN CLASE_ID_DE_FONDO IS NULL THEN ' ' ELSE UPPER(CLASE_ID_DE_FONDO) END) LIKE UPPER(CONCAT(:CLASE_ID_DE_FONDO, '%')) AND (CASE WHEN NOMBRE_FONDO IS NULL THEN ' ' ELSE UPPER(NOMBRE_FONDO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_FONDO), '%')) AND (CASE WHEN NOMBRE_FORMA IS NULL THEN ' ' ELSE UPPER(NOMBRE_FORMA) END) LIKE UPPER(CONCAT(:NOMBRE_FORMA, '%')) AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END) LIKE UPPER(CONCAT(CONCAT('%',:VALOR), '%')) AND (CASE WHEN LIQUIDAR_PRIMA IS NULL THEN ' ' ELSE UPPER(LIQUIDAR_PRIMA) END) LIKE UPPER(CONCAT(CONCAT('%',:LIQUIDAR_PRIMA), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="NOMBRECOMPLETO" sqlType="STRING"/>
+		<param name="CODIGO_APORTE" sqlType="STRING"/>
+		<param name="CLASE_ID_DE_FONDO" sqlType="STRING"/>
+		<param name="NOMBRE_FONDO" sqlType="STRING"/>
+		<param name="NOMBRE_FORMA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="LIQUIDAR_PRIMA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="personalaportes/numero">
+		<call-query href="getPersonalaportesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="NOMBRECOMPLETO" query-param="NOMBRECOMPLETO"/>
+			<with-param name="CODIGO_APORTE" query-param="CODIGO_APORTE"/>
+			<with-param name="CLASE_ID_DE_FONDO" query-param="CLASE_ID_DE_FONDO"/>
+			<with-param name="NOMBRE_FONDO" query-param="NOMBRE_FONDO"/>
+			<with-param name="NOMBRE_FORMA" query-param="NOMBRE_FORMA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="LIQUIDAR_PRIMA" query-param="LIQUIDAR_PRIMA"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePersonalaportes" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PERSONAL_APORTE SET ID_DE_EMPLEADO=:ID_DE_EMPLEADO, CLASE_ID_DE_FONDO=:CLASE_ID_DE_FONDO, CODIGO_APORTE=:CODIGO_APORTE, LIQUIDAR_PRIMA=:LIQUIDAR_PRIMA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PERSONAL_APORTE.COMPANIA= :KEY_COMPANIA AND PERSONAL_APORTE.ID_DE_EMPLEADO= :KEY_ID_DE_EMPLEADO AND PERSONAL_APORTE.CLASE_ID_DE_FONDO= :KEY_CLASE_ID_DE_FONDO AND PERSONAL_APORTE.CODIGO_APORTE= :KEY_CODIGO_APORTE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="CLASE_ID_DE_FONDO" sqlType="STRING"/>
+		<param name="CODIGO_APORTE" sqlType="STRING"/>
+		<param name="LIQUIDAR_PRIMA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_DE_EMPLEADO" sqlType="STRING"/>
+		<param name="KEY_CLASE_ID_DE_FONDO" sqlType="STRING"/>
+		<param name="KEY_CODIGO_APORTE" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="personalaportes">
+		<call-query href="updatePersonalaportes">
+			<with-param name="ID_DE_EMPLEADO" query-param="ID_DE_EMPLEADO"/>
+			<with-param name="CLASE_ID_DE_FONDO" query-param="CLASE_ID_DE_FONDO"/>
+			<with-param name="CODIGO_APORTE" query-param="CODIGO_APORTE"/>
+			<with-param name="LIQUIDAR_PRIMA" query-param="LIQUIDAR_PRIMA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_DE_EMPLEADO" query-param="KEY_ID_DE_EMPLEADO"/>
+			<with-param name="KEY_CLASE_ID_DE_FONDO" query-param="KEY_CLASE_ID_DE_FONDO"/>
+			<with-param name="KEY_CODIGO_APORTE" query-param="KEY_CODIGO_APORTE"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,148 @@
+﻿<data name="bpentidades" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getBpentidadesCodigoYNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  BP_ENTIDADES.CODIGO, BP_ENTIDADES.NOMBRE  FROM BP_ENTIDADES WHERE BP_ENTIDADES.COMPANIA = :COMPANIA ORDER BY BP_ENTIDADES.NOMBRE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bpentidades/codigoynombre">
+		<call-query href="getBpentidadesCodigoYNombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertBpentidades" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO BP_ENTIDADES (COMPANIA, CODIGO, NOMBRE, SIGLADNP, ORDEN, TIPOENTIDAD, SECTORDNP, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :NOMBRE, :SIGLADNP, :ORDEN, :TIPOENTIDAD, :SECTORDNP, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="SIGLADNP" sqlType="STRING"/>
+		<param defaultValue="" name="ORDEN" sqlType="STRING"/>
+		<param defaultValue="ST" name="TIPOENTIDAD" sqlType="STRING"/>
+		<param defaultValue="" name="SECTORDNP" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="bpentidades">
+		<call-query href="insertBpentidades">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SIGLADNP" query-param="SIGLADNP"/>
+			<with-param name="ORDEN" query-param="ORDEN"/>
+			<with-param name="TIPOENTIDAD" query-param="TIPOENTIDAD"/>
+			<with-param name="SECTORDNP" query-param="SECTORDNP"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteBpentidades" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM BP_ENTIDADES WHERE BP_ENTIDADES.COMPANIA= :KEY_COMPANIA AND BP_ENTIDADES.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="bpentidades">
+		<call-query href="deleteBpentidades">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBpentidadesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  BP_ENTIDADES.COMPANIA, BP_ENTIDADES.CODIGO, BP_ENTIDADES.NOMBRE, BP_ENTIDADES.SIGLADNP, BP_ENTIDADES.ORDEN, DECODE(BP_ENTIDADES.ORDEN, 'N', 'Nacional', 'D','Departamental','M','Municipal') ORDENLB, BP_ENTIDADES.TIPOENTIDAD, DECODE(BP_ENTIDADES.TIPOENTIDAD ,'EC','Entidad Centralizada','ED','Entidad Descentralizada','EP','Establecimiento Público','ST','Sin Tipo') TIPOENTIDADLB, SECTORDNP.NOMBRE NOMBSECTORDNP, BP_ENTIDADES.SECTORDNP  FROM BP_ENTIDADES LEFT JOIN SECTORDNP ON BP_ENTIDADES.COMPANIA = SECTORDNP.COMPANIA AND BP_ENTIDADES.SECTORDNP = SECTORDNP.CODIGODNP WHERE BP_ENTIDADES.COMPANIA = :COMPANIA ORDER BY BP_ENTIDADES.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SIGLADNP IS NULL THEN ' ' ELSE UPPER(SIGLADNP) END)  LIKE UPPER(:SIGLADNP || '%')  AND (CASE WHEN ORDENLB IS NULL THEN ' ' ELSE UPPER(ORDENLB) END)  LIKE UPPER(:ORDENLB || '%')  AND (CASE WHEN TIPOENTIDADLB IS NULL THEN ' ' ELSE UPPER(TIPOENTIDADLB) END)  LIKE UPPER( '%' || :TIPOENTIDADLB || '%')  AND (CASE WHEN NOMBSECTORDNP IS NULL THEN ' ' ELSE UPPER(NOMBSECTORDNP) END)  LIKE UPPER( '%' || :NOMBSECTORDNP || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","SIGLADNP":"$SIGLADNP","ORDEN":"$ORDEN","ORDENLB":"$ORDENLB","TIPOENTIDAD":"$TIPOENTIDAD","TIPOENTIDADLB":"$TIPOENTIDADLB","NOMBSECTORDNP":"$NOMBSECTORDNP","SECTORDNP":"$SECTORDNP"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SIGLADNP" sqlType="STRING"/>
+		<param name="ORDENLB" sqlType="STRING"/>
+		<param name="TIPOENTIDADLB" sqlType="STRING"/>
+		<param name="NOMBSECTORDNP" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="bpentidades">
+		<call-query href="getBpentidadesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SIGLADNP" query-param="SIGLADNP"/>
+			<with-param name="ORDENLB" query-param="ORDENLB"/>
+			<with-param name="TIPOENTIDADLB" query-param="TIPOENTIDADLB"/>
+			<with-param name="NOMBSECTORDNP" query-param="NOMBSECTORDNP"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getBpentidadesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  BP_ENTIDADES.COMPANIA, BP_ENTIDADES.CODIGO, BP_ENTIDADES.NOMBRE, BP_ENTIDADES.SIGLADNP, BP_ENTIDADES.ORDEN, DECODE(BP_ENTIDADES.ORDEN, 'N', 'Nacional', 'D','Departamental','M','Municipal') ORDENLB, BP_ENTIDADES.TIPOENTIDAD, DECODE(BP_ENTIDADES.TIPOENTIDAD ,'EC','Entidad Centralizada','ED','Entidad Descentralizada','EP','Establecimiento Público','ST','Sin Tipo') TIPOENTIDADLB, SECTORDNP.NOMBRE NOMBSECTORDNP, BP_ENTIDADES.SECTORDNP  FROM BP_ENTIDADES LEFT JOIN SECTORDNP ON BP_ENTIDADES.COMPANIA = SECTORDNP.COMPANIA AND BP_ENTIDADES.SECTORDNP = SECTORDNP.CODIGODNP WHERE BP_ENTIDADES.COMPANIA = :COMPANIA ORDER BY BP_ENTIDADES.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SIGLADNP IS NULL THEN ' ' ELSE UPPER(SIGLADNP) END)  LIKE UPPER(:SIGLADNP || '%')  AND (CASE WHEN ORDENLB IS NULL THEN ' ' ELSE UPPER(ORDENLB) END)  LIKE UPPER(:ORDENLB || '%')  AND (CASE WHEN TIPOENTIDADLB IS NULL THEN ' ' ELSE UPPER(TIPOENTIDADLB) END)  LIKE UPPER( '%' || :TIPOENTIDADLB || '%')  AND (CASE WHEN NOMBSECTORDNP IS NULL THEN ' ' ELSE UPPER(NOMBSECTORDNP) END)  LIKE UPPER( '%' || :NOMBSECTORDNP || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SIGLADNP" sqlType="STRING"/>
+		<param name="ORDENLB" sqlType="STRING"/>
+		<param name="TIPOENTIDADLB" sqlType="STRING"/>
+		<param name="NOMBSECTORDNP" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="bpentidades/numero">
+		<call-query href="getBpentidadesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SIGLADNP" query-param="SIGLADNP"/>
+			<with-param name="ORDENLB" query-param="ORDENLB"/>
+			<with-param name="TIPOENTIDADLB" query-param="TIPOENTIDADLB"/>
+			<with-param name="NOMBSECTORDNP" query-param="NOMBSECTORDNP"/>
+
+		</call-query>
+	</resource>
+	<query id="updateBpentidades" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE BP_ENTIDADES SET CODIGO=:CODIGO, NOMBRE=:NOMBRE, SIGLADNP=:SIGLADNP, ORDEN=:ORDEN, TIPOENTIDAD=:TIPOENTIDAD, SECTORDNP=:SECTORDNP, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE BP_ENTIDADES.COMPANIA= :KEY_COMPANIA AND BP_ENTIDADES.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SIGLADNP" sqlType="STRING"/>
+		<param name="ORDEN" sqlType="STRING"/>
+		<param name="TIPOENTIDAD" sqlType="STRING"/>
+		<param name="SECTORDNP" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="bpentidades">
+		<call-query href="updateBpentidades">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SIGLADNP" query-param="SIGLADNP"/>
+			<with-param name="ORDEN" query-param="ORDEN"/>
+			<with-param name="TIPOENTIDAD" query-param="TIPOENTIDAD"/>
+			<with-param name="SECTORDNP" query-param="SECTORDNP"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

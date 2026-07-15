@@ -1,0 +1,348 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+              asignarEventoContGrande();
+validarCargaGrandes();
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TT_FR468}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<section class="radius">
+			<f:event type="preRenderView"
+				listener="#{seccionalesControlador.cargarForma}" />
+			<div id="FR468" style="height: 650px;">
+				<h:form style="height: 100%;" id="FRFR468">
+					<p:growl id="alert" showDetail="true" sticky="false"
+						widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+					<p:overlayPanel widgetVar="PLCB1851" id="PLCB1851"
+						onShow="if(PF('TBCB1851').nuevo){ PF('TBCB1851').filter(); PF('TBCB1851').nuevo=false;}"
+						onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB1851').jq.focus();}"
+						my="left" at="left" for="BTCB1851" hideEffect="fade"
+						style="width: 600px">
+						<p:dataTable id="TBCB1851" widgetVar="TBCB1851" var="reg"
+							value="#{seccionalesControlador.listaDirectorSeccional}"
+							editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="11" rowIndexVar="rowIndex" selectionMode="single"
+							rowKey="#{reg.campos['NIT']}" paginator="true" lazy="true">
+							<p:ajax event="rowSelect"
+								listener="#{seccionalesControlador.seleccionarFilaDirectorSeccional}"
+								update=":FRFR468:CB1851,:FRFR468:BTCB1851,FRFR468:CP14195"
+								oncomplete="PF('PLCB1851').hide(); $('#speCB1851').remove();  " />
+							<p:column headerText="#{idm.TG_NIT5}" style="text-align:center; "
+								width="160" filterBy="#{reg.campos['NIT']}"
+								filterMatchMode="startsWith" filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NIT']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE3}"
+								style="text-align:center; " width="400"
+								filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NOMBRE']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+						</p:dataTable>
+					</p:overlayPanel>
+					<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}" id="dlg"
+						widgetVar="dlg" resizable="false" modal="true"
+						rendered="#{seccionalesControlador.permisos[0]}"
+						onHide="restaurarCampos(['CB1851','CP14193','CP14194'])">
+						<h:panelGrid columns="2" cellpadding="2">
+							<h:outputLabel value="#{idm.TG_CODIGO7}:" id="LCP14193"
+								class="cont-inst-element" />
+							<p:inputText id="CP14193" widgetVar="CP14193"
+								styleClass="inputTab"
+								value="#{seccionalesControlador.registro.campos['CODIGO']}"
+								label="LCP14193" style=" width: 95%; float: left;"
+								class="cont-inst-element" maxlength="4">
+								<p:ajax event="change"
+									listener="#{seccionalesControlador.cambiarCodigo}"
+									update="@this" />
+								<pe:keyFilter regEx="/[a-z0-9_]/i" />
+							</p:inputText>
+							<h:outputLabel value="#{idm.TC_CP14194}:" id="LCP14194"
+								class="cont-inst-element" />
+							<p:inputText id="CP14194" widgetVar="CP14194"
+								styleClass="inputTab"
+								value="#{seccionalesControlador.registro.campos['NOMBRESECCIONAL']}"
+								label="LCP14194" style=" width: 95%; float: left;"
+								class="cont-inst-element" maxlength="80">
+							</p:inputText>
+							<h:outputLabel value="#{idm.TC_CB1851}:" id="LCB1851"
+								class="cont-inst-element" />
+							<h:panelGroup>
+								<p:inputText id="CB1851" widgetVar="CB1851"
+									onfocus="if(!false){PF('BTCB1851').jq.focus();}"
+									onclick="if(!false){PF('PLCB1851').show();}"
+									value="#{seccionalesControlador.registro.campos['DIRECTOR']}"
+									style="cursor:pointer; width: 80%;" tabindex="-1"
+									class="cont-inst-element" />
+								<p:commandButton id="BTCB1851" widgetVar="BTCB1851"
+									onclick="PF('PLCB1851').show();"
+									onblur="PF('CB1851').jq.blur();"
+									onfocus="PF('CB1851').jq.addClass('ui-state-focus');"
+									type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+									style="width:25px; height:  23px; top:3px; border-left-width: 0; "
+									class="cont-inst-element" />
+							</h:panelGroup>
+							<h:outputLabel value="#{idm.TC_CP14195}:" id="LCP14195"
+								class="cont-inst-element" />
+							<p:inputText id="CP14195" readonly="true" widgetVar="CP14195"
+								styleClass="inputTab"
+								value="#{seccionalesControlador.registro.campos['NOMBREDIRECTOR']}"
+								label="LCP14195" style=" width: 95%; float: left;"
+								class="cont-inst-element" maxlength="80">
+							</p:inputText>
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TI_GUARDAR}"
+										style="padding:10px;" update="FRFR468,"
+										actionListener="#{seccionalesControlador.agregarRegistroNuevo}"
+										oncomplete="PF('dlg').hide(); PF('blockGuardar').hide();"
+										onclick="     if (!validarVaciosModal(['CB1851','CP14193','CP14194'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockGuardar').show();" />
+									<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+										href="#" onclick="PF('dlg').hide();" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<p:confirmDialog global="true" showEffect="fade">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<div id="PL1033" class="
+"
+						style="position: relative; height: 600px;">
+						<center style="height: 0px">
+							<p:inputText id="HCB1851" rendered="true" widgetVar="HCB1851"
+								value="#{seccionalesControlador.auxiliar}"
+								style="width: 0px; height: 0px; border: #ffffff; background: #FFFFFF; box-shadow: none"
+								disabled="true" />
+						</center>
+						<p:overlayPanel widgetVar="PLSCB1851" id="PLSCB1851"
+							rendered="true"
+							onShow="if(PF('TBSCB1851').nuevo){ PF('TBSCB1851').clearFilters(); PF('TBSCB1851').nuevo=false;}"
+							onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){aux= aux.replace(':BT',':'); aux=aux.replace(/:/g,'\\:'); $('#'+aux).focus();}"
+							for="HCB1851" hideEffect="fade" style="width:600px; ">
+							<p:dataTable id="TBSCB1851" widgetVar="TBSCB1851" var="reg"
+								value="#{seccionalesControlador.listaDirectorSeccionalE}"
+								editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+								currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+								rows="11" rowIndexVar="rowIndex" selectionMode="single"
+								rowKey="#{reg.campos['NIT']}" paginator="true" lazy="true">
+								<p:ajax event="rowSelect"
+									listener="#{seccionalesControlador.seleccionarFilaDirectorSeccionalE}"
+									update=":FRFR468:HCB1851"
+									oncomplete="aux=aux.replace(/\\/g,''); aux= aux.replace(':BT',':'); aux=aux.replace(/:/g,'\\:'); $('#'+aux)[0].value=PF('HCB1851').jq[0].value;  PF('PLSCB1851').hide();  $('#'+aux).change(); ind=false; " />
+								<p:column headerText="#{idm.TG_NIT5}"
+									style="text-align:center; " width="160"
+									filterBy="#{reg.campos['NIT']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NIT']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_NOMBRE3}"
+									style="text-align:center; " width="400"
+									filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NOMBRE']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+							</p:dataTable>
+						</p:overlayPanel>
+						<p:remoteCommand name="refreshTab" update="TBFR468"
+							oncomplete="PF('blockGuardar').hide();" />
+						<p:dataTable id="TBFR468" var="reg"
+							value="#{seccionalesControlador.listaInicial}" editable="true"
+							widgetVar="TBFR468" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="10" rowIndexVar="rowNun" paginator="true" scrollable="true"
+							scrollWidth="100%" lazy="true">
+							<f:facet name="{Exporters}"
+								rendered="#{seccionalesControlador.permisos[4] }">
+								<h:commandLink rendered="#{seccionalesControlador.permisos[4] }"
+									title="#{idm.TI_VER_EXCEL}">
+									<p:graphicImage name="/images/general/excel.png" width="24" />
+									<p:dataExporter type="xls" target="TBFR468" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+								<h:commandLink rendered="#{seccionalesControlador.permisos[4] }"
+									title="#{idm.TI_VER_PDF}">
+									<p:graphicImage name="/images/general/pdf.png" width="24" />
+									<p:dataExporter type="pdf" target="TBFR468" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+							</f:facet>
+							<p:ajax event="rowEdit" update=":FRFR468:alert,"
+								listener="#{seccionalesControlador.editar}"
+								oncomplete="refreshTab(); mostarEditor();"
+								onstart="PF('blockGuardar').show();" />
+							<p:ajax event="rowEditCancel"
+								listener="#{seccionalesControlador.cancelarEdicion}"
+								oncomplete="  mostarEditor();" />
+							<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+							<f:facet name="header">
+								<div style="position: relative; height: 50px">
+									<h:panelGroup class="acme"
+										rendered="#{seccionalesControlador.permisos[0]  }">
+										<h:outputLink value="javascript:void(0)"
+											onclick="
+		PF('dlg').show();
+		"
+											title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;">
+											<center>
+												<p:graphicImage name="/images/menus/32/add.png" />
+												<div>#{idm.TI_NUEVO}</div>
+											</center>
+										</h:outputLink>
+									</h:panelGroup>
+									<div class="acme">
+										<h:outputLink value="#{request.contextPath}/menu.sysman"
+											title="Volver al menú" style="padding-top: 10px;">
+											<center>
+												<p:graphicImage name="/images/menus/32/close.png" />
+												<div>#{idm.TI_CERRAR}</div>
+											</center>
+										</h:outputLink>
+									</div>
+								</div>	 
+                            #{idm.TT_FR468}
+                            </f:facet>
+							<p:column headerText="#{idm.TG_CODIGO7}"
+								filterBy="#{reg.campos['CODIGO']}" filterStyle="width:100%"
+								filterMatchMode="startsWith" width="78" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['CODIGO']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP14193" styleClass="inputTab"
+											value="#{reg.campos['CODIGO']}" style="width:100%"
+											maxlength="4">
+											<pe:keyFilter regEx="/[a-z0-9_]/i" />
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CP14194}"
+								filterBy="#{reg.campos['NOMBRESECCIONAL']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="232"
+								rendered="true" styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['NOMBRESECCIONAL']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP14194" styleClass="inputTab"
+											value="#{reg.campos['NOMBRESECCIONAL']}" style="width:100%"
+											maxlength="80">
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CB1851}"
+								filterBy="#{reg.campos['DIRECTOR']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="200" rendered="true">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['DIRECTOR']}" />
+									</f:facet>
+									<f:facet name="input">
+										<h:panelGroup>
+											<p:inputText id="CB1851"
+												onfocus="if(!false){onfocusCBG('#{component.clientId}');}"
+												onchange="return ind;" value="#{reg.campos['DIRECTOR']}"
+												onclick="if(!false){ PF('PLSCB1851').show('#{component.clientId}');}  aux= '#{component.clientId}'; ind = true;"
+												tabindex="-1" style="cursor:pointer; width: 75%;">
+												<p:ajax
+													listener="#{seccionalesControlador.cambiarDirectorSeccionalC(rowNun)}"
+													update="CP14195" />
+											</p:inputText>
+											<p:commandButton id="BTCB1851" type="button"
+												icon="ui-icon ui-icon-triangle-1-s ui-c"
+												onclick="PF('PLSCB1851').show('#{component.clientId}'); aux= '#{component.clientId}';  ind = true;"
+												onblur="onblurBTCBG('#{component.clientId}');"
+												onfocus="onfocusBTCBG('#{component.clientId}');"
+												style="width:25px; height:  20px; top:4px; border-left-width: 0; " />
+										</h:panelGroup>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CP14195}"
+								filterBy="#{reg.campos['NOMBREDIRECTOR']}"
+								filterStyle="width:100%" filterMatchMode="contains" width="232"
+								rendered="true" styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['NOMBREDIRECTOR']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP14195" styleClass="inputTab"
+											value="#{reg.campos['NOMBREDIRECTOR']}" style="width:100%"
+											readonly="true" maxlength="80">
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column width="30" exportable="false"
+								rendered="#{seccionalesControlador.permisos[2] }">
+								<p:rowEditor />
+							</p:column>
+							<p:column width="30" exportable="false"
+								rendered="#{seccionalesControlador.permisos[1] }">
+								<p:commandButton icon="ui-icon-trash"
+									title="#{idm.TI_ELIMINAR_REGISTRO}"
+									onclick="PF('blockGuardar').show()"
+									action="#{seccionalesControlador.eliminarReg(reg)}"
+									oncomplete="refreshTab(); PF('blockGuardar').hide();"
+									update=":FRFR468:alert,"
+									style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;">
+									<p:confirm header="#{sessionBean.tituloMensajes}"
+										message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+								</p:commandButton>
+							</p:column>
+						</p:dataTable>
+						<p:blockUI block="FRFR468" widgetVar="blockGuardar">
+                        #{idm.TI_GUARDANDO_CAMBIOS}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+						<p:blockUI block="FRFR468" widgetVar="blockCarga"
+							trigger="TBFR468,">
+                        #{idm.TI_CARGANDO}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+					</div>
+				</h:form>
+			</div>
+		</section>
+	</ui:define>
+</ui:composition>

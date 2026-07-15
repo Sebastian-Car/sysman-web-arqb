@@ -1,0 +1,76 @@
+SELECT  CONCEPTOS.CLASE ,
+        SUM(HISTORICOS.VALOR) TOTAL,
+        CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN(117) 
+             THEN CASE WHEN V_FONDO_DE_PENSIONES.PUBLICO NOT IN(0) 
+                       THEN PCK_SYSMAN_UTL.FC_PAR(UN_COMPANIA  => HISTORICOS.COMPANIA,
+                                                  UN_NOMBRE    => 'RUBRO PRESUPUESTAL PENSION PUBLICA',
+                                                  UN_MODULO 	 => 6,
+                                                  UN_FECHA_PAR => SYSDATE,
+                                                  UN_IND_MAYUS => -1)
+                       ELSE CONCEPTOS.CTA_CRE_PPTAL 
+                  END 
+             ELSE CONCEPTOS.CTA_CRE_PPTAL           
+        END  CTA_CRE_PPTAL,
+        CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN(117) 
+             THEN CASE WHEN V_FONDO_DE_PENSIONES.PUBLICO NOT IN(0) 
+                       THEN 'Público'
+                       ELSE 'Privado'
+                  END 
+             ELSE 'Privado'
+        END TPUBLICO,
+        CRED.NOMBRE NOMBRE_RUBRO_PPTAL
+FROM HISTORICOS
+  INNER JOIN PERIODOS
+    ON HISTORICOS.COMPANIA        = PERIODOS.COMPANIA 
+    AND HISTORICOS.ID_DE_PROCESO  = PERIODOS.ID_DE_PROCESO 
+    AND HISTORICOS.ANO            = PERIODOS.ANO
+    AND HISTORICOS.MES            = PERIODOS.MES
+    AND HISTORICOS.PERIODO        = PERIODOS.PERIODO
+  INNER JOIN CONCEPTOS
+    ON HISTORICOS.COMPANIA        = CONCEPTOS.COMPANIA 
+    AND HISTORICOS.ID_DE_CONCEPTO = CONCEPTOS.ID_DE_CONCEPTO
+  INNER JOIN PERSONAL
+    ON HISTORICOS.COMPANIA        = PERSONAL.COMPANIA 
+    AND HISTORICOS.ID_DE_EMPLEADO = PERSONAL.ID_DE_EMPLEADO
+  LEFT JOIN V_FONDO_DE_PENSIONES
+    ON PERSONAL.COMPANIA          = V_FONDO_DE_PENSIONES.COMPANIA 
+    AND PERSONAL.ID_DEL_FONDO     = V_FONDO_DE_PENSIONES.ID_DEL_FONDO
+  LEFT JOIN PLAN_PRESUPUESTAL CRED
+    ON CONCEPTOS.COMPANIA       = CRED.COMPANIA 
+    AND HISTORICOS.ANO          = CRED.ANO
+    AND   CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN (117) 
+          THEN CASE WHEN V_FONDO_DE_PENSIONES.PUBLICO NOT IN (0) 
+                THEN PCK_SYSMAN_UTL.FC_PAR(UN_COMPANIA => HISTORICOS.COMPANIA,
+                                          UN_NOMBRE    => 'RUBRO PRESUPUESTAL PENSION PUBLICA',
+                                          UN_MODULO 	 => 6,
+                                          UN_FECHA_PAR => SYSDATE,
+                                          UN_IND_MAYUS => -1)
+                ELSE CONCEPTOS.CTA_CRE_PPTAL 
+              END 
+          ELSE CONCEPTOS.CTA_CRE_PPTAL           
+        END = CRED.CODIGO  
+WHERE HISTORICOS.COMPANIA = s$compania$s
+  AND  LPAD(HISTORICOS.ID_DE_PROCESO, 2, 0) || LPAD(HISTORICOS.ANO, 4, 0) || LPAD(HISTORICOS.MES, 2, 0) || LPAD(HISTORICOS.PERIODO, 2, 0) BETWEEN 's$fechaInicial$s'  AND 's$fechaFinal$s' 
+  AND CONCEPTOS.CLASE IN (8)
+  AND (HISTORICOS.ID_DE_CONCEPTO < 490  OR HISTORICOS.ID_DE_CONCEPTO > 499)
+  AND PERIODOS.ACUMULADO NOT IN (0)
+GROUP BY CONCEPTOS.CLASE ,
+        CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN (117) 
+          THEN CASE WHEN V_FONDO_DE_PENSIONES.PUBLICO NOT IN (0) 
+                THEN PCK_SYSMAN_UTL.FC_PAR(UN_COMPANIA => HISTORICOS.COMPANIA,
+                                          UN_NOMBRE    => 'RUBRO PRESUPUESTAL PENSION PUBLICA',
+                                          UN_MODULO 	 => 6,
+                                          UN_FECHA_PAR => SYSDATE,
+                                          UN_IND_MAYUS => -1)
+                ELSE CONCEPTOS.CTA_CRE_PPTAL 
+              END 
+          ELSE CONCEPTOS.CTA_CRE_PPTAL           
+        END,
+        CASE WHEN HISTORICOS.ID_DE_CONCEPTO IN(117) 
+          THEN CASE WHEN V_FONDO_DE_PENSIONES.PUBLICO NOT IN(0) 
+                THEN 'Público'
+                ELSE 'Privado'
+                END 
+          ELSE 'Privado'
+        END ,
+        CRED.NOMBRE

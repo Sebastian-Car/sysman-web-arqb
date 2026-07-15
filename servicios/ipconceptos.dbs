@@ -1,0 +1,417 @@
+﻿<data name="ipconceptos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getIpconceptosCargarAniosInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT IP_CONCEPTOS.ANO  FROM IP_CONCEPTOS WHERE COMPANIA = :COMPANIA ORDER BY IP_CONCEPTOS.ANO DESC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipconceptos/cargaraniosinicial">
+		<call-query href="getIpconceptosCargarAniosInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpconceptosCargarAniosFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT IP_CONCEPTOS.ANO  FROM IP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND IP_CONCEPTOS.ANO &gt;= :ANO ORDER BY IP_CONCEPTOS.ANO DESC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipconceptos/cargaraniosfinal">
+		<call-query href="getIpconceptosCargarAniosFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpconceptosEncabezadoPorAnoCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NVL(ENCABEZADO,' ') NOMBRE  FROM IP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND CODIGO = :NUMERO ORDER BY CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipconceptos/encabezadoporanocodigo">
+		<call-query href="getIpconceptosEncabezadoPorAnoCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpconceptosEncabezadoPorAnioActualQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ENCABEZADO, NOMBRE, CODIGO  FROM IP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND ANO = EXTRACT (YEAR FROM SYSDATE) AND CODIGO = :CONCEPTO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ENCABEZADO":"$ENCABEZADO","NOMBRE":"$NOMBRE","CODIGO":"$CODIGO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipconceptos/encabezadoporanioactual">
+		<call-query href="getIpconceptosEncabezadoPorAnioActualQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpconceptosCodIntervigPorAnoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO  FROM IP_CONCEPTOS WHERE ESINTERESVIGENCIA NOT IN(0) AND ANO = EXTRACT(YEAR FROM (SYSDATE)) - :NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)"}]}}		</result>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipconceptos/codintervigporano">
+		<call-query href="getIpconceptosCodIntervigPorAnoQuery">
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpconceptosEncabezadoPorAnoCodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NVL(ENCABEZADO,' ') NOMBRE  FROM IP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND CODIGO = :CODIGO ORDER BY CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipconceptos/encabezadoporanocod">
+		<call-query href="getIpconceptosEncabezadoPorAnoCodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpconceptosCodigosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT IP_CONCEPTOS.CODIGO, CONCAT('C',CODIGO) CTO FROM IP_CONCEPTOS WHERE IP_CONCEPTOS.COMPANIA =:COMPANIA AND ( IP_CONCEPTOS.CODIGO &lt;= 4 OR IP_CONCEPTOS.CODIGO &gt; 12 ) AND IP_CONCEPTOS.CODIGO &lt;&gt; NVL(PCK_SYSMAN_UTL.FC_PAR(IP_CONCEPTOS.COMPANIA,'CONCEPTO DE DESCUENTO',60,SYSDATE),0) AND IP_CONCEPTOS.ANO = EXTRACT(YEAR FROM SYSDATE)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","CTO":"$CTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipconceptos/codigosporcompania">
+		<call-query href="getIpconceptosCodigosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpconceptosCodNomPorAnoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO, NOMBRE  FROM IP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND ANO = :ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipconceptos/codnomporano">
+		<call-query href="getIpconceptosCodNomPorAnoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpconceptosCodNomVerresolPorAnoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO, NOMBRE ,(CASE VER_RESOL WHEN 0 THEN 'false' ELSE 'true' END) VER_RESOL FROM IP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND ANO = :ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","VER_RESOL":"$VER_RESOL(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipconceptos/codnomverresolporano">
+		<call-query href="getIpconceptosCodNomVerresolPorAnoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertIpconceptos" keyColumns="COMPANIA,ANO,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_CONCEPTOS (COMPANIA, ANO, CODIGO, NOMBRE, FORMULA, APLICAINTERES, PRIORIDAD, MINIMO, MINIMO1, ENCABEZADO, ESCAPITALVIGENCIA, ESINTERESVIGENCIA, VIGANT, VIGDFR, VER_RESOL, ESCAPITALABACU, ESINTERESABACU, PRIORIDAD_ABON_EN_ACU, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :CODIGO, :NOMBRE, :FORMULA, :APLICAINTERES, :PRIORIDAD, :MINIMO, :MINIMO1, :ENCABEZADO, :ESCAPITALVIGENCIA, :ESINTERESVIGENCIA, :VIGANT, :VIGDFR, :VER_RESOL, :ESCAPITALABACU, :ESINTERESABACU, :PRIORIDAD_ABON_EN_ACU, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_CODIGO":"$CODIGO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="FORMULA" sqlType="STRING"/>
+		<param defaultValue="0" name="APLICAINTERES" sqlType="STRING"/>
+		<param defaultValue="0" name="PRIORIDAD" sqlType="STRING"/>
+		<param defaultValue="0" name="MINIMO" sqlType="STRING"/>
+		<param defaultValue="0" name="MINIMO1" sqlType="STRING"/>
+		<param defaultValue="" name="ENCABEZADO" sqlType="STRING"/>
+		<param defaultValue="0" name="ESCAPITALVIGENCIA" sqlType="STRING"/>
+		<param defaultValue="0" name="ESINTERESVIGENCIA" sqlType="STRING"/>
+		<param defaultValue="0" name="VIGANT" sqlType="STRING"/>
+		<param defaultValue="0" name="VIGDFR" sqlType="STRING"/>
+		<param defaultValue="0" name="VER_RESOL" sqlType="STRING"/>
+		<param defaultValue="0" name="ESCAPITALABACU" sqlType="STRING"/>
+		<param defaultValue="0" name="ESINTERESABACU" sqlType="STRING"/>
+		<param defaultValue="0" name="PRIORIDAD_ABON_EN_ACU" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="ipconceptos">
+		<call-query href="insertIpconceptos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="FORMULA" query-param="FORMULA"/>
+			<with-param name="APLICAINTERES" query-param="APLICAINTERES"/>
+			<with-param name="PRIORIDAD" query-param="PRIORIDAD"/>
+			<with-param name="MINIMO" query-param="MINIMO"/>
+			<with-param name="MINIMO1" query-param="MINIMO1"/>
+			<with-param name="ENCABEZADO" query-param="ENCABEZADO"/>
+			<with-param name="ESCAPITALVIGENCIA" query-param="ESCAPITALVIGENCIA"/>
+			<with-param name="ESINTERESVIGENCIA" query-param="ESINTERESVIGENCIA"/>
+			<with-param name="VIGANT" query-param="VIGANT"/>
+			<with-param name="VIGDFR" query-param="VIGDFR"/>
+			<with-param name="VER_RESOL" query-param="VER_RESOL"/>
+			<with-param name="ESCAPITALABACU" query-param="ESCAPITALABACU"/>
+			<with-param name="ESINTERESABACU" query-param="ESINTERESABACU"/>
+			<with-param name="PRIORIDAD_ABON_EN_ACU" query-param="PRIORIDAD_ABON_EN_ACU"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteIpconceptos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM IP_CONCEPTOS WHERE IP_CONCEPTOS.COMPANIA= :KEY_COMPANIA AND IP_CONCEPTOS.ANO= :KEY_ANO AND IP_CONCEPTOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_CODIGO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="ipconceptos">
+		<call-query href="deleteIpconceptos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpconceptosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_CONCEPTOS.COMPANIA, IP_CONCEPTOS.ANO, IP_CONCEPTOS.CODIGO, IP_CONCEPTOS.NOMBRE, IP_CONCEPTOS.FORMULA,(CASE IP_CONCEPTOS.APLICAINTERES WHEN 0 THEN 'false' ELSE 'true' END) APLICAINTERES, IP_CONCEPTOS.PRIORIDAD, IP_CONCEPTOS.MINIMO, IP_CONCEPTOS.MINIMO1, IP_CONCEPTOS.ENCABEZADO,(CASE IP_CONCEPTOS.ESCAPITALVIGENCIA WHEN 0 THEN 'false' ELSE 'true' END) ESCAPITALVIGENCIA,(CASE IP_CONCEPTOS.ESINTERESVIGENCIA WHEN 0 THEN 'false' ELSE 'true' END) ESINTERESVIGENCIA, IP_CONCEPTOS.VIGANT, IP_CONCEPTOS.VIGDFR,(CASE IP_CONCEPTOS.VER_RESOL WHEN 0 THEN 'false' ELSE 'true' END) VER_RESOL,(CASE IP_CONCEPTOS.ESCAPITALABACU WHEN 0 THEN 'false' ELSE 'true' END) ESCAPITALABACU,(CASE IP_CONCEPTOS.ESINTERESABACU WHEN 0 THEN 'false' ELSE 'true' END) ESINTERESABACU, IP_CONCEPTOS.VALOR, IP_CONCEPTOS.SUMAORESTA, IP_CONCEPTOS.PORCENTAJE, IP_CONCEPTOS.CAUSACIONDB, IP_CONCEPTOS.CAUSACIONCR, IP_CONCEPTOS.RECAUDODB, IP_CONCEPTOS.TABLAAMODIFICAR, IP_CONCEPTOS.CAMPOAMODIFICAR, IP_CONCEPTOS.RECAUDOCR, IP_CONCEPTOS.FORMULA_COPIA,(CASE IP_CONCEPTOS.INFORMATIVO WHEN 0 THEN 'false' ELSE 'true' END) INFORMATIVO,(CASE IP_CONCEPTOS.PRORATIAR WHEN 0 THEN 'false' ELSE 'true' END) PRORATIAR, IP_CONCEPTOS.PRIORIDAD_ABON_EN_ACU  FROM IP_CONCEPTOS WHERE IP_CONCEPTOS.COMPANIA = :COMPANIA AND IP_CONCEPTOS.ANO = :ANO ORDER BY IP_CONCEPTOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN FORMULA IS NULL THEN ' ' ELSE UPPER(FORMULA) END)  LIKE UPPER( '%' || :FORMULA || '%')  AND (CASE WHEN APLICAINTERES IS NULL THEN ' ' ELSE UPPER(APLICAINTERES) END)  LIKE UPPER(:APLICAINTERES || '%')  AND (CASE WHEN PRIORIDAD IS NULL THEN ' ' ELSE UPPER(PRIORIDAD) END)  LIKE UPPER( '%' || :PRIORIDAD || '%')  AND (CASE WHEN MINIMO IS NULL THEN ' ' ELSE UPPER(MINIMO) END)  LIKE UPPER( '%' || :MINIMO || '%')  AND (CASE WHEN MINIMO1 IS NULL THEN ' ' ELSE UPPER(MINIMO1) END)  LIKE UPPER( '%' || :MINIMO1 || '%')  AND (CASE WHEN ENCABEZADO IS NULL THEN ' ' ELSE UPPER(ENCABEZADO) END)  LIKE UPPER( '%' || :ENCABEZADO || '%')  AND (CASE WHEN ESCAPITALVIGENCIA IS NULL THEN ' ' ELSE UPPER(ESCAPITALVIGENCIA) END)  LIKE UPPER(:ESCAPITALVIGENCIA || '%')  AND (CASE WHEN ESINTERESVIGENCIA IS NULL THEN ' ' ELSE UPPER(ESINTERESVIGENCIA) END)  LIKE UPPER(:ESINTERESVIGENCIA || '%')  AND (CASE WHEN VIGANT IS NULL THEN ' ' ELSE UPPER(VIGANT) END)  LIKE UPPER( '%' || :VIGANT || '%')  AND (CASE WHEN VIGDFR IS NULL THEN ' ' ELSE UPPER(VIGDFR) END)  LIKE UPPER( '%' || :VIGDFR || '%')  AND (CASE WHEN VER_RESOL IS NULL THEN ' ' ELSE UPPER(VER_RESOL) END)  LIKE UPPER(:VER_RESOL || '%')  AND (CASE WHEN ESCAPITALABACU IS NULL THEN ' ' ELSE UPPER(ESCAPITALABACU) END)  LIKE UPPER(:ESCAPITALABACU || '%')  AND (CASE WHEN ESINTERESABACU IS NULL THEN ' ' ELSE UPPER(ESINTERESABACU) END)  LIKE UPPER(:ESINTERESABACU || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","FORMULA":"$FORMULA","APLICAINTERES":"$APLICAINTERES(type:boolean)","PRIORIDAD":"$PRIORIDAD","MINIMO":"$MINIMO","MINIMO1":"$MINIMO1","ENCABEZADO":"$ENCABEZADO","ESCAPITALVIGENCIA":"$ESCAPITALVIGENCIA(type:boolean)","ESINTERESVIGENCIA":"$ESINTERESVIGENCIA(type:boolean)","VIGANT":"$VIGANT","VIGDFR":"$VIGDFR","VER_RESOL":"$VER_RESOL(type:boolean)","ESCAPITALABACU":"$ESCAPITALABACU(type:boolean)","ESINTERESABACU":"$ESINTERESABACU(type:boolean)","VALOR":"$VALOR","SUMAORESTA":"$SUMAORESTA","PORCENTAJE":"$PORCENTAJE","CAUSACIONDB":"$CAUSACIONDB","CAUSACIONCR":"$CAUSACIONCR","RECAUDODB":"$RECAUDODB","TABLAAMODIFICAR":"$TABLAAMODIFICAR","CAMPOAMODIFICAR":"$CAMPOAMODIFICAR","RECAUDOCR":"$RECAUDOCR","FORMULA_COPIA":"$FORMULA_COPIA","INFORMATIVO":"$INFORMATIVO(type:boolean)","PRORATIAR":"$PRORATIAR(type:boolean)","PRIORIDAD_ABON_EN_ACU":"$PRIORIDAD_ABON_EN_ACU"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="FORMULA" sqlType="STRING"/>
+		<param name="APLICAINTERES" sqlType="STRING"/>
+		<param name="PRIORIDAD" sqlType="STRING"/>
+		<param name="MINIMO" sqlType="STRING"/>
+		<param name="MINIMO1" sqlType="STRING"/>
+		<param name="ENCABEZADO" sqlType="STRING"/>
+		<param name="ESCAPITALVIGENCIA" sqlType="STRING"/>
+		<param name="ESINTERESVIGENCIA" sqlType="STRING"/>
+		<param name="VIGANT" sqlType="STRING"/>
+		<param name="VIGDFR" sqlType="STRING"/>
+		<param name="VER_RESOL" sqlType="STRING"/>
+		<param name="ESCAPITALABACU" sqlType="STRING"/>
+		<param name="ESINTERESABACU" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ipconceptos">
+		<call-query href="getIpconceptosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="FORMULA" query-param="FORMULA"/>
+			<with-param name="APLICAINTERES" query-param="APLICAINTERES"/>
+			<with-param name="PRIORIDAD" query-param="PRIORIDAD"/>
+			<with-param name="MINIMO" query-param="MINIMO"/>
+			<with-param name="MINIMO1" query-param="MINIMO1"/>
+			<with-param name="ENCABEZADO" query-param="ENCABEZADO"/>
+			<with-param name="ESCAPITALVIGENCIA" query-param="ESCAPITALVIGENCIA"/>
+			<with-param name="ESINTERESVIGENCIA" query-param="ESINTERESVIGENCIA"/>
+			<with-param name="VIGANT" query-param="VIGANT"/>
+			<with-param name="VIGDFR" query-param="VIGDFR"/>
+			<with-param name="VER_RESOL" query-param="VER_RESOL"/>
+			<with-param name="ESCAPITALABACU" query-param="ESCAPITALABACU"/>
+			<with-param name="ESINTERESABACU" query-param="ESINTERESABACU"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpconceptosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_CONCEPTOS.COMPANIA, IP_CONCEPTOS.ANO, IP_CONCEPTOS.CODIGO, IP_CONCEPTOS.NOMBRE, IP_CONCEPTOS.FORMULA,(CASE IP_CONCEPTOS.APLICAINTERES WHEN 0 THEN 'false' ELSE 'true' END) APLICAINTERES, IP_CONCEPTOS.PRIORIDAD, IP_CONCEPTOS.MINIMO, IP_CONCEPTOS.MINIMO1, IP_CONCEPTOS.ENCABEZADO,(CASE IP_CONCEPTOS.ESCAPITALVIGENCIA WHEN 0 THEN 'false' ELSE 'true' END) ESCAPITALVIGENCIA,(CASE IP_CONCEPTOS.ESINTERESVIGENCIA WHEN 0 THEN 'false' ELSE 'true' END) ESINTERESVIGENCIA, IP_CONCEPTOS.VIGANT, IP_CONCEPTOS.VIGDFR,(CASE IP_CONCEPTOS.VER_RESOL WHEN 0 THEN 'false' ELSE 'true' END) VER_RESOL,(CASE IP_CONCEPTOS.ESCAPITALABACU WHEN 0 THEN 'false' ELSE 'true' END) ESCAPITALABACU,(CASE IP_CONCEPTOS.ESINTERESABACU WHEN 0 THEN 'false' ELSE 'true' END) ESINTERESABACU, IP_CONCEPTOS.VALOR, IP_CONCEPTOS.SUMAORESTA, IP_CONCEPTOS.PORCENTAJE, IP_CONCEPTOS.CAUSACIONDB, IP_CONCEPTOS.CAUSACIONCR, IP_CONCEPTOS.RECAUDODB, IP_CONCEPTOS.TABLAAMODIFICAR, IP_CONCEPTOS.CAMPOAMODIFICAR, IP_CONCEPTOS.RECAUDOCR, IP_CONCEPTOS.FORMULA_COPIA,(CASE IP_CONCEPTOS.INFORMATIVO WHEN 0 THEN 'false' ELSE 'true' END) INFORMATIVO,(CASE IP_CONCEPTOS.PRORATIAR WHEN 0 THEN 'false' ELSE 'true' END) PRORATIAR, IP_CONCEPTOS.PRIORIDAD_ABON_EN_ACU  FROM IP_CONCEPTOS WHERE IP_CONCEPTOS.COMPANIA = :COMPANIA AND IP_CONCEPTOS.ANO = :ANO ORDER BY IP_CONCEPTOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN FORMULA IS NULL THEN ' ' ELSE UPPER(FORMULA) END)  LIKE UPPER( '%' || :FORMULA || '%')  AND (CASE WHEN APLICAINTERES IS NULL THEN ' ' ELSE UPPER(APLICAINTERES) END)  LIKE UPPER( '%' || :APLICAINTERES || '%')  AND (CASE WHEN PRIORIDAD IS NULL THEN ' ' ELSE UPPER(PRIORIDAD) END)  LIKE UPPER( '%' || :PRIORIDAD || '%')  AND (CASE WHEN MINIMO IS NULL THEN ' ' ELSE UPPER(MINIMO) END)  LIKE UPPER( '%' || :MINIMO || '%')  AND (CASE WHEN MINIMO1 IS NULL THEN ' ' ELSE UPPER(MINIMO1) END)  LIKE UPPER( '%' || :MINIMO1 || '%')  AND (CASE WHEN ENCABEZADO IS NULL THEN ' ' ELSE UPPER(ENCABEZADO) END)  LIKE UPPER( '%' || :ENCABEZADO || '%')  AND (CASE WHEN ESCAPITALVIGENCIA IS NULL THEN ' ' ELSE UPPER(ESCAPITALVIGENCIA) END)  LIKE UPPER( '%' || :ESCAPITALVIGENCIA || '%')  AND (CASE WHEN ESINTERESVIGENCIA IS NULL THEN ' ' ELSE UPPER(ESINTERESVIGENCIA) END)  LIKE UPPER( '%' || :ESINTERESVIGENCIA || '%')  AND (CASE WHEN VIGANT IS NULL THEN ' ' ELSE UPPER(VIGANT) END)  LIKE UPPER( '%' || :VIGANT || '%')  AND (CASE WHEN VIGDFR IS NULL THEN ' ' ELSE UPPER(VIGDFR) END)  LIKE UPPER( '%' || :VIGDFR || '%')  AND (CASE WHEN VER_RESOL IS NULL THEN ' ' ELSE UPPER(VER_RESOL) END)  LIKE UPPER( '%' || :VER_RESOL || '%')  AND (CASE WHEN ESCAPITALABACU IS NULL THEN ' ' ELSE UPPER(ESCAPITALABACU) END)  LIKE UPPER( '%' || :ESCAPITALABACU || '%')  AND (CASE WHEN ESINTERESABACU IS NULL THEN ' ' ELSE UPPER(ESINTERESABACU) END)  LIKE UPPER( '%' || :ESINTERESABACU || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="FORMULA" sqlType="STRING"/>
+		<param name="APLICAINTERES" sqlType="STRING"/>
+		<param name="PRIORIDAD" sqlType="STRING"/>
+		<param name="MINIMO" sqlType="STRING"/>
+		<param name="MINIMO1" sqlType="STRING"/>
+		<param name="ENCABEZADO" sqlType="STRING"/>
+		<param name="ESCAPITALVIGENCIA" sqlType="STRING"/>
+		<param name="ESINTERESVIGENCIA" sqlType="STRING"/>
+		<param name="VIGANT" sqlType="STRING"/>
+		<param name="VIGDFR" sqlType="STRING"/>
+		<param name="VER_RESOL" sqlType="STRING"/>
+		<param name="ESCAPITALABACU" sqlType="STRING"/>
+		<param name="ESINTERESABACU" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipconceptos/numero">
+		<call-query href="getIpconceptosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="FORMULA" query-param="FORMULA"/>
+			<with-param name="APLICAINTERES" query-param="APLICAINTERES"/>
+			<with-param name="PRIORIDAD" query-param="PRIORIDAD"/>
+			<with-param name="MINIMO" query-param="MINIMO"/>
+			<with-param name="MINIMO1" query-param="MINIMO1"/>
+			<with-param name="ENCABEZADO" query-param="ENCABEZADO"/>
+			<with-param name="ESCAPITALVIGENCIA" query-param="ESCAPITALVIGENCIA"/>
+			<with-param name="ESINTERESVIGENCIA" query-param="ESINTERESVIGENCIA"/>
+			<with-param name="VIGANT" query-param="VIGANT"/>
+			<with-param name="VIGDFR" query-param="VIGDFR"/>
+			<with-param name="VER_RESOL" query-param="VER_RESOL"/>
+			<with-param name="ESCAPITALABACU" query-param="ESCAPITALABACU"/>
+			<with-param name="ESINTERESABACU" query-param="ESINTERESABACU"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIpconceptos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_CONCEPTOS SET NOMBRE=:NOMBRE, FORMULA=:FORMULA, APLICAINTERES=:APLICAINTERES, PRIORIDAD=:PRIORIDAD, MINIMO=:MINIMO, MINIMO1=:MINIMO1, ENCABEZADO=:ENCABEZADO, ESCAPITALVIGENCIA=:ESCAPITALVIGENCIA, ESINTERESVIGENCIA=:ESINTERESVIGENCIA, VIGANT=:VIGANT, VIGDFR=:VIGDFR, VER_RESOL=:VER_RESOL, ESCAPITALABACU=:ESCAPITALABACU, ESINTERESABACU=:ESINTERESABACU, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE IP_CONCEPTOS.COMPANIA= :KEY_COMPANIA AND IP_CONCEPTOS.ANO= :KEY_ANO AND IP_CONCEPTOS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="FORMULA" sqlType="STRING"/>
+		<param name="APLICAINTERES" sqlType="STRING"/>
+		<param name="PRIORIDAD" sqlType="STRING"/>
+		<param name="MINIMO" sqlType="STRING"/>
+		<param name="MINIMO1" sqlType="STRING"/>
+		<param name="ENCABEZADO" sqlType="STRING"/>
+		<param name="ESCAPITALVIGENCIA" sqlType="STRING"/>
+		<param name="ESINTERESVIGENCIA" sqlType="STRING"/>
+		<param name="VIGANT" sqlType="STRING"/>
+		<param name="VIGDFR" sqlType="STRING"/>
+		<param name="VER_RESOL" sqlType="STRING"/>
+		<param name="ESCAPITALABACU" sqlType="STRING"/>
+		<param name="ESINTERESABACU" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ipconceptos">
+		<call-query href="updateIpconceptos">
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="FORMULA" query-param="FORMULA"/>
+			<with-param name="APLICAINTERES" query-param="APLICAINTERES"/>
+			<with-param name="PRIORIDAD" query-param="PRIORIDAD"/>
+			<with-param name="MINIMO" query-param="MINIMO"/>
+			<with-param name="MINIMO1" query-param="MINIMO1"/>
+			<with-param name="ENCABEZADO" query-param="ENCABEZADO"/>
+			<with-param name="ESCAPITALVIGENCIA" query-param="ESCAPITALVIGENCIA"/>
+			<with-param name="ESINTERESVIGENCIA" query-param="ESINTERESVIGENCIA"/>
+			<with-param name="VIGANT" query-param="VIGANT"/>
+			<with-param name="VIGDFR" query-param="VIGDFR"/>
+			<with-param name="VER_RESOL" query-param="VER_RESOL"/>
+			<with-param name="ESCAPITALABACU" query-param="ESCAPITALABACU"/>
+			<with-param name="ESINTERESABACU" query-param="ESINTERESABACU"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertIpconceptosPrepararAnioSiguiente" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_CONCEPTOS   (COMPANIA,ANO,CODIGO,NOMBRE,VALOR,SUMAORESTA,PORCENTAJE,CAUSACIONDB,CAUSACIONCR,RECAUDODB,TABLAAMODIFICAR,CAMPOAMODIFICAR,RECAUDOCR,FORMULA_COPIA,MINIMO,MINIMO1,APLICAINTERES,PRIORIDAD,INFORMATIVO,ESCAPITALVIGENCIA,ESINTERESVIGENCIA,PRORATIAR,ENCABEZADO,FORMULA,VIGANT,VIGDFR,VERINF_TOTALCERO,CAUSACIONDBNULA,CAUSACIONCRNULA,VER_RESOL,FUENTE,CTA_CRD_SUPERNUM,CTA_DBT_SUPERNUM,PRIORIDAD_ABON_EN_ACU,COD_CENTRO_COSTO,ESCAPITALABACU,ESINTERESABACU,NIVEL,FORMULA1,DATE_CREATED,CREATED_BY) SELECT IP_CONCEPTOS.COMPANIA,:ANIOFINAL,IP_CONCEPTOS.CODIGO,IP_CONCEPTOS.NOMBRE,VALOR,SUMAORESTA,PORCENTAJE,CAUSACIONDB,CAUSACIONCR,PLAN_CONTABLE.CODIGO,TABLAAMODIFICAR,CAMPOAMODIFICAR,P1.CODIGO,FORMULA_COPIA,MINIMO,MINIMO1,APLICAINTERES,PRIORIDAD,INFORMATIVO,ESCAPITALVIGENCIA,ESINTERESVIGENCIA,PRORATIAR,ENCABEZADO,FORMULA,VIGANT,VIGDFR,VERINF_TOTALCERO,CAUSACIONDBNULA,CAUSACIONCRNULA,VER_RESOL,IP_CONCEPTOS.FUENTE,CTA_CRD_SUPERNUM,CTA_DBT_SUPERNUM,PRIORIDAD_ABON_EN_ACU,COD_CENTRO_COSTO,ESCAPITALABACU,ESINTERESABACU,NIVEL,FORMULA1,SYSDATE,:CREATED_BY FROM IP_CONCEPTOS LEFT JOIN PLAN_CONTABLE ON IP_CONCEPTOS.COMPANIA   = PLAN_CONTABLE.COMPANIA AND IP_CONCEPTOS.ANO       = :ANIOFINAL AND IP_CONCEPTOS.RECAUDOCR = PLAN_CONTABLE.CODIGO LEFT JOIN PLAN_CONTABLE P1 ON IP_CONCEPTOS.COMPANIA   = P1.COMPANIA AND IP_CONCEPTOS.ANO       = :ANIOFINAL AND IP_CONCEPTOS.RECAUDODB = P1.CODIGO WHERE IP_CONCEPTOS.ANO     = :ANIOINICIAL AND IP_CONCEPTOS.COMPANIA = :COMPANIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ANIOFINAL" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="ANIOINICIAL" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="ipconceptos/prepararaniosiguiente">
+		<call-query href="insertIpconceptosPrepararAnioSiguiente">
+			<with-param name="ANIOFINAL" query-param="ANIOFINAL"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="ANIOINICIAL" query-param="ANIOINICIAL"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpconceptosPagCodigoYNombrePorCompaniaYAnioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_CONCEPTOS.COMPANIA, IP_CONCEPTOS.ANO, IP_CONCEPTOS.CODIGO, IP_CONCEPTOS.NOMBRE  FROM IP_CONCEPTOS WHERE IP_CONCEPTOS.COMPANIA = :COMPANIA AND IP_CONCEPTOS.ANO = :ANO ORDER BY IP_CONCEPTOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ipconceptos/codigoynombreporcompaniayanio/pag">
+		<call-query href="getIpconceptosPagCodigoYNombrePorCompaniaYAnioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpconceptosNumCodigoYNombrePorCompaniaYAnioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_CONCEPTOS.COMPANIA, IP_CONCEPTOS.ANO, IP_CONCEPTOS.CODIGO, IP_CONCEPTOS.NOMBRE  FROM IP_CONCEPTOS WHERE IP_CONCEPTOS.COMPANIA = :COMPANIA AND IP_CONCEPTOS.ANO = :ANO ORDER BY IP_CONCEPTOS.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipconceptos/codigoynombreporcompaniayanio/num">
+		<call-query href="getIpconceptosNumCodigoYNombrePorCompaniaYAnioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getIpconceptosNomconceptosexcedentesporcobrarQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO, INITCAP(NOMBRE) NOMBRE  FROM IP_CONCEPTOS WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND ( CODIGO BETWEEN 1 AND 4 OR CODIGO BETWEEN 13 AND 20)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ipconceptos/nomconceptosexcedentesporcobrar">
+		<call-query href="getIpconceptosNomconceptosexcedentesporcobrarQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+
+</data>

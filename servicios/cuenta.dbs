@@ -1,0 +1,46 @@
+<data name="cuenta" transports="http https local">
+	<config enableOData="false" id="sysmanirisst">
+		<property name="carbon_datasource_name">SYSMANIRISST</property>
+	</config>
+	<query id="getDatosAutenticacion"  useConfig="sysmanirisst">
+		<sql>SELECT  DISTINCT U.CODIGO NOMBRELARGO,U.NOMBRE1 CARGO,U.APELLIDO1 DEPENDENCIA,U.ESTADO  FROM USUARIO U INNER JOIN USUARIO_D UD ON U.CODIGO =UD.USUARIO INNER JOIN GRUPO_COMPANIA GC ON UD.GRUPO =GC.GRUPO WHERE GC.COMPANIA =:compania AND U.CODIGO =:usuario AND U.ESTADO ='A' AND U.PASSWORD = UPPER(PCK_SYSMAN_UTL.FC_ENCRIPTARMD5(:password))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"nombre":"$NOMBRELARGO","cargo":"$CARGO","dependencia":"$DEPENDENCIA","estado":"$ESTADO"}]}}		</result>
+		<param name="compania" sqlType="STRING"/>
+		<param name="usuario" sqlType="STRING"/>
+		<param name="password" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="autenticacion">
+		<call-query href="getDatosAutenticacion">
+			<with-param name="compania" query-param="compania"/>
+			<with-param name="usuario" query-param="usuario"/>
+			<with-param name="password" query-param="password"/>
+
+		</call-query>
+	</resource>
+	<query id="getCuentaCorreousuarioQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  CORREOELECTRONICO  FROM USUARIO WHERE CODIGO = :CODIGO AND TIPOCUENTA IN('U')</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CORREOELECTRONICO":"$CORREOELECTRONICO"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cuenta/correousuario">
+		<call-query href="getCuentaCorreousuarioQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCuentaNivelusuarioQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  TO_NUMBER(NIVEL_USUARIO) AS NIVEL_USUARIO   FROM USUARIO WHERE CODIGO=:USUARIO_INTERNO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NIVEL_USUARIO":"$NIVEL_USUARIO(type:integer)"}]}}		</result>
+		<param name="USUARIO_INTERNO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cuenta/nivelusuario">
+		<call-query href="getCuentaNivelusuarioQuery">
+			<with-param name="USUARIO_INTERNO" query-param="USUARIO_INTERNO"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,128 @@
+﻿<data name="saludpensionados" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertSaludpensionados" keyColumns="COMPANIA,CODIGO,ANO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SALUD_PENSIONADOS (COMPANIA, CODIGO, ANO, LIMITE_INFERIOR, LIMITE_SUPERIOR, PORCENTAJE_MAX, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :ANO, :LIMITE_INFERIOR, :LIMITE_SUPERIOR, :PORCENTAJE_MAX, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO(type:integer)","KEY_ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param defaultValue="0" name="LIMITE_INFERIOR" sqlType="STRING"/>
+		<param defaultValue="0" name="LIMITE_SUPERIOR" sqlType="STRING"/>
+		<param defaultValue="0" name="PORCENTAJE_MAX" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="saludpensionados">
+		<call-query href="insertSaludpensionados">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="LIMITE_INFERIOR" query-param="LIMITE_INFERIOR"/>
+			<with-param name="LIMITE_SUPERIOR" query-param="LIMITE_SUPERIOR"/>
+			<with-param name="PORCENTAJE_MAX" query-param="PORCENTAJE_MAX"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSaludpensionados" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SALUD_PENSIONADOS WHERE SALUD_PENSIONADOS.COMPANIA= :KEY_COMPANIA AND SALUD_PENSIONADOS.CODIGO= :KEY_CODIGO AND SALUD_PENSIONADOS.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="INTEGER"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="saludpensionados">
+		<call-query href="deleteSaludpensionados">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSaludpensionadosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, CODIGO, ANO, LIMITE_INFERIOR, LIMITE_SUPERIOR, PORCENTAJE_MAX FROM SALUD_PENSIONADOS WHERE COMPANIA = :COMPANIA AND ANO = :ANO ORDER BY LIMITE_INFERIOR, LIMITE_SUPERIOR) INI WHERE (CASE WHEN LIMITE_INFERIOR IS NULL THEN ' ' ELSE UPPER(LIMITE_INFERIOR) END) LIKE UPPER(CONCAT(CONCAT('%',:LIMITE_INFERIOR), '%')) AND (CASE WHEN LIMITE_SUPERIOR IS NULL THEN ' ' ELSE UPPER(LIMITE_SUPERIOR) END) LIKE UPPER(CONCAT(CONCAT('%',:LIMITE_SUPERIOR), '%')) AND (CASE WHEN PORCENTAJE_MAX IS NULL THEN ' ' ELSE UPPER(PORCENTAJE_MAX) END) LIKE UPPER(CONCAT(CONCAT('%',:PORCENTAJE_MAX), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO(type:integer)","ANO":"$ANO(type:integer)","LIMITE_INFERIOR":"$LIMITE_INFERIOR","LIMITE_SUPERIOR":"$LIMITE_SUPERIOR","PORCENTAJE_MAX":"$PORCENTAJE_MAX"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="LIMITE_INFERIOR" sqlType="STRING"/>
+		<param name="LIMITE_SUPERIOR" sqlType="STRING"/>
+		<param name="PORCENTAJE_MAX" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="saludpensionados">
+		<call-query href="getSaludpensionadosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="LIMITE_INFERIOR" query-param="LIMITE_INFERIOR"/>
+			<with-param name="LIMITE_SUPERIOR" query-param="LIMITE_SUPERIOR"/>
+			<with-param name="PORCENTAJE_MAX" query-param="PORCENTAJE_MAX"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSaludpensionadosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, CODIGO, ANO, LIMITE_INFERIOR, LIMITE_SUPERIOR, PORCENTAJE_MAX FROM SALUD_PENSIONADOS WHERE COMPANIA = :COMPANIA AND ANO = :ANO ORDER BY LIMITE_INFERIOR, LIMITE_SUPERIOR) INI WHERE (CASE WHEN LIMITE_INFERIOR IS NULL THEN ' ' ELSE UPPER(LIMITE_INFERIOR) END) LIKE UPPER(CONCAT(CONCAT('%',:LIMITE_INFERIOR), '%')) AND (CASE WHEN LIMITE_SUPERIOR IS NULL THEN ' ' ELSE UPPER(LIMITE_SUPERIOR) END) LIKE UPPER(CONCAT(CONCAT('%',:LIMITE_SUPERIOR), '%')) AND (CASE WHEN PORCENTAJE_MAX IS NULL THEN ' ' ELSE UPPER(PORCENTAJE_MAX) END) LIKE UPPER(CONCAT(CONCAT('%',:PORCENTAJE_MAX), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="LIMITE_INFERIOR" sqlType="STRING"/>
+		<param name="LIMITE_SUPERIOR" sqlType="STRING"/>
+		<param name="PORCENTAJE_MAX" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="saludpensionados/numero">
+		<call-query href="getSaludpensionadosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="LIMITE_INFERIOR" query-param="LIMITE_INFERIOR"/>
+			<with-param name="LIMITE_SUPERIOR" query-param="LIMITE_SUPERIOR"/>
+			<with-param name="PORCENTAJE_MAX" query-param="PORCENTAJE_MAX"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSaludpensionados" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SALUD_PENSIONADOS SET CODIGO=:CODIGO, ANO=:ANO, LIMITE_INFERIOR=:LIMITE_INFERIOR, LIMITE_SUPERIOR=:LIMITE_SUPERIOR, PORCENTAJE_MAX=:PORCENTAJE_MAX, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SALUD_PENSIONADOS.COMPANIA= :KEY_COMPANIA AND SALUD_PENSIONADOS.CODIGO= :KEY_CODIGO AND SALUD_PENSIONADOS.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="LIMITE_INFERIOR" sqlType="STRING"/>
+		<param name="LIMITE_SUPERIOR" sqlType="STRING"/>
+		<param name="PORCENTAJE_MAX" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="saludpensionados">
+		<call-query href="updateSaludpensionados">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="LIMITE_INFERIOR" query-param="LIMITE_INFERIOR"/>
+			<with-param name="LIMITE_SUPERIOR" query-param="LIMITE_SUPERIOR"/>
+			<with-param name="PORCENTAJE_MAX" query-param="PORCENTAJE_MAX"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,157 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html >
+
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui">
+
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{loginBean.validarIdentificacion}" />
+		<content>
+		<section class="radius">
+			<div class="row display">
+				<div class="five columns"
+					style="padding-left: 0px; padding-right: 0;">
+					<div class="alert-box alert" id="div_Error" style="display: none;">
+						El nombre de usuario o la contraseña ingresados no son correctos.</div>
+					<section class="radius" style="margin: 0px;">
+						<h:form style="margin: 0px;">
+							<p:growl id="alert" showDetail="true" sticky="false"
+								widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+							<div class="row">
+								<div class="three  columns">
+									<label class="right inline bold" id="lbUser">Usuario:</label>
+								</div>
+								<div class="nine   columns">
+									<h:inputText id="login_username" class="twelve" required="true"
+										label="Usuario" value="#{loginBean.usuario}"
+										pt:placeholder="Nombre de usuario">
+										<p:ajax event="change" listener="#{loginBean.cambiarUsuario}"
+											update="segundContra login_compania" />
+									</h:inputText>
+									<input type="hidden" name="metodo" value="1" />
+								</div>
+							</div>
+							<div class="row">
+								<div class="three  columns">
+									<label class="right inline bold" id="lbPass">Contraseña:</label>
+								</div>
+								<div class="nine  columns">
+									<h:inputSecret id="login_password" required="true"
+										label="Contraseña" pt:placeholder="Contraseña de usuario"
+										value="#{loginBean.contrasenia}" class="twelve">
+										<p:ajax event="change"
+											listener="#{loginBean.cambiarContrasena}"
+											update="segundContra" />
+									</h:inputSecret>
+									<small class="error" id="login_errorP" style="display: none;">Por
+										favor ingrese su contraseña</small>
+								</div>
+							</div>
+							<div class="row">
+								<div class="three  columns">
+									<label class="right inline bold">Compañia:</label>
+								</div>
+								<div class="nine  columns">
+									<h:selectOneMenu id="login_compania" required="true"
+										label="Compañia" value="#{loginBean.compania}" class="twelve">
+										<p:ajax listener="#{loginBean.cambiarCompania}"
+											update="segundContra textoCompania @([id$=terminos]) @([id$=btnInicio]) @([id$=CKADS]) @([id$=aTratamiento])" />
+										<f:selectItem />
+										<f:selectItems value="#{loginBean.companias }" var="regc"
+											itemLabel="#{regc.campos['NOMBRE']}"
+											itemValue="#{regc.campos['CODIGO']}" />
+									</h:selectOneMenu>
+									<small class="error" id="login_errorP" style="display: none;">Por
+										favor seleccione la compañia</small>
+								</div>
+							</div>
+
+							<h:panelGroup layout="block" class="row" id="segundContra"
+								widgetVar="segundContra">
+								<h:panelGroup class="twelve columns"
+									rendered="#{loginBean.visibleSegundaContrasena}">
+									<div class="three  columns"></div>
+									<div class="nine columns">
+										<div class="seven  columns">
+											<h:commandButton class="alert button"
+												style="display: block; width:175px; margin-left:-9px; height:30px; padding:0px;font-size: 13px"
+												value="Solicitar Contraseña"
+												actionListener="#{loginBean.enviarContrasena}">
+
+											</h:commandButton>
+										</div>
+										<div class="five columns">
+											<h:inputSecret id="segundaContrasena"
+												style="margin-left:-40px; width:189px; margin-top:4px"
+												pt:placeholder="Contraseña de usuario"
+												value="#{loginBean.contraseniaDos}" class="twelve" />
+										</div>
+									</div>
+								</h:panelGroup>
+							</h:panelGroup>
+							<div class="row">
+								<div class="three  columns"></div>
+
+								<div class="nine  columns">
+									<h:messages infoStyle="color: blue;list-style:none;"
+										errorStyle="color:red;list-style:none;" />
+										
+										<h:commandButton class="alert button" id="btnInicio"
+											style="display: block; width: 100%; margin-top:5px;"
+											disabled="#{loginBean.disBtnInicio}"
+											update="@([id$=alert])" value="Iniciar sesión >>"
+											action="#{loginBean.login()}" />
+								</div>
+							</div>	
+							
+							
+					<h:panelGroup layout="block" class="row" id="terminos" 
+              						style="padding-top: 10px; display:#{loginBean.visibleTerminos?'block':'none'} ">
+						<div class="three  columns">
+							<div style="padding-top: 15px; text-align: end;">
+								<p:selectBooleanCheckbox id="CKADS" widgetVar="CKADS"
+											value="#{loginBean.aceptaTerminos}"
+											tabindex="15">
+											<p:ajax process="@this" listener="#{loginBean.cambiarAceptaTerminos()}"
+											update="@([id$=btnInicio])"/>
+								</p:selectBooleanCheckbox>
+							</div>
+						</div>
+						<div class="nine  columns">
+													
+							<p style="margin:0; padding:5px;"> 
+								"He leído y acepto el tratamiento de datos personales a 
+								<b><h:outputText id="textoCompania" value="#{loginBean.nombreCompania}" />
+								</b>". 
+								<h:outputLink value="#{loginBean.urlTratamiento}" target="_blank" id="aTratamiento">
+								    Consulte <b style="color: #005dac !important; text-decoration: underline !important;">aquí</b> la política de tratamiento de datos personales
+								</h:outputLink>
+							</p>
+						</div>
+					</h:panelGroup>
+								
+					
+						</h:form>
+					</section>
+					
+					
+				</div>
+				<div class="seven columns">
+					<section class="radius" style="margin: 0px; background: #F4F4F4;">
+						<!--Imagenes					-->
+						<label>#{loginBean.tituloSeccionLogin}</label>
+						<!--Imagenes					-->
+					</section>
+
+				</div>
+			</div>
+
+		</section>
+		</content>
+	</ui:define>
+</ui:composition>

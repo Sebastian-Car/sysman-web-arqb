@@ -1,0 +1,589 @@
+﻿<data name="vias" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getViasPagTodosPorSectorQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_VIA, NOMBRE, SECTOR, NO_TRAMO, COD_INVENTARIO  FROM VIAS WHERE COMPANIA = :COMPANIA ORDER BY ID_VIA) WHERE (CASE WHEN ID_VIA IS NULL THEN ' ' ELSE UPPER(ID_VIA) END)  LIKE UPPER(:ID_VIA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_VIA":"$ID_VIA","NOMBRE":"$NOMBRE","SECTOR":"$SECTOR","NO_TRAMO":"$NO_TRAMO","COD_INVENTARIO":"$COD_INVENTARIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_VIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vias/todosporsector/pag">
+		<call-query href="getViasPagTodosPorSectorQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_VIA" query-param="ID_VIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasNumTodosPorSectorQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_VIA, NOMBRE, SECTOR, NO_TRAMO, COD_INVENTARIO  FROM VIAS WHERE COMPANIA = :COMPANIA ORDER BY ID_VIA) WHERE (CASE WHEN ID_VIA IS NULL THEN ' ' ELSE UPPER(ID_VIA) END)  LIKE UPPER(:ID_VIA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_VIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vias/todosporsector/num">
+		<call-query href="getViasNumTodosPorSectorQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_VIA" query-param="ID_VIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateViasNombre" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE VIAS SET NOMBRE = :NOMBRE,  DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE COMPANIA = :COMPANIA AND ID_VIA = :VIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="VIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="vias/nombre">
+		<call-query href="updateViasNombre">
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="VIA" query-param="VIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasPagTodosOrdenadosPorSerie_placaInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_VIA ID, SERIE_PLACA,NOMBRE  FROM VIAS WHERE COMPANIA = :COMPANIA ORDER BY SERIE_PLACA) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER(:SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","SERIE_PLACA":"$SERIE_PLACA(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vias/todosordenadosporserie_placainicial/pag">
+		<call-query href="getViasPagTodosOrdenadosPorSerie_placaInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasNumTodosOrdenadosPorSerie_placaInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_VIA ID, SERIE_PLACA,NOMBRE  FROM VIAS WHERE COMPANIA = :COMPANIA ORDER BY SERIE_PLACA) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vias/todosordenadosporserie_placainicial/num">
+		<call-query href="getViasNumTodosOrdenadosPorSerie_placaInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasPagTodosOrdenadosPorNombreInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_VIA ID, SERIE_PLACA,NOMBRE  FROM VIAS WHERE COMPANIA = :COMPANIA ORDER BY NOMBRE) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER(:SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","SERIE_PLACA":"$SERIE_PLACA(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vias/todosordenadospornombreinicial/pag">
+		<call-query href="getViasPagTodosOrdenadosPorNombreInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasNumTodosOrdenadosPorNombreInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_VIA ID, SERIE_PLACA,NOMBRE  FROM VIAS WHERE COMPANIA = :COMPANIA ORDER BY NOMBRE) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vias/todosordenadospornombreinicial/num">
+		<call-query href="getViasNumTodosOrdenadosPorNombreInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasPagTodosOrdenadosPorId_viaInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_VIA ID, SERIE_PLACA,NOMBRE  FROM VIAS WHERE COMPANIA = :COMPANIA ORDER BY ID_VIA) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER(:SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","SERIE_PLACA":"$SERIE_PLACA(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vias/todosordenadosporid_viainicial/pag">
+		<call-query href="getViasPagTodosOrdenadosPorId_viaInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasNumTodosOrdenadosPorId_viaInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_VIA ID, SERIE_PLACA,NOMBRE  FROM VIAS WHERE COMPANIA = :COMPANIA ORDER BY ID_VIA) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vias/todosordenadosporid_viainicial/num">
+		<call-query href="getViasNumTodosOrdenadosPorId_viaInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertVias" keyColumns="COMPANIA,ID_VIA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO VIAS (COMPANIA, ID_VIA, NOMBRE, CLASE_VIA, ANCHO_VIA, NO_TRAMO, ESTADO, INICIO_TRAMO, FIN_TRAMO, SECTOR, LONG_SARNEL_SEPDOR, COD_FOTO, RUTA_FOTO, COD_PLANO, RUTA_PLANO, SERIE_PLACA, COD_INVENTARIO, RESPONSABLE, SUCURSAL, OBSERVACIONES, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ID_VIA, :NOMBRE, :CLASE_VIA, :ANCHO_VIA, :NO_TRAMO, :ESTADO, :INICIO_TRAMO, :FIN_TRAMO, :SECTOR, :LONG_SARNEL_SEPDOR, :COD_FOTO, :RUTA_FOTO, :COD_PLANO, :RUTA_PLANO, :SERIE_PLACA, :COD_INVENTARIO, :RESPONSABLE, :SUCURSAL, :OBSERVACIONES, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_VIA":"$ID_VIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_VIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CLASE_VIA" sqlType="STRING"/>
+		<param defaultValue="0" name="ANCHO_VIA" sqlType="STRING"/>
+		<param name="NO_TRAMO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="INICIO_TRAMO" sqlType="STRING"/>
+		<param defaultValue="" name="FIN_TRAMO" sqlType="STRING"/>
+		<param name="SECTOR" sqlType="STRING"/>
+		<param defaultValue="0" name="LONG_SARNEL_SEPDOR" sqlType="STRING"/>
+		<param defaultValue="" name="COD_FOTO" sqlType="STRING"/>
+		<param defaultValue="" name="RUTA_FOTO" sqlType="STRING"/>
+		<param defaultValue="" name="COD_PLANO" sqlType="STRING"/>
+		<param defaultValue="" name="RUTA_PLANO" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="COD_INVENTARIO" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="RESPONSABLE" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="vias">
+		<call-query href="insertVias">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_VIA" query-param="ID_VIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CLASE_VIA" query-param="CLASE_VIA"/>
+			<with-param name="ANCHO_VIA" query-param="ANCHO_VIA"/>
+			<with-param name="NO_TRAMO" query-param="NO_TRAMO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="INICIO_TRAMO" query-param="INICIO_TRAMO"/>
+			<with-param name="FIN_TRAMO" query-param="FIN_TRAMO"/>
+			<with-param name="SECTOR" query-param="SECTOR"/>
+			<with-param name="LONG_SARNEL_SEPDOR" query-param="LONG_SARNEL_SEPDOR"/>
+			<with-param name="COD_FOTO" query-param="COD_FOTO"/>
+			<with-param name="RUTA_FOTO" query-param="RUTA_FOTO"/>
+			<with-param name="COD_PLANO" query-param="COD_PLANO"/>
+			<with-param name="RUTA_PLANO" query-param="RUTA_PLANO"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="COD_INVENTARIO" query-param="COD_INVENTARIO"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteVias" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM VIAS WHERE VIAS.COMPANIA= :KEY_COMPANIA AND VIAS.ID_VIA= :KEY_ID_VIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_VIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="vias">
+		<call-query href="deleteVias">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_VIA" query-param="KEY_ID_VIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  VIAS.COMPANIA, VIAS.ID_VIA, VIAS.NOMBRE, TIPO_VIA.DESCRIPCION CLASE, ANCHO_VIA, SECTOR_INMUEBLE.DESCRIPCION SECTOR, ESTADO_VIA.DESCRIPCION  FROM VIAS INNER JOIN ESTADO_VIA ON VIAS.COMPANIA = ESTADO_VIA.COMPANIA AND VIAS.ESTADO = ESTADO_VIA.CODIGO_ESTADO INNER JOIN TIPO_VIA ON VIAS.COMPANIA = TIPO_VIA.COMPANIA AND VIAS.CLASE_VIA = TIPO_VIA.CODIGO_TIPO INNER JOIN SECTOR_INMUEBLE ON VIAS.COMPANIA = SECTOR_INMUEBLE.COMPANIA AND VIAS.SECTOR = SECTOR_INMUEBLE.CODIGO_SECTOR WHERE VIAS.COMPANIA = :COMPANIA ORDER BY VIAS.ID_VIA) WHERE (CASE WHEN ID_VIA IS NULL THEN ' ' ELSE UPPER(ID_VIA) END)  LIKE UPPER(:ID_VIA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CLASE IS NULL THEN ' ' ELSE UPPER(CLASE) END)  LIKE UPPER( '%' || :CLASE || '%')  AND (CASE WHEN ANCHO_VIA IS NULL THEN ' ' ELSE UPPER(ANCHO_VIA) END)  LIKE UPPER(:ANCHO_VIA || '%')  AND (CASE WHEN SECTOR IS NULL THEN ' ' ELSE UPPER(SECTOR) END)  LIKE UPPER( '%' || :SECTOR || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_VIA":"$ID_VIA","NOMBRE":"$NOMBRE","CLASE":"$CLASE","ANCHO_VIA":"$ANCHO_VIA","SECTOR":"$SECTOR","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_VIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="ANCHO_VIA" sqlType="STRING"/>
+		<param name="SECTOR" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vias">
+		<call-query href="getViasPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_VIA" query-param="ID_VIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="ANCHO_VIA" query-param="ANCHO_VIA"/>
+			<with-param name="SECTOR" query-param="SECTOR"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  VIAS.COMPANIA, VIAS.ID_VIA, VIAS.NOMBRE, TIPO_VIA.DESCRIPCION CLASE, ANCHO_VIA, SECTOR_INMUEBLE.DESCRIPCION SECTOR, ESTADO_VIA.DESCRIPCION  FROM VIAS INNER JOIN ESTADO_VIA ON VIAS.COMPANIA = ESTADO_VIA.COMPANIA AND VIAS.ESTADO = ESTADO_VIA.CODIGO_ESTADO INNER JOIN TIPO_VIA ON VIAS.COMPANIA = TIPO_VIA.COMPANIA AND VIAS.CLASE_VIA = TIPO_VIA.CODIGO_TIPO INNER JOIN SECTOR_INMUEBLE ON VIAS.COMPANIA = SECTOR_INMUEBLE.COMPANIA AND VIAS.SECTOR = SECTOR_INMUEBLE.CODIGO_SECTOR WHERE VIAS.COMPANIA = :COMPANIA ORDER BY VIAS.ID_VIA) WHERE (CASE WHEN ID_VIA IS NULL THEN ' ' ELSE UPPER(ID_VIA) END)  LIKE UPPER(:ID_VIA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CLASE IS NULL THEN ' ' ELSE UPPER(CLASE) END)  LIKE UPPER( '%' || :CLASE || '%')  AND (CASE WHEN ANCHO_VIA IS NULL THEN ' ' ELSE UPPER(ANCHO_VIA) END)  LIKE UPPER( '%' || :ANCHO_VIA || '%')  AND (CASE WHEN SECTOR IS NULL THEN ' ' ELSE UPPER(SECTOR) END)  LIKE UPPER( '%' || :SECTOR || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_VIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="ANCHO_VIA" sqlType="STRING"/>
+		<param name="SECTOR" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vias/numero">
+		<call-query href="getViasNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_VIA" query-param="ID_VIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="ANCHO_VIA" query-param="ANCHO_VIA"/>
+			<with-param name="SECTOR" query-param="SECTOR"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, ID_VIA, NOMBRE, CLASE_VIA, ANCHO_VIA, NO_TRAMO, ESTADO, INICIO_TRAMO, FIN_TRAMO, SECTOR, LONG_SARNEL_SEPDOR, COD_FOTO, RUTA_FOTO, COD_PLANO, RUTA_PLANO, SERIE_PLACA, COD_INVENTARIO, RESPONSABLE, SUCURSAL, OBSERVACIONES, MODIFIED_BY, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM VIAS WHERE VIAS.COMPANIA= :KEY_COMPANIA AND VIAS.ID_VIA= :KEY_ID_VIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_VIA":"$ID_VIA","NOMBRE":"$NOMBRE","CLASE_VIA":"$CLASE_VIA","ANCHO_VIA":"$ANCHO_VIA","NO_TRAMO":"$NO_TRAMO","ESTADO":"$ESTADO","INICIO_TRAMO":"$INICIO_TRAMO","FIN_TRAMO":"$FIN_TRAMO","SECTOR":"$SECTOR","LONG_SARNEL_SEPDOR":"$LONG_SARNEL_SEPDOR","COD_FOTO":"$COD_FOTO","RUTA_FOTO":"$RUTA_FOTO","COD_PLANO":"$COD_PLANO","RUTA_PLANO":"$RUTA_PLANO","SERIE_PLACA":"$SERIE_PLACA(type:long)","COD_INVENTARIO":"$COD_INVENTARIO","RESPONSABLE":"$RESPONSABLE","SUCURSAL":"$SUCURSAL","OBSERVACIONES":"$OBSERVACIONES","MODIFIED_BY":"$MODIFIED_BY","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_VIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vias/data">
+		<call-query href="getViasRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_VIA" query-param="KEY_ID_VIA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateVias" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE VIAS SET NOMBRE=:NOMBRE, CLASE_VIA=:CLASE_VIA, ANCHO_VIA=:ANCHO_VIA, NO_TRAMO=:NO_TRAMO, ESTADO=:ESTADO, INICIO_TRAMO=:INICIO_TRAMO, FIN_TRAMO=:FIN_TRAMO, SECTOR=:SECTOR, LONG_SARNEL_SEPDOR=:LONG_SARNEL_SEPDOR, COD_FOTO=:COD_FOTO, RUTA_FOTO=:RUTA_FOTO, COD_PLANO=:COD_PLANO, RUTA_PLANO=:RUTA_PLANO, SERIE_PLACA=:SERIE_PLACA, COD_INVENTARIO=:COD_INVENTARIO, RESPONSABLE=:RESPONSABLE, SUCURSAL=:SUCURSAL, OBSERVACIONES=:OBSERVACIONES, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE VIAS.COMPANIA= :KEY_COMPANIA AND VIAS.ID_VIA= :KEY_ID_VIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CLASE_VIA" sqlType="STRING"/>
+		<param name="ANCHO_VIA" sqlType="STRING"/>
+		<param name="NO_TRAMO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="INICIO_TRAMO" sqlType="STRING"/>
+		<param name="FIN_TRAMO" sqlType="STRING"/>
+		<param name="SECTOR" sqlType="STRING"/>
+		<param name="LONG_SARNEL_SEPDOR" sqlType="STRING"/>
+		<param name="COD_FOTO" sqlType="STRING"/>
+		<param name="RUTA_FOTO" sqlType="STRING"/>
+		<param name="COD_PLANO" sqlType="STRING"/>
+		<param name="RUTA_PLANO" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="COD_INVENTARIO" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_VIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="vias">
+		<call-query href="updateVias">
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CLASE_VIA" query-param="CLASE_VIA"/>
+			<with-param name="ANCHO_VIA" query-param="ANCHO_VIA"/>
+			<with-param name="NO_TRAMO" query-param="NO_TRAMO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="INICIO_TRAMO" query-param="INICIO_TRAMO"/>
+			<with-param name="FIN_TRAMO" query-param="FIN_TRAMO"/>
+			<with-param name="SECTOR" query-param="SECTOR"/>
+			<with-param name="LONG_SARNEL_SEPDOR" query-param="LONG_SARNEL_SEPDOR"/>
+			<with-param name="COD_FOTO" query-param="COD_FOTO"/>
+			<with-param name="RUTA_FOTO" query-param="RUTA_FOTO"/>
+			<with-param name="COD_PLANO" query-param="COD_PLANO"/>
+			<with-param name="RUTA_PLANO" query-param="RUTA_PLANO"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="COD_INVENTARIO" query-param="COD_INVENTARIO"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_VIA" query-param="KEY_ID_VIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasPagTodosOrdenadosPorSerie_placaFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_VIA ID, SERIE_PLACA,NOMBRE  FROM VIAS WHERE COMPANIA = :COMPANIA AND SERIE_PLACA &gt;= :ELEMENTOINICIAL ORDER BY SERIE_PLACA) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER(:SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","SERIE_PLACA":"$SERIE_PLACA(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTOINICIAL" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vias/todosordenadosporserie_placafinal/pag">
+		<call-query href="getViasPagTodosOrdenadosPorSerie_placaFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTOINICIAL" query-param="ELEMENTOINICIAL"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasNumTodosOrdenadosPorSerie_placaFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_VIA ID, SERIE_PLACA,NOMBRE  FROM VIAS WHERE COMPANIA = :COMPANIA AND SERIE_PLACA &gt;= :ELEMENTOINICIAL ORDER BY SERIE_PLACA) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTOINICIAL" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vias/todosordenadosporserie_placafinal/num">
+		<call-query href="getViasNumTodosOrdenadosPorSerie_placaFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTOINICIAL" query-param="ELEMENTOINICIAL"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasPagTodosOrdenadosPorNombreFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_VIA ID, SERIE_PLACA,NOMBRE  FROM VIAS WHERE COMPANIA = :COMPANIA AND NOMBRE &gt;= :ELEMENTOINICIAL ORDER BY NOMBRE) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER(:SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","SERIE_PLACA":"$SERIE_PLACA(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTOINICIAL" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vias/todosordenadospornombrefinal/pag">
+		<call-query href="getViasPagTodosOrdenadosPorNombreFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTOINICIAL" query-param="ELEMENTOINICIAL"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasNumTodosOrdenadosPorNombreFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_VIA ID, SERIE_PLACA,NOMBRE  FROM VIAS WHERE COMPANIA = :COMPANIA AND NOMBRE &gt;= :ELEMENTOINICIAL ORDER BY NOMBRE) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTOINICIAL" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vias/todosordenadospornombrefinal/num">
+		<call-query href="getViasNumTodosOrdenadosPorNombreFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTOINICIAL" query-param="ELEMENTOINICIAL"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasPagTodosOrdenadosPorId_vialFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_VIA ID, SERIE_PLACA,NOMBRE  FROM VIAS WHERE COMPANIA = :COMPANIA AND ID_VIA &gt;= :ELEMENTOINICIAL ORDER BY ID_VIA) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER(:SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","SERIE_PLACA":"$SERIE_PLACA(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTOINICIAL" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vias/todosordenadosporid_vialfinal/pag">
+		<call-query href="getViasPagTodosOrdenadosPorId_vialFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTOINICIAL" query-param="ELEMENTOINICIAL"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasNumTodosOrdenadosPorId_vialFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_VIA ID, SERIE_PLACA,NOMBRE  FROM VIAS WHERE COMPANIA = :COMPANIA AND ID_VIA &gt;= :ELEMENTOINICIAL ORDER BY ID_VIA) WHERE (CASE WHEN ID IS NULL THEN ' ' ELSE UPPER(ID) END)  LIKE UPPER(:ID || '%')  AND (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ELEMENTOINICIAL" sqlType="STRING"/>
+		<param name="ID" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vias/todosordenadosporid_vialfinal/num">
+		<call-query href="getViasNumTodosOrdenadosPorId_vialFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ELEMENTOINICIAL" query-param="ELEMENTOINICIAL"/>
+			<with-param name="ID" query-param="ID"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasPagTodosConElementoPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  VIAS.ID_VIA SELECCION , VIAS.NOMBRE , TIPO_VIA.DESCRIPCION , VIAS.SERIE_PLACA , VIAS.NO_TRAMO , DEVOLUTIVO.ELEMENTO ,(CASE DEVOLUTIVO.PLACAANULADA WHEN 0 THEN 'false' ELSE 'true' END) PLACAANULADA FROM VIAS INNER JOIN TIPO_VIA ON VIAS.COMPANIA = TIPO_VIA.COMPANIA AND VIAS.CLASE_VIA = TIPO_VIA.CODIGO_TIPO LEFT JOIN DEVOLUTIVO ON VIAS.COMPANIA = DEVOLUTIVO.COMPANIA AND VIAS.SERIE_PLACA = DEVOLUTIVO.SERIE WHERE VIAS.COMPANIA= :COMPANIA ORDER BY ID_VIA) WHERE (CASE WHEN SELECCION IS NULL THEN ' ' ELSE UPPER(SELECCION) END)  LIKE UPPER(:SELECCION || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SELECCION":"$SELECCION","NOMBRE":"$NOMBRE","DESCRIPCION":"$DESCRIPCION","SERIE_PLACA":"$SERIE_PLACA(type:long)","NO_TRAMO":"$NO_TRAMO","ELEMENTO":"$ELEMENTO","PLACAANULADA":"$PLACAANULADA(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SELECCION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vias/todosconelementoporcompania/pag">
+		<call-query href="getViasPagTodosConElementoPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SELECCION" query-param="SELECCION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasNumTodosConElementoPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  VIAS.ID_VIA SELECCION , VIAS.NOMBRE , TIPO_VIA.DESCRIPCION , VIAS.SERIE_PLACA , VIAS.NO_TRAMO , DEVOLUTIVO.ELEMENTO ,(CASE DEVOLUTIVO.PLACAANULADA WHEN 0 THEN 'false' ELSE 'true' END) PLACAANULADA FROM VIAS INNER JOIN TIPO_VIA ON VIAS.COMPANIA = TIPO_VIA.COMPANIA AND VIAS.CLASE_VIA = TIPO_VIA.CODIGO_TIPO LEFT JOIN DEVOLUTIVO ON VIAS.COMPANIA = DEVOLUTIVO.COMPANIA AND VIAS.SERIE_PLACA = DEVOLUTIVO.SERIE WHERE VIAS.COMPANIA= :COMPANIA ORDER BY ID_VIA) WHERE (CASE WHEN SELECCION IS NULL THEN ' ' ELSE UPPER(SELECCION) END)  LIKE UPPER(:SELECCION || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SELECCION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vias/todosconelementoporcompania/num">
+		<call-query href="getViasNumTodosConElementoPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SELECCION" query-param="SELECCION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasSoloNomterceroInnerTerceroPorIdviaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TERCERO.NOMBRE  FROM VIAS LEFT JOIN TERCERO ON VIAS.COMPANIA =TERCERO.COMPANIA AND VIAS.RESPONSABLE=TERCERO.NIT AND VIAS.SUCURSAL =TERCERO.SUCURSAL WHERE VIAS.COMPANIA = :COMPANIA AND VIAS.ID_VIA = :ID_VIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_VIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vias/solonomterceroinnerterceroporidvia">
+		<call-query href="getViasSoloNomterceroInnerTerceroPorIdviaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_VIA" query-param="ID_VIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasCantPorSerieplacaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(*) CUENTA  FROM VIAS WHERE COMPANIA = :COMPANIA AND SERIE_PLACA = :SERIE_PLACA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTA":"$CUENTA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vias/cantporserieplaca">
+		<call-query href="getViasCantPorSerieplacaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+
+		</call-query>
+	</resource>
+	<query id="getViasTodosPorCompaniaSeriePlacaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT 'X' AS x  FROM VIAS WHERE COMPANIA = :COMPANIA AND SERIE_PLACA = :SERIE_PLACA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"X":"$X"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vias/todosporcompaniaserieplaca">
+		<call-query href="getViasTodosPorCompaniaSeriePlacaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+
+		</call-query>
+	</resource>
+
+</data>

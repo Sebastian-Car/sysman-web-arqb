@@ -1,0 +1,48 @@
+﻿<data name="actividades" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getActividadesCodigoYNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT ACTIVIDAD.COD_ACTIVIDAD, ACTIVIDAD.NOMBRE  FROM ACTIVIDAD</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COD_ACTIVIDAD":"$COD_ACTIVIDAD(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="actividades/codigoynombre">
+		<call-query href="getActividadesCodigoYNombreQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getActividadesPagTodosPorActividadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT ACTIVIDAD.COD_ACTIVIDAD, ACTIVIDAD.NOMBRE  FROM ACTIVIDAD) WHERE (CASE WHEN COD_ACTIVIDAD IS NULL THEN ' ' ELSE UPPER(COD_ACTIVIDAD) END)  LIKE UPPER(:COD_ACTIVIDAD || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COD_ACTIVIDAD":"$COD_ACTIVIDAD(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COD_ACTIVIDAD" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="actividades/todosporactividad/pag">
+		<call-query href="getActividadesPagTodosPorActividadQuery">
+			<with-param name="COD_ACTIVIDAD" query-param="COD_ACTIVIDAD"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getActividadesNumTodosPorActividadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT ACTIVIDAD.COD_ACTIVIDAD, ACTIVIDAD.NOMBRE  FROM ACTIVIDAD) WHERE (CASE WHEN COD_ACTIVIDAD IS NULL THEN ' ' ELSE UPPER(COD_ACTIVIDAD) END)  LIKE UPPER(:COD_ACTIVIDAD || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COD_ACTIVIDAD" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="actividades/todosporactividad/num">
+		<call-query href="getActividadesNumTodosPorActividadQuery">
+			<with-param name="COD_ACTIVIDAD" query-param="COD_ACTIVIDAD"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+
+</data>

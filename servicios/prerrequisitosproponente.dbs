@@ -1,0 +1,174 @@
+﻿<data name="prerrequisitosproponente" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getPrerrequisitosproponenteValidacionDePrerequisitoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT('X')PRERREQUISITO  FROM PRERREQUISITOS_PROPONENTE WHERE COMPANIA IN(:COMPANIA) AND TIPOCONTRATO IN(:TIPOCONTRATO) AND TRANSACCION IN(:CONSECUTIVO ) AND CONSECUTIVODETALLE IN(:CONSECUTIVODETALLE ) AND CODIGO IN(:PRERREQUISITO)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PRERREQUISITO":"$PRERREQUISITO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CONSECUTIVODETALLE" sqlType="STRING"/>
+		<param name="PRERREQUISITO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="prerrequisitosproponente/validaciondeprerequisito">
+		<call-query href="getPrerrequisitosproponenteValidacionDePrerequisitoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CONSECUTIVODETALLE" query-param="CONSECUTIVODETALLE"/>
+			<with-param name="PRERREQUISITO" query-param="PRERREQUISITO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrerrequisitosproponenteCantidadProponentesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(PROPONENTE) PROPONENTE  FROM PRERREQUISITOS_PROPONENTE WHERE COMPANIA = :COMPANIA AND TIPOCONTRATO = :TIPOCONTRATO AND TRANSACCION = :TRANSACCION AND CONSECUTIVODETALLE = :CONSECUTIVO AND PROPONENTE = :PROPONENTE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PROPONENTE":"$PROPONENTE(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="TRANSACCION" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="PROPONENTE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="prerrequisitosproponente/cantidadproponentes">
+		<call-query href="getPrerrequisitosproponenteCantidadProponentesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="TRANSACCION" query-param="TRANSACCION"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="PROPONENTE" query-param="PROPONENTE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertPrerrequisitosproponentePrerrequisitosporetapa" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PRERREQUISITOS_PROPONENTE (COMPANIA,TIPOCONTRATO,TRANSACCION,CONSECUTIVODETALLE,PROPONENTE,SUCURSAL,CODIGO,DATE_CREATED,CREATED_BY)  SELECT COMPANIA,   TIPOCONTRATO,   TRANSACCION,   CONSECUTIVODETALLE,   :PROPONENTE PROPONENTE,   :SUCURSAL SUCURSAL,   PRERREQUISITO CODIGO,   SYSDATE,   :CREATED_BY FROM PRE_REQUISITOS_ETAPA WHERE COMPANIA         = :COMPANIA AND TIPOCONTRATO       = :TIPOCONTRATO AND TRANSACCION        = :TRANSACCION AND CONSECUTIVODETALLE = :CONSECUTIVODETALLE AND PRERREQUISITO NOT IN   (SELECT CODIGO   FROM PRERREQUISITOS_PROPONENTE   WHERE COMPANIA         = :COMPANIA   AND TIPOCONTRATO       = :TIPOCONTRATO   AND TRANSACCION        = :TRANSACCION   AND CONSECUTIVODETALLE = :CONSECUTIVODETALLE   AND PROPONENTE         = :PROPONENTE   )</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param defaultValue="999999999999999999" name="PROPONENTE" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="TRANSACCION" sqlType="STRING"/>
+		<param name="CONSECUTIVODETALLE" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="prerrequisitosproponente/prerrequisitosporetapa">
+		<call-query href="insertPrerrequisitosproponentePrerrequisitosporetapa">
+			<with-param name="PROPONENTE" query-param="PROPONENTE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="TRANSACCION" query-param="TRANSACCION"/>
+			<with-param name="CONSECUTIVODETALLE" query-param="CONSECUTIVODETALLE"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrerrequisitosproponentePaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  PROPONENTE.COMPANIA, PROPONENTE.TIPOCONTRATO, PROPONENTE.TRANSACCION, PROPONENTE.CONSECUTIVODETALLE, PROPONENTE.PROPONENTE, PROPONENTE.SUCURSAL, PROPONENTE.CODIGO, PREREQUISITOS.NOMBRE, PROPONENTE.VALOR,(CASE PROPONENTE.CUMPLE WHEN 0 THEN 'false' ELSE 'true' END) CUMPLE, ETAPA.TIPO, ETAPA.VALOR1, ETAPA.VALOR2, DECODE(PREREQUISITOS.TIPO,'1','Texto','3','Numérico','4','Fecha') VALORFORMATO, PROPONENTE.OBSERVACION,(CASE PROPONENTE.SUBSANABLE WHEN 0 THEN 'false' ELSE 'true' END) SUBSANABLE FROM PRERREQUISITOS_PROPONENTE PROPONENTE INNER JOIN PREREQUISITOS ON PROPONENTE.COMPANIA = PREREQUISITOS.COMPANIA AND PROPONENTE.CODIGO = PREREQUISITOS.CODIGO INNER JOIN PRE_REQUISITOS_ETAPA ETAPA ON PROPONENTE.COMPANIA = ETAPA.COMPANIA AND PROPONENTE.TIPOCONTRATO = ETAPA.TIPOCONTRATO AND PROPONENTE.TRANSACCION = ETAPA.TRANSACCION AND PROPONENTE.CONSECUTIVODETALLE = ETAPA.CONSECUTIVODETALLE AND PROPONENTE.CODIGO = ETAPA.PRERREQUISITO WHERE PROPONENTE.COMPANIA = :COMPANIA AND PROPONENTE.TIPOCONTRATO = :TIPOCONTRATO AND PROPONENTE.TRANSACCION = :TRANSACCION AND PROPONENTE.CONSECUTIVODETALLE = :CONSECUTIVODETALLE AND PROPONENTE.PROPONENTE = :PROPONENTE) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CUMPLE IS NULL THEN ' ' ELSE UPPER(CUMPLE) END)  LIKE UPPER(:CUMPLE || '%')  AND (CASE WHEN VALORFORMATO IS NULL THEN ' ' ELSE UPPER(VALORFORMATO) END)  LIKE UPPER( '%' || :VALORFORMATO || '%')  AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END)  LIKE UPPER( '%' || :OBSERVACION || '%')  AND (CASE WHEN SUBSANABLE IS NULL THEN ' ' ELSE UPPER(SUBSANABLE) END)  LIKE UPPER(:SUBSANABLE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPOCONTRATO":"$TIPOCONTRATO","TRANSACCION":"$TRANSACCION","CONSECUTIVODETALLE":"$CONSECUTIVODETALLE(type:integer)","PROPONENTE":"$PROPONENTE","SUCURSAL":"$SUCURSAL","CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","VALOR":"$VALOR","CUMPLE":"$CUMPLE(type:boolean)","TIPO":"$TIPO","VALOR1":"$VALOR1","VALOR2":"$VALOR2","VALORFORMATO":"$VALORFORMATO","OBSERVACION":"$OBSERVACION","SUBSANABLE":"$SUBSANABLE(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="TRANSACCION" sqlType="STRING"/>
+		<param name="CONSECUTIVODETALLE" sqlType="STRING"/>
+		<param name="PROPONENTE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CUMPLE" sqlType="STRING"/>
+		<param name="VALORFORMATO" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="SUBSANABLE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="prerrequisitosproponente">
+		<call-query href="getPrerrequisitosproponentePaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="TRANSACCION" query-param="TRANSACCION"/>
+			<with-param name="CONSECUTIVODETALLE" query-param="CONSECUTIVODETALLE"/>
+			<with-param name="PROPONENTE" query-param="PROPONENTE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CUMPLE" query-param="CUMPLE"/>
+			<with-param name="VALORFORMATO" query-param="VALORFORMATO"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="SUBSANABLE" query-param="SUBSANABLE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPrerrequisitosproponenteNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  PROPONENTE.COMPANIA, PROPONENTE.TIPOCONTRATO, PROPONENTE.TRANSACCION, PROPONENTE.CONSECUTIVODETALLE, PROPONENTE.PROPONENTE, PROPONENTE.SUCURSAL, PROPONENTE.CODIGO, PREREQUISITOS.NOMBRE, PROPONENTE.VALOR,(CASE PROPONENTE.CUMPLE WHEN 0 THEN 'false' ELSE 'true' END) CUMPLE, ETAPA.TIPO, ETAPA.VALOR1, ETAPA.VALOR2, DECODE(PREREQUISITOS.TIPO,'1','Texto','3','Numérico','4','Fecha') VALORFORMATO, PROPONENTE.OBSERVACION,(CASE PROPONENTE.SUBSANABLE WHEN 0 THEN 'false' ELSE 'true' END) SUBSANABLE FROM PRERREQUISITOS_PROPONENTE PROPONENTE INNER JOIN PREREQUISITOS ON PROPONENTE.COMPANIA = PREREQUISITOS.COMPANIA AND PROPONENTE.CODIGO = PREREQUISITOS.CODIGO INNER JOIN PRE_REQUISITOS_ETAPA ETAPA ON PROPONENTE.COMPANIA = ETAPA.COMPANIA AND PROPONENTE.TIPOCONTRATO = ETAPA.TIPOCONTRATO AND PROPONENTE.TRANSACCION = ETAPA.TRANSACCION AND PROPONENTE.CONSECUTIVODETALLE = ETAPA.CONSECUTIVODETALLE AND PROPONENTE.CODIGO = ETAPA.PRERREQUISITO WHERE PROPONENTE.COMPANIA = :COMPANIA AND PROPONENTE.TIPOCONTRATO = :TIPOCONTRATO AND PROPONENTE.TRANSACCION = :TRANSACCION AND PROPONENTE.CONSECUTIVODETALLE = :CONSECUTIVODETALLE AND PROPONENTE.PROPONENTE = :PROPONENTE) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CUMPLE IS NULL THEN ' ' ELSE UPPER(CUMPLE) END)  LIKE UPPER(:CUMPLE || '%')  AND (CASE WHEN VALORFORMATO IS NULL THEN ' ' ELSE UPPER(VALORFORMATO) END)  LIKE UPPER( '%' || :VALORFORMATO || '%')  AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END)  LIKE UPPER( '%' || :OBSERVACION || '%')  AND (CASE WHEN SUBSANABLE IS NULL THEN ' ' ELSE UPPER(SUBSANABLE) END)  LIKE UPPER(:SUBSANABLE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="TRANSACCION" sqlType="STRING"/>
+		<param name="CONSECUTIVODETALLE" sqlType="STRING"/>
+		<param name="PROPONENTE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CUMPLE" sqlType="STRING"/>
+		<param name="VALORFORMATO" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="SUBSANABLE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="prerrequisitosproponente/numero">
+		<call-query href="getPrerrequisitosproponenteNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="TRANSACCION" query-param="TRANSACCION"/>
+			<with-param name="CONSECUTIVODETALLE" query-param="CONSECUTIVODETALLE"/>
+			<with-param name="PROPONENTE" query-param="PROPONENTE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CUMPLE" query-param="CUMPLE"/>
+			<with-param name="VALORFORMATO" query-param="VALORFORMATO"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="SUBSANABLE" query-param="SUBSANABLE"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePrerrequisitosproponente" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PRERREQUISITOS_PROPONENTE SET CUMPLE=:CUMPLE, OBSERVACION=:OBSERVACION, SUBSANABLE=:SUBSANABLE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PRERREQUISITOS_PROPONENTE.COMPANIA= :KEY_COMPANIA AND PRERREQUISITOS_PROPONENTE.TIPOCONTRATO= :KEY_TIPOCONTRATO AND PRERREQUISITOS_PROPONENTE.TRANSACCION= :KEY_TRANSACCION AND PRERREQUISITOS_PROPONENTE.CONSECUTIVODETALLE= :KEY_CONSECUTIVODETALLE AND PRERREQUISITOS_PROPONENTE.PROPONENTE= :KEY_PROPONENTE AND PRERREQUISITOS_PROPONENTE.SUCURSAL= :KEY_SUCURSAL AND PRERREQUISITOS_PROPONENTE.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CUMPLE" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="SUBSANABLE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPOCONTRATO" sqlType="STRING"/>
+		<param name="KEY_TRANSACCION" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVODETALLE" sqlType="STRING"/>
+		<param name="KEY_PROPONENTE" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="prerrequisitosproponente">
+		<call-query href="updatePrerrequisitosproponente">
+			<with-param name="CUMPLE" query-param="CUMPLE"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="SUBSANABLE" query-param="SUBSANABLE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPOCONTRATO" query-param="KEY_TIPOCONTRATO"/>
+			<with-param name="KEY_TRANSACCION" query-param="KEY_TRANSACCION"/>
+			<with-param name="KEY_CONSECUTIVODETALLE" query-param="KEY_CONSECUTIVODETALLE"/>
+			<with-param name="KEY_PROPONENTE" query-param="KEY_PROPONENTE"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

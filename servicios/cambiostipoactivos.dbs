@@ -1,0 +1,142 @@
+﻿<data name="cambiostipoactivos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertCambiostipoactivos" keyColumns="COMPANIA,CONSECUTIVO,TIPOMOVIMIENTO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CAMBIOS_TIPOACTIVO (COMPANIA, CONSECUTIVO, TIPOMOVIMIENTO, FECHA, DESCRIPCION, REGISTRADO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CONSECUTIVO, :TIPOMOVIMIENTO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :DESCRIPCION, :REGISTRADO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CONSECUTIVO":"$CONSECUTIVO(type:long)","KEY_TIPOMOVIMIENTO":"$TIPOMOVIMIENTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="0" name="REGISTRADO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="cambiostipoactivos">
+		<call-query href="insertCambiostipoactivos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="REGISTRADO" query-param="REGISTRADO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCambiostipoactivos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CAMBIOS_TIPOACTIVO WHERE CAMBIOS_TIPOACTIVO.COMPANIA= :KEY_COMPANIA AND CAMBIOS_TIPOACTIVO.CONSECUTIVO= :KEY_CONSECUTIVO AND CAMBIOS_TIPOACTIVO.TIPOMOVIMIENTO= :KEY_TIPOMOVIMIENTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+		<param name="KEY_TIPOMOVIMIENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="cambiostipoactivos">
+		<call-query href="deleteCambiostipoactivos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+			<with-param name="KEY_TIPOMOVIMIENTO" query-param="KEY_TIPOMOVIMIENTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCambiostipoactivosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CAMBIOS_TIPOACTIVO.COMPANIA, CAMBIOS_TIPOACTIVO.CONSECUTIVO, CAMBIOS_TIPOACTIVO.TIPOMOVIMIENTO, TIPOMOVIMIENTO.NOMBRE, TO_CHAR(CAMBIOS_TIPOACTIVO.FECHA, 'DD/MM/YYYY') FECHA, CAMBIOS_TIPOACTIVO.DESCRIPCION,(CASE CAMBIOS_TIPOACTIVO.REGISTRADO WHEN 0 THEN 'false' ELSE 'true' END) REGISTRADO FROM CAMBIOS_TIPOACTIVO LEFT JOIN TIPOMOVIMIENTO ON CAMBIOS_TIPOACTIVO.COMPANIA = TIPOMOVIMIENTO.COMPANIA AND CAMBIOS_TIPOACTIVO.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO WHERE CAMBIOS_TIPOACTIVO.COMPANIA = :COMPANIA AND TIPOMOVIMIENTO.CONCEPTO = 'T' ORDER BY CAMBIOS_TIPOACTIVO.CONSECUTIVO DESC) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN REGISTRADO IS NULL THEN ' ' ELSE UPPER(REGISTRADO) END)  LIKE UPPER( '%' || :REGISTRADO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO(type:long)","TIPOMOVIMIENTO":"$TIPOMOVIMIENTO","NOMBRE":"$NOMBRE","FECHA":"$FECHA","DESCRIPCION":"$DESCRIPCION","REGISTRADO":"$REGISTRADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="REGISTRADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cambiostipoactivos">
+		<call-query href="getCambiostipoactivosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="REGISTRADO" query-param="REGISTRADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCambiostipoactivosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CAMBIOS_TIPOACTIVO.COMPANIA, CAMBIOS_TIPOACTIVO.CONSECUTIVO, CAMBIOS_TIPOACTIVO.TIPOMOVIMIENTO, TIPOMOVIMIENTO.NOMBRE, TO_CHAR(CAMBIOS_TIPOACTIVO.FECHA, 'DD/MM/YYYY') FECHA, CAMBIOS_TIPOACTIVO.DESCRIPCION,(CASE CAMBIOS_TIPOACTIVO.REGISTRADO WHEN 0 THEN 'false' ELSE 'true' END) REGISTRADO FROM CAMBIOS_TIPOACTIVO LEFT JOIN TIPOMOVIMIENTO ON CAMBIOS_TIPOACTIVO.COMPANIA = TIPOMOVIMIENTO.COMPANIA AND CAMBIOS_TIPOACTIVO.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO WHERE CAMBIOS_TIPOACTIVO.COMPANIA = :COMPANIA AND TIPOMOVIMIENTO.CONCEPTO = 'T' ORDER BY CAMBIOS_TIPOACTIVO.CONSECUTIVO DESC) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN REGISTRADO IS NULL THEN ' ' ELSE UPPER(REGISTRADO) END)  LIKE UPPER( '%' || :REGISTRADO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="REGISTRADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cambiostipoactivos/numero">
+		<call-query href="getCambiostipoactivosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="REGISTRADO" query-param="REGISTRADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCambiostipoactivosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CAMBIOS_TIPOACTIVO.COMPANIA, CAMBIOS_TIPOACTIVO.CONSECUTIVO, CAMBIOS_TIPOACTIVO.TIPOMOVIMIENTO, TIPOMOVIMIENTO.NOMBRE,(TO_CHAR(CAMBIOS_TIPOACTIVO.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, CAMBIOS_TIPOACTIVO.DESCRIPCION,(CASE CAMBIOS_TIPOACTIVO.REGISTRADO WHEN 0 THEN 'false' ELSE 'true' END) REGISTRADO, CAMBIOS_TIPOACTIVO.CREATED_BY,(TO_CHAR(CAMBIOS_TIPOACTIVO.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, CAMBIOS_TIPOACTIVO.MODIFIED_BY,(TO_CHAR(CAMBIOS_TIPOACTIVO.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, TIPOMOVIMIENTO.TIPOFORMATO  FROM CAMBIOS_TIPOACTIVO LEFT JOIN TIPOMOVIMIENTO ON CAMBIOS_TIPOACTIVO.COMPANIA = TIPOMOVIMIENTO.COMPANIA AND CAMBIOS_TIPOACTIVO.TIPOMOVIMIENTO = TIPOMOVIMIENTO.CODIGO WHERE CAMBIOS_TIPOACTIVO.COMPANIA= :KEY_COMPANIA AND CAMBIOS_TIPOACTIVO.CONSECUTIVO= :KEY_CONSECUTIVO AND CAMBIOS_TIPOACTIVO.TIPOMOVIMIENTO= :KEY_TIPOMOVIMIENTO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO(type:long)","TIPOMOVIMIENTO":"$TIPOMOVIMIENTO","NOMBRE":"$NOMBRE","FECHA":"$FECHA","DESCRIPCION":"$DESCRIPCION","REGISTRADO":"$REGISTRADO(type:boolean)","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","TIPOFORMATO":"$TIPOFORMATO"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+		<param name="KEY_TIPOMOVIMIENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cambiostipoactivos/data">
+		<call-query href="getCambiostipoactivosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+			<with-param name="KEY_TIPOMOVIMIENTO" query-param="KEY_TIPOMOVIMIENTO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCambiostipoactivos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CAMBIOS_TIPOACTIVO SET FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), DESCRIPCION=:DESCRIPCION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CAMBIOS_TIPOACTIVO.COMPANIA= :KEY_COMPANIA AND CAMBIOS_TIPOACTIVO.CONSECUTIVO= :KEY_CONSECUTIVO AND CAMBIOS_TIPOACTIVO.TIPOMOVIMIENTO= :KEY_TIPOMOVIMIENTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+		<param name="KEY_TIPOMOVIMIENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cambiostipoactivos">
+		<call-query href="updateCambiostipoactivos">
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+			<with-param name="KEY_TIPOMOVIMIENTO" query-param="KEY_TIPOMOVIMIENTO"/>
+
+		</call-query>
+	</resource>
+
+</data>

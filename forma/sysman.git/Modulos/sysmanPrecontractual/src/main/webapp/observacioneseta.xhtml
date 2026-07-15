@@ -1,0 +1,476 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" 
+	template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+                if("#{observacionesetapasControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TG_OBSERVACIONES_POR_ETAPA}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{observacionesetapasControlador.cargarLista}" />
+		<section class="radius">
+			<h:form id="FR438">
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="lista" widgetVar="lista"
+					visible="#{observacionesetapasControlador.accion==null}">
+					<p:confirmDialog global="true" showEffect="fade" id="confFR438"
+						widgetVar="confFR438"
+						rendered="#{observacionesetapasControlador.permisos[1]}">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:dataTable id="TBFR438" widgetVar="TBFR438" var="reg"
+						value="#{observacionesetapasControlador.listaInicial}"
+						editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" paginator="true" lazy="true">
+						<f:facet name="{Exporters}"
+							rendered="#{observacionesetapasControlador.permisos[4] }">
+							<h:commandLink
+								rendered="#{observacionesetapasControlador.permisos[4] }"
+								title="#{idm.TI_VER_EXCEL}">
+								<p:graphicImage name="/images/general/excel.png" width="24" />
+								<p:dataExporter type="xls" target="TBFR438" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+							<h:commandLink
+								rendered="#{observacionesetapasControlador.permisos[4] }"
+								title="#{idm.TI_VER_PDF}">
+								<p:graphicImage name="/images/general/pdf.png" width="24" />
+								<p:dataExporter type="pdf" target="TBFR438" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+						</f:facet>
+						<f:facet name="header">
+							<div style="position: relative; height: 50px">
+								<h:panelGroup class="acme"
+									rendered="#{observacionesetapasControlador.permisos[0] and observacionesetapasControlador.modificar}">
+									<p:commandLink
+										action="#{observacionesetapasControlador.cargarRegistroNuevo}"
+										update=":FR438_nuevo:nuevoPanel"
+										rendered="#{observacionesetapasControlador.permisos[0]}"
+										onclick="try { PF('blockLista').show(); PF('TBCB1598').nuevo=true;} catch (e) { }"
+										oncomplete="try{ asignarEventoContGrande();
+validarCargaGrandes();
+  PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+										title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+										id="btNuevo">
+										<center>
+											<p:graphicImage name="/images/menus/32/add.png" />
+											<div>#{idm.TI_NUEVO}</div>
+										</center>
+									</p:commandLink>
+								</h:panelGroup>
+								<div class="acme">
+									<h:outputLink value="javascript:void(0)" onclick="rcCerrar();"
+										title="#{idm.TI_VOLVER}" style="padding-top: 10px;">
+										<center>
+											<p:graphicImage name="/images/menus/32/close.png" />
+											<div>#{idm.TI_CERRAR}</div>
+										</center>
+									</h:outputLink>
+								</div>
+							</div>
+							<p:remoteCommand name="rcCerrar"
+								actionListener="#{observacionesetapasControlador.ejecutarrcCerrar}" /> 
+                            #{idm.TG_OBSERVACIONES_POR_ETAPA}
+                        </f:facet>
+						<p:column headerText="#{idm.TG_NO_OBSERVACION}"
+							filterBy="#{reg.campos['ID']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="80" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['ID']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_OBSERVADOR}"
+							filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="172" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_OBSERVACION}"
+							filterBy="#{reg.campos['DESCRIPCION']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="172" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['DESCRIPCION']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_RESPUESTA}"
+							filterBy="#{reg.campos['RESPUESTA']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="172" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['RESPUESTA']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column width="150" headerText="Acciones"
+							style="text-align: center" exportable="false">
+							<p:commandButton icon="ui-icon-search"
+								title="#{idm.TI_VER_REGISTRO}"
+								action="#{observacionesetapasControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+								update=":FR438_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB1598').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{observacionesetapasControlador.permisos[3]}"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-document-b"
+								title="#{idm.TI_EDITAR_REGISTRO}"
+								action="#{observacionesetapasControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+								update=":FR438_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB1598').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{observacionesetapasControlador.permisos[2] and observacionesetapasControlador.modificar}"
+								oncomplete="try{asignarEventoContGrande();
+validarCargaGrandes();
+ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-trash"
+								title="#{idm.TI_ELIMINAR_REGISTRO}"
+								onclick="PF('blockListaGuardar').show()"
+								action="#{observacionesetapasControlador.eliminarReg(reg)}"
+								update=":FR438:TBFR438,:FR438:alert"
+								rendered="#{observacionesetapasControlador.permisos[1] and observacionesetapasControlador.modificar}"
+								oncomplete=" PF('blockListaGuardar').hide();">
+								<p:confirm header="#{sessionBean.tituloMensajes}"
+									message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR438">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+			<h:form id="FR438_nuevo" style="margin-top: -20px;">
+				<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA"
+					my="left bottom" at="left bottom" for="BTBUSQUEDA"
+					hideEffect="fade"
+					rendered="#{observacionesetapasControlador.accion!='i'}"
+					style="width: 500px">
+					<p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA" var="reg"
+						value="#{observacionesetapasControlador.listaInicialF}"
+						editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" selectionMode="single"
+						rowKey="#{reg.llave}" paginator="true" lazy="true">
+						<p:ajax event="rowSelect"
+							listener="#{observacionesetapasControlador.seleccionarFilaBusqueda}"
+							onstart="PF('blockNuevo').show()"
+							oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();    "
+							update="@form" />
+						<p:column headerText="#{idm.TG_OBSERVADOR}"
+							filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="172" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_OBSERVACION}"
+							filterBy="#{reg.campos['DESCRIPCION']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="172" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['DESCRIPCION']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_RESPUESTA}"
+							filterBy="#{reg.campos['RESPUESTA']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="172" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['RESPUESTA']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+					</p:dataTable>
+				</p:overlayPanel>
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="nuevoPanel"
+					visible="#{observacionesetapasControlador.accion!=null}"
+					widgetVar="nuevoPanel">
+					<div
+						style="position: relative; height: 50px; padding-bottom: 80px;">
+						<div class="acme"
+							style="display:#{observacionesetapasControlador.accion=='v'?'none':'block'}">
+							<p:commandLink
+								action="#{observacionesetapasControlador.agregarRegistroNuevo(false)}"
+								rendered="#{observacionesetapasControlador.accion!='v'}"
+								update=":FR438_nuevo,#{!observacionesetapasControlador.permisos[2]?':FR438':'' }"
+								onclick="if (!validarVacios(['CB1598'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+								title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+								oncomplete="asignarEventoContGrande(); validarCargaGrandes(); ">
+								<center>
+									<p:graphicImage name="/images/menus/32/save.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{observacionesetapasControlador.accion=='v' or !observacionesetapasControlador.permisos[0]?'none':'block'}">
+							<p:commandLink
+								action="#{observacionesetapasControlador.guardarNuevo}"
+								rendered="#{observacionesetapasControlador.accion!='v' and observacionesetapasControlador.permisos[0]}"
+								update=":FR438_nuevo"
+								onclick="if (!validarVacios(['CB1598'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{observacionesetapasControlador.accion!='i'  and observacionesetapasControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+								oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+								title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}"
+								style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/savenew.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{observacionesetapasControlador.accion=='i' or !observacionesetapasControlador.permisos[0]?'none':'block'}">
+							<p:commandLink id="BTBUSQUEDA"
+								rendered="#{observacionesetapasControlador.accion!='i' and observacionesetapasControlador.permisos[0]}"
+								title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/search.png" />
+									<div style="height: 30px">#{idm.TI_BUSCAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme">
+							<p:commandLink update=":FR438:TBFR438"
+								onclick="if (#{observacionesetapasControlador.varVolver}) {
+                  rcVolver();
+        } else {
+                  try {
+                            PF('TBFR438').filter();
+                            PF('nuevoPanel').close();
+                            PF('lista').show();
+                            return false;
+                  } catch (e) {
+                            return false;
+                  }
+        }"
+								title="#{idm.TI_ATRAS}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/back.png" />
+									<div style="height: 30px">#{idm.TI_VOLVER}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<p:remoteCommand name="rcVolver" update="@form,:FR438"
+							actionListener="#{observacionesetapasControlador.ejecutarrcVolver}" />
+						<p:panel
+							rendered="#{observacionesetapasControlador.accion!='i'  and observacionesetapasControlador.rid==null }"
+							styleClass="acme"
+							style="min-width: 350px; width:30%; padding: 10px;">
+							<center style="margin: 2px;">
+								<p:commandButton icon="ui-icon-seek-first"
+									action="#{observacionesetapasControlador.irPrimero()}"
+									title="#{idm.TI_PRIMER_REGISTRO}" update=":FR438_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-prev"
+									action="#{observacionesetapasControlador.irAnterior()}"
+									title="#{idm.TI_REGISTRO_ANTERIOR}" update=":FR438_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:outputLabel
+									value="#{idm.TI_REGISTRO} #{observacionesetapasControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{observacionesetapasControlador.listaInicial.rowCount} " />
+								<p:commandButton icon="ui-icon-seek-next"
+									title="#{idm.TI_REGISTRO_SIGUIENTE}"
+									action="#{observacionesetapasControlador.irSiguiente()}"
+									update=":FR438_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-end"
+									title="#{idm.TI_ULTIMO_REGISTRO}"
+									action="#{observacionesetapasControlador.irUltimo()}"
+									update=":FR438_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+							</center>
+						</p:panel>
+						<p:panel styleClass="acme" style="width:21%;">
+							<h:panelGrid columns="3"
+								style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+								<h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}" />
+								<p:inputText id="CPCREADO" readonly="true" widgetVar="CPCREADO"
+									value="#{observacionesetapasControlador.registro.campos['CREATED_BY']}"
+									placeholder="#{idm.TI_CREADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPCREADOF" widgetVar="CPCREADOF"
+									value="#{observacionesetapasControlador.registro.campos['DATE_CREATED']}"
+									disabled="true" />
+								<h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+								<p:inputText id="CPMODIFICADO" readonly="true"
+									widgetVar="CPMODIFICADO"
+									value="#{observacionesetapasControlador.registro.campos['MODIFIED_BY']}"
+									placeholder="#{idm.TI_MODIFICADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPMODIFICADOF" widgetVar="CPMODIFICADOF"
+									value="#{observacionesetapasControlador.registro.campos['DATE_MODIFIED']}"
+									disabled="true" />
+							</h:panelGrid>
+						</p:panel>
+					</div>
+					<div id="PL967" class="
+"
+						style="position: relative; height: 28px;">
+						<p:inputText id="CP13438" widgetVar="CP13438"
+							styleClass="inputTab"
+							value="#{observacionesetapasControlador.titulo}" readonly="true"
+							tabindex="1"
+							style="position: absolute; width:349px; height: 28px; text-decoration:none; left: 158px;   top: 0px; text-align: center; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+					</div>
+					<div id="PL968" class="
+"
+						style="position: relative; height: 365px;">
+						<pe:inputNumber id="CP13463" widgetVar="CP13463"
+							styleClass="inputTab"
+							value="#{observacionesetapasControlador.registro.campos['ID']}"
+							decimalPlaces="0" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="1" converter="convertidorDouble"
+							style="position: absolute; width:125px; height: 20px; text-decoration:none; left: 135px;   top: 43px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{observacionesetapasControlador.accion=='i'?'none':'true'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<p:inputText id="CB1598" widgetVar="CB1598"
+							onfocus="if(!false){PF('BTCB1598').jq.focus();}"
+							onclick="if(!false){PF('PLCB1598').show();}"
+							value="#{observacionesetapasControlador.registro.campos['NIT']}"
+							disabled="#{observacionesetapasControlador.accion=='v'?true:false}"
+							tabindex="-1"
+							style="cursor:pointer; position: absolute; width:100px; height: 20px; left: 126px;   top: 111px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+						<p:commandButton id="BTCB1598" onblur="PF('CB1598').jq.blur();"
+							onfocus="PF('CB1598').jq.addClass('ui-state-focus');"
+							widgetVar="BTCB1598"
+							disabled="#{observacionesetapasControlador.accion=='v'?true:false}"
+							type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+							style="position: absolute; width:25px; height:  20px; left: 224px;   top: 111px; display:true; "
+							tabindex="2" />
+						<p:overlayPanel widgetVar="PLCB1598" id="PLCB1598"
+							onShow="if(PF('TBCB1598').nuevo){ PF('TBCB1598').filter(); PF('TBCB1598').nuevo=false;}"
+							onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB1598').jq.focus();}"
+							my="left" at="left" for="BTCB1598" hideEffect="fade"
+							rendered="#{observacionesetapasControlador.accion!='v'}"
+							style="width: 600px">
+							<p:dataTable id="TBCB1598" widgetVar="TBCB1598" var="reg"
+								value="#{observacionesetapasControlador.listaTercero}"
+								editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+								currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+								rows="11" rowIndexVar="rowIndex" selectionMode="single"
+								rowKey="#{reg.campos['NIT']}" paginator="true" lazy="true">
+								<p:ajax event="rowSelect"
+									listener="#{observacionesetapasControlador.seleccionarFilaTercero}"
+									update=":FR438_nuevo:CB1598,FR438_nuevo:CP13441"
+									oncomplete="PF('PLCB1598').hide(); " />
+								<p:column headerText="#{idm.TG_NIT2}"
+									style="text-align:center; " width="165"
+									filterBy="#{reg.campos['NIT']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NIT']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_NOMBRE3}"
+									style="text-align:center; " width="290"
+									filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NOMBRE']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_SUCURSAL}"
+									style="text-align:center; " width="100"
+									filterBy="#{reg.campos['SUCURSAL']}"
+									filterMatchMode="startsWith" filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['SUCURSAL']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+							</p:dataTable>
+						</p:overlayPanel>
+						<h:outputLabel id="LB11226" value="#{idm.TG_OBSERVACION_NO}"
+							style="position: absolute; width:125px; height: 20px; left: 5px;   top: 43px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{observacionesetapasControlador.accion=='i'?'none':'true'}; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+						<h:outputLabel id="LB11325" value="#{idm.TT_LB11325}"
+							style="position: absolute; width:111px; height: 20px; left: 10px;   top: 111px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<p:inputTextarea autoResize="false" id="CP13439"
+							widgetVar="CP13439"
+							value="#{observacionesetapasControlador.registro.campos['DESCRIPCION']}"
+							readonly="#{observacionesetapasControlador.accion=='v'?true:false}"
+							tabindex="4" styleClass="inputTab" maxlength="4000"
+							style="resize: none; position: absolute; width:648px; height: 71px; left: 10px;   top: 173px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputTextarea>
+						<p:inputTextarea autoResize="false" id="CP13440"
+							widgetVar="CP13440"
+							value="#{observacionesetapasControlador.registro.campos['RESPUESTA']}"
+							readonly="#{observacionesetapasControlador.accion=='v'?true:false}"
+							tabindex="5" styleClass="inputTab" maxlength="4000"
+							style="resize: none; position: absolute; width:648px; height: 71px; left: 10px;   top: 279px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputTextarea>
+						<p:inputText id="CP13441" widgetVar="CP13441"
+							styleClass="inputTab"
+							value="#{observacionesetapasControlador.registro.campos['NOMBRE']}"
+							readonly="true" tabindex="3" maxlength="18"
+							style="position: absolute; width:399px; height: 20px; text-decoration:none; left: 259px;   top: 111px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<h:outputLabel id="LB11225" value="#{idm.TG_RESPUESTA2}"
+							style="position: absolute; width:648px; height: 20px; left: 10px;   top: 255px; text-align: left; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB11224" value="#{idm.TG_OBSERVACION2}"
+							style="position: absolute; width:648px; height: 20px; left: 10px;   top: 144px; text-align: left; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB11227" value="#{idm.TT_LB11227}"
+							style="position: absolute; width:648px; height: 20px; left: 10px;   top: 81px; text-align: left; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

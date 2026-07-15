@@ -1,0 +1,160 @@
+﻿<data name="spmodificacionesdeuda" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSpmodificacionesdeudaListarSubModificiacionesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_MODIFICACIONESDEUDA.COMPANIA, SP_MODIFICACIONESDEUDA.CICLO, SP_MODIFICACIONESDEUDA.CODIGORUTA, SP_CONCEPTOS.NOMBRE NOMBRECONCEPTO, SP_MODIFICACIONESDEUDA.CONCEPTO,(TO_CHAR(SP_MODIFICACIONESDEUDA.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,(TO_CHAR(SP_MODIFICACIONESDEUDA.HORA,'DD/MM/YYYY HH24:MI:SS')) HORA, SP_MODIFICACIONESDEUDA.USUARIO, SP_MODIFICACIONESDEUDA.VRANT, SP_MODIFICACIONESDEUDA.VRNUE, SP_MODIFICACIONESDEUDA.TIPOMODIFICACION, SP_MODIFICACIONESDEUDA.CAUSAMODIFICACION, SP_MODIFICACIONESDEUDA.ANO, SP_MODIFICACIONESDEUDA.PERIODO  FROM SP_MODIFICACIONESDEUDA INNER JOIN SP_CONCEPTOS ON SP_CONCEPTOS.COMPANIA=SP_MODIFICACIONESDEUDA.COMPANIA AND SP_CONCEPTOS.CODIGO=SP_MODIFICACIONESDEUDA.CONCEPTO WHERE SP_MODIFICACIONESDEUDA.COMPANIA= :COMPANIA AND SP_MODIFICACIONESDEUDA.CODIGORUTA= :CODIGORUTA AND SP_MODIFICACIONESDEUDA.FECHA= TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS') AND SP_MODIFICACIONESDEUDA.HORA= TO_DATE(:HORA,'DD/MM/YYYY HH24:MI:SS')</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CICLO":"$CICLO(type:integer)","CODIGORUTA":"$CODIGORUTA","NOMBRECONCEPTO":"$NOMBRECONCEPTO","CONCEPTO":"$CONCEPTO(type:integer)","FECHA":"$FECHA","HORA":"$HORA","USUARIO":"$USUARIO","VRANT":"$VRANT","VRNUE":"$VRNUE","TIPOMODIFICACION":"$TIPOMODIFICACION(type:integer)","CAUSAMODIFICACION":"$CAUSAMODIFICACION(type:integer)","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="HORA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmodificacionesdeuda/listarsubmodificiaciones">
+		<call-query href="getSpmodificacionesdeudaListarSubModificiacionesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA" query-param="HORA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpmodificacionesdeudaConsultarValoresQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CONCAT('$',CONCAT(' ',TO_CHAR(NVL(SUM(SP_MODIFICACIONESDEUDA.VRANT),0),'999,999,999,999,999,999,999,999,999') ) ) VALORANT, CONCAT('$',CONCAT(' ',TO_CHAR(NVL(SUM(SP_MODIFICACIONESDEUDA.VRNUE),0),'999,999,999,999,999,999,999,999,999') ) ) VALORNUEVO FROM SP_MODIFICACIONESDEUDA WHERE SP_MODIFICACIONESDEUDA.COMPANIA =:COMPANIA AND SP_MODIFICACIONESDEUDA.CODIGORUTA =:CODIGORUTA AND SP_MODIFICACIONESDEUDA.FECHA =:FECHA AND SP_MODIFICACIONESDEUDA.HORA =:HORA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VALORANT":"$VALORANT","VALORNUEVO":"$VALORNUEVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="HORA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spmodificacionesdeuda/consultarvalores">
+		<call-query href="getSpmodificacionesdeudaConsultarValoresQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA" query-param="HORA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSpmodificacionesdeuda" keyColumns="COMPANIA,CICLO,CODIGORUTA,CONCEPTO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_MODIFICACIONESDEUDA (COMPANIA, CICLO, CODIGORUTA, CONCEPTO, FECHA, HORA, USUARIO, VRANT, VRNUE, TIPOMODIFICACION, CAUSAMODIFICACION, ANO, PERIODO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CICLO, :CODIGORUTA, :CONCEPTO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:HORA,'DD/MM/YYYY HH24:MI:SS'), :USUARIO, :VRANT, :VRNUE, :TIPOMODIFICACION, :CAUSAMODIFICACION, :ANO, :PERIODO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CICLO":"$CICLO(type:integer)","KEY_CODIGORUTA":"$CODIGORUTA","KEY_CONCEPTO":"$CONCEPTO(type:integer)","KEY_FECHA":"$FECHA","KEY_HORA":"$HORA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="HORA" sqlType="STRING"/>
+		<param defaultValue="" name="USUARIO" sqlType="STRING"/>
+		<param defaultValue="0" name="VRANT" sqlType="STRING"/>
+		<param defaultValue="0" name="VRNUE" sqlType="STRING"/>
+		<param name="TIPOMODIFICACION" sqlType="STRING"/>
+		<param name="CAUSAMODIFICACION" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="spmodificacionesdeuda">
+		<call-query href="insertSpmodificacionesdeuda">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA" query-param="HORA"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="VRANT" query-param="VRANT"/>
+			<with-param name="VRNUE" query-param="VRNUE"/>
+			<with-param name="TIPOMODIFICACION" query-param="TIPOMODIFICACION"/>
+			<with-param name="CAUSAMODIFICACION" query-param="CAUSAMODIFICACION"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSpmodificacionesdeuda" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SP_MODIFICACIONESDEUDA WHERE SP_MODIFICACIONESDEUDA.COMPANIA= :KEY_COMPANIA AND SP_MODIFICACIONESDEUDA.CICLO= :KEY_CICLO AND SP_MODIFICACIONESDEUDA.CODIGORUTA= :KEY_CODIGORUTA AND SP_MODIFICACIONESDEUDA.CONCEPTO= :KEY_CONCEPTO AND SP_MODIFICACIONESDEUDA.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS')  AND SP_MODIFICACIONESDEUDA.HORA= TO_DATE(:KEY_HORA,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CICLO" sqlType="INTEGER"/>
+		<param name="KEY_CODIGORUTA" sqlType="STRING"/>
+		<param name="KEY_CONCEPTO" sqlType="INTEGER"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+		<param name="KEY_HORA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="spmodificacionesdeuda">
+		<call-query href="deleteSpmodificacionesdeuda">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CICLO" query-param="KEY_CICLO"/>
+			<with-param name="KEY_CODIGORUTA" query-param="KEY_CODIGORUTA"/>
+			<with-param name="KEY_CONCEPTO" query-param="KEY_CONCEPTO"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+			<with-param name="KEY_HORA" query-param="KEY_HORA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpmodificacionesdeuda" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_MODIFICACIONESDEUDA SET CICLO=:CICLO, CODIGORUTA=:CODIGORUTA, CONCEPTO=:CONCEPTO, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), HORA=TO_DATE(:HORA,'DD/MM/YYYY HH24:MI:SS'), USUARIO=:USUARIO, VRANT=:VRANT, VRNUE=:VRNUE, TIPOMODIFICACION=:TIPOMODIFICACION, CAUSAMODIFICACION=:CAUSAMODIFICACION, ANO=:ANO, PERIODO=:PERIODO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SP_MODIFICACIONESDEUDA.COMPANIA= :KEY_COMPANIA AND SP_MODIFICACIONESDEUDA.CICLO= :KEY_CICLO AND SP_MODIFICACIONESDEUDA.CODIGORUTA= :KEY_CODIGORUTA AND SP_MODIFICACIONESDEUDA.CONCEPTO= :KEY_CONCEPTO AND SP_MODIFICACIONESDEUDA.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS')  AND SP_MODIFICACIONESDEUDA.HORA= TO_DATE(:KEY_HORA,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="HORA" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="VRANT" sqlType="STRING"/>
+		<param name="VRNUE" sqlType="STRING"/>
+		<param name="TIPOMODIFICACION" sqlType="STRING"/>
+		<param name="CAUSAMODIFICACION" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CICLO" sqlType="STRING"/>
+		<param name="KEY_CODIGORUTA" sqlType="STRING"/>
+		<param name="KEY_CONCEPTO" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+		<param name="KEY_HORA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spmodificacionesdeuda">
+		<call-query href="updateSpmodificacionesdeuda">
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="HORA" query-param="HORA"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="VRANT" query-param="VRANT"/>
+			<with-param name="VRNUE" query-param="VRNUE"/>
+			<with-param name="TIPOMODIFICACION" query-param="TIPOMODIFICACION"/>
+			<with-param name="CAUSAMODIFICACION" query-param="CAUSAMODIFICACION"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CICLO" query-param="KEY_CICLO"/>
+			<with-param name="KEY_CODIGORUTA" query-param="KEY_CODIGORUTA"/>
+			<with-param name="KEY_CONCEPTO" query-param="KEY_CONCEPTO"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+			<with-param name="KEY_HORA" query-param="KEY_HORA"/>
+
+		</call-query>
+	</resource>
+
+</data>

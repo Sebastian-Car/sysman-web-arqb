@@ -1,0 +1,126 @@
+﻿<data name="serviciospublicos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getServiciospublicosTodosPorCompaniaCodigoServicionNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO_SERVICIO, NOMBRE  FROM SERVICIOS_PUBLICOS WHERE COMPANIA = :COMPANIA ORDER BY CODIGO_SERVICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO_SERVICIO":"$CODIGO_SERVICIO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="serviciospublicos/todosporcompaniacodigoservicionnombre">
+		<call-query href="getServiciospublicosTodosPorCompaniaCodigoServicionNombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getServiciospublicosServicioAsociadoPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO_SERVICIO SERVICIO_ASOCIADO, NOMBRE  FROM SERVICIOS_PUBLICOS WHERE COMPANIA = :COMPANIA ORDER BY CODIGO_SERVICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SERVICIO_ASOCIADO":"$SERVICIO_ASOCIADO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="serviciospublicos/servicioasociadoporcompania">
+		<call-query href="getServiciospublicosServicioAsociadoPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertServiciospublicos" keyColumns="COMPANIA,CODIGO_SERVICIO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SERVICIOS_PUBLICOS (COMPANIA, CODIGO_SERVICIO, NOMBRE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO_SERVICIO, :NOMBRE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO_SERVICIO":"$CODIGO_SERVICIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO_SERVICIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="serviciospublicos">
+		<call-query href="insertServiciospublicos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO_SERVICIO" query-param="CODIGO_SERVICIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteServiciospublicos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SERVICIOS_PUBLICOS WHERE SERVICIOS_PUBLICOS.COMPANIA= :KEY_COMPANIA AND SERVICIOS_PUBLICOS.CODIGO_SERVICIO= :KEY_CODIGO_SERVICIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO_SERVICIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="serviciospublicos">
+		<call-query href="deleteServiciospublicos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO_SERVICIO" query-param="KEY_CODIGO_SERVICIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getServiciospublicosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, SERVICIOS_PUBLICOS.CODIGO_SERVICIO CODIGO, SERVICIOS_PUBLICOS.NOMBRE DESCRIPCION  FROM SERVICIOS_PUBLICOS WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="serviciospublicos">
+		<call-query href="getServiciospublicosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getServiciospublicosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, SERVICIOS_PUBLICOS.CODIGO_SERVICIO CODIGO, SERVICIOS_PUBLICOS.NOMBRE DESCRIPCION  FROM SERVICIOS_PUBLICOS WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="serviciospublicos/numero">
+		<call-query href="getServiciospublicosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="updateServiciospublicos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SERVICIOS_PUBLICOS SET NOMBRE=:NOMBRE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SERVICIOS_PUBLICOS.COMPANIA= :KEY_COMPANIA AND SERVICIOS_PUBLICOS.CODIGO_SERVICIO= :KEY_CODIGO_SERVICIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO_SERVICIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="serviciospublicos">
+		<call-query href="updateServiciospublicos">
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO_SERVICIO" query-param="KEY_CODIGO_SERVICIO"/>
+
+		</call-query>
+	</resource>
+
+</data>

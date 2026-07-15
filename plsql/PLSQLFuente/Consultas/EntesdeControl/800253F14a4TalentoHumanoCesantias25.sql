@@ -1,0 +1,15 @@
+SELECT (CASE WHEN PERSONAL.REGIMEN= 1
+             THEN 'RETROACTIVIDAD'
+             ELSE CASE WHEN PERSONAL.REGIMEN= 2
+            THEN   'ACTUAL'
+            ELSE 'NO ASIGNADO'
+          END
+       END)                                              "Cesantías" ,   
+      COUNT(PERSONAL.ID_DE_EMPLEADO)                     "No Funcionarios"               
+FROM PERSONAL
+WHERE (PERSONAL.ESTADO_ACTUAL=1
+   OR (PERSONAL.ESTADO_ACTUAL=3 AND TO_NUMBER(TO_CHAR(FECHA_DE_RETIRO,'YYYY'))=s$ano$s)AND TO_NUMBER(TO_CHAR(FECHA_DE_RETIRO,'MM')) BETWEEN s$mesInicial$s AND s$mesFinal$s)
+ AND PERSONAL.ID_DE_TIPO NOT IN(99) 
+ AND PERSONAL.ID_DE_EMPLEADO NOT IN(0)
+  GROUP BY  PERSONAL.REGIMEN 
+ 

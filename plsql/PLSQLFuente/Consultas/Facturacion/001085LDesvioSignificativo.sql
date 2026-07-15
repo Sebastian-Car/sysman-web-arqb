@@ -1,0 +1,16 @@
+SELECT
+ COMPANIA,
+	USUARIO,
+	TO_CHAR(FECHA, 'DD/MM/YYYY') FECHA,
+	TO_CHAR(HORA, 'HH24:mm:ss') HORA,
+	PROCESO,
+	PERIODO,
+	CODINTERNO,
+	RESUMEN,
+	CICLO
+FROM SP_AUDIDESVIO
+WHERE
+ COMPANIA = s$compania$s
+     AND ANO = s$ano$s
+     AND PERIODO   = 's$periodo$s'
+     AND CICLO        = s$ciclo$s

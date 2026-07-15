@@ -1,0 +1,43 @@
+SELECT COMPANIA,  
+       ID_DE_PROCESO,  
+       ANO,  
+       MES, 
+       PERIODO, 
+       ID_DE_EMPLEADO, 
+ SUM(VALOR) SUMADEVALOR, 
+ SUM(CASE WHEN ID_DE_CONCEPTO=130  
+    THEN VALOR  
+    ELSE 0  
+    END) C130, 
+ SUM(CASE WHEN ID_DE_CONCEPTO=131 
+     THEN VALOR  
+     ELSE 0  
+     END) C131, 
+ SUM(CASE WHEN ID_DE_CONCEPTO=130  
+     THEN VALOR  
+     ELSE 0  
+     END- 
+     CASE WHEN ID_DE_CONCEPTO=131  
+     THEN VALOR   
+     ELSE 0  
+     END) AS DIF 
+FROM V_ACUMULADOS 
+WHERE COMPANIA= s$compania$s 
+ AND ID_DE_CONCEPTO IN (130, 131) 
+ AND ANO= s$ano2$s     
+ AND MES= s$mes2$s 
+ AND PERIODO= s$periodo2$s 
+GROUP BY COMPANIA, 
+ ID_DE_PROCESO, 
+ ANO,  
+ MES, 
+ PERIODO, 
+ ID_DE_EMPLEADO 
+HAVING SUM(CASE WHEN ID_DE_CONCEPTO=130 
+            THEN VALOR  
+            ELSE 0  
+            END -  
+            CASE WHEN ID_DE_CONCEPTO=131 
+            THEN VALOR 
+            ELSE 0  
+            END)<>0

@@ -1,0 +1,164 @@
+﻿<data name="procesosdenomina" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getProcesosdenominaIdNomLjoinPeriodosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT PERIODOS.ID_DE_PROCESO, PROCESOS_DE_NOMINA.NOMBRE_PROCESO  FROM PROCESOS_DE_NOMINA LEFT JOIN PERIODOS ON PROCESOS_DE_NOMINA.COMPANIA = PERIODOS.COMPANIA AND PROCESOS_DE_NOMINA.ID_DE_PROCESO = PERIODOS.ID_DE_PROCESO WHERE PERIODOS.COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_PROCESO":"$ID_DE_PROCESO(type:integer)","NOMBRE_PROCESO":"$NOMBRE_PROCESO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesosdenomina/idnomljoinperiodos">
+		<call-query href="getProcesosdenominaIdNomLjoinPeriodosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosdenominaPorCompaniaDifCeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT PERIODOS.ID_DE_PROCESO, PROCESOS_DE_NOMINA.NOMBRE_PROCESO  FROM PROCESOS_DE_NOMINA LEFT JOIN PERIODOS ON PROCESOS_DE_NOMINA.COMPANIA = PERIODOS.COMPANIA AND PROCESOS_DE_NOMINA.ID_DE_PROCESO = PERIODOS.ID_DE_PROCESO WHERE PROCESOS_DE_NOMINA.COMPANIA = :COMPANIA AND PERIODOS.ID_DE_PROCESO &lt;&gt; 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_PROCESO":"$ID_DE_PROCESO(type:integer)","NOMBRE_PROCESO":"$NOMBRE_PROCESO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesosdenomina/porcompaniadifcero">
+		<call-query href="getProcesosdenominaPorCompaniaDifCeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosdenominaTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT PROCESOS_DE_NOMINA.ID_DE_PROCESO, PROCESOS_DE_NOMINA.NOMBRE_PROCESO  FROM PROCESOS_DE_NOMINA WHERE PROCESOS_DE_NOMINA.COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_PROCESO":"$ID_DE_PROCESO(type:integer)","NOMBRE_PROCESO":"$NOMBRE_PROCESO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesosdenomina/todosporcompania">
+		<call-query href="getProcesosdenominaTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosdenominaTodosConIdProcesoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ID_DE_PROCESO, NOMBRE_PROCESO  FROM PROCESOS_DE_NOMINA WHERE COMPANIA = :COMPANIA AND ID_DE_PROCESO NOT IN(0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_PROCESO":"$ID_DE_PROCESO(type:integer)","NOMBRE_PROCESO":"$NOMBRE_PROCESO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesosdenomina/todosconidproceso">
+		<call-query href="getProcesosdenominaTodosConIdProcesoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosdenominaPagIdNomPeriodosPorCiaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT PERIODOS.ID_DE_PROCESO, PROCESOS_DE_NOMINA.NOMBRE_PROCESO  FROM PROCESOS_DE_NOMINA LEFT JOIN PERIODOS ON PROCESOS_DE_NOMINA.COMPANIA = PERIODOS.COMPANIA AND PROCESOS_DE_NOMINA.ID_DE_PROCESO = PERIODOS.ID_DE_PROCESO WHERE PERIODOS.COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_DE_PROCESO IS NULL THEN ' ' ELSE UPPER(ID_DE_PROCESO) END)  LIKE UPPER(:ID_DE_PROCESO || '%')  AND (CASE WHEN NOMBRE_PROCESO IS NULL THEN ' ' ELSE UPPER(NOMBRE_PROCESO) END)  LIKE UPPER( '%' || :NOMBRE_PROCESO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_PROCESO":"$ID_DE_PROCESO(type:integer)","NOMBRE_PROCESO":"$NOMBRE_PROCESO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="NOMBRE_PROCESO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="procesosdenomina/idnomperiodosporcia/pag">
+		<call-query href="getProcesosdenominaPagIdNomPeriodosPorCiaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="NOMBRE_PROCESO" query-param="NOMBRE_PROCESO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosdenominaNumIdNomPeriodosPorCiaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT PERIODOS.ID_DE_PROCESO, PROCESOS_DE_NOMINA.NOMBRE_PROCESO  FROM PROCESOS_DE_NOMINA LEFT JOIN PERIODOS ON PROCESOS_DE_NOMINA.COMPANIA = PERIODOS.COMPANIA AND PROCESOS_DE_NOMINA.ID_DE_PROCESO = PERIODOS.ID_DE_PROCESO WHERE PERIODOS.COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_DE_PROCESO IS NULL THEN ' ' ELSE UPPER(ID_DE_PROCESO) END)  LIKE UPPER(:ID_DE_PROCESO || '%')  AND (CASE WHEN NOMBRE_PROCESO IS NULL THEN ' ' ELSE UPPER(NOMBRE_PROCESO) END)  LIKE UPPER( '%' || :NOMBRE_PROCESO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="NOMBRE_PROCESO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesosdenomina/idnomperiodosporcia/num">
+		<call-query href="getProcesosdenominaNumIdNomPeriodosPorCiaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="NOMBRE_PROCESO" query-param="NOMBRE_PROCESO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosdenominaTodosPorProcesoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT PERIODOS.ID_DE_PROCESO, PROCESOS_DE_NOMINA.NOMBRE_PROCESO  FROM PROCESOS_DE_NOMINA LEFT JOIN PERIODOS ON PROCESOS_DE_NOMINA.ID_DE_PROCESO = PERIODOS.ID_DE_PROCESO AND PROCESOS_DE_NOMINA.COMPANIA = PERIODOS.COMPANIA WHERE PROCESOS_DE_NOMINA.COMPANIA = :COMPANIA AND PERIODOS.ID_DE_PROCESO NOT IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_PROCESO":"$ID_DE_PROCESO(type:integer)","NOMBRE_PROCESO":"$NOMBRE_PROCESO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesosdenomina/todosporproceso">
+		<call-query href="getProcesosdenominaTodosPorProcesoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosdenominaProcesosporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT PROCESOS_DE_NOMINA.ID_DE_PROCESO, CONCAT(PROCESOS_DE_NOMINA.ID_DE_PROCESO,CONCAT(' ',PROCESOS_DE_NOMINA.NOMBRE_PROCESO) ) NOMPROCESO FROM PROCESOS_DE_NOMINA WHERE PROCESOS_DE_NOMINA.COMPANIA =:COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_PROCESO":"$ID_DE_PROCESO(type:integer)","NOMPROCESO":"$NOMPROCESO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesosdenomina/procesosporcompania">
+		<call-query href="getProcesosdenominaProcesosporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosdenominaTodosPorIdProcesoCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PROCESOS_DE_NOMINA.NOMBRE_PROCESO  FROM PROCESOS_DE_NOMINA WHERE PROCESOS_DE_NOMINA.ID_DE_PROCESO=:ID_DE_PROCESO AND PROCESOS_DE_NOMINA.COMPANIA =:COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE_PROCESO":"$NOMBRE_PROCESO"}]}}		</result>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesosdenomina/todosporidprocesocompania">
+		<call-query href="getProcesosdenominaTodosPorIdProcesoCompaniaQuery">
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosdenominaPagIdNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT ID_DE_PROCESO, NOMBRE_PROCESO  FROM PROCESOS_DE_NOMINA WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_DE_PROCESO IS NULL THEN ' ' ELSE UPPER(ID_DE_PROCESO) END)  LIKE UPPER(:ID_DE_PROCESO || '%')  AND (CASE WHEN NOMBRE_PROCESO IS NULL THEN ' ' ELSE UPPER(NOMBRE_PROCESO) END)  LIKE UPPER( '%' || :NOMBRE_PROCESO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_PROCESO":"$ID_DE_PROCESO(type:integer)","NOMBRE_PROCESO":"$NOMBRE_PROCESO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="NOMBRE_PROCESO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="procesosdenomina/idnombre/pag">
+		<call-query href="getProcesosdenominaPagIdNombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="NOMBRE_PROCESO" query-param="NOMBRE_PROCESO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProcesosdenominaNumIdNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT ID_DE_PROCESO, NOMBRE_PROCESO  FROM PROCESOS_DE_NOMINA WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_DE_PROCESO IS NULL THEN ' ' ELSE UPPER(ID_DE_PROCESO) END)  LIKE UPPER(:ID_DE_PROCESO || '%')  AND (CASE WHEN NOMBRE_PROCESO IS NULL THEN ' ' ELSE UPPER(NOMBRE_PROCESO) END)  LIKE UPPER( '%' || :NOMBRE_PROCESO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROCESO" sqlType="STRING"/>
+		<param name="NOMBRE_PROCESO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="procesosdenomina/idnombre/num">
+		<call-query href="getProcesosdenominaNumIdNombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROCESO" query-param="ID_DE_PROCESO"/>
+			<with-param name="NOMBRE_PROCESO" query-param="NOMBRE_PROCESO"/>
+
+		</call-query>
+	</resource>
+
+</data>

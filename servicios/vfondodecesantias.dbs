@@ -1,0 +1,54 @@
+﻿<data name="vfondodecesantias" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getVfondodecesantiasTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  FONDO_CESANTIAS, NOMBRE_FONDO_CESANTIAS  FROM V_FONDO_DE_CESANTIAS WHERE COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FONDO_CESANTIAS":"$FONDO_CESANTIAS","NOMBRE_FONDO_CESANTIAS":"$NOMBRE_FONDO_CESANTIAS"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vfondodecesantias/todosporcompania">
+		<call-query href="getVfondodecesantiasTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getVfondodecesantiasPagPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  V_FONDO_DE_CESANTIAS.FONDO_CESANTIAS FONDO, V_FONDO_DE_CESANTIAS.NOMBRE_FONDO_CESANTIAS NOMBRE_FONDO, V_FONDO_DE_CESANTIAS.NIT  FROM V_FONDO_DE_CESANTIAS WHERE V_FONDO_DE_CESANTIAS.COMPANIA = :COMPANIA) WHERE (CASE WHEN FONDO IS NULL THEN ' ' ELSE UPPER(FONDO) END)  LIKE UPPER(:FONDO || '%')  AND (CASE WHEN NOMBRE_FONDO IS NULL THEN ' ' ELSE UPPER(NOMBRE_FONDO) END)  LIKE UPPER( '%' || :NOMBRE_FONDO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FONDO":"$FONDO","NOMBRE_FONDO":"$NOMBRE_FONDO","NIT":"$NIT"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FONDO" sqlType="STRING"/>
+		<param name="NOMBRE_FONDO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="vfondodecesantias/porcompania/pag">
+		<call-query href="getVfondodecesantiasPagPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FONDO" query-param="FONDO"/>
+			<with-param name="NOMBRE_FONDO" query-param="NOMBRE_FONDO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getVfondodecesantiasNumPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  V_FONDO_DE_CESANTIAS.FONDO_CESANTIAS FONDO, V_FONDO_DE_CESANTIAS.NOMBRE_FONDO_CESANTIAS NOMBRE_FONDO, V_FONDO_DE_CESANTIAS.NIT  FROM V_FONDO_DE_CESANTIAS WHERE V_FONDO_DE_CESANTIAS.COMPANIA = :COMPANIA) WHERE (CASE WHEN FONDO IS NULL THEN ' ' ELSE UPPER(FONDO) END)  LIKE UPPER(:FONDO || '%')  AND (CASE WHEN NOMBRE_FONDO IS NULL THEN ' ' ELSE UPPER(NOMBRE_FONDO) END)  LIKE UPPER( '%' || :NOMBRE_FONDO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FONDO" sqlType="STRING"/>
+		<param name="NOMBRE_FONDO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="vfondodecesantias/porcompania/num">
+		<call-query href="getVfondodecesantiasNumPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FONDO" query-param="FONDO"/>
+			<with-param name="NOMBRE_FONDO" query-param="NOMBRE_FONDO"/>
+
+		</call-query>
+	</resource>
+
+</data>

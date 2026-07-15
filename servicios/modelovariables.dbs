@@ -1,0 +1,244 @@
+﻿<data name="modelovariables" transports="http https local">
+	<config enableOData="false" id="sysmanirisst">
+		<property name="carbon_datasource_name">SYSMANIRISST</property>
+	</config>
+	<query id="getModelovariablesPagTodosporplantillaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ETIQUETA , ' ' VALOR , FORMATO  FROM MODELO_VARIABLES WHERE PLANTILLA = :CODIGOPLANTILLA AND TIPO = 'U' AND FECHA = TO_DATE(:FECHAPLANTILLA,'DD/MM/YYYY')) WHERE (CASE WHEN ETIQUETA IS NULL THEN ' ' ELSE UPPER(ETIQUETA) END)  LIKE UPPER( '%' || :ETIQUETA || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ETIQUETA":"$ETIQUETA","VALOR":"$VALOR","FORMATO":"$FORMATO"}]}}		</result>
+		<param name="CODIGOPLANTILLA" sqlType="STRING"/>
+		<param name="FECHAPLANTILLA" sqlType="STRING"/>
+		<param name="ETIQUETA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="modelovariables/todosporplantilla/pag">
+		<call-query href="getModelovariablesPagTodosporplantillaQuery">
+			<with-param name="CODIGOPLANTILLA" query-param="CODIGOPLANTILLA"/>
+			<with-param name="FECHAPLANTILLA" query-param="FECHAPLANTILLA"/>
+			<with-param name="ETIQUETA" query-param="ETIQUETA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getModelovariablesNumTodosporplantillaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ETIQUETA , ' ' VALOR , FORMATO  FROM MODELO_VARIABLES WHERE PLANTILLA = :CODIGOPLANTILLA AND TIPO = 'U' AND FECHA = TO_DATE(:FECHAPLANTILLA,'DD/MM/YYYY')) WHERE (CASE WHEN ETIQUETA IS NULL THEN ' ' ELSE UPPER(ETIQUETA) END)  LIKE UPPER( '%' || :ETIQUETA || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGOPLANTILLA" sqlType="STRING"/>
+		<param name="FECHAPLANTILLA" sqlType="STRING"/>
+		<param name="ETIQUETA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="modelovariables/todosporplantilla/num">
+		<call-query href="getModelovariablesNumTodosporplantillaQuery">
+			<with-param name="CODIGOPLANTILLA" query-param="CODIGOPLANTILLA"/>
+			<with-param name="FECHAPLANTILLA" query-param="FECHAPLANTILLA"/>
+			<with-param name="ETIQUETA" query-param="ETIQUETA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteModelovariablesPlantillasWord" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>DELETE FROM MODELO_VARIABLES  WHERE PLANTILLA=:PLANTILLA  AND TIPO = 'C'  AND FECHA = TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS')</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="PLANTILLA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="modelovariables/plantillasword">
+		<call-query href="deleteModelovariablesPlantillasWord">
+			<with-param name="PLANTILLA" query-param="PLANTILLA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getModelovariablesEtiquetasPorPlantillaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  ETIQUETA  FROM MODELO_VARIABLES WHERE PLANTILLA = :PLANTILLA AND DESCRIPCION = :DESCRIPCION AND TIPO = 'T' AND FECHA = :FECHA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ETIQUETA":"$ETIQUETA"}]}}		</result>
+		<param name="PLANTILLA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="modelovariables/etiquetasporplantilla">
+		<call-query href="getModelovariablesEtiquetasPorPlantillaQuery">
+			<with-param name="PLANTILLA" query-param="PLANTILLA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteModelovariablesEtiquetasPlantillasWord" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>DELETE FROM MODELO_VARIABLES  WHERE PLANTILLA=:PLANTILLA  AND DESCRIPCION =:DESCRIPCION AND TIPO = 'T'  AND FECHA = TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS') AND INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(:ETIQUETAS),ETIQUETA, 1) &gt; 0</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="PLANTILLA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ETIQUETAS" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="modelovariables/etiquetasplantillasword">
+		<call-query href="deleteModelovariablesEtiquetasPlantillasWord">
+			<with-param name="PLANTILLA" query-param="PLANTILLA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ETIQUETAS" query-param="ETIQUETAS"/>
+
+		</call-query>
+	</resource>
+	<query id="getModelovariablesPorPlantillaUsuarioQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  ETIQUETA , ' ' VALOR , FORMATO  FROM MODELO_VARIABLES WHERE PLANTILLA = :CODIGOPLANTILLA AND TIPO = 'U' AND FECHA &lt;= TO_DATE(:FECHAPLANTILLA,'DD/MM/YYYY')</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ETIQUETA":"$ETIQUETA","VALOR":"$VALOR","FORMATO":"$FORMATO"}]}}		</result>
+		<param name="CODIGOPLANTILLA" sqlType="STRING"/>
+		<param name="FECHAPLANTILLA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="modelovariables/porplantillausuario">
+		<call-query href="getModelovariablesPorPlantillaUsuarioQuery">
+			<with-param name="CODIGOPLANTILLA" query-param="CODIGOPLANTILLA"/>
+			<with-param name="FECHAPLANTILLA" query-param="FECHAPLANTILLA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertModelovariables" keyColumns="PLANTILLA,CODIGO" returnGeneratedKeys="true" useConfig="sysmanirisst">
+		<sql>INSERT INTO MODELO_VARIABLES (PLANTILLA, NOMBRE, TIPO, FECHA, FORMATO, ETIQUETA, DESCRIPCION, DATE_CREATED, CREATED_BY) VALUES (:PLANTILLA, :NOMBRE, :TIPO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :FORMATO, :ETIQUETA, :DESCRIPCION, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_PLANTILLA":"$PLANTILLA","KEY_CODIGO":"$CODIGO(type:integer)"}]}}		</result>
+		<param name="PLANTILLA" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="FORMATO" sqlType="STRING"/>
+		<param defaultValue="" name="ETIQUETA" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="modelovariables">
+		<call-query href="insertModelovariables">
+			<with-param name="PLANTILLA" query-param="PLANTILLA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FORMATO" query-param="FORMATO"/>
+			<with-param name="ETIQUETA" query-param="ETIQUETA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteModelovariables" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>DELETE FROM MODELO_VARIABLES WHERE MODELO_VARIABLES.PLANTILLA= :KEY_PLANTILLA AND MODELO_VARIABLES.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_PLANTILLA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="modelovariables">
+		<call-query href="deleteModelovariables">
+			<with-param name="KEY_PLANTILLA" query-param="KEY_PLANTILLA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getModelovariablesPaginaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  PLANTILLA, CODIGO, NOMBRE, CASE WHEN TIPO='U' THEN 'USUARIO' WHEN TIPO='C' THEN 'CONSULTA' WHEN TIPO = 'T' THEN 'COLUMNA TABLA' END TIPO, FORMATO, CASE WHEN FORMATO = 'T' THEN 'Texto' WHEN FORMATO ='D' THEN 'Fecha' WHEN FORMATO = 'I' THEN 'Numero' WHEN FORMATO = 'L' THEN 'Fecha Texto' WHEN FORMATO='M' THEN 'Moneda' WHEN FORMATO='P' THEN 'Porcentaje' END FORMATOLB, ETIQUETA, DESCRIPCION  FROM MODELO_VARIABLES WHERE PLANTILLA=:PLANTILLA AND TRUNC(FECHA) = :FECHA ORDER BY TIPO , DESCRIPCION , NOMBRE , FORMATO) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER( '%' || :TIPO || '%')  AND (CASE WHEN FORMATOLB IS NULL THEN ' ' ELSE UPPER(FORMATOLB) END)  LIKE UPPER( '%' || :FORMATOLB || '%')  AND (CASE WHEN ETIQUETA IS NULL THEN ' ' ELSE UPPER(ETIQUETA) END)  LIKE UPPER( '%' || :ETIQUETA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"PLANTILLA":"$PLANTILLA","CODIGO":"$CODIGO(type:integer)","NOMBRE":"$NOMBRE","TIPO":"$TIPO","FORMATO":"$FORMATO","FORMATOLB":"$FORMATOLB","ETIQUETA":"$ETIQUETA","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="PLANTILLA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="FORMATOLB" sqlType="STRING"/>
+		<param name="ETIQUETA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="modelovariables">
+		<call-query href="getModelovariablesPaginaQuery">
+			<with-param name="PLANTILLA" query-param="PLANTILLA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="FORMATOLB" query-param="FORMATOLB"/>
+			<with-param name="ETIQUETA" query-param="ETIQUETA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getModelovariablesNumeroQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  PLANTILLA, CODIGO, NOMBRE, CASE WHEN TIPO='U' THEN 'USUARIO' WHEN TIPO='C' THEN 'CONSULTA' WHEN TIPO = 'T' THEN 'COLUMNA TABLA' END TIPO, FORMATO, CASE WHEN FORMATO = 'T' THEN 'Texto' WHEN FORMATO ='D' THEN 'Fecha' WHEN FORMATO = 'I' THEN 'Numero' WHEN FORMATO = 'L' THEN 'Fecha Texto' WHEN FORMATO='M' THEN 'Moneda' WHEN FORMATO='P' THEN 'Porcentaje' END FORMATOLB, ETIQUETA, DESCRIPCION  FROM MODELO_VARIABLES WHERE PLANTILLA=:PLANTILLA AND TRUNC(FECHA) = :FECHA ORDER BY TIPO , DESCRIPCION , NOMBRE , FORMATO) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER( '%' || :TIPO || '%')  AND (CASE WHEN FORMATOLB IS NULL THEN ' ' ELSE UPPER(FORMATOLB) END)  LIKE UPPER( '%' || :FORMATOLB || '%')  AND (CASE WHEN ETIQUETA IS NULL THEN ' ' ELSE UPPER(ETIQUETA) END)  LIKE UPPER( '%' || :ETIQUETA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="PLANTILLA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="FORMATOLB" sqlType="STRING"/>
+		<param name="ETIQUETA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="modelovariables/numero">
+		<call-query href="getModelovariablesNumeroQuery">
+			<with-param name="PLANTILLA" query-param="PLANTILLA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="FORMATOLB" query-param="FORMATOLB"/>
+			<with-param name="ETIQUETA" query-param="ETIQUETA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+	<query id="updateModelovariables" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>UPDATE MODELO_VARIABLES SET PLANTILLA=:PLANTILLA, CODIGO=:CODIGO, NOMBRE=:NOMBRE, FORMATO=:FORMATO, ETIQUETA=:ETIQUETA, DESCRIPCION=:DESCRIPCION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE MODELO_VARIABLES.PLANTILLA= :KEY_PLANTILLA AND MODELO_VARIABLES.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="PLANTILLA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="FORMATO" sqlType="STRING"/>
+		<param name="ETIQUETA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_PLANTILLA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="modelovariables">
+		<call-query href="updateModelovariables">
+			<with-param name="PLANTILLA" query-param="PLANTILLA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="FORMATO" query-param="FORMATO"/>
+			<with-param name="ETIQUETA" query-param="ETIQUETA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_PLANTILLA" query-param="KEY_PLANTILLA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

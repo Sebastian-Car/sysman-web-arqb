@@ -1,0 +1,539 @@
+﻿<data name="parametros" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertParametrosSubconciliacion" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PARAMETRO (COMPANIA,CREATED_BY,DATE_CREATED,DESCRIPCION,FECHA_INICIAL,MODULO,NIVEL,NOMBRE,TIPOPARAMETRO,VALOR) VALUES (:COMPANIA,:CREATED_BY,:DATE_CREATED,:DESCRIPCION,:FECHA_INICIAL,:MODULO,:NIVEL,:NOMBRE,:TIPOPARAMETRO,:VALOR)</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FECHA_INICIAL" sqlType="STRING"/>
+		<param defaultValue="0" name="MODULO" sqlType="STRING"/>
+		<param defaultValue="0" name="NIVEL" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="1" name="TIPOPARAMETRO" sqlType="STRING"/>
+		<param defaultValue="" name="VALOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="parametros/subconciliacion">
+		<call-query href="insertParametrosSubconciliacion">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="MODULO" query-param="MODULO"/>
+			<with-param name="NIVEL" query-param="NIVEL"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TIPOPARAMETRO" query-param="TIPOPARAMETRO"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getParametrosGeneracionListaParametrosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  1 AS LLAVE, DECODE(PCK_SYSMAN_UTL.FC_PAR(:COMPANIA,P2.NOMBRE, :MODULO,SYSDATE), 'SI', PCK_SYSMAN_UTL.FC_PAR(:COMPANIA,P1.NOMBRE,:MODULO,SYSDATE), 'ACUEDUCTO') AS VALOR  FROM PARAMETRO P1, PARAMETRO P2 WHERE P1.NOMBRE = 'NOMBRE SERVICIO A REMPLAZAR ACUEDUCTO' AND P2.NOMBRE = 'CAMBIAR NOMBRE SERVICIO ACUEDUCTO' UNION SELECT 2 AS LLAVE, DECODE(PCK_SYSMAN_UTL.FC_PAR(:COMPANIA,P2.NOMBRE,:MODULO,SYSDATE), 'SI', PCK_SYSMAN_UTL.FC_PAR(:COMPANIA,P1.NOMBRE,:MODULO,SYSDATE), 'ALCANTARILLADO') AS VALOR FROM PARAMETRO P1, PARAMETRO P2 WHERE P1.NOMBRE = 'NOMBRE SERVICIO A REMPLAZAR ALCANTARILLADO' AND P2.NOMBRE = 'CAMBIAR NOMBRE SERVICIO ALCANTARILLADO' UNION SELECT 3 AS LLAVE, DECODE(PCK_SYSMAN_UTL.FC_PAR(:COMPANIA,P2.NOMBRE,:MODULO,SYSDATE), 'SI', PCK_SYSMAN_UTL.FC_PAR(:COMPANIA,P1.NOMBRE,:MODULO,SYSDATE), 'ASEO') AS VALOR FROM PARAMETRO P1, PARAMETRO P2 WHERE P1.NOMBRE = 'NOMBRE SERVICIO A REMPLAZAR ASEO' AND P2.NOMBRE = 'CAMBIAR NOMBRE SERVICIO ASEO'</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"LLAVE":"$LLAVE","VALOR":"$VALOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="MODULO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="parametros/generacionlistaparametros">
+		<call-query href="getParametrosGeneracionListaParametrosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="MODULO" query-param="MODULO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateParametrosActualizavalor" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PARAMETRO SET VALOR=:VALOR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PARAMETRO.COMPANIA= :KEY_COMPANIA AND PARAMETRO.NOMBRE= :KEY_NOMBRE AND PARAMETRO.MODULO= :KEY_MODULO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NOMBRE" sqlType="STRING"/>
+		<param name="KEY_MODULO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="parametros/actualizavalor">
+		<call-query href="updateParametrosActualizavalor">
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NOMBRE" query-param="KEY_NOMBRE"/>
+			<with-param name="KEY_MODULO" query-param="KEY_MODULO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateParametrosNumeracionUnicaDeContratos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PARAMETRO  SET VALOR = :NUMERACIONUNICA,MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE COMPANIA = :COMPANIA   AND NOMBRE = 'CONSECUTIVO ACTUAL CONTRATOS NUMERACION UNICA'</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NUMERACIONUNICA" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="parametros/numeracionunicadecontratos">
+		<call-query href="updateParametrosNumeracionUnicaDeContratos">
+			<with-param name="NUMERACIONUNICA" query-param="NUMERACIONUNICA"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getParametrosPagNomfecinivalorpormodulonomQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  PARAMETRO.COMPANIA, PARAMETRO.NOMBRE,(TO_CHAR(PARAMETRO.FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIAL, PARAMETRO.MODULO, PARAMETRO.VALOR, PARAMETRO.TIPOPARAMETRO, TIPO.NOMBRE NOMBRETIPOPARAMETRO  FROM PARAMETRO INNER JOIN TIPOPARAMETRO TIPO ON PARAMETRO.TIPOPARAMETRO = TIPO.CODIGO WHERE PARAMETRO.COMPANIA = :COMPANIA AND PARAMETRO.MODULO = :MODULO AND PARAMETRO.NOMBRE IN('ACTIVAR RETIRADOS CALCULAR RETROACTIVO Y AUTOL', 'CALCULAR RETENCION SOLO AL RETROACTIVO', 'DESDE QUE MES REALIZAR RETROACTIVO', 'HASTA QUE MES REALIZAR RETROACTIVO', 'CALCULAR RETROACTIVO A DOCENTES COLBOY', 'CALCULAR RETROACTIVO A ADMINISTRATIVOS COLBOY') ORDER BY PARAMETRO.NOMBRE) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN FECHA_INICIAL IS NULL THEN ' ' ELSE UPPER(FECHA_INICIAL) END)  LIKE UPPER( '%' || :FECHA_INICIAL || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN NOMBRETIPOPARAMETRO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPOPARAMETRO) END)  LIKE UPPER( '%' || :NOMBRETIPOPARAMETRO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NOMBRE":"$NOMBRE","FECHA_INICIAL":"$FECHA_INICIAL","MODULO":"$MODULO(type:integer)","VALOR":"$VALOR","TIPOPARAMETRO":"$TIPOPARAMETRO","NOMBRETIPOPARAMETRO":"$NOMBRETIPOPARAMETRO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="MODULO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="FECHA_INICIAL" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="NOMBRETIPOPARAMETRO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="parametros/nomfecinivalorpormodulonom/pag">
+		<call-query href="getParametrosPagNomfecinivalorpormodulonomQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="MODULO" query-param="MODULO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="NOMBRETIPOPARAMETRO" query-param="NOMBRETIPOPARAMETRO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getParametrosNumNomfecinivalorpormodulonomQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  PARAMETRO.COMPANIA, PARAMETRO.NOMBRE,(TO_CHAR(PARAMETRO.FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIAL, PARAMETRO.MODULO, PARAMETRO.VALOR, PARAMETRO.TIPOPARAMETRO, TIPO.NOMBRE NOMBRETIPOPARAMETRO  FROM PARAMETRO INNER JOIN TIPOPARAMETRO TIPO ON PARAMETRO.TIPOPARAMETRO = TIPO.CODIGO WHERE PARAMETRO.COMPANIA = :COMPANIA AND PARAMETRO.MODULO = :MODULO AND PARAMETRO.NOMBRE IN('ACTIVAR RETIRADOS CALCULAR RETROACTIVO Y AUTOL', 'CALCULAR RETENCION SOLO AL RETROACTIVO', 'DESDE QUE MES REALIZAR RETROACTIVO', 'HASTA QUE MES REALIZAR RETROACTIVO', 'CALCULAR RETROACTIVO A DOCENTES COLBOY', 'CALCULAR RETROACTIVO A ADMINISTRATIVOS COLBOY') ORDER BY PARAMETRO.NOMBRE) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN FECHA_INICIAL IS NULL THEN ' ' ELSE UPPER(FECHA_INICIAL) END)  LIKE UPPER( '%' || :FECHA_INICIAL || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN NOMBRETIPOPARAMETRO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPOPARAMETRO) END)  LIKE UPPER( '%' || :NOMBRETIPOPARAMETRO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="MODULO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="FECHA_INICIAL" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="NOMBRETIPOPARAMETRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="parametros/nomfecinivalorpormodulonom/num">
+		<call-query href="getParametrosNumNomfecinivalorpormodulonomQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="MODULO" query-param="MODULO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="NOMBRETIPOPARAMETRO" query-param="NOMBRETIPOPARAMETRO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateParametrosValoryfechaini" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PARAMETRO SET VALOR=:VALOR, FECHA_INICIAL=TO_DATE(:FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS'), DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PARAMETRO.COMPANIA= :KEY_COMPANIA AND PARAMETRO.NOMBRE= :KEY_NOMBRE AND PARAMETRO.FECHA_INICIAL= TO_DATE(:KEY_FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')  AND PARAMETRO.MODULO= :KEY_MODULO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="FECHA_INICIAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NOMBRE" sqlType="STRING"/>
+		<param name="KEY_FECHA_INICIAL" sqlType="STRING"/>
+		<param name="KEY_MODULO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="parametros/valoryfechaini">
+		<call-query href="updateParametrosValoryfechaini">
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NOMBRE" query-param="KEY_NOMBRE"/>
+			<with-param name="KEY_FECHA_INICIAL" query-param="KEY_FECHA_INICIAL"/>
+			<with-param name="KEY_MODULO" query-param="KEY_MODULO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateParametrosActualizarValor" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PARAMETRO SET VALOR      = :VALOR,   MODIFIED_BY  =:MODIFIED_BY,   DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE COMPANIA = :COMPANIA AND NOMBRE     = :NOMBRE AND MODULO     = :MODULO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MODULO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="parametros/actualizarvalor">
+		<call-query href="updateParametrosActualizarValor">
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MODULO" query-param="MODULO"/>
+
+		</call-query>
+	</resource>
+	<query id="getParametrosPagListcertdianQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  P.NOMBRE NOMBRE, P.VALOR, P.DESCRIPCION, P.MODULO,(TO_CHAR(P.FECHACREACION,'DD/MM/YYYY HH24:MI:SS')) FECHACREACION,(TO_CHAR(P.FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIAL, P.COMPANIA, P.TIPOPARAMETRO, T.NOMBRE NOMPARAMETRO  FROM PARAMETRO P INNER JOIN TIPOPARAMETRO T ON P.TIPOPARAMETRO = T.CODIGO WHERE COMPANIA = :COMPANIA AND MODULO = :MODULO AND P.NOMBRE IN ('VALOR PORCENTAJE APLICAR PROCESO RETEFUENTE','CEDULA DE QUIEN FIRMA CERTIFICADO DIAN', 'FORMATO CERTIFICADO DIAN', 'FORMATO CERTIFICADO DIAN EMAIL', 'FORMATO CERTIFICADOS DIAN PENSIONADOS', 'NOMBRE DE QUIEN FIRMA CERTIFICADO DIAN', 'VALOR CONSIG BANCARIAS PARA CERTIFICADO UVT', 'VALOR CONSIGNACIONES BANCARIAS PARA CERTIFICADO', 'VALOR CONSUMOS CON TARJETAS PARA CERTIFICADO', 'VALOR CONSUMS CON TARJ PARA CERTIFICADO UVT', 'VALOR CONSUMS CON TARJ PARA CERTIFICADO UVT', 'VALOR INGRESOS PATRIMONIOS PARA CERTIFICADO', 'VALOR INGRESOS SUPERIORES PARA CERTIFICADO', 'VALOR INGRESS SUPERIORES PARA CERTIFICADO UVT', 'VALOR TOTAL COMPRAS Y CON PARA CERTIFICADO UVT', 'VALOR TOTAL COMPRAS Y CONSUMOS PARA CERTIFICADO', 'VALOR UVT ACTUAL', 'VALOR UVT AÑO ANTERIOR') ORDER BY NOMBRE, FECHA_INICIAL) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN FECHACREACION IS NULL THEN ' ' ELSE UPPER(FECHACREACION) END)  LIKE UPPER( '%' || :FECHACREACION || '%')  AND (CASE WHEN FECHA_INICIAL IS NULL THEN ' ' ELSE UPPER(FECHA_INICIAL) END)  LIKE UPPER( '%' || :FECHA_INICIAL || '%')  AND (CASE WHEN NOMPARAMETRO IS NULL THEN ' ' ELSE UPPER(NOMPARAMETRO) END)  LIKE UPPER( '%' || :NOMPARAMETRO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE":"$NOMBRE","VALOR":"$VALOR","DESCRIPCION":"$DESCRIPCION","MODULO":"$MODULO(type:integer)","FECHACREACION":"$FECHACREACION","FECHA_INICIAL":"$FECHA_INICIAL","COMPANIA":"$COMPANIA","TIPOPARAMETRO":"$TIPOPARAMETRO","NOMPARAMETRO":"$NOMPARAMETRO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="MODULO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FECHACREACION" sqlType="STRING"/>
+		<param name="FECHA_INICIAL" sqlType="STRING"/>
+		<param name="NOMPARAMETRO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="parametros/listcertdian/pag">
+		<call-query href="getParametrosPagListcertdianQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="MODULO" query-param="MODULO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FECHACREACION" query-param="FECHACREACION"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="NOMPARAMETRO" query-param="NOMPARAMETRO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertParametros" keyColumns="COMPANIA,NOMBRE,MODULO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PARAMETRO (COMPANIA, NOMBRE, VALOR, FECHA_INICIAL, MODULO, TIPOPARAMETRO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :NOMBRE, :VALOR, TRUNC(TO_DATE(:FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')), :MODULO, :TIPOPARAMETRO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_NOMBRE":"$NOMBRE","KEY_FECHA_INICIAL":"$FECHA_INICIAL","KEY_MODULO":"$MODULO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="VALOR" sqlType="STRING"/>
+		<param name="FECHA_INICIAL" sqlType="STRING"/>
+		<param defaultValue="0" name="MODULO" sqlType="STRING"/>
+		<param defaultValue="1" name="TIPOPARAMETRO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="parametros">
+		<call-query href="insertParametros">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="MODULO" query-param="MODULO"/>
+			<with-param name="TIPOPARAMETRO" query-param="TIPOPARAMETRO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="getParametrosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  P.COMPANIA, P.NOMBRE, P.VALOR, P.DESCRIPCION,(TO_CHAR(FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIAL, P.MODULO, AP.NOMBRE NOMAPLICACION, P.TIPOPARAMETRO, TP.NOMBRE NOMPARAMETRO, TO_CHAR(P.DATE_CREATED,'DD/MM/YYYY') DATE_CREATED  FROM PARAMETRO P INNER JOIN TIPOPARAMETRO TP ON P.TIPOPARAMETRO = TP.CODIGO INNER JOIN APLICACIONES AP ON P.MODULO = AP.APLICACION WHERE COMPANIA =:COMPANIA ORDER BY COMPANIA, NOMBRE) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN FECHA_INICIAL IS NULL THEN ' ' ELSE UPPER(FECHA_INICIAL) END)  LIKE UPPER( '%' || :FECHA_INICIAL || '%')  AND (CASE WHEN NOMAPLICACION IS NULL THEN ' ' ELSE UPPER(NOMAPLICACION) END)  LIKE UPPER( '%' || :NOMAPLICACION || '%')  AND (CASE WHEN NOMPARAMETRO IS NULL THEN ' ' ELSE UPPER(NOMPARAMETRO) END)  LIKE UPPER( '%' || :NOMPARAMETRO || '%')  AND (CASE WHEN DATE_CREATED IS NULL THEN ' ' ELSE UPPER(DATE_CREATED) END)  LIKE UPPER( '%' || :DATE_CREATED || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NOMBRE":"$NOMBRE","VALOR":"$VALOR","DESCRIPCION":"$DESCRIPCION","FECHA_INICIAL":"$FECHA_INICIAL","MODULO":"$MODULO(type:integer)","NOMAPLICACION":"$NOMAPLICACION","TIPOPARAMETRO":"$TIPOPARAMETRO","NOMPARAMETRO":"$NOMPARAMETRO","DATE_CREATED":"$DATE_CREATED"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FECHA_INICIAL" sqlType="STRING"/>
+		<param name="NOMAPLICACION" sqlType="STRING"/>
+		<param name="NOMPARAMETRO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="parametros">
+		<call-query href="getParametrosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="NOMAPLICACION" query-param="NOMAPLICACION"/>
+			<with-param name="NOMPARAMETRO" query-param="NOMPARAMETRO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getParametrosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  P.COMPANIA, P.NOMBRE, P.VALOR, P.DESCRIPCION,(TO_CHAR(FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIAL, P.MODULO, AP.NOMBRE NOMAPLICACION, P.TIPOPARAMETRO, TP.NOMBRE NOMPARAMETRO, TO_CHAR(P.DATE_CREATED,'DD/MM/YYYY') DATE_CREATED  FROM PARAMETRO P INNER JOIN TIPOPARAMETRO TP ON P.TIPOPARAMETRO = TP.CODIGO INNER JOIN APLICACIONES AP ON P.MODULO = AP.APLICACION WHERE COMPANIA =:COMPANIA ORDER BY COMPANIA, NOMBRE) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN FECHA_INICIAL IS NULL THEN ' ' ELSE UPPER(FECHA_INICIAL) END)  LIKE UPPER( '%' || :FECHA_INICIAL || '%')  AND (CASE WHEN NOMAPLICACION IS NULL THEN ' ' ELSE UPPER(NOMAPLICACION) END)  LIKE UPPER( '%' || :NOMAPLICACION || '%')  AND (CASE WHEN NOMPARAMETRO IS NULL THEN ' ' ELSE UPPER(NOMPARAMETRO) END)  LIKE UPPER( '%' || :NOMPARAMETRO || '%')  AND (CASE WHEN DATE_CREATED IS NULL THEN ' ' ELSE UPPER(DATE_CREATED) END)  LIKE UPPER( '%' || :DATE_CREATED || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FECHA_INICIAL" sqlType="STRING"/>
+		<param name="NOMAPLICACION" sqlType="STRING"/>
+		<param name="NOMPARAMETRO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="parametros/numero">
+		<call-query href="getParametrosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="NOMAPLICACION" query-param="NOMAPLICACION"/>
+			<with-param name="NOMPARAMETRO" query-param="NOMPARAMETRO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="updateParametros" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PARAMETRO SET VALOR=:VALOR, FECHA_INICIAL=TO_DATE(:FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS'), TIPOPARAMETRO=:TIPOPARAMETRO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PARAMETRO.COMPANIA= :KEY_COMPANIA AND PARAMETRO.NOMBRE= :KEY_NOMBRE AND PARAMETRO.FECHA_INICIAL= TO_DATE(:KEY_FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')  AND PARAMETRO.MODULO= :KEY_MODULO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="FECHA_INICIAL" sqlType="STRING"/>
+		<param name="TIPOPARAMETRO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NOMBRE" sqlType="STRING"/>
+		<param name="KEY_FECHA_INICIAL" sqlType="STRING"/>
+		<param name="KEY_MODULO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="parametros">
+		<call-query href="updateParametros">
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="TIPOPARAMETRO" query-param="TIPOPARAMETRO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NOMBRE" query-param="KEY_NOMBRE"/>
+			<with-param name="KEY_FECHA_INICIAL" query-param="KEY_FECHA_INICIAL"/>
+			<with-param name="KEY_MODULO" query-param="KEY_MODULO"/>
+
+		</call-query>
+	</resource>
+	<query id="getParametrosNumListcertdianQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  P.NOMBRE NOMBRE, P.VALOR, P.DESCRIPCION, P.MODULO,(TO_CHAR(P.FECHACREACION,'DD/MM/YYYY HH24:MI:SS')) FECHACREACION,(TO_CHAR(P.FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIAL, P.COMPANIA, P.TIPOPARAMETRO, T.NOMBRE NOMPARAMETRO  FROM PARAMETRO P INNER JOIN TIPOPARAMETRO T ON P.TIPOPARAMETRO = T.CODIGO WHERE COMPANIA = :COMPANIA AND MODULO = :MODULO AND P.NOMBRE IN ('VALOR PORCENTAJE APLICAR PROCESO RETEFUENTE','CEDULA DE QUIEN FIRMA CERTIFICADO DIAN', 'FORMATO CERTIFICADO DIAN', 'FORMATO CERTIFICADO DIAN EMAIL', 'FORMATO CERTIFICADOS DIAN PENSIONADOS', 'NOMBRE DE QUIEN FIRMA CERTIFICADO DIAN', 'VALOR CONSIG BANCARIAS PARA CERTIFICADO UVT', 'VALOR CONSIGNACIONES BANCARIAS PARA CERTIFICADO', 'VALOR CONSUMOS CON TARJETAS PARA CERTIFICADO', 'VALOR CONSUMS CON TARJ PARA CERTIFICADO UVT', 'VALOR CONSUMS CON TARJ PARA CERTIFICADO UVT', 'VALOR INGRESOS PATRIMONIOS PARA CERTIFICADO', 'VALOR INGRESOS SUPERIORES PARA CERTIFICADO', 'VALOR INGRESS SUPERIORES PARA CERTIFICADO UVT', 'VALOR TOTAL COMPRAS Y CON PARA CERTIFICADO UVT', 'VALOR TOTAL COMPRAS Y CONSUMOS PARA CERTIFICADO', 'VALOR UVT ACTUAL', 'VALOR UVT AÑO ANTERIOR') ORDER BY NOMBRE, FECHA_INICIAL) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN FECHACREACION IS NULL THEN ' ' ELSE UPPER(FECHACREACION) END)  LIKE UPPER( '%' || :FECHACREACION || '%')  AND (CASE WHEN FECHA_INICIAL IS NULL THEN ' ' ELSE UPPER(FECHA_INICIAL) END)  LIKE UPPER( '%' || :FECHA_INICIAL || '%')  AND (CASE WHEN NOMPARAMETRO IS NULL THEN ' ' ELSE UPPER(NOMPARAMETRO) END)  LIKE UPPER( '%' || :NOMPARAMETRO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="MODULO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FECHACREACION" sqlType="STRING"/>
+		<param name="FECHA_INICIAL" sqlType="STRING"/>
+		<param name="NOMPARAMETRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="parametros/listcertdian/num">
+		<call-query href="getParametrosNumListcertdianQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="MODULO" query-param="MODULO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FECHACREACION" query-param="FECHACREACION"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="NOMPARAMETRO" query-param="NOMPARAMETRO"/>
+
+		</call-query>
+	</resource>
+	<query id="getParametrosTodosporcompaniamoduloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NOMBRE,VALOR,MODULO  FROM PARAMETRO WHERE COMPANIA = :COMPANIA AND MODULO = :MODULO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE":"$NOMBRE","VALOR":"$VALOR","MODULO":"$MODULO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="MODULO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="parametros/todosporcompaniamodulo">
+		<call-query href="getParametrosTodosporcompaniamoduloQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="MODULO" query-param="MODULO"/>
+
+		</call-query>
+	</resource>
+	<query id="getParametrosPagParametrosliquidacionviaticosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  PARAMETRO.COMPANIA, PARAMETRO.NOMBRE, PARAMETRO.VALOR  FROM PARAMETRO WHERE PARAMETRO.COMPANIA = :COMPANIA AND PARAMETRO.NOMBRE IN ('NUMERO SALARIOS MINIMOS DIARIOS VIGENTES', 'PORCENTAJE ULTIMO DIA PERNOCTANDO', 'PORCENTAJE SIN PERNOCTAR', 'PORCENTAJE SIN PERNOCTAR INTERIOR EXTERIOR')) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NOMBRE":"$NOMBRE","VALOR":"$VALOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="parametros/parametrosliquidacionviaticos/pag">
+		<call-query href="getParametrosPagParametrosliquidacionviaticosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getParametrosNumParametrosliquidacionviaticosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  PARAMETRO.COMPANIA, PARAMETRO.NOMBRE, PARAMETRO.VALOR  FROM PARAMETRO WHERE PARAMETRO.COMPANIA = :COMPANIA AND PARAMETRO.NOMBRE IN ('NUMERO SALARIOS MINIMOS DIARIOS VIGENTES', 'PORCENTAJE ULTIMO DIA PERNOCTANDO', 'PORCENTAJE SIN PERNOCTAR', 'PORCENTAJE SIN PERNOCTAR INTERIOR EXTERIOR')) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="parametros/parametrosliquidacionviaticos/num">
+		<call-query href="getParametrosNumParametrosliquidacionviaticosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getParametrosPagTraerparametrosviaticosespQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, NOMBRE,(TO_CHAR(FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIAL, MODULO, VALOR  FROM PARAMETRO WHERE COMPANIA = :COMPANIA AND NOMBRE IN ('DIA EN TRANSITO PARA EL EXTERIOR', 'NOMBRE AGENCIA DE VIAJES ACTUAL', 'NUMERO DE CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL', 'NUMERO DEL REGISTRO PRESUPUESTAL DE VIATICOS', 'NUMERO DEL REGISTRO PRESUPUESTAL DEL TRANSPORTE', 'NUMERO SALARIOS MINIMOS DIARIOS VIGENTES', 'PORCENTAJE SIN PERNOCTAR', 'PORCENTAJE SIN PERNOCTAR INTERIOR EXTERIOR', 'PORCENTAJE ULTIMO DIA PERNOCTANDO', 'NUMERO DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL TRANSPORTE', 'FECHA DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL TRANSPORTE', 'NUMERO DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL VIATICOS NACIONALES', 'FECHA DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL VIATICOS NACIONALES', 'NUMERO DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL VIATICOS INTERNACIONALES', 'FECHA DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL VIATICOS INTERNACIONALES', 'NUMERO DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL TIQUETES NACIONALES', 'FECHA DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL TIQUETES NACIONALES', 'NUMERO DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL TIQUETES INTERNACIONALES', 'FECHA DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL TIQUETES NACIONALES', 'FECHA DEL REGISTRO PRESUPUESTAL DE TRANSPORTE', 'NUMERO DEL REGISTRO PRESUPUESTAL DE VIATICOS NACIONALES', 'FECHA DEL REGISTRO PRESUPUESTAL DE VIATICOS NACIONALES', 'NUMERO DEL REGISTRO PRESUPUESTAL DE VIATICOS INTERNACIONALES', 'FECHA DEL REGISTRO PRESUPUESTAL DE VIATICOS INTERNACIONALES', 'NUMERO DEL REGISTRO PRESUPUESTAL DE TIQUETES NACIONALES', 'FECHA DEL REGISTRO PRESUPUESTAL DE TIQUETES NACIONALES', 'NUMERO DEL REGISTRO PRESUPUESTAL DE TIQUETES INTERNACIONALES', 'FECHA DEL REGISTRO PRESUPUESTAL DE TIQUETES INTERNACIONALES') ORDER BY NOMBRE) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NOMBRE":"$NOMBRE","FECHA_INICIAL":"$FECHA_INICIAL","MODULO":"$MODULO(type:integer)","VALOR":"$VALOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="parametros/traerparametrosviaticosesp/pag">
+		<call-query href="getParametrosPagTraerparametrosviaticosespQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getParametrosNumTraerparametrosviaticosespQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, NOMBRE,(TO_CHAR(FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIAL, MODULO, VALOR  FROM PARAMETRO WHERE COMPANIA = :COMPANIA AND NOMBRE IN ('DIA EN TRANSITO PARA EL EXTERIOR', 'NOMBRE AGENCIA DE VIAJES ACTUAL', 'NUMERO DE CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL', 'NUMERO DEL REGISTRO PRESUPUESTAL DE VIATICOS', 'NUMERO DEL REGISTRO PRESUPUESTAL DEL TRANSPORTE', 'NUMERO SALARIOS MINIMOS DIARIOS VIGENTES', 'PORCENTAJE SIN PERNOCTAR', 'PORCENTAJE SIN PERNOCTAR INTERIOR EXTERIOR', 'PORCENTAJE ULTIMO DIA PERNOCTANDO', 'NUMERO DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL TRANSPORTE', 'FECHA DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL TRANSPORTE', 'NUMERO DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL VIATICOS NACIONALES', 'FECHA DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL VIATICOS NACIONALES', 'NUMERO DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL VIATICOS INTERNACIONALES', 'FECHA DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL VIATICOS INTERNACIONALES', 'NUMERO DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL TIQUETES NACIONALES', 'FECHA DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL TIQUETES NACIONALES', 'NUMERO DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL TIQUETES INTERNACIONALES', 'FECHA DEL CERTIFICADO DE DISPONIBILIDAD PRESUPUESTAL TIQUETES NACIONALES', 'FECHA DEL REGISTRO PRESUPUESTAL DE TRANSPORTE', 'NUMERO DEL REGISTRO PRESUPUESTAL DE VIATICOS NACIONALES', 'FECHA DEL REGISTRO PRESUPUESTAL DE VIATICOS NACIONALES', 'NUMERO DEL REGISTRO PRESUPUESTAL DE VIATICOS INTERNACIONALES', 'FECHA DEL REGISTRO PRESUPUESTAL DE VIATICOS INTERNACIONALES', 'NUMERO DEL REGISTRO PRESUPUESTAL DE TIQUETES NACIONALES', 'FECHA DEL REGISTRO PRESUPUESTAL DE TIQUETES NACIONALES', 'NUMERO DEL REGISTRO PRESUPUESTAL DE TIQUETES INTERNACIONALES', 'FECHA DEL REGISTRO PRESUPUESTAL DE TIQUETES INTERNACIONALES') ORDER BY NOMBRE) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="parametros/traerparametrosviaticosesp/num">
+		<call-query href="getParametrosNumTraerparametrosviaticosespQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+
+		</call-query>
+	</resource>
+	<query id="updateParametrosActualizarvalor" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PARAMETRO SET VALOR = :VALOR,             MODIFIED_BY=:MODIFIED_BY,                         DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE COMPANIA = :KEY_COMPANIA  AND NOMBRE = :KEY_NOMBRE AND FECHA_INICIAL = :KEY_FECHA_INICIAL AND MODULO = :KEY_MODULO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NOMBRE" sqlType="STRING"/>
+		<param name="KEY_FECHA_INICIAL" sqlType="STRING"/>
+		<param name="KEY_MODULO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="parametros/actualizarvalor">
+		<call-query href="updateParametrosActualizarvalor">
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NOMBRE" query-param="KEY_NOMBRE"/>
+			<with-param name="KEY_FECHA_INICIAL" query-param="KEY_FECHA_INICIAL"/>
+			<with-param name="KEY_MODULO" query-param="KEY_MODULO"/>
+
+		</call-query>
+	</resource>
+	<query id="getParametrosPagListadoParamNominaCtaPublicaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  P.COMPANIA, P.NOMBRE, P.VALOR, P.DESCRIPCION,(TO_CHAR(FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIAL, P.MODULO, AP.NOMBRE NOMAPLICACION, P.TIPOPARAMETRO, TP.NOMBRE NOMPARAMETRO, TO_CHAR(P.DATE_CREATED,'DD/MM/YYYY') DATE_CREATED  FROM PARAMETRO P INNER JOIN TIPOPARAMETRO TP ON P.TIPOPARAMETRO = TP.CODIGO INNER JOIN APLICACIONES AP ON P.MODULO = AP.APLICACION WHERE P.COMPANIA = :COMPANIA AND P.NOMBRE LIKE 'CTA_%' AND P.NOMBRE LIKE '%PUBLICA%' AND P.MODULO = 6 ORDER BY P.COMPANIA, P.NOMBRE) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN FECHA_INICIAL IS NULL THEN ' ' ELSE UPPER(FECHA_INICIAL) END)  LIKE UPPER( '%' || :FECHA_INICIAL || '%')  AND (CASE WHEN NOMAPLICACION IS NULL THEN ' ' ELSE UPPER(NOMAPLICACION) END)  LIKE UPPER( '%' || :NOMAPLICACION || '%')  AND (CASE WHEN NOMPARAMETRO IS NULL THEN ' ' ELSE UPPER(NOMPARAMETRO) END)  LIKE UPPER( '%' || :NOMPARAMETRO || '%')  AND (CASE WHEN DATE_CREATED IS NULL THEN ' ' ELSE UPPER(DATE_CREATED) END)  LIKE UPPER( '%' || :DATE_CREATED || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NOMBRE":"$NOMBRE","VALOR":"$VALOR","DESCRIPCION":"$DESCRIPCION","FECHA_INICIAL":"$FECHA_INICIAL","MODULO":"$MODULO(type:integer)","NOMAPLICACION":"$NOMAPLICACION","TIPOPARAMETRO":"$TIPOPARAMETRO","NOMPARAMETRO":"$NOMPARAMETRO","DATE_CREATED":"$DATE_CREATED"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FECHA_INICIAL" sqlType="STRING"/>
+		<param name="NOMAPLICACION" sqlType="STRING"/>
+		<param name="NOMPARAMETRO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="parametros/listadoparamnominactapublica/pag">
+		<call-query href="getParametrosPagListadoParamNominaCtaPublicaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="NOMAPLICACION" query-param="NOMAPLICACION"/>
+			<with-param name="NOMPARAMETRO" query-param="NOMPARAMETRO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getParametrosNumListadoParamNominaCtaPublicaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  P.COMPANIA, P.NOMBRE, P.VALOR, P.DESCRIPCION,(TO_CHAR(FECHA_INICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHA_INICIAL, P.MODULO, AP.NOMBRE NOMAPLICACION, P.TIPOPARAMETRO, TP.NOMBRE NOMPARAMETRO, TO_CHAR(P.DATE_CREATED,'DD/MM/YYYY') DATE_CREATED  FROM PARAMETRO P INNER JOIN TIPOPARAMETRO TP ON P.TIPOPARAMETRO = TP.CODIGO INNER JOIN APLICACIONES AP ON P.MODULO = AP.APLICACION WHERE P.COMPANIA = :COMPANIA AND P.NOMBRE LIKE 'CTA_%' AND P.NOMBRE LIKE '%PUBLICA%' AND P.MODULO = 6 ORDER BY P.COMPANIA, P.NOMBRE) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN FECHA_INICIAL IS NULL THEN ' ' ELSE UPPER(FECHA_INICIAL) END)  LIKE UPPER( '%' || :FECHA_INICIAL || '%')  AND (CASE WHEN NOMAPLICACION IS NULL THEN ' ' ELSE UPPER(NOMAPLICACION) END)  LIKE UPPER( '%' || :NOMAPLICACION || '%')  AND (CASE WHEN NOMPARAMETRO IS NULL THEN ' ' ELSE UPPER(NOMPARAMETRO) END)  LIKE UPPER( '%' || :NOMPARAMETRO || '%')  AND (CASE WHEN DATE_CREATED IS NULL THEN ' ' ELSE UPPER(DATE_CREATED) END)  LIKE UPPER( '%' || :DATE_CREATED || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="FECHA_INICIAL" sqlType="STRING"/>
+		<param name="NOMAPLICACION" sqlType="STRING"/>
+		<param name="NOMPARAMETRO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="parametros/listadoparamnominactapublica/num">
+		<call-query href="getParametrosNumListadoParamNominaCtaPublicaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="FECHA_INICIAL" query-param="FECHA_INICIAL"/>
+			<with-param name="NOMAPLICACION" query-param="NOMAPLICACION"/>
+			<with-param name="NOMPARAMETRO" query-param="NOMPARAMETRO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+
+</data>

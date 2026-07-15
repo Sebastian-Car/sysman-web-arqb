@@ -1,0 +1,1646 @@
+create or replace PACKAGE BODY "PCK_CODIGODEBARRAS" AS
+  FUNCTION FC_IMPRIMIRCODIGODEBARRAS
+  /*   objimagen:            el objeto OleDependiente en que se pegara el codigo
+     txtTextoParaConvertir: el texto que se asignara al codigo de barras
+     NombreReporte:        nombre del reporte que contendra el codigo
+     TipoDeBarras(opcional): Tipo de codigo elegido. Puede ser:
+                           CodaBar
+                           Code128
+                           Code25
+                           Code39
+                           EAN13
+                           EAN8
+                           UPCA
+                           UPCE
+                           ITF
+                           MSI
+                           PostNet
+                           Por defecto toma Code128
+    IncluirDigitoDeChequeo(Opcional): se utiliza si se desea digito en 25,29, Itf o PostNet
+    Comprimir(Opcional): Se utiliza en UPCa para comprimir el codigo*/
+    (
+    UN_TEXTOPARACONVERTIR     VARCHAR2,
+    UN_TIPODEBARRAS           VARCHAR2 DEFAULT 'CODE128',
+    UN_INCLUIRDIGITODECHEQUEO BOOLEAN DEFAULT TRUE,
+    UN_COMPRIMIR              BOOLEAN DEFAULT FALSE
+    )
+  RETURN VARCHAR2 AS
+    MI_TXTCONVERTIDO  VARCHAR2(32000);
+    MI_MBTBARCODETYPE VARCHAR2(32000);
+    /*MI_I              NUMBER;
+    MI_LXPOS          NUMBER;
+    MI_LYPOS          NUMBER;
+    MI_ANCHO          NUMBER;*/
+  BEGIN
+    CASE UN_TIPODEBARRAS
+      WHEN 'CODEBAR'  THEN   MI_TXTCONVERTIDO := FC_CODEBAR(UN_TEXTOPARACONVERTIR);
+      WHEN 'CODE128'  THEN   MI_TXTCONVERTIDO := FC_CODE128(UN_TEXTOPARACONVERTIR);
+      WHEN 'CODE25'   THEN   MI_TXTCONVERTIDO := FC_CODE25(UN_TEXTOPARACONVERTIR, UN_INCLUIRDIGITODECHEQUEO);
+      WHEN 'CODE39'   THEN   MI_TXTCONVERTIDO := FC_CODE39(UN_TEXTOPARACONVERTIR, UN_INCLUIRDIGITODECHEQUEO);
+      WHEN 'EAN13'    THEN   MI_TXTCONVERTIDO := FC_EAN13(UN_TEXTOPARACONVERTIR);
+      WHEN 'EAN8'     THEN   MI_TXTCONVERTIDO := FC_EAN8(UN_TEXTOPARACONVERTIR);
+      WHEN 'UPCA'     THEN   MI_TXTCONVERTIDO := FC_UPCA(UN_TEXTOPARACONVERTIR, UN_COMPRIMIR);
+      WHEN 'UPCE'     THEN   MI_TXTCONVERTIDO := FC_UPCE(UN_TEXTOPARACONVERTIR);
+      WHEN 'ITF'      THEN   MI_TXTCONVERTIDO := FC_ITF(UN_TEXTOPARACONVERTIR, UN_INCLUIRDIGITODECHEQUEO);
+      WHEN 'MSI'      THEN   MI_TXTCONVERTIDO := FC_MSI(UN_TEXTOPARACONVERTIR);
+      WHEN 'POSTNET'  THEN   MI_TXTCONVERTIDO := FC_POSTNET(UN_TEXTOPARACONVERTIR, UN_INCLUIRDIGITODECHEQUEO);
+    END CASE;
+    IF NOT MI_MBTBARCODETYPE = 'BCPOSTNET' THEN
+      MI_TXTCONVERTIDO := '00000' || MI_TXTCONVERTIDO || '00000';
+    END IF;
+    RETURN MI_TXTCONVERTIDO;
+  END FC_IMPRIMIRCODIGODEBARRAS;
+  -----------------------------------------------------------------------------------------------------------------------------
+  ------------------------------------------------------ FUNCION CODE128 ------------------------------------------------------
+  -----------------------------------------------------------------------------------------------------------------------------
+  FUNCTION FC_CODE128
+    (
+    UN_DATOACODIFICAR   VARCHAR2
+    )
+  RETURN VARCHAR2 AS
+    MI_I                NUMBER;
+    MI_IA               NUMBER;
+    MI_CURRENTCODE      VARCHAR2(32000);
+    MI_BLNHASSHIFTED    BOOLEAN;
+    MI_LNGVALUE         NUMBER;
+    MI_LNGCHECKDIGIT    NUMBER;
+    MI_ARY128CHARSET    VECTORCODE128;
+    MI_STRSTARTCHAR     VARCHAR2(11);
+    MI_POSICION 	      NUMBER;
+    MI_CSTRSTOPCHAR     VARCHAR2(13);
+    MI_LONGITUD         NUMBER;
+    MI_CTA              NUMBER;
+    MI_CTB              NUMBER;
+    MI_CTC              NUMBER;
+    MI_CTSHIFT          NUMBER;
+    MI_CODE128          VARCHAR2(32000);
+    PRUEBA VARCHAR2(200);
+  BEGIN
+    MI_CTA := 203;
+    MI_CTB := 204;
+    MI_CTC := 205;
+    MI_CTSHIFT := 198;
+    MI_CSTRSTOPCHAR := '1100011101011';
+    FOR MI_I IN 0..106 LOOP
+      MI_ARY128CHARSET(MI_I) := '';
+    END LOOP;
+    MI_ARY128CHARSET(0) := '11011001100';
+    MI_ARY128CHARSET(1) := '11001101100';
+    MI_ARY128CHARSET(2) := '11001100110';
+    MI_ARY128CHARSET(3) := '10010011000';
+    MI_ARY128CHARSET(4) := '10010001100';
+    MI_ARY128CHARSET(5) := '10001001100';
+    MI_ARY128CHARSET(6) := '10011001000';
+    MI_ARY128CHARSET(7) := '10011000100';
+    MI_ARY128CHARSET(8) := '10001100100';
+    MI_ARY128CHARSET(9) := '11001001000';
+    MI_ARY128CHARSET(10) := '11001000100';
+    MI_ARY128CHARSET(11) := '11000100100';
+    MI_ARY128CHARSET(12) := '10110011100';
+    MI_ARY128CHARSET(13) := '10011011100';
+    MI_ARY128CHARSET(14) := '10011001110';
+    MI_ARY128CHARSET(15) := '10111001100';
+    MI_ARY128CHARSET(16) := '10011101100';
+    MI_ARY128CHARSET(17) := '10011100110';
+    MI_ARY128CHARSET(18) := '11001110010';
+    MI_ARY128CHARSET(19) := '11001011100';
+    MI_ARY128CHARSET(20) := '11001001110';
+    MI_ARY128CHARSET(21) := '11011100100';
+    MI_ARY128CHARSET(22) := '11001110100';
+    MI_ARY128CHARSET(23) := '11101101110';
+    MI_ARY128CHARSET(24) := '11101001100';
+    MI_ARY128CHARSET(25) := '11100101100';
+    MI_ARY128CHARSET(26) := '11100100110';
+    MI_ARY128CHARSET(27) := '11101100100';
+    MI_ARY128CHARSET(28) := '11100110100';
+    MI_ARY128CHARSET(29) := '11100110010';
+    MI_ARY128CHARSET(30) := '11011011000';
+    MI_ARY128CHARSET(31) := '11011000110';
+    MI_ARY128CHARSET(32) := '11000110110';
+    MI_ARY128CHARSET(33) := '10100011000';
+    MI_ARY128CHARSET(34) := '10001011000';
+    MI_ARY128CHARSET(35) := '10001000110';
+    MI_ARY128CHARSET(36) := '10110001000';
+    MI_ARY128CHARSET(37) := '10001101000';
+    MI_ARY128CHARSET(38) := '10001100010';
+    MI_ARY128CHARSET(39) := '11010001000';
+    MI_ARY128CHARSET(40) := '11000101000';
+    MI_ARY128CHARSET(41) := '11000100010';
+    MI_ARY128CHARSET(42) := '10110111000';
+    MI_ARY128CHARSET(43) := '10110001110';
+    MI_ARY128CHARSET(44) := '10001101110';
+    MI_ARY128CHARSET(45) := '10111011000';
+    MI_ARY128CHARSET(46) := '10111000110';
+    MI_ARY128CHARSET(47) := '10001110110';
+    MI_ARY128CHARSET(48) := '11101110110';
+    MI_ARY128CHARSET(49) := '11010001110';
+    MI_ARY128CHARSET(50) := '11000101110';
+    MI_ARY128CHARSET(51) := '11011101000';
+    MI_ARY128CHARSET(52) := '11011100010';
+    MI_ARY128CHARSET(53) := '11011101110';
+    MI_ARY128CHARSET(54) := '11101011000';
+    MI_ARY128CHARSET(55) := '11101000110';
+    MI_ARY128CHARSET(56) := '11100010110';
+    MI_ARY128CHARSET(57) := '11101101000';
+    MI_ARY128CHARSET(58) := '11101100010';
+    MI_ARY128CHARSET(59) := '11100011010';
+    MI_ARY128CHARSET(60) := '11101111010';
+    MI_ARY128CHARSET(61) := '11001000010';
+    MI_ARY128CHARSET(62) := '11110001010';
+    MI_ARY128CHARSET(63) := '10100110000';
+    MI_ARY128CHARSET(64) := '10100001100';  --ANTES '11100001100'
+    MI_ARY128CHARSET(65) := '10010110000';
+    MI_ARY128CHARSET(66) := '10010000110';
+    MI_ARY128CHARSET(67) := '10000101100';
+    MI_ARY128CHARSET(68) := '10000100110';
+    MI_ARY128CHARSET(69) := '10110010000';
+    MI_ARY128CHARSET(70) := '10110000100';
+    MI_ARY128CHARSET(71) := '10011010000';
+    MI_ARY128CHARSET(72) := '10011000010';
+    MI_ARY128CHARSET(73) := '10000110100';
+    MI_ARY128CHARSET(74) := '10000110010';
+    MI_ARY128CHARSET(75) := '11000010010';
+    MI_ARY128CHARSET(76) := '11001010000';
+    MI_ARY128CHARSET(77) := '11110111010';
+    MI_ARY128CHARSET(78) := '11000010100';
+    MI_ARY128CHARSET(79) := '10001111010';
+    MI_ARY128CHARSET(80) := '10100111100';
+    MI_ARY128CHARSET(81) := '10010111100';
+    MI_ARY128CHARSET(82) := '10010011110';
+    MI_ARY128CHARSET(83) := '10111100100';
+    MI_ARY128CHARSET(84) := '10011110100';
+    MI_ARY128CHARSET(85) := '10011110010';
+    MI_ARY128CHARSET(86) := '11110100100';
+    MI_ARY128CHARSET(87) := '11110010100';
+    MI_ARY128CHARSET(88) := '11110010010';
+    MI_ARY128CHARSET(89) := '11011011110';
+    MI_ARY128CHARSET(90) := '11011110110';
+    MI_ARY128CHARSET(91) := '11110110110';
+    MI_ARY128CHARSET(92) := '10101111000';
+    MI_ARY128CHARSET(93) := '10100011110';
+    MI_ARY128CHARSET(94) := '10001011110';
+    MI_ARY128CHARSET(95) := '10111101000';
+    MI_ARY128CHARSET(96) := '10111100010';
+    MI_ARY128CHARSET(97) := '11110101000';
+    MI_ARY128CHARSET(98) := '11110100010';
+    MI_ARY128CHARSET(99) := '10111011110';
+    MI_ARY128CHARSET(100) := '10111101110';
+    MI_ARY128CHARSET(101) := '11101011110';
+    MI_ARY128CHARSET(102) := '11110101110';
+    MI_ARY128CHARSET(103) := '11010000100';
+    MI_ARY128CHARSET(104) := '11010010000';
+    MI_ARY128CHARSET(105) := '11010011100';
+    MI_LNGVALUE := ASCII(SUBSTR(UN_DATOACODIFICAR,1,1));
+    IF NOT (MI_LNGVALUE = MI_CTA OR MI_LNGVALUE = MI_CTB OR MI_LNGVALUE = MI_CTC) THEN
+      --ERR.RAISE VBOBJECTERROR + 600, "CODE 128", "INITIAL CODE CHARACTER MISSING."
+      RAISE_APPLICATION_ERROR (-20000,'<ERROR>Caracter inicial de Codigo Incorrecto</ERROR>');
+      RETURN NULL;
+    END IF;
+    MI_STRSTARTCHAR :=  MI_ARY128CHARSET(MI_LNGVALUE - 100); --OK
+    MI_CURRENTCODE := MI_LNGVALUE;
+    MI_LNGCHECKDIGIT := MI_LNGVALUE - 100;
+    MI_POSICION := 0;
+    MI_LONGITUD := LENGTH(UN_DATOACODIFICAR);
+    MI_IA := 1;
+    FOR MI_I IN 2..MI_LONGITUD LOOP
+      MI_IA := MI_IA + 1;
+      MI_POSICION := MI_POSICION + 1;
+      MI_LNGVALUE := ASCII(SUBSTR(UN_DATOACODIFICAR, MI_IA, 1));
+      IF (MI_LNGVALUE = 199 OR MI_LNGVALUE = 200 OR MI_LNGVALUE = 201) THEN
+        CASE MI_CURRENTCODE
+          WHEN MI_CTA THEN
+            IF MI_LNGVALUE = 199 THEN
+              MI_CURRENTCODE := MI_CTC;
+            ELSIF MI_LNGVALUE = 200 THEN
+              MI_CURRENTCODE := MI_CTB;
+            END IF;
+          WHEN MI_CTB THEN
+            IF MI_LNGVALUE = 199 THEN
+              MI_CURRENTCODE := MI_CTC;
+            ELSIF MI_LNGVALUE = 201 THEN
+              MI_CURRENTCODE := MI_CTA;
+            END IF;
+          WHEN MI_CTC THEN
+            IF MI_LNGVALUE = 200 THEN
+              MI_CURRENTCODE := MI_CTB;
+            ELSIF MI_LNGVALUE = 201 THEN
+              MI_CURRENTCODE := MI_CTA;
+            END IF;
+        END CASE;--FIN CASE MI_CURRENTCODE
+      END IF;--FIN IF (MI_LNGVALUE = 199 OR MI_LNGVALUE = 200 OR MI_LNGVALUE = 201) THEN
+      IF MI_LNGVALUE = MI_CTSHIFT AND MI_CURRENTCODE <> MI_CTC THEN
+        MI_BLNHASSHIFTED := TRUE;
+      ELSIF MI_BLNHASSHIFTED THEN
+        IF MI_CURRENTCODE = MI_CTA THEN
+          MI_CURRENTCODE := MI_CTB;
+        ELSE
+          MI_CURRENTCODE := MI_CTA;
+        END IF;
+      END IF;
+      CASE MI_CURRENTCODE
+        WHEN MI_CTA THEN
+          IF MI_LNGVALUE > 31 THEN
+            MI_LNGVALUE := MI_LNGVALUE - 32;
+          ELSE
+            MI_LNGVALUE := MI_LNGVALUE + 64;
+          END IF;
+        WHEN MI_CTB THEN MI_LNGVALUE := MI_LNGVALUE - 32;
+        WHEN MI_CTC THEN
+          IF MI_LNGVALUE = 102 THEN --EL IF ES DE FER
+          --MI_LNGVALUE := TO_NUMBER(SUBSTR(UN_DATOACODIFICAR, MI_IA, 1));
+            MI_IA := MI_IA;
+          ELSE
+            --PRUEBA := SUBSTR(UN_DATOACODIFICAR, MI_IA, 2);
+            MI_LNGVALUE := TO_NUMBER(SUBSTR(UN_DATOACODIFICAR, MI_IA, 2)) + 0;            
+            IF MI_LNGVALUE IS NULL THEN
+              GOTO SEGUIR;
+            END IF;
+            MI_IA := MI_IA + 1;
+            --MI_LONGITUD := MI_LONGITUD - 1;
+          END IF;
+      END CASE;--FIN CASE MI_CURRENTCODE
+      IF MI_BLNHASSHIFTED THEN
+        IF MI_CURRENTCODE = MI_CTA THEN
+          MI_CURRENTCODE := MI_CTB;
+        ELSE
+          MI_CURRENTCODE := MI_CTA;
+        END IF;
+      END IF;
+      IF MI_CURRENTCODE <> MI_CTC THEN
+        MI_LNGCHECKDIGIT := MI_LNGCHECKDIGIT + (MI_LNGVALUE * (MI_IA - 1));
+      ELSE
+        MI_LNGCHECKDIGIT := MI_LNGCHECKDIGIT + (MI_LNGVALUE * MI_POSICION);
+      END IF;
+      MI_CODE128 := MI_CODE128 || MI_ARY128CHARSET(MI_LNGVALUE);
+    END LOOP;
+    <<SEGUIR>>
+    MI_LNGCHECKDIGIT := MI_LNGCHECKDIGIT MOD 103;
+    MI_CODE128 := MI_STRSTARTCHAR || MI_CODE128 || MI_ARY128CHARSET(MI_LNGCHECKDIGIT) || MI_CSTRSTOPCHAR;
+    RETURN MI_CODE128;
+/*EXCEPTION WHEN OTHERS THEN 
+RAISE_APPLICATION_ERROR(-20000,UN_DATOACODIFICAR); */
+ 
+  END FC_CODE128;
+  -----------------------------------------------------------------------------------------------------------------------------
+  ------------------------------------------------------ FUNCION CODEBAR ------------------------------------------------------
+  -----------------------------------------------------------------------------------------------------------------------------
+  FUNCTION FC_CODEBAR
+    (
+    UN_DATOACODIFICAR   VARCHAR2
+    )
+  RETURN VARCHAR2 AS
+    MI_ARYCODABARCHARSET    VECTORCODEBAR;
+    MI_STRCHAR              VARCHAR2(1);
+    MI_LNGCHARINDEX         NUMBER;
+    MI_LNGLENENCODE         NUMBER;
+    MI_STRENCODEFORMAT      VARCHAR2(7);
+    MI_STRENCODE            VARCHAR2(32000);
+    MI_I                    NUMBER;
+    MI_J                    NUMBER;
+    MI_CODEBAR              VARCHAR2(32000);
+  BEGIN
+    FOR MI_I IN 0..200 LOOP
+      MI_ARYCODABARCHARSET(MI_I) := '';
+    END LOOP;
+    MI_LNGLENENCODE := LENGTH(UN_DATOACODIFICAR);
+    IF NOT (SUBSTR(UN_DATOACODIFICAR, 1,1) BETWEEN 'A' AND 'D' AND SUBSTR(UN_DATOACODIFICAR, MI_LNGLENENCODE, 1) BETWEEN 'A' AND 'D') THEN
+      RAISE_APPLICATION_ERROR (-20000,'<ERROR>No se encontraron los carateres de INICIO/FIN</ERROR>');
+      RETURN NULL;
+    END IF;
+    FOR MI_I IN 1..MI_LNGLENENCODE LOOP
+      MI_STRCHAR := SUBSTR(UN_DATOACODIFICAR,MI_I,1);
+      IF (MI_STRCHAR BETWEEN '0' AND '9') OR (MI_STRCHAR BETWEEN 'A' AND 'C') THEN
+        GOTO SIGUE;
+      ELSIF MI_STRCHAR = '-' OR MI_STRCHAR = '$' OR MI_STRCHAR = ':' OR MI_STRCHAR = '/' OR MI_STRCHAR = '.' OR MI_STRCHAR = '+' THEN
+        GOTO SIGUE;
+      ELSE
+        RAISE_APPLICATION_ERROR (-20000,'<ERROR>Se encontraron carateres invalidos</ERROR>');
+        RETURN NULL;
+      END IF;
+  <<SIGUE>>
+      MI_J := 0;
+    END LOOP;
+    --POPULATE THE CODABAR CHARACTER SET
+    --NUMBERS FIRST
+    MI_ARYCODABARCHARSET(0) := '0000011';      --0
+    MI_ARYCODABARCHARSET(1) := '0000110';      --1
+    MI_ARYCODABARCHARSET(2) := '0001001';      --2
+    MI_ARYCODABARCHARSET(3) := '1100000';      --3
+    MI_ARYCODABARCHARSET(4) := '0010010';      --4
+    MI_ARYCODABARCHARSET(5) := '1000010';      --5
+    MI_ARYCODABARCHARSET(6) := '0100001';      --6
+    MI_ARYCODABARCHARSET(7) := '0100100';      --7
+    MI_ARYCODABARCHARSET(8) := '0110000';      --8
+    MI_ARYCODABARCHARSET(9) := '1001000';      --9
+    --ALLOWED SYMBOLS
+    MI_ARYCODABARCHARSET(10) := '0001100';   ---
+    MI_ARYCODABARCHARSET(11) := '0011000';   --$
+    MI_ARYCODABARCHARSET(12) := '1000101';   --:
+    MI_ARYCODABARCHARSET(13) := '1010001';   --/
+    MI_ARYCODABARCHARSET(14) := '1010100';   --.
+    MI_ARYCODABARCHARSET(15) := '0010101';   --+
+    --START/STOP CHARACTERS
+    MI_ARYCODABARCHARSET(16) := '0011010';   --A
+    MI_ARYCODABARCHARSET(17) := '0101001';   --B
+    MI_ARYCODABARCHARSET(18) := '0001011';   --C
+    MI_ARYCODABARCHARSET(19) := '0001110';   --D
+    --ENCODE DATA USING CHARACTER SET
+    FOR MI_I IN 1..MI_LNGLENENCODE LOOP
+      MI_STRCHAR := SUBSTR(UN_DATOACODIFICAR,MI_I,1);
+      --off-set alpha chars to ary index by 49, i.e. A = 65 - 49 = 16
+      MI_LNGCHARINDEX :=  CASE WHEN MI_STRCHAR BETWEEN '0' AND '9' THEN
+                            MI_STRCHAR
+                          ELSE
+                            CASE WHEN MI_STRCHAR BETWEEN 'A' AND 'Z'THEN
+                              ASCII(MI_STRCHAR) - 49
+                            ELSE
+                              CASE WHEN MI_STRCHAR = '-' THEN 10
+                              ELSE
+                                CASE WHEN MI_STRCHAR = '.' THEN 11
+                                ELSE
+                                  CASE WHEN MI_STRCHAR = '_' THEN 12
+                                  ELSE
+                                    CASE WHEN MI_STRCHAR = '$' THEN 13
+                                    ELSE
+                                      CASE WHEN MI_STRCHAR = '/' THEN 14
+                                      ELSE
+                                        CASE WHEN MI_STRCHAR = '+' THEN 15
+                                        END
+                                      END
+                                    END
+                                  END
+                                END
+                              END
+                            END
+                          END;
+      --get the encode string for the character
+      MI_STRENCODE := MI_STRENCODE || MI_ARYCODABARCHARSET(NVL(MI_LNGCHARINDEX,0));
+    END LOOP;
+    MI_LNGLENENCODE := LENGTH(MI_STRENCODE);
+    MI_I := 1;
+    WHILE MI_I <= MI_LNGLENENCODE LOOP
+      MI_STRENCODEFORMAT := SUBSTR(MI_STRENCODE, MI_I, 7);
+      FOR MI_J IN 1..7 LOOP
+        MI_STRCHAR := SUBSTR(MI_STRENCODEFORMAT, MI_J, 1);
+        IF (MI_J MOD 2) <> 0 THEN
+          --IF NOT MWGENERAL.ESNUMERICO(MI_STRCHAR) THEN
+          IF MI_STRCHAR <> '0' THEN
+            MI_CODEBAR := MI_CODEBAR || '11';
+          ELSE
+            MI_CODEBAR := MI_CODEBAR || '1';
+          END IF;
+        ELSE--ELSE IF (MI_J MOD 2) <> 0
+          --IF NOT MWGENERAL.ESNUMERICO(MI_STRCHAR) THEN
+          IF MI_STRCHAR <> '0' THEN
+            MI_CODEBAR := MI_CODEBAR || '00';
+          ELSE
+            MI_CODEBAR := MI_CODEBAR || '0';
+          END IF;
+        END IF;
+      END LOOP;
+      MI_I := MI_I + 7;
+      IF MI_I + 7 < MI_LNGLENENCODE THEN
+        MI_CODEBAR := MI_CODEBAR || '0';
+      ELSE
+        GOTO FIN;
+      END IF;
+    END LOOP;
+  <<FIN>>
+    RETURN MI_CODEBAR;
+  END FC_CODEBAR;
+  -----------------------------------------------------------------------------------------------------------------------------
+  ------------------------------------------------------ FUNCION CODE25 -------------------------------------------------------
+  -----------------------------------------------------------------------------------------------------------------------------
+  FUNCTION FC_CODE25
+    (
+    UN_DATOACODIFICAR   VARCHAR2,
+    UN_BLNADDCHECKDIGIT BOOLEAN DEFAULT FALSE
+    )
+  RETURN VARCHAR2 AS
+    MI_ARY2OF5CHARSET     VECTORCODEBAR;
+    MI_LNGCHECKDIGITSUM   NUMBER;
+    MI_LNGDIGIT           NUMBER;
+    MI_I                  NUMBER;
+    MI_J                  NUMBER;
+    MI_STRENCODEFORMAT    VARCHAR2(5);
+    MI_STRENCODE          VARCHAR2(32000);
+    MI_DATOACODIFICAR     VARCHAR2(32000);
+    MI_LONGITUD           NUMBER;
+    MI_STRCHAR            VARCHAR2(1);
+    MI_CODE25             VARCHAR2(32000);
+  BEGIN
+    FOR MI_I IN 0..200 LOOP
+      MI_ARY2OF5CHARSET(MI_I) := '';
+    END LOOP;
+    MI_LONGITUD := LENGTH(UN_DATOACODIFICAR);
+    FOR MI_I IN 1..MI_LONGITUD LOOP
+      IF PCK_SYSMAN_UTL.FC_ESNUMERO(SUBSTR(UN_DATOACODIFICAR, MI_I, 1))<>0 THEN
+        MI_DATOACODIFICAR := MI_DATOACODIFICAR || SUBSTR(UN_DATOACODIFICAR, MI_I, 1);
+      END IF;
+    END LOOP;
+    MI_ARY2OF5CHARSET(0) := '00110';
+    MI_ARY2OF5CHARSET(1) := '10001';
+    MI_ARY2OF5CHARSET(2) := '01001';
+    MI_ARY2OF5CHARSET(3) := '11000';
+    MI_ARY2OF5CHARSET(4) := '00101';
+    MI_ARY2OF5CHARSET(5) := '10100';
+    MI_ARY2OF5CHARSET(6) := '01100';
+    MI_ARY2OF5CHARSET(7) := '00011';
+    MI_ARY2OF5CHARSET(8) := '10010';
+    MI_ARY2OF5CHARSET(9) := '01010';
+    MI_LONGITUD := LENGTH(MI_DATOACODIFICAR);
+    FOR MI_I IN 1..MI_LONGITUD LOOP
+      MI_LNGDIGIT := SUBSTR(MI_DATOACODIFICAR, MI_I, 1);
+      MI_STRENCODE := MI_STRENCODE || MI_ARY2OF5CHARSET(MI_LNGDIGIT);
+      MI_LNGCHECKDIGITSUM := MI_LNGCHECKDIGITSUM + MI_LNGDIGIT;
+    END LOOP;
+    MI_LNGDIGIT := 10 - (MI_LNGCHECKDIGITSUM MOD 10);
+    IF MI_LNGDIGIT = 10 THEN
+      MI_LNGDIGIT := 0;
+    END IF;
+    --APPEND THE CHECK DIGIT TO THE ENCODED DATA
+    IF UN_BLNADDCHECKDIGIT THEN
+      MI_STRENCODE := MI_STRENCODE || MI_ARY2OF5CHARSET(MI_LNGDIGIT);
+    END IF;
+    MI_LONGITUD := LENGTH(MI_STRENCODE);
+    MI_I := 1;
+    WHILE MI_I <= MI_LONGITUD LOOP
+      MI_STRENCODEFORMAT := SUBSTR(MI_STRENCODE, MI_I, 5);
+      FOR MI_J IN 1..5 LOOP
+        MI_STRCHAR := SUBSTR(MI_STRENCODEFORMAT, MI_J, 1);
+        IF MI_STRCHAR <> '0' THEN
+          MI_CODE25 := MI_CODE25 || '111';
+        ELSE
+          MI_CODE25 := MI_CODE25 || '1';
+        END IF;
+        MI_CODE25 := MI_CODE25 || '0';
+      END LOOP;
+      MI_I := MI_I + 5;
+    END LOOP;
+    MI_CODE25 := '1110111010' || MI_CODE25 || '111010111';
+    RETURN MI_CODE25;
+  END FC_CODE25;
+  -----------------------------------------------------------------------------------------------------------------------------
+  ------------------------------------------------------ FUNCION CODE39 -------------------------------------------------------
+  -----------------------------------------------------------------------------------------------------------------------------
+  FUNCTION FC_CODE39
+    (
+    UN_DATOACODIFICAR   VARCHAR2,
+    UN_BLNADDCHECKDIGIT BOOLEAN DEFAULT FALSE
+    )
+  RETURN VARCHAR2 AS
+    MI_ARY3OF9CHARSET     VECTORCODEBAR;
+    MI_STRCHAR            VARCHAR2(1);
+    MI_LNGCHECKDIGITSUM   NUMBER;
+    MI_LNGCHARINDEX       NUMBER;
+    MI_STRENCODE          VARCHAR2(32000);
+    MI_STRENCODEFORMAT    VARCHAR2(32000);
+    MI_I                  NUMBER;
+    MI_J                  NUMBER;
+    MI_LONGITUD           NUMBER;
+    MI_CODE39             VARCHAR2(32000);
+    MI_DATOACODIFICAR     VARCHAR2(32000);
+  BEGIN
+    FOR MI_I IN 0..200 LOOP
+      MI_ARY3OF9CHARSET(MI_I) := '';
+    END LOOP;
+    --initial validation for encode data length
+    MI_LONGITUD := LENGTH(UN_DATOACODIFICAR);
+    IF MI_LONGITUD > 32 THEN
+      RAISE_APPLICATION_ERROR (-20000,'<ERROR>El codogo de barras 3 de 9 se limita a 32 caracteres</ERROR>');
+      RETURN NULL;
+    END IF;
+    --POPULATE THE 3 OF 9 CHARACTER SET
+    --NUMBERS 0 TO 9
+    MI_ARY3OF9CHARSET(0) := '000110100';    --0
+    MI_ARY3OF9CHARSET(1) := '100100001';    --1
+    MI_ARY3OF9CHARSET(2) := '001100001';    --2
+    MI_ARY3OF9CHARSET(3) := '101100000';    --3
+    MI_ARY3OF9CHARSET(4) := '000110001';    --4
+    MI_ARY3OF9CHARSET(5) := '100110000';    --5
+    MI_ARY3OF9CHARSET(6) := '001110000';    --6
+    MI_ARY3OF9CHARSET(7) := '000100101';    --7
+    MI_ARY3OF9CHARSET(8) := '100100100';    --8
+    MI_ARY3OF9CHARSET(9) := '001100100';    --9
+    --LETTERS A TO Z
+    MI_ARY3OF9CHARSET(10) := '100001001';    --A
+    MI_ARY3OF9CHARSET(11) := '001001001';    --B
+    MI_ARY3OF9CHARSET(12) := '101001000';    --C
+    MI_ARY3OF9CHARSET(13) := '000011001';    --D
+    MI_ARY3OF9CHARSET(14) := '100011000';    --E
+    MI_ARY3OF9CHARSET(15) := '001011000';    --F
+    MI_ARY3OF9CHARSET(16) := '000001101';    --G
+    MI_ARY3OF9CHARSET(17) := '100001100';    --H
+    MI_ARY3OF9CHARSET(18) := '001001100';    --I
+    MI_ARY3OF9CHARSET(19) := '000011100';    --J
+    MI_ARY3OF9CHARSET(20) := '100000011';    --K
+    MI_ARY3OF9CHARSET(21) := '001000011';    --L
+    MI_ARY3OF9CHARSET(22) := '101000010';    --M
+    MI_ARY3OF9CHARSET(23) := '000010011';    --N
+    MI_ARY3OF9CHARSET(24) := '100010010';    --O
+    MI_ARY3OF9CHARSET(25) := '001010010';    --P
+    MI_ARY3OF9CHARSET(26) := '000000111';    --Q
+    MI_ARY3OF9CHARSET(27) := '100000110';    --R
+    MI_ARY3OF9CHARSET(28) := '001000110';    --S
+    MI_ARY3OF9CHARSET(29) := '000010110';    --T
+    MI_ARY3OF9CHARSET(30) := '110000001';    --U
+    MI_ARY3OF9CHARSET(31) := '011000001';    --V
+    MI_ARY3OF9CHARSET(32) := '111000000';    --W
+    MI_ARY3OF9CHARSET(33) := '010010001';    --X
+    MI_ARY3OF9CHARSET(34) := '110010000';    --Y
+    MI_ARY3OF9CHARSET(35) := '011010000';    --Z
+    --ALLOWED SYMBOLS
+    MI_ARY3OF9CHARSET(36) := '010000101';    ---
+    MI_ARY3OF9CHARSET(37) := '110000100';    --.
+    MI_ARY3OF9CHARSET(38) := '011000100';    --SPACE
+    MI_ARY3OF9CHARSET(39) := '010101000';    --$
+    MI_ARY3OF9CHARSET(40) := '010100010';    --/
+    MI_ARY3OF9CHARSET(41) := '010001010';    --+
+    MI_ARY3OF9CHARSET(42) := '000101010';    --%
+    --VALIDATE DATA TO ENCODE
+    MI_DATOACODIFICAR := UPPER(UN_DATOACODIFICAR);
+    --represent spaces with underscores
+    MI_DATOACODIFICAR := REPLACE(MI_DATOACODIFICAR,' ','_');
+    MI_LONGITUD := LENGTH(MI_DATOACODIFICAR);
+    FOR MI_I IN 1..MI_LONGITUD LOOP
+      MI_STRCHAR := SUBSTR(MI_DATOACODIFICAR, MI_I, 1);
+      IF (MI_STRCHAR BETWEEN '0' AND '9') OR (MI_STRCHAR BETWEEN 'A' AND 'C') THEN
+        GOTO SIGUE;
+      ELSIF MI_STRCHAR = '-' OR MI_STRCHAR = '$' OR MI_STRCHAR = ':' OR MI_STRCHAR = '/' OR MI_STRCHAR = '.' OR MI_STRCHAR = '+' THEN
+        GOTO SIGUE;
+      ELSE
+        RAISE_APPLICATION_ERROR (-20000,'<ERROR>Se encontraron carateres invalidos</ERROR>');
+        RETURN NULL;
+      END IF;
+  <<SIGUE>>
+      MI_J := 0;
+    END LOOP;
+    --encode data using character set
+    --get the check digit calculation while we're at it
+    FOR MI_I IN 1..MI_LONGITUD LOOP
+      MI_STRCHAR := SUBSTR(MI_DATOACODIFICAR,MI_I,1);
+      --off-set alpha chars to ary index by 55, i.e. A = 65 - 55 = 10
+      MI_LNGCHARINDEX :=  CASE WHEN MI_STRCHAR BETWEEN '0' AND '9' THEN
+                            MI_STRCHAR
+                          ELSE
+                            CASE WHEN MI_STRCHAR BETWEEN 'A' AND 'Z'THEN
+                              ASCII(MI_STRCHAR) - 55
+                            ELSE
+                              CASE WHEN MI_STRCHAR = '-' THEN 36
+                              ELSE
+                                CASE WHEN MI_STRCHAR = '.' THEN 37
+                                ELSE
+                                  CASE WHEN MI_STRCHAR = '_' THEN 38
+                                  ELSE
+                                    CASE WHEN MI_STRCHAR = '$' THEN 39
+                                    ELSE
+                                      CASE WHEN MI_STRCHAR = '/' THEN 40
+                                      ELSE
+                                        CASE WHEN MI_STRCHAR = '+' THEN 41
+                                        ELSE
+                                          CASE WHEN MI_STRCHAR = '%' THEN 42
+                                          END
+                                        END
+                                      END
+                                    END
+                                  END
+                                END
+                              END
+                            END
+                          END;
+      --CHECK DIGIT SUM
+      MI_LNGCHECKDIGITSUM := MI_LNGCHECKDIGITSUM + MI_LNGCHARINDEX;
+      --GET THE ENCODE STRING FOR THE CHARACTER
+      MI_STRENCODE := MI_STRENCODE || MI_ARY3OF9CHARSET(NVL(MI_LNGCHARINDEX,0));
+    END LOOP;
+    --SHOULD WE INCORPORATE THE CHECK DIGIT?
+    IF UN_BLNADDCHECKDIGIT THEN
+      MI_STRENCODE := MI_STRENCODE || MI_ARY3OF9CHARSET(MI_LNGCHECKDIGITSUM MOD 43);
+    END IF;
+    --ADD START/STOP CHARACTERS
+    MI_STRENCODE := '010010100' || MI_STRENCODE || '010010100';
+    --NOW, FORMAT THE OUTPUT
+    --THE ASPECT RATIO IS 3:1 PER SPEC
+    MI_LONGITUD := LENGTH(MI_STRENCODE);
+    MI_I := 1;
+    WHILE MI_I <= MI_LONGITUD LOOP
+      MI_STRENCODEFORMAT := SUBSTR(MI_STRENCODE, MI_I, 9);
+      FOR MI_J IN 1..9 LOOP
+        MI_STRCHAR := SUBSTR(MI_STRENCODEFORMAT, MI_J, 1);
+        IF (MI_J MOD 2) <> 0 THEN
+          IF PCK_SYSMAN_UTL.FC_ESNUMERO(MI_STRCHAR)<>0 AND MI_STRCHAR <> '0' THEN
+            MI_CODE39 := MI_CODE39 || '111';
+          ELSE
+            MI_CODE39 := MI_CODE39 || '1';
+          END IF;
+        ELSE--ELSE IF (MI_J MOD 2) <> 0
+          IF PCK_SYSMAN_UTL.FC_ESNUMERO(MI_STRCHAR)<>0 AND MI_STRCHAR <> '0' THEN
+            MI_CODE39 := MI_CODE39 || '000';
+          ELSE
+            MI_CODE39 := MI_CODE39 || '0';
+          END IF;
+        END IF;
+      END LOOP;
+      MI_CODE39 := MI_CODE39 || '0';
+      MI_I := MI_I + 9;
+    END LOOP;
+    RETURN MI_CODE39;
+  END FC_CODE39;
+  -----------------------------------------------------------------------------------------------------------------------------
+  ------------------------------------------------ FUNCION CODIFICAR_SUPLEMENTO -----------------------------------------------
+  -----------------------------------------------------------------------------------------------------------------------------
+  FUNCTION FC_CODIFICAR_SUPLEMENTO
+    (
+    UN_SUMPLEMENTO      VARCHAR2
+    )
+  RETURN VARCHAR2 AS
+    MI_ARYUPCECHARSET   MATRIZCODEBAR;
+    MI_ARY2DIGITPARITY	VECTORCODEBAR;
+    MI_ARY5DIGITPARITY	VECTORCODEBAR;
+    MI_LONGITUD         NUMBER := 0;
+    MI_LNGPARITY        NUMBER := 0;
+    MI_LNGEVENSUM       NUMBER := 0;
+    MI_LNGODDSUM        NUMBER := 0;
+    MI_STRPARITYMASK    VARCHAR2(200);
+    MI_I                NUMBER := 0;
+    MI_STRENCODE        VARCHAR2(200);
+    MI_SUPLEMENTO       VARCHAR2(200);
+  BEGIN
+    FOR FILA IN 1..200 LOOP
+      FOR COL IN 1..200 LOOP
+        MI_ARYUPCECHARSET(FILA)(COL) := '';
+      END LOOP;
+    END LOOP;
+    MI_LONGITUD := LENGTH(UN_SUMPLEMENTO);
+    FOR MI_I IN 1..MI_LONGITUD LOOP
+      IF PCK_SYSMAN_UTL.FC_ESNUMERO(SUBSTR(UN_SUMPLEMENTO, MI_I, 1))<>0 THEN
+        MI_SUPLEMENTO := MI_SUPLEMENTO || SUBSTR(UN_SUMPLEMENTO, MI_I, 1);
+      END IF;
+    END LOOP;
+    --POPULATE UPC E CHARACTER SET
+    --EVEN PARITY FIRST
+    MI_ARYUPCECHARSET(0)(0) := '0100111';
+    MI_ARYUPCECHARSET(0)(1) := '0110011';
+    MI_ARYUPCECHARSET(0)(2) := '0011011';
+    MI_ARYUPCECHARSET(0)(3) := '0100001';
+    MI_ARYUPCECHARSET(0)(4) := '0011101';
+    MI_ARYUPCECHARSET(0)(5) := '0111001';
+    MI_ARYUPCECHARSET(0)(6) := '0000101';
+    MI_ARYUPCECHARSET(0)(7) := '0010001';
+    MI_ARYUPCECHARSET(0)(8) := '0001001';
+    MI_ARYUPCECHARSET(0)(9) := '0010111';
+    --NOW)(ODD PARITY
+    MI_ARYUPCECHARSET(1)(0) := '0001101';
+    MI_ARYUPCECHARSET(1)(1) := '0011001';
+    MI_ARYUPCECHARSET(1)(2) := '0010011';
+    MI_ARYUPCECHARSET(1)(3) := '0111101';
+    MI_ARYUPCECHARSET(1)(4) := '0100011';
+    MI_ARYUPCECHARSET(1)(5) := '0110001';
+    MI_ARYUPCECHARSET(1)(6) := '0101111';
+    MI_ARYUPCECHARSET(1)(7) := '0111011';
+    MI_ARYUPCECHARSET(1)(8) := '0110111';
+    MI_ARYUPCECHARSET(1)(9) := '0001011';
+    --POPULATE PARITY MASKS
+    --FIRST 2 DIGIT
+    MI_ARY2DIGITPARITY(0) := '11';
+    MI_ARY2DIGITPARITY(1) := '10';
+    MI_ARY2DIGITPARITY(2) := '01';
+    MI_ARY2DIGITPARITY(3) := '00';
+    --NOW)(5 DIGIT
+    MI_ARY5DIGITPARITY(0) := '00111';
+    MI_ARY5DIGITPARITY(1) := '01011';
+    MI_ARY5DIGITPARITY(2) := '01101';
+    MI_ARY5DIGITPARITY(3) := '01110';
+    MI_ARY5DIGITPARITY(4) := '10011';
+    MI_ARY5DIGITPARITY(5) := '11001';
+    MI_ARY5DIGITPARITY(6) := '11100';
+    MI_ARY5DIGITPARITY(7) := '10101';
+    MI_ARY5DIGITPARITY(8) := '10110';
+    MI_ARY5DIGITPARITY(9) := '11010';
+    --BUILD ENCODED STRING OR VALIDATE
+    MI_LONGITUD := LENGTH(MI_SUPLEMENTO);
+    CASE MI_LONGITUD
+      WHEN 2 THEN
+        --GET THE PARITY MASK STRING
+        MI_STRPARITYMASK := MI_ARY2DIGITPARITY(TO_NUMBER(MI_SUPLEMENTO) MOD 4);
+        --BUILD ENCODED STRING
+        FOR MI_I IN 1..2 LOOP
+          MI_LNGPARITY := SUBSTR(MI_STRPARITYMASK, MI_I, 1);
+          MI_STRENCODE := MI_STRENCODE || MI_ARYUPCECHARSET(MI_LNGPARITY)(SUBSTR(MI_SUPLEMENTO, MI_I, 1));
+          IF MI_I = 1 THEN
+            MI_STRENCODE := MI_STRENCODE || '01';
+          END IF;
+        END LOOP;
+        --ADD SOME PADDING AND LEFT GUARD
+        MI_STRENCODE := '00000000000000000000' || '1011' || MI_STRENCODE;
+      WHEN 5 THEN
+        --GET THE PARITY MASK STRING. USE A TYPE OF CHECK DIGIT ALGORHYTM:
+        --THE RESULT FROM THE CALCULATION PROVIDES THE PARITY MASK
+        --WHICH IS USED TO ENCODE THE SUPPLEMENT
+        FOR MI_I IN 1..5 LOOP
+          IF (MI_I MOD 2) <> 0 THEN
+            MI_LNGODDSUM := MI_LNGODDSUM + TO_NUMBER(SUBSTR(MI_SUPLEMENTO, MI_I, 1));
+          ELSE
+            MI_LNGEVENSUM := MI_LNGEVENSUM + TO_NUMBER(SUBSTR(MI_SUPLEMENTO, MI_I, 1));
+          END IF;
+        END LOOP;
+        --NOW, GET THE CHECK DIGIT...WE ONLY WANT TO USE THE LAST CHARACTER THOUGH
+        MI_LNGPARITY := ((MI_LNGODDSUM * 3) + (MI_LNGEVENSUM * 9)) MOD 10;
+        --USE THIS NUMBER TO RETURN THE CORRESPONDING CHARACTER SET
+        MI_STRPARITYMASK := MI_ARY5DIGITPARITY(MI_LNGPARITY);
+        --NEXT, ENCODE THE DATA
+        FOR MI_I IN 1..5 LOOP
+          MI_STRENCODE := MI_STRENCODE || MI_ARYUPCECHARSET(SUBSTR(MI_STRPARITYMASK, MI_I, 1))(SUBSTR(MI_SUPLEMENTO, MI_I, 1));
+          --ADD CENTER GUARD AFTER CHARACTERS 1 TO 4
+          IF MI_I = 5 THEN
+            GOTO SALIR;
+          ELSE
+            MI_STRENCODE := MI_STRENCODE || '01';
+          END IF;
+        END LOOP;
+        --ADD PADDING AND THE LEFT GUARD
+  <<SALIR>>
+        MI_STRENCODE := '00000000000000000000' || '1011' || MI_STRENCODE;
+      ELSE
+        RAISE_APPLICATION_ERROR(-20000,'<ERROR>El numero suplemento esta limitado a 2 o 5 digitos</ERROR>');
+        RETURN NULL;
+    END CASE;
+    RETURN MI_STRENCODE;
+  END FC_CODIFICAR_SUPLEMENTO;
+  -----------------------------------------------------------------------------------------------------------------------------
+  ------------------------------------------------------- FUNCION EAN13 -------------------------------------------------------
+  -----------------------------------------------------------------------------------------------------------------------------
+  FUNCTION FC_EAN13
+    (
+    UN_DATOACODIFICAR   VARCHAR2
+    )
+  RETURN VARCHAR2 AS
+    MI_EAN13                VARCHAR2(32000);
+    MI_ARYEANCHARSET        MATRIZCODEBAR;
+    MI_LONGITUD             NUMBER := 0;
+    MI_DATOACODIFICAR       VARCHAR2(32000);
+    MI_I                    NUMBER := 0;
+    MI_STRSUPPLEMENT        VARCHAR2(200);
+    MI_BLNENCODESUPPLEMENT  BOOLEAN;
+    MI_LNGODDSUM            NUMBER := 0;
+    MI_LNGEVENSUM           NUMBER := 0;
+    MI_LNGCHECKDIGIT        NUMBER := 0;
+    MI_LNGNUMBERSYSTEM      NUMBER := 0;
+    MI_LNGPARITY            NUMBER := 0;
+    MI_STRPARITYSEQUENCE    VARCHAR2(200);
+    MI_ARYMASKEDSET         VECTORCODEBAR;
+  BEGIN
+    FOR FILA IN 1..200 LOOP
+      FOR COL IN 1..200 LOOP
+        MI_ARYEANCHARSET(FILA)(COL) := '';
+      END LOOP;
+    END LOOP;
+    MI_LONGITUD := LENGTH(UN_DATOACODIFICAR);
+    FOR MI_I IN 1..MI_LONGITUD LOOP
+      IF PCK_SYSMAN_UTL.FC_ESNUMERO(SUBSTR(UN_DATOACODIFICAR, MI_I, 1)) <> 0 THEN
+        MI_DATOACODIFICAR := MI_DATOACODIFICAR || SUBSTR(UN_DATOACODIFICAR, MI_I, 1);
+      END IF;
+    END LOOP;
+    MI_LONGITUD := LENGTH(MI_DATOACODIFICAR);
+    --look for supplemental data:
+    --12:    no check-digit supplied
+    --14:    no check-digit with 2 digit supplemental
+    --17:    no check-digit with 5 digit supplemental
+    --13:    check-digit supplied
+    --15:    check-digit with 2 digit supplemental
+    --18:    check-digit with 5 digit supplemental
+    CASE
+      WHEN MI_LONGITUD = 12 OR MI_LONGITUD = 14 OR MI_LONGITUD = 17 THEN
+        IF MI_LONGITUD > 12 THEN
+          MI_STRSUPPLEMENT := SUBSTR(MI_DATOACODIFICAR, 13);
+          MI_DATOACODIFICAR := SUBSTR(MI_DATOACODIFICAR, 1, 12);
+          MI_BLNENCODESUPPLEMENT := TRUE;
+        END IF;
+      WHEN MI_LONGITUD = 13 OR MI_LONGITUD = 15 OR MI_LONGITUD = 18 THEN
+        IF MI_LONGITUD > 13 THEN
+          MI_STRSUPPLEMENT := SUBSTR(MI_DATOACODIFICAR, 14);
+          MI_DATOACODIFICAR := SUBSTR(MI_DATOACODIFICAR, 1, 13);
+          MI_BLNENCODESUPPLEMENT := TRUE;
+        END IF;
+      ELSE
+        RAISE_APPLICATION_ERROR (-20000,'<ERROR>La longitud del codigo es incorrecta</ERROR>');
+        RETURN NULL;
+    END CASE;
+    MI_LONGITUD := LENGTH(MI_DATOACODIFICAR);
+    --encode the supplemental data attached
+    IF MI_BLNENCODESUPPLEMENT THEN
+      MI_STRSUPPLEMENT := FC_CODIFICAR_SUPLEMENTO(MI_STRSUPPLEMENT);
+    ELSE
+      MI_STRSUPPLEMENT := '';
+    END IF;
+    --fill array elements with proper character sets
+    --aryLeftEvenSet
+    MI_ARYEANCHARSET(0)(0) := '0001101';
+    MI_ARYEANCHARSET(0)(1) := '0011001';
+    MI_ARYEANCHARSET(0)(2) := '0010011';
+    MI_ARYEANCHARSET(0)(3) := '0111101';
+    MI_ARYEANCHARSET(0)(4) := '0100011';
+    MI_ARYEANCHARSET(0)(5) := '0110001';
+    MI_ARYEANCHARSET(0)(6) := '0101111';
+    MI_ARYEANCHARSET(0)(7) := '0111011';
+    MI_ARYEANCHARSET(0)(8) := '0110111';
+    MI_ARYEANCHARSET(0)(9) := '0001011';
+    --aryLeftOddSet
+    MI_ARYEANCHARSET(1)(0) := '0100111';
+    MI_ARYEANCHARSET(1)(1) := '0110011';
+    MI_ARYEANCHARSET(1)(2) := '0011011';
+    MI_ARYEANCHARSET(1)(3) := '0100001';
+    MI_ARYEANCHARSET(1)(4) := '0011101';
+    MI_ARYEANCHARSET(1)(5) := '0111001';
+    MI_ARYEANCHARSET(1)(6) := '0000101';
+    MI_ARYEANCHARSET(1)(7) := '0010001';
+    MI_ARYEANCHARSET(1)(8) := '0001001';
+    MI_ARYEANCHARSET(1)(9) := '0010111';
+    --aryRightSet
+    MI_ARYEANCHARSET(2)(0) := '1110010';
+    MI_ARYEANCHARSET(2)(1) := '1100110';
+    MI_ARYEANCHARSET(2)(2) := '1101100';
+    MI_ARYEANCHARSET(2)(3) := '1000010';
+    MI_ARYEANCHARSET(2)(4) := '1011100';
+    MI_ARYEANCHARSET(2)(5) := '1001110';
+    MI_ARYEANCHARSET(2)(6) := '1010000';
+    MI_ARYEANCHARSET(2)(7) := '1000100';
+    MI_ARYEANCHARSET(2)(8) := '1001000';
+    MI_ARYEANCHARSET(2)(9) := '1110100';
+    --populate the entire character set
+    /*aryEANCharSet(0) = aryLeftEvenSet
+    aryEANCharSet(1) = aryLeftOddSet
+    aryEANCharSet(2) = aryRightSet*/
+    IF MI_LONGITUD = 12 THEN
+      --GET CHECK DIGIT
+      FOR MI_I IN 1..12 LOOP
+        IF (MI_I MOD 2) <> 0 THEN
+          MI_LNGODDSUM := MI_LNGODDSUM + TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, MI_I, 1));
+        ELSE
+          MI_LNGEVENSUM := MI_LNGEVENSUM + TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, MI_I, 1));
+        END IF;
+      END LOOP;
+      --CHECK DIGIT IS SOME NUMBER + (LNGEVENSUM + MI_LNGODDSUM * 3) = VALUE EVENLY DIVISIBLE BY 10
+      MI_LNGCHECKDIGIT := 10 - ((MI_LNGEVENSUM * 9 + MI_LNGODDSUM * 3) MOD 10);
+      IF MI_LNGCHECKDIGIT = 10 THEN
+        MI_LNGCHECKDIGIT := 0;
+      END IF;
+      --ADD THE CHECK DIGIT TO THE END OF THE BARCODE
+      MI_DATOACODIFICAR := MI_DATOACODIFICAR || MI_LNGCHECKDIGIT;
+    END IF;
+    --GET THE NUMBER SYSTEM DIGIT
+    MI_LNGNUMBERSYSTEM := TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, 1, 1));
+    --REMOVE THE LEADING NUMBER SYSTEM DIGIT
+    MI_DATOACODIFICAR := SUBSTR(MI_DATOACODIFICAR, 2);
+    --set the parity sequence for use in encoding digits based on the number system.
+    --this parity sequence mask will return the number pattern from the aryEANCharSet
+    --array which holds the left even, left odd, and right bar code data for numbers
+    --0 through 9.
+    CASE MI_LNGNUMBERSYSTEM
+      WHEN 0  THEN MI_STRPARITYSEQUENCE := '000000222222';
+      WHEN 1  THEN MI_STRPARITYSEQUENCE := '001011222222';
+      WHEN 2  THEN MI_STRPARITYSEQUENCE := '001101222222';
+      WHEN 3  THEN MI_STRPARITYSEQUENCE := '001110222222';
+      WHEN 4  THEN MI_STRPARITYSEQUENCE := '010011222222';
+      WHEN 5  THEN MI_STRPARITYSEQUENCE := '011001222222';
+      WHEN 6  THEN MI_STRPARITYSEQUENCE := '011100222222';
+      WHEN 7  THEN MI_STRPARITYSEQUENCE := '010101222222';
+      WHEN 8  THEN MI_STRPARITYSEQUENCE := '010110222222';
+      WHEN 9  THEN MI_STRPARITYSEQUENCE := '011010222222';
+    END CASE;
+    FOR MI_I IN 1..12 LOOP
+      MI_LNGPARITY := TO_NUMBER(SUBSTR(MI_STRPARITYSEQUENCE, MI_I, 1));
+      MI_EAN13 := MI_EAN13 || MI_ARYEANCHARSET(MI_LNGPARITY)(TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, MI_I, 1)));
+      IF MI_I = 6 THEN
+        MI_EAN13 := MI_EAN13 || '01010';
+      END IF;
+    END LOOP;
+    MI_EAN13 := '101' || MI_EAN13 || '101' || MI_STRSUPPLEMENT;
+    RETURN MI_EAN13;
+  END FC_EAN13;
+  -----------------------------------------------------------------------------------------------------------------------------
+  ------------------------------------------------------- FUNCION EAN8 --------------------------------------------------------
+  -----------------------------------------------------------------------------------------------------------------------------
+  FUNCTION FC_EAN8
+    (
+    UN_DATOACODIFICAR   VARCHAR2
+    )
+  RETURN VARCHAR2 AS
+    MI_LONGITUD             NUMBER := 0;
+    MI_DATOACODIFICAR       VARCHAR2(32000);
+    MI_EAN8                 VARCHAR2(32000);
+    MI_ARYEANCHARSET        MATRIZCODEBAR;
+    MI_I                    NUMBER := 0;
+    MI_STRSUPPLEMENT        VARCHAR2(200);
+    MI_BLNENCODESUPPLEMENT  BOOLEAN;
+    MI_LNGODDSUM            NUMBER := 0;
+    MI_LNGEVENSUM           NUMBER := 0;
+    MI_LNGCHECKDIGIT        NUMBER := 0;
+    MI_LNGPARITY            NUMBER := 0;
+  BEGIN
+    FOR FILA IN 1..200 LOOP
+      FOR COL IN 1..200 LOOP
+        MI_ARYEANCHARSET(FILA)(COL) := '';
+      END LOOP;
+    END LOOP;
+    MI_LONGITUD := LENGTH(UN_DATOACODIFICAR);
+    FOR MI_I IN 1..MI_LONGITUD LOOP
+      IF PCK_SYSMAN_UTL.FC_ESNUMERO(SUBSTR(UN_DATOACODIFICAR, MI_I, 1))<>0 THEN
+        MI_DATOACODIFICAR := MI_DATOACODIFICAR || SUBSTR(UN_DATOACODIFICAR, MI_I, 1);
+      END IF;
+    END LOOP;
+    MI_LONGITUD := LENGTH(MI_DATOACODIFICAR);
+    --look for supplemental data:
+    --7:     no check-digit supplied
+    --9:     no check-digit with 2 digit supplemental
+    --12:    no check-digit with 5 digit supplemental
+    --8:     check-digit supplied
+    --10:    check-digit with 2 digit supplemental
+    --13:    check-digit with 5 digit supplemental
+    CASE
+      WHEN MI_LONGITUD = 7 OR MI_LONGITUD = 9 OR MI_LONGITUD = 12 THEN
+        IF MI_LONGITUD > 7 THEN
+          MI_STRSUPPLEMENT := SUBSTR(MI_DATOACODIFICAR, 8);
+          MI_DATOACODIFICAR := SUBSTR(MI_DATOACODIFICAR, 1, 7);
+          MI_BLNENCODESUPPLEMENT := TRUE;
+        END IF;
+      WHEN MI_LONGITUD = 8 OR MI_LONGITUD = 10 OR MI_LONGITUD = 13 THEN
+        IF MI_LONGITUD > 8 THEN
+          MI_STRSUPPLEMENT := SUBSTR(MI_DATOACODIFICAR, 9);
+          MI_DATOACODIFICAR := SUBSTR(MI_DATOACODIFICAR, 1, 8);
+          MI_BLNENCODESUPPLEMENT := TRUE;
+        END IF;
+      ELSE
+        RAISE_APPLICATION_ERROR (-20000,'<ERROR>La longitud del codigo esta limitada a 7 digitos, el digito de chequeo se adiciona automaticamente</ERROR>');
+        RETURN NULL;
+    END CASE;
+    MI_LONGITUD := LENGTH(MI_DATOACODIFICAR);
+      --encode the supplemental data attached
+    IF MI_BLNENCODESUPPLEMENT THEN
+      MI_STRSUPPLEMENT := FC_CODIFICAR_SUPLEMENTO(MI_STRSUPPLEMENT);
+    ELSE
+      MI_STRSUPPLEMENT := '';
+    END IF;
+    --fill array elements with proper character sets
+      --aryLeftEvenSet
+    MI_ARYEANCHARSET(0)(0) := '0001101';
+    MI_ARYEANCHARSET(0)(1) := '0011001';
+    MI_ARYEANCHARSET(0)(2) := '0010011';
+    MI_ARYEANCHARSET(0)(3) := '0111101';
+    MI_ARYEANCHARSET(0)(4) := '0100011';
+    MI_ARYEANCHARSET(0)(5) := '0110001';
+    MI_ARYEANCHARSET(0)(6) := '0101111';
+    MI_ARYEANCHARSET(0)(7) := '0111011';
+    MI_ARYEANCHARSET(0)(8) := '0110111';
+    MI_ARYEANCHARSET(0)(9) := '0001011';
+    --aryRightSet
+    MI_ARYEANCHARSET(1)(0) := '1110010';
+    MI_ARYEANCHARSET(1)(1) := '1100110';
+    MI_ARYEANCHARSET(1)(2) := '1101100';
+    MI_ARYEANCHARSET(1)(3) := '1000010';
+    MI_ARYEANCHARSET(1)(4) := '1011100';
+    MI_ARYEANCHARSET(1)(5) := '1001110';
+    MI_ARYEANCHARSET(1)(6) := '1010000';
+    MI_ARYEANCHARSET(1)(7) := '1000100';
+    MI_ARYEANCHARSET(1)(8) := '1001000';
+    MI_ARYEANCHARSET(1)(9) := '1110100';
+    /*populate the entire character set
+    aryEANCharSet(0) = aryLeftEvenSet
+    aryEANCharSet(1) = aryRightSet*/
+    IF MI_LONGITUD = 7 THEN
+      --GET CHECK DIGIT
+      FOR MI_I IN 1..7 LOOP
+        IF (MI_I MOD 2) <> 0 THEN
+          MI_LNGODDSUM := MI_LNGODDSUM + TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, MI_I, 1));
+        ELSE
+          MI_LNGEVENSUM := MI_LNGEVENSUM + TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, MI_I, 1));
+        END IF;
+      END LOOP;
+      --CHECK DIGIT IS SOME NUMBER + (LNGEVENSUM + MI_LNGODDSUM * 3) = VALUE EVENLY DIVISIBLE BY 10
+      MI_LNGCHECKDIGIT := 10 - ((MI_LNGEVENSUM + MI_LNGODDSUM * 3) MOD 10);
+      IF MI_LNGCHECKDIGIT = 10 THEN
+        MI_LNGCHECKDIGIT := 0;
+      END IF;
+      --ADD THE CHECK DIGIT TO THE END OF THE BARCODE
+      MI_DATOACODIFICAR := MI_DATOACODIFICAR || MI_LNGCHECKDIGIT;
+    END IF;
+    FOR MI_I IN 1..8 LOOP
+      CASE
+        WHEN MI_I >= 1 AND MI_I <= 4 THEN MI_LNGPARITY := 0;
+        ELSE MI_LNGPARITY := 1;
+      END CASE;
+      MI_EAN8 := MI_EAN8 || MI_ARYEANCHARSET(MI_LNGPARITY)(TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, MI_I, 1)));
+      IF MI_I = 4 THEN
+        MI_EAN8 := MI_EAN8 || '01010';
+      END IF;
+    END LOOP;
+    MI_EAN8 := '101' || MI_EAN8 || '101' || MI_STRSUPPLEMENT;
+    RETURN MI_EAN8;
+  END FC_EAN8;
+  -----------------------------------------------------------------------------------------------------------------------------
+  ---------------------------------------------------- FUNCION INTERLACE ------------------------------------------------------
+  -----------------------------------------------------------------------------------------------------------------------------
+  FUNCTION FC_INTERLACE
+    (
+    UN_MESSAGE      VARCHAR2
+    )
+  RETURN VARCHAR2 AS
+    MI_I            NUMBER;
+    MI_J            NUMBER;
+    MI_STRLEFT      VARCHAR2(32000);
+    MI_STRRIGHT     VARCHAR2(32000);
+    MI_STRMESSAGE   VARCHAR2(32000);
+    MI_LONGITUD     NUMBER;
+  BEGIN
+    MI_LONGITUD := LENGTH(UN_MESSAGE);
+    --INTERLACE TWO CHARS AT A TIME
+    MI_I := 1;
+    WHILE MI_I <= MI_LONGITUD LOOP
+      MI_STRLEFT := SUBSTR(UN_MESSAGE, MI_I, 5);
+      MI_STRRIGHT := SUBSTR(UN_MESSAGE, MI_I + 5, 5);
+      FOR MI_J IN 1..5 LOOP
+        MI_STRMESSAGE := MI_STRMESSAGE || SUBSTR(MI_STRLEFT, MI_J, 1) || SUBSTR(MI_STRRIGHT, MI_J, 1);
+      END LOOP;
+      MI_I := MI_I + 10;
+    END LOOP;
+    RETURN MI_STRMESSAGE;
+  END FC_INTERLACE;
+  -----------------------------------------------------------------------------------------------------------------------------
+  ------------------------------------------------------- FUNCION ITF ---------------------------------------------------------
+  -----------------------------------------------------------------------------------------------------------------------------
+  FUNCTION FC_ITF
+    (
+    UN_DATOACODIFICAR     VARCHAR2,
+    UN_BLNADDCHECKDIGIT   BOOLEAN DEFAULT TRUE
+    )
+  RETURN VARCHAR2 AS
+    MI_ARYITFCHARSET	  VECTORCODEBAR;
+    MI_LNGLENENCODE     NUMBER :=0;
+    MI_LNGEVENSUM       NUMBER :=0;
+    MI_LNGODDSUM        NUMBER :=0;
+    MI_LNGCHECKDIGIT    NUMBER :=0;
+    MI_STRENCODED       VARCHAR2(32000);
+    MI_LNGBIT           NUMBER :=0;
+    MI_I                NUMBER :=0;
+    MI_DATOACODIFICAR   VARCHAR2(32000);
+    MI_LONGITUD         NUMBER;
+    MI_ITF              VARCHAR2(32000);
+  BEGIN
+    FOR FILA IN 1..200 LOOP
+        MI_ARYITFCHARSET(FILA) := '';
+    END LOOP;
+    MI_LONGITUD := LENGTH(UN_DATOACODIFICAR);
+    FOR MI_I IN 1..MI_LONGITUD LOOP
+      IF PCK_SYSMAN_UTL.FC_ESNUMERO(SUBSTR(UN_DATOACODIFICAR, MI_I, 1))<>0 THEN
+        MI_DATOACODIFICAR := MI_DATOACODIFICAR || SUBSTR(UN_DATOACODIFICAR, MI_I, 1);
+      END IF;
+    END LOOP;
+    MI_LONGITUD := LENGTH(MI_DATOACODIFICAR);
+    MI_ARYITFCHARSET(0) := '00110';
+    MI_ARYITFCHARSET(1) := '10001';
+    MI_ARYITFCHARSET(2) := '01001';
+    MI_ARYITFCHARSET(3) := '11000';
+    MI_ARYITFCHARSET(4) := '00101';
+    MI_ARYITFCHARSET(5) := '10100';
+    MI_ARYITFCHARSET(6) := '01100';
+    MI_ARYITFCHARSET(7) := '00011';
+    MI_ARYITFCHARSET(8) := '10010';
+    MI_ARYITFCHARSET(9) := '01010';
+    MI_LNGLENENCODE := LENGTH(MI_DATOACODIFICAR);
+    --DATA TO ENCODE MUST BE AN EVEN LENGTH STRING...MAKE IT SO
+    --BY ADDING A 0 AS A PREFIX TO THE STRING
+    IF (MI_LNGLENENCODE MOD 2) <> 0 THEN
+      MI_DATOACODIFICAR := '0' || MI_DATOACODIFICAR;
+    END IF;
+    IF UN_BLNADDCHECKDIGIT THEN
+      FOR MI_I IN 1..MI_LNGLENENCODE LOOP
+        IF (MI_I MOD 2) <> 0 THEN
+          MI_LNGODDSUM := MI_LNGODDSUM + TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, MI_I, 1));
+        ELSE
+          MI_LNGEVENSUM := MI_LNGEVENSUM + TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, MI_I, 1));
+        END IF;
+      END LOOP;
+      --ADD THE CHECK-DIGIT TO THE STRING TO ENCODE
+      MI_LNGCHECKDIGIT := 10 - ((MI_LNGEVENSUM + (MI_LNGODDSUM * 3)) MOD 10);
+      IF MI_LNGCHECKDIGIT = 10 THEN
+        MI_LNGCHECKDIGIT := 0;
+      END IF;
+      MI_DATOACODIFICAR := MI_DATOACODIFICAR || MI_LNGCHECKDIGIT;
+    END IF;
+    --ENCODE THE DATA
+    FOR MI_I IN 1..MI_LNGLENENCODE LOOP
+        MI_STRENCODED := MI_STRENCODED || MI_ARYITFCHARSET(TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, MI_I, 1)));
+    END LOOP;
+    --INTERLACE THE DATA TO ENCODE
+    MI_STRENCODED := FC_INTERLACE(MI_STRENCODED);
+    MI_LONGITUD := LENGTH(MI_STRENCODED);
+    --NOW, FORMAT THE INTERLEAVED DATA
+    FOR MI_I IN 1..MI_LONGITUD LOOP
+      MI_LNGBIT := TO_NUMBER(SUBSTR(MI_STRENCODED, MI_I, 1));
+      IF (MI_I MOD 2) <> 0 THEN
+        --IF BIT IS A 1 THEN DOUBLE ITS SIZE
+        IF MI_LNGBIT <> 0 THEN
+          MI_ITF := MI_ITF || '11';
+        ELSE
+          MI_ITF := MI_ITF || '1';
+        END IF;
+      ELSE
+        --IF BIT IS A 0 THEN DOUBLE ITS SIZE
+        IF MI_LNGBIT <> 0 THEN
+          MI_ITF := MI_ITF || '00';
+        ELSE
+          MI_ITF := MI_ITF || '0';
+        END IF;
+      END IF;
+    END LOOP;
+    --ADD THE START AND STOP CHARACTERS
+    MI_ITF := '1010' || MI_ITF || '1101';
+    RETURN MI_ITF;
+  END FC_ITF;
+  -----------------------------------------------------------------------------------------------------------------------------
+  ------------------------------------------------------- FUNCION MSI ---------------------------------------------------------
+  -----------------------------------------------------------------------------------------------------------------------------
+  FUNCTION FC_MSI
+    (
+    UN_DATOACODIFICAR   VARCHAR2
+    )
+  RETURN VARCHAR2 AS
+    MI_ARYCHARSET		    VECTORCODEBAR;
+    MI_LNGDATALEN       NUMBER :=0;
+    MI_STRCHAR          VARCHAR2(1);
+    MI_LNGCHECKDIGIT    NUMBER :=0;
+    I                   NUMBER :=0;
+    MI_LNGCHECKPOS      NUMBER :=0;
+    MI_STRPRODUCT       VARCHAR2(32000);
+    MI_LNGODDSUM        NUMBER :=0;
+    MI_STRRESULT        VARCHAR2(32000);
+    MI_DATOACODIFICAR   VARCHAR2(32000);
+    MI_MSI              VARCHAR2(32000);
+  BEGIN
+    FOR FILA IN 1..200 LOOP
+        MI_ARYCHARSET(FILA) := '';
+    END LOOP;
+    --I AM ONLY SUPPORTING MOD 10, MOD 10 CHECK DIGITS
+    --FOR SIMPLICITY--S SAKE...MI_MSI BARCODES ARE BASICALLY
+    --ACADEMIC AT THIS POINT...UPC/EAN AND ITF/CODE128
+    --BARCODES HAVE TAKEN ITS PLACE.
+    --IF YOU--D LIKE MORE INFO LOOK AT:
+    --HTTP://WWW.FONT.NET/BARCODES/MODPLESBAS.HTM
+    --EMAIL ME IF YOU LIKE TO SEE A VB ALGORITHM FOR
+    --GETTING THE MOD 11 CHECK DIGITS.
+    --MI_MSI ALSO SUPPORTS CHARACTERS A - F...AGAIN,
+    --SINCE THE BUSINESSES THAT STILL USE MI_MSI DON--T
+    --TYPICALLY ENCODE ANYTHING OTHER THAN NUMBERS,
+    --I--M NOT BOTHERING WITH THEM HERE.
+    --VALIDATE INPUT
+    MI_LNGDATALEN := LENGTH(UN_DATOACODIFICAR);
+    IF NOT PCK_SYSMAN_UTL.FC_ESNUMERO(UN_DATOACODIFICAR)<>0 THEN
+      RAISE_APPLICATION_ERROR (-20000,'<ERROR>MSI esta limitado unicamente a datos numericos</ERROR>');
+      RETURN NULL;
+    END IF;
+    IF MI_LNGDATALEN < 3 OR MI_LNGDATALEN > 14 THEN
+      RAISE_APPLICATION_ERROR (-20000,'<ERROR>MSI debe estar entre 3 y 14 caracteres</ERROR>');
+      RETURN NULL;
+    END IF;
+    --THIS CHARSET IS SIMPLY THE 4 BIT HEX OF THE
+    --CHARACTERS SUPPORTED
+    MI_ARYCHARSET(0) := '0000';  --0
+    MI_ARYCHARSET(1) := '0001';  --1
+    MI_ARYCHARSET(2) := '0010';  --2
+    MI_ARYCHARSET(3) := '0011';  --3
+    MI_ARYCHARSET(4) := '0100';  --4
+    MI_ARYCHARSET(5) := '0101';  --5
+    MI_ARYCHARSET(6) := '0110';  --6
+    MI_ARYCHARSET(7) := '0111';  --7
+    MI_ARYCHARSET(8) := '1000';  --8
+    MI_ARYCHARSET(9) := '1001';  --9
+    --GET MOD 10 CHECK DIGITS
+    MI_DATOACODIFICAR := UN_DATOACODIFICAR;
+    FOR MI_I IN 1..2 LOOP
+        --RE/INITIALIZE VARIABLES USED
+        MI_LNGDATALEN := LENGTH(MI_DATOACODIFICAR);
+        MI_LNGODDSUM := 0;
+        MI_LNGCHECKDIGIT := 0;
+        MI_STRPRODUCT := '';
+        FOR MI_LNGCHECKPOS IN 1..MI_LNGDATALEN LOOP
+            MI_STRCHAR := SUBSTR(MI_DATOACODIFICAR, MI_LNGCHECKPOS, 1);
+            IF (MI_LNGCHECKPOS MOD 2) <> 0 THEN
+              --GET RUNNING SUM OF ODD POSITIONED CHARS
+              MI_LNGODDSUM := MI_LNGODDSUM + TO_NUMBER(MI_STRCHAR);
+            ELSE
+              --GET COMPOSITE NUMBER FROM EVEN POSITIONED CHARS
+              MI_STRPRODUCT := MI_STRPRODUCT || MI_STRCHAR;
+            END IF;
+        END LOOP;
+        --MULITPLY THE COMPOSITE NUMBER BY 2
+        MI_STRPRODUCT := TO_NUMBER(MI_STRPRODUCT) * 2;
+        MI_LNGDATALEN := LENGTH(MI_STRPRODUCT);
+        --GET A RUNNING SUM OF EACH CHAR IN THE NEW COMPOSITE NUMBER
+        FOR MI_LNGCHECKPOS IN 1..MI_LNGDATALEN LOOP
+            MI_LNGCHECKDIGIT := MI_LNGCHECKDIGIT + TO_NUMBER(SUBSTR(MI_STRPRODUCT, MI_LNGCHECKPOS, 1));
+        END LOOP;
+        --ADD COMPOSITE NUMBER TO ODD POSITIONED CHARACTERS-- SUM
+        MI_LNGCHECKDIGIT := MI_LNGCHECKDIGIT + MI_LNGODDSUM;
+        --PERFORM MOD 10 CALCULATION
+        MI_LNGCHECKDIGIT := 10 - (MI_LNGCHECKDIGIT MOD 10);
+        --CORRECT THE VALUE IF ALREADY A MULTIPLE OF 10
+        IF MI_LNGCHECKDIGIT = 10 THEN
+          MI_LNGCHECKDIGIT := 0;
+        END IF;
+        --APPEND THE CHECK DIGIT
+        MI_DATOACODIFICAR := MI_DATOACODIFICAR || MI_LNGCHECKDIGIT;
+    END LOOP;
+    MI_LNGDATALEN := LENGTH(MI_DATOACODIFICAR);
+    --ENCODE THE DATA
+    FOR I IN 1..MI_LNGDATALEN LOOP
+        MI_STRCHAR := SUBSTR(MI_DATOACODIFICAR, I, 1);
+        MI_STRRESULT := MI_STRRESULT || MI_ARYCHARSET(TO_NUMBER(MI_STRCHAR));
+    END LOOP;
+    --ADD START/STOP CHARACTERS
+    MI_STRRESULT := '1' || MI_STRRESULT || '00';
+    MI_LNGDATALEN := LENGTH(MI_STRRESULT);
+    --FORMAT THE DATA
+    FOR I IN 1..MI_LNGDATALEN LOOP
+        MI_STRCHAR := SUBSTR(MI_STRRESULT, I, 1);
+        --MI_MSI := MI_MSI || IIF(TO_NUMBER(MI_STRCHAR), "110", "100");
+        MI_MSI := MI_MSI || CASE WHEN MI_STRCHAR <> 0 THEN '110' ELSE '100' END;
+    END LOOP;
+    RETURN MI_MSI;
+  END FC_MSI;
+  -----------------------------------------------------------------------------------------------------------------------------
+  ----------------------------------------------------- FUNCION POSTNET -------------------------------------------------------
+  -----------------------------------------------------------------------------------------------------------------------------
+  FUNCTION FC_POSTNET
+    (
+    UN_DATOACODIFICAR       VARCHAR2,
+    UN_BLNINCLUDECHECKDIGIT BOOLEAN DEFAULT TRUE
+    )
+  RETURN VARCHAR2 AS
+    MI_ARYPOSTNETCHARSET	VECTORCODEBAR;
+    MI_LNGCHECKDIGITSUM   NUMBER := 0;
+    MI_LNGDIGIT           NUMBER := 0;
+    MI_I                  NUMBER := 0;
+    MI_LONGITUD           NUMBER := 0;
+    MI_DATOACODIFICAR     VARCHAR2(32000);
+    MI_POSTNET            VARCHAR2(32000);
+  BEGIN
+    --MI_POSTNET ISN--T CONCERNED WITH WIDTH AS OTHER BARCODES
+    --ARE...HERE, EVERY CHARACTER WILL BE A BAR BUT, THE
+    --ONE--S REPRESENT AN EXTENDED HEIGHT COMPARED TO THE
+    --HEIGHT OF THE ZERO--S IN THE PARITY MASK.
+    --SHORT BARS SHOULD BE AT LEAST .2 INCHES WHILE TALL
+    --BARS SHOULD BE AT LEAST .1 INCHES TALL. THE RATIO
+    --MUST BE MAINTAINED. THERE SHOULD BE 22 BARS PER INCH
+    --BY SPECIFICATION. USE A 2 CHAR FONT TO FORMAT OUTPUT
+    --MAKE SURE WE ONLY HAVE NUMBERS IN THE DATA TO ENCODE
+    FOR MI_I IN 0..20 LOOP
+      MI_ARYPOSTNETCHARSET(MI_I) := '';
+    END LOOP;
+    MI_LONGITUD := LENGTH(UN_DATOACODIFICAR);
+    FOR MI_I IN 1..MI_LONGITUD LOOP
+      IF PCK_SYSMAN_UTL.FC_ESNUMERO(SUBSTR(UN_DATOACODIFICAR, MI_I, 1))<>0 THEN
+        MI_DATOACODIFICAR := MI_DATOACODIFICAR || SUBSTR(UN_DATOACODIFICAR, MI_I, 1);
+      END IF;
+    END LOOP;
+    --POPULATE THE MI_POSTNET CHARACTER SET
+    MI_ARYPOSTNETCHARSET(0) := '11000';
+    MI_ARYPOSTNETCHARSET(1) := '00011';
+    MI_ARYPOSTNETCHARSET(2) := '00101';
+    MI_ARYPOSTNETCHARSET(3) := '00110';
+    MI_ARYPOSTNETCHARSET(4) := '01001';
+    MI_ARYPOSTNETCHARSET(5) := '01010';
+    MI_ARYPOSTNETCHARSET(6) := '01100';
+    MI_ARYPOSTNETCHARSET(7) := '10001';
+    MI_ARYPOSTNETCHARSET(8) := '10010';
+    MI_ARYPOSTNETCHARSET(9) := '10100';
+    --ENCODE THE DATA...WHILE WE--RE AT IT, GET THE CHECK DIGIT
+    MI_LONGITUD := LENGTH(MI_DATOACODIFICAR);
+    FOR I IN 1.. MI_LONGITUD LOOP
+      MI_LNGDIGIT := TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, I, 1));
+      MI_POSTNET := MI_POSTNET || MI_ARYPOSTNETCHARSET(MI_LNGDIGIT);
+      MI_LNGCHECKDIGITSUM := MI_LNGCHECKDIGITSUM + MI_LNGDIGIT;
+    END LOOP;
+    MI_LNGDIGIT := 10 - (MI_LNGCHECKDIGITSUM MOD 10);
+    IF MI_LNGDIGIT = 10 THEN
+      MI_LNGDIGIT := 0;
+    END IF;
+    --APPEND THE CHECK DIGIT TO THE ENCODED DATA
+    MI_POSTNET := MI_POSTNET || CASE WHEN UN_BLNINCLUDECHECKDIGIT THEN MI_ARYPOSTNETCHARSET(MI_LNGDIGIT) ELSE '' END;
+    --ADD THE START/STOP CHARACTERS
+    MI_POSTNET := '1' || MI_POSTNET || '1';
+    RETURN MI_POSTNET;
+  END FC_POSTNET;
+  -----------------------------------------------------------------------------------------------------------------------------
+  ------------------------------------------------------ FUNCION UPCE ---------------------------------------------------------
+  -----------------------------------------------------------------------------------------------------------------------------
+  FUNCTION FC_UPCE
+    (
+    UN_DATOACODIFICAR         VARCHAR2
+    )
+  RETURN VARCHAR2 AS
+    MI_I                      NUMBER := 0;
+    MI_STRORIGINALCODENUMBER  VARCHAR2(11);
+    MI_BLNENCODESUPPLEMENT    BOOLEAN;
+    MI_STRSUPPLEMENT          VARCHAR2(32000);
+    MI_ARYUPCECHARSET			    MATRIZCODEBAR;
+    MI_ARYNUMBERSYSTEMMASK		MATRIZCODEBAR;
+    MI_LNGLENENCODE           NUMBER := 0;
+    MI_LNGEVENSUM             NUMBER := 0;
+    MI_LNGODDSUM              NUMBER := 0;
+    MI_LNGNUMBERSYSTEM        NUMBER := 0;
+    MI_LNGPARITYBIT           NUMBER := 0;
+    MI_STRPARITYMASK          VARCHAR2(32000);
+    MI_UPCE                   VARCHAR2(32000);
+    MI_DATOACODIFICAR         VARCHAR2(32000);
+    MI_NUM                   VARCHAR2(1);
+  BEGIN
+    FOR FILA IN 1..200 LOOP
+      FOR COL IN 1..200 LOOP
+        MI_ARYUPCECHARSET(FILA)(COL) := '';
+        MI_ARYNUMBERSYSTEMMASK(FILA)(COL) := '';
+      END LOOP;
+    END LOOP;
+    MI_LNGLENENCODE := LENGTH(UN_DATOACODIFICAR);
+    FOR MI_I IN 1..MI_LNGLENENCODE LOOP
+      IF PCK_SYSMAN_UTL.FC_ESNUMERO(SUBSTR(UN_DATOACODIFICAR, MI_I, 1))<>0 THEN
+        MI_DATOACODIFICAR := MI_DATOACODIFICAR || SUBSTR(UN_DATOACODIFICAR, MI_I, 1);
+      END IF;
+    END LOOP;
+    MI_LNGLENENCODE := LENGTH(MI_DATOACODIFICAR);
+    --VALIDATE
+    --MI_UPCE ONLY APPLIES..NUMBER SYSTEM 0
+    MI_LNGNUMBERSYSTEM := TO_NUMBER(PCK_SYSMAN_UTL.FC_LEFT(MI_DATOACODIFICAR, 1));
+    IF MI_LNGNUMBERSYSTEM <> 0 THEN
+      RAISE_APPLICATION_ERROR(-20000,'<ERROR>El UPC E puede codificar solamente datos del sistema de numeracion cero (0). </ERROR>');
+      RETURN NULL;
+    END IF;
+    --LOOK FOR SUPPLEMENTAL DATA:
+    --7:     NO CHECK-DIGIT SUPPLIED
+    --9:     NO CHECK-DIGIT WITH 2 DIGIT SUPPLEMENTAL
+    --12:    NO CHECK-DIGIT WITH 5 DIGIT SUPPLEMENTAL
+    --8:     CHECK-DIGIT SUPPLIED
+    --10:    CHECK-DIGIT WITH 2 DIGIT SUPPLEMENTAL
+    --13:    CHECK-DIGIT WITH 5 DIGIT SUPPLEMENTAL
+    CASE
+      WHEN MI_LNGLENENCODE = 7 OR MI_LNGLENENCODE = 9 OR MI_LNGLENENCODE = 12 THEN
+        IF MI_LNGLENENCODE > 7 THEN
+          MI_STRSUPPLEMENT := PCK_SYSMAN_UTL.FC_RIGHT(MI_DATOACODIFICAR, MI_LNGLENENCODE - 7);
+          MI_DATOACODIFICAR := PCK_SYSMAN_UTL.FC_LEFT(MI_DATOACODIFICAR, 7);
+          MI_BLNENCODESUPPLEMENT := TRUE;
+        END IF;
+      WHEN MI_LNGLENENCODE = 8 OR MI_LNGLENENCODE = 10 OR MI_LNGLENENCODE = 13 THEN
+        IF MI_LNGLENENCODE > 8 THEN
+          MI_STRSUPPLEMENT := PCK_SYSMAN_UTL.FC_RIGHT(MI_DATOACODIFICAR, MI_LNGLENENCODE - 8);
+          MI_DATOACODIFICAR := PCK_SYSMAN_UTL.FC_LEFT(MI_DATOACODIFICAR, 8);
+          MI_BLNENCODESUPPLEMENT := TRUE;
+        END IF;
+      ELSE
+        RAISE_APPLICATION_ERROR (-20000,'<ERROR>La codificacion del UPC E es limitada...  1 caracter del sistema de numeracion (0 o 1) y  6 caracteres numericos para el fabricante y el producto.</ERROR>');
+        RETURN NULL;
+    END CASE;
+    MI_LNGLENENCODE := LENGTH(MI_DATOACODIFICAR);
+    --ENCODE THE SUPPLEMENTAL DATA ATTACHED
+    IF MI_BLNENCODESUPPLEMENT THEN
+      MI_STRSUPPLEMENT := FC_CODIFICAR_SUPLEMENTO(MI_STRSUPPLEMENT);
+    ELSE
+      MI_STRSUPPLEMENT := '';
+    END IF;
+    --POPULATE UPC E CHARACTER SET
+    --EVEN PARITY FIRST
+    MI_ARYUPCECHARSET(0)(0) := '0100111';
+    MI_ARYUPCECHARSET(0)(1) := '0110011';
+    MI_ARYUPCECHARSET(0)(2) := '0011011';
+    MI_ARYUPCECHARSET(0)(3) := '0100001';
+    MI_ARYUPCECHARSET(0)(4) := '0011101';
+    MI_ARYUPCECHARSET(0)(5) := '0111001';
+    MI_ARYUPCECHARSET(0)(6) := '0000101';
+    MI_ARYUPCECHARSET(0)(7) := '0010001';
+    MI_ARYUPCECHARSET(0)(8) := '0001001';
+    MI_ARYUPCECHARSET(0)(9) := '0010111';
+    --NOW)(ODD PARITY
+    MI_ARYUPCECHARSET(1)(0) := '0001101';
+    MI_ARYUPCECHARSET(1)(1) := '0011001';
+    MI_ARYUPCECHARSET(1)(2) := '0010011';
+    MI_ARYUPCECHARSET(1)(3) := '0111101';
+    MI_ARYUPCECHARSET(1)(4) := '0100011';
+    MI_ARYUPCECHARSET(1)(5) := '0110001';
+    MI_ARYUPCECHARSET(1)(6) := '0101111';
+    MI_ARYUPCECHARSET(1)(7) := '0111011';
+    MI_ARYUPCECHARSET(1)(8) := '0110111';
+    MI_ARYUPCECHARSET(1)(9) := '0001011';
+    --POPULATE NUMBER SYSTEM PARITY MASKS
+    --FIRST 0 NUMBER SYSTEM
+    MI_ARYNUMBERSYSTEMMASK(0)(0) := '000111';
+    MI_ARYNUMBERSYSTEMMASK(0)(1) := '001011';
+    MI_ARYNUMBERSYSTEMMASK(0)(2) := '001101';
+    MI_ARYNUMBERSYSTEMMASK(0)(3) := '001110';
+    MI_ARYNUMBERSYSTEMMASK(0)(4) := '010011';
+    MI_ARYNUMBERSYSTEMMASK(0)(5) := '011001';
+    MI_ARYNUMBERSYSTEMMASK(0)(6) := '011100';
+    MI_ARYNUMBERSYSTEMMASK(0)(7) := '010101';
+    MI_ARYNUMBERSYSTEMMASK(0)(8) := '010110';
+    MI_ARYNUMBERSYSTEMMASK(0)(9) := '011010';
+    --NOW)(1 NUMBER SYSTEM
+    MI_ARYNUMBERSYSTEMMASK(1)(0) := '111000';
+    MI_ARYNUMBERSYSTEMMASK(1)(1) := '110100';
+    MI_ARYNUMBERSYSTEMMASK(1)(2) := '110010';
+    MI_ARYNUMBERSYSTEMMASK(1)(3) := '110001';
+    MI_ARYNUMBERSYSTEMMASK(1)(4) := '101100';
+    MI_ARYNUMBERSYSTEMMASK(1)(5) := '100110';
+    MI_ARYNUMBERSYSTEMMASK(1)(6) := '100011';
+    MI_ARYNUMBERSYSTEMMASK(1)(7) := '101010';
+    MI_ARYNUMBERSYSTEMMASK(1)(8) := '101001';
+    MI_ARYNUMBERSYSTEMMASK(1)(9) := '100101';
+    --BUILD ENCODED STRING
+    --GET THE PARITY MASK STRING. USE A THE CHECK DIGIT
+    --FROM THE CALCULATION..PROVIDE THE PARITY MASK
+    --FOR ENCODING THE DATA
+    IF MI_LNGLENENCODE = 7 THEN
+      --TO GET THE CORRECT CHECK DIGIT, WE HAVE TO
+      --REVERSE ENGINEER THE PRECOMPRESSED DATA.
+      --SEE: HTTP://WWW.UC-COUNCIL.ORG/REFLIB/01302/D36-2.HTM
+      MI_NUM := TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, 1, 1));
+      CASE
+        WHEN MI_NUM >= 0 AND MI_NUM <=2 THEN
+          MI_STRORIGINALCODENUMBER := PCK_SYSMAN_UTL.FC_LEFT(MI_DATOACODIFICAR, 3) || PCK_SYSMAN_UTL.FC_RIGHT(MI_DATOACODIFICAR, 1) || '0000' || SUBSTR(MI_DATOACODIFICAR, 4, 3);
+        WHEN MI_NUM = 3 THEN
+          MI_STRORIGINALCODENUMBER := PCK_SYSMAN_UTL.FC_LEFT(MI_DATOACODIFICAR, 4) || '00000' || SUBSTR(MI_DATOACODIFICAR, 5, 2);
+        WHEN MI_NUM = 4 THEN
+          MI_STRORIGINALCODENUMBER := PCK_SYSMAN_UTL.FC_LEFT(MI_DATOACODIFICAR, 5) || '00000' || SUBSTR(MI_DATOACODIFICAR, 6, 1);
+        ELSE
+          MI_STRORIGINALCODENUMBER := PCK_SYSMAN_UTL.FC_LEFT(MI_DATOACODIFICAR, 6) || '0000' || PCK_SYSMAN_UTL.FC_RIGHT(MI_DATOACODIFICAR, 1);
+      END CASE;
+      FOR MI_I IN  1..11 LOOP
+        IF (MI_I MOD 2) <> 0 THEN
+          MI_LNGODDSUM := MI_LNGODDSUM + TO_NUMBER(SUBSTR(MI_STRORIGINALCODENUMBER, MI_I, 1));
+        ELSE
+          MI_LNGEVENSUM := MI_LNGEVENSUM + TO_NUMBER(SUBSTR(MI_STRORIGINALCODENUMBER, MI_I, 1));
+        END IF;
+      END LOOP;
+      --NOW, GET THE CHECK DIGIT
+      MI_LNGPARITYBIT := 10 - ((MI_LNGEVENSUM + (MI_LNGODDSUM * 3)) MOD 10);
+      IF MI_LNGPARITYBIT = 10 THEN
+        MI_LNGPARITYBIT := 0;
+      END IF;
+    ELSE
+      MI_LNGPARITYBIT := TO_NUMBER(PCK_SYSMAN_UTL.FC_RIGHT(MI_DATOACODIFICAR, 1));
+      MI_DATOACODIFICAR := PCK_SYSMAN_UTL.FC_LEFT(MI_DATOACODIFICAR, 7);
+    END IF;
+    --USE THIS NUMBER..RETURN THE CORRESPONDING PARITY MASK
+    MI_STRPARITYMASK := MI_ARYNUMBERSYSTEMMASK(MI_LNGNUMBERSYSTEM)(MI_LNGPARITYBIT);
+    --REMOVE THE NUMBER SYSTEM DIGIT
+    MI_DATOACODIFICAR := PCK_SYSMAN_UTL.FC_RIGHT(MI_DATOACODIFICAR, 6);
+    MI_LNGLENENCODE := LENGTH(MI_DATOACODIFICAR);
+    --END LOOP;, ENCODE THE DATA
+    FOR MI_I IN  1..MI_LNGLENENCODE LOOP
+      MI_UPCE := MI_UPCE || MI_ARYUPCECHARSET(TO_NUMBER(SUBSTR(MI_STRPARITYMASK, MI_I, 1)))(TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, MI_I, 1)));
+    END LOOP;
+    --ADD THE LEFT/RIGHT GUARDS
+    MI_UPCE := '101' || MI_UPCE || '010101' || MI_STRSUPPLEMENT;
+    RETURN MI_UPCE;
+  END FC_UPCE;
+  -----------------------------------------------------------------------------------------------------------------------------
+  ------------------------------------------------------ FUNCION UPCA ---------------------------------------------------------
+  -----------------------------------------------------------------------------------------------------------------------------
+  FUNCTION FC_UPCA
+    (
+    UN_DATOACODIFICAR   VARCHAR2,
+    UN_BLNCOMPRESS      BOOLEAN DEFAULT FALSE
+    )
+  RETURN VARCHAR2 AS
+    MI_I                    NUMBER := 0;
+    MI_BLNENCODESUPPLEMENT  BOOLEAN;
+    MI_STRSUPPLEMENT        VARCHAR2(32000);
+    MI_LNGLENENCODE         NUMBER := 0;
+    MI_ARYUPCACHARSET		    MATRIZCODEBAR;
+    MI_LNGEVENSUM           NUMBER := 0;
+    MI_LNGODDSUM            NUMBER := 0;
+    MI_LNGCHECKDIGIT        NUMBER := 0;
+    MI_SNGPARITYBIT         NUMBER := 0;
+    MI_UPCA                 VARCHAR2(32000);
+    MI_PARTE                VARCHAR2(3);
+    MI_DATOACODIFICAR       VARCHAR2(32000);
+  BEGIN
+    FOR FILA IN 1..200 LOOP
+      FOR COL IN 1..200 LOOP
+        MI_ARYUPCACHARSET(FILA)(COL) := '';
+      END LOOP;
+    END LOOP;
+    --SIMPLE VALIDATION - THERE IS EXTENDED CRITERIA
+    --THAT MUST BE MET FOR THE PRODUCT NUMBER RANGE
+    --DERIVED BY THE MANUFACTURER--S NUMBER...WE ASSUME
+    --HERE THAT THAT VALIDATION HAS ALREADY OCCURED.
+    --LUCKY ME.
+    MI_LNGLENENCODE := LENGTH(UN_DATOACODIFICAR);
+    FOR MI_I IN 1..MI_LNGLENENCODE LOOP
+      IF PCK_SYSMAN_UTL.FC_ESNUMERO(SUBSTR(UN_DATOACODIFICAR, MI_I, 1))<>0 THEN
+        MI_DATOACODIFICAR := MI_DATOACODIFICAR || SUBSTR(UN_DATOACODIFICAR, MI_I, 1);
+      END IF;
+    END LOOP;
+    MI_LNGLENENCODE := LENGTH(MI_DATOACODIFICAR);
+    --LOOK FOR SUPPLEMENTAL DATA:
+    --11:    NO CHECK-DIGIT SUPPLIED
+    --13:    NO CHECK-DIGIT WITH 2 DIGIT SUPPLEMENTAL
+    --16:    NO CHECK-DIGIT WITH 5 DIGIT SUPPLEMENTAL
+    --12:    CHECK-DIGIT SUPPLIED
+    --14:    CHECK-DIGIT WITH 2 DIGIT SUPPLEMENTAL
+    --17:    CHECK-DIGIT WITH 5 DIGIT SUPPLEMENTAL
+    CASE
+      WHEN MI_LNGLENENCODE = 11 OR MI_LNGLENENCODE = 13 OR MI_LNGLENENCODE = 16 THEN
+        IF MI_LNGLENENCODE > 11 THEN
+          MI_STRSUPPLEMENT := SUBSTR(MI_DATOACODIFICAR, 12);
+          MI_DATOACODIFICAR := SUBSTR(MI_DATOACODIFICAR, 1, 11);
+          MI_BLNENCODESUPPLEMENT := TRUE;
+        END IF;
+      WHEN MI_LNGLENENCODE = 12 OR MI_LNGLENENCODE = 14 OR MI_LNGLENENCODE = 17 THEN
+        IF MI_LNGLENENCODE > 12 THEN
+          MI_STRSUPPLEMENT := SUBSTR(MI_DATOACODIFICAR, 13);
+          MI_DATOACODIFICAR := SUBSTR(MI_DATOACODIFICAR, 1, 12);
+          MI_BLNENCODESUPPLEMENT := TRUE;
+        END IF;
+      ELSE
+        RAISE_APPLICATION_ERROR(-20000,'<ERROR>El codificador UPC A esta limitado...  1 caracter del sistema de numeracion y 10 caracteres para el fabricante y el producto. </ERROR>');
+        RETURN NULL;
+    END CASE;
+    MI_LNGLENENCODE := LENGTH(MI_DATOACODIFICAR);
+    --ENCODE THE SUPPLEMENTAL DATA ATTACHED
+    IF MI_BLNENCODESUPPLEMENT THEN
+      MI_STRSUPPLEMENT := FC_CODIFICAR_SUPLEMENTO(MI_STRSUPPLEMENT);
+    ELSE
+      MI_STRSUPPLEMENT := '';
+    END IF;
+    IF UN_BLNCOMPRESS THEN
+      --GET THE UPCE EQUIVALENT
+      --SEE: HTTP://WWW.UC-COUNCIL.ORG/REFLIB/01302/D36-2.HTM
+      --FOR COMPRESSION INFORMATION
+      MI_PARTE := SUBSTR(MI_DATOACODIFICAR, 4, 3);
+      CASE
+        WHEN MI_PARTE = '000' OR MI_PARTE = '100' OR MI_PARTE = '200' THEN
+          MI_DATOACODIFICAR := SUBSTR(MI_DATOACODIFICAR, 3) || PCK_SYSMAN_UTL.FC_RIGHT(MI_DATOACODIFICAR, 3) || SUBSTR(MI_DATOACODIFICAR, 4, 1);
+        WHEN MI_PARTE = '300' OR MI_PARTE = '400' OR MI_PARTE = '500' OR MI_PARTE = '600' OR MI_PARTE = '700' OR MI_PARTE = '800' OR MI_PARTE = '900' THEN
+          MI_DATOACODIFICAR := SUBSTR(MI_DATOACODIFICAR, 4) || PCK_SYSMAN_UTL.FC_RIGHT(MI_DATOACODIFICAR, 2) || '3';
+        ELSE
+          MI_PARTE := SUBSTR(MI_DATOACODIFICAR, 5, 2);
+          CASE
+            WHEN MI_PARTE = '10' OR MI_PARTE = '20' OR MI_PARTE = '30' OR MI_PARTE = '40' OR MI_PARTE = '50' OR MI_PARTE = '60' OR MI_PARTE = '70' OR MI_PARTE = '80' OR MI_PARTE = '90' THEN
+              MI_DATOACODIFICAR := SUBSTR(MI_DATOACODIFICAR, 5) || PCK_SYSMAN_UTL.FC_RIGHT(MI_DATOACODIFICAR, 1) || '4';
+            ELSE
+              MI_DATOACODIFICAR := SUBSTR(MI_DATOACODIFICAR, 6) || PCK_SYSMAN_UTL.FC_RIGHT(MI_DATOACODIFICAR, 1);
+          END CASE;
+      END CASE;
+      MI_UPCA := FC_UPCE(MI_DATOACODIFICAR);
+    ELSE
+      --POPULATE THE CHARACTER SETS
+      --LEFT SIDE FIRST
+      MI_ARYUPCACHARSET(0)(0) := '0001101';
+      MI_ARYUPCACHARSET(0)(1) := '0011001';
+      MI_ARYUPCACHARSET(0)(2) := '0010011';
+      MI_ARYUPCACHARSET(0)(3) := '0111101';
+      MI_ARYUPCACHARSET(0)(4) := '0100011';
+      MI_ARYUPCACHARSET(0)(5) := '0110001';
+      MI_ARYUPCACHARSET(0)(6) := '0101111';
+      MI_ARYUPCACHARSET(0)(7) := '0111011';
+      MI_ARYUPCACHARSET(0)(8) := '0110111';
+      MI_ARYUPCACHARSET(0)(9) := '0001011';
+      --NOW, RIGHT SIDE
+      MI_ARYUPCACHARSET(1)(0) := '1110010';
+      MI_ARYUPCACHARSET(1)(1) := '1100110';
+      MI_ARYUPCACHARSET(1)(2) := '1101100';
+      MI_ARYUPCACHARSET(1)(3) := '1000010';
+      MI_ARYUPCACHARSET(1)(4) := '1011100';
+      MI_ARYUPCACHARSET(1)(5) := '1001110';
+      MI_ARYUPCACHARSET(1)(6) := '1010000';
+      MI_ARYUPCACHARSET(1)(7) := '1000100';
+      MI_ARYUPCACHARSET(1)(8) := '1001000';
+      MI_ARYUPCACHARSET(1)(9) := '1110100';
+      IF MI_LNGLENENCODE = 11 THEN
+        --GET THE CHECK DIGIT
+        FOR MI_I IN 1..MI_LNGLENENCODE LOOP
+          IF (MI_I MOD 2) <> 0 THEN
+            MI_LNGODDSUM := MI_LNGODDSUM + TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, MI_I, 1));
+          ELSE
+            MI_LNGEVENSUM := MI_LNGEVENSUM + TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, MI_I, 1));
+          END IF;
+        END LOOP;
+        MI_LNGCHECKDIGIT := 10 - ((MI_LNGEVENSUM + (MI_LNGODDSUM * 3)) MOD 10);
+        IF MI_LNGCHECKDIGIT = 10 THEN
+          MI_LNGCHECKDIGIT := 0;
+        END IF;
+        --ADD THE CHECK DIGIT
+        MI_DATOACODIFICAR := MI_DATOACODIFICAR || MI_LNGCHECKDIGIT;
+      END IF;
+      --FORMAT THE OUTPUT
+      FOR MI_I IN 1..12 LOOP
+        --FIRST 6 ARE LEFT, END LOOP; FIVE ARE RIGHT
+        MI_SNGPARITYBIT := CASE WHEN MI_I > 6 THEN 1 ELSE 0 END;
+        MI_UPCA := MI_UPCA || MI_ARYUPCACHARSET(MI_SNGPARITYBIT)(TO_NUMBER(SUBSTR(MI_DATOACODIFICAR, MI_I, 1)));
+        IF MI_I = 6 THEN
+          MI_UPCA := MI_UPCA || '01010';  --ADD CENTER GUARD
+        END IF;
+      END LOOP;
+      --ADD GUARDS AND ANY SUPPLEMENTAL DATA
+      MI_UPCA := '101' || MI_UPCA || '101' || MI_STRSUPPLEMENT;
+    END IF;
+    RETURN MI_UPCA;
+  END FC_UPCA;
+END PCK_CODIGODEBARRAS;

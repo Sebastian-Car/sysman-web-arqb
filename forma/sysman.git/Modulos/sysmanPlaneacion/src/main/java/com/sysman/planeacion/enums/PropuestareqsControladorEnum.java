@@ -1,0 +1,105 @@
+/*-
+ * PropuestareqsControladorEnum.java
+ *
+ * 1.0
+ * 
+ * 8/09/2017
+ * 
+ * Copyright (c) 2016 Stefanini Sysman.
+ * Paipa, Boyaca.
+ * All rights reserved.
+ */
+
+package com.sysman.planeacion.enums;
+
+/**
+ * 
+ * @version 1.0, 8/09/2017
+ * @author jcrodriguez
+ *
+ */
+public enum PropuestareqsControladorEnum {
+    SUCURSAL("SUCURSAL"),
+
+    RUBROCOMPRAS("RUBROCOMPRAS"),
+
+    ORDENDESUMINISTRO("ORDENDESUMINISTRO"),
+
+    RUBRO("RUBRO"),
+
+    VALORDISPONIBILIDAD("VALORDISPONIBILIDAD"),
+
+    REQUISIONES("REQUISIONES"),
+
+    VIABILIDAD("VIABILIDAD"),
+
+    NUMOFICIO("NUMOFICIO"),
+
+    VALORREAL("VALORREAL"),
+
+    VACIA("VACIA"),
+
+    COMPANIA("COMPANIA"),
+
+    DISPONIBILIDAD("DISPONIBILIDAD"),
+
+    COD_CONTRATO("COD_CONTRATO"),
+
+    COD_CLACONTRATO("COD_CLACONTRATO"),
+
+    DEFINIRCONTRATACION("DEFINIRCONTRATACION"),
+
+    COD_DETALLE("COD_DETALLE"),
+
+    FORMATO_SOLICITUD_COTIZACION_TERCERO("FORMATO SOLICITUD DE COTIZACION POR TERCERO"),
+
+    FORMATO_SOLICITUD_COTIZACION_GENERAL("FORMATO SOLICITUD DE COTIZACION GENERAL"),
+
+    CLASEGASTO("CLASEGASTO"),
+
+    NOMRESPONSABLE("NOMRESPONSABLE"),
+
+    NOMACTIVIDAD("NOMACTIVIDAD"),
+
+    FALSE("FALSE"),
+
+    RESPONDIO("RESPONDIO"),
+
+    FECHA_ENTREGA("FECHA_ENTREGA"),
+
+    HORA_ENTREGA("HORA_ENTREGA"),
+
+    HORA_ENTREGALV("HORA_ENTREGALV"),
+
+    FECHA_ENTREGALV("FECHA_ENTREGALV"),
+
+    COD_PROPUESTA("COD_PROPUESTA"),
+
+    RESPONSABLE("RESPONSABLE"),
+
+    COD_ACTIVIDAD("COD_ACTIVIDAD"),
+
+    CODIGOELEMENTO("CODIGOELEMENTO"),
+
+    NIT("NIT"),
+
+    DETALLEREQUIS("DETALLEREQUIS"),
+
+    PROPUESTA("PROPUESTA"),
+
+    COD_REQUISICION("COD_REQUISICION"),
+
+    CODIGOINI("CODIGOINI");
+
+    private final String value;
+
+    private PropuestareqsControladorEnum(String value)
+    {
+        this.value = value;
+    }
+
+    public String getValue()
+    {
+        return value;
+    }
+}

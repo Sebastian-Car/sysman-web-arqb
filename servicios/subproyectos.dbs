@@ -1,0 +1,168 @@
+﻿<data name="subproyectos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSubproyectosTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT SUBPROYECTO.CODIGOSUBPROYECTO, SUBPROYECTO.NOMBRE  FROM SUBPROYECTO WHERE SUBPROYECTO.COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGOSUBPROYECTO":"$CODIGOSUBPROYECTO(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="subproyectos/todosporcompania">
+		<call-query href="getSubproyectosTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSubproyectosPagTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SUBPROYECTO.CODIGOSUBPROYECTO, SUBPROYECTO.NOMBRE  FROM SUBPROYECTO WHERE SUBPROYECTO.COMPANIA = :COMPANIA ORDER BY SUBPROYECTO.CODIGOSUBPROYECTO) WHERE (CASE WHEN CODIGOSUBPROYECTO IS NULL THEN ' ' ELSE UPPER(CODIGOSUBPROYECTO) END)  LIKE UPPER(:CODIGOSUBPROYECTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGOSUBPROYECTO":"$CODIGOSUBPROYECTO(type:long)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOSUBPROYECTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="subproyectos/todosporcompania/pag">
+		<call-query href="getSubproyectosPagTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOSUBPROYECTO" query-param="CODIGOSUBPROYECTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSubproyectosNumTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SUBPROYECTO.CODIGOSUBPROYECTO, SUBPROYECTO.NOMBRE  FROM SUBPROYECTO WHERE SUBPROYECTO.COMPANIA = :COMPANIA ORDER BY SUBPROYECTO.CODIGOSUBPROYECTO) WHERE (CASE WHEN CODIGOSUBPROYECTO IS NULL THEN ' ' ELSE UPPER(CODIGOSUBPROYECTO) END)  LIKE UPPER(:CODIGOSUBPROYECTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOSUBPROYECTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="subproyectos/todosporcompania/num">
+		<call-query href="getSubproyectosNumTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOSUBPROYECTO" query-param="CODIGOSUBPROYECTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSubproyectos" keyColumns="COMPANIA,CODIGOSUBPROYECTO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SUBPROYECTO (COMPANIA, CODIGOSUBPROYECTO, NOMBRE, DESCRIPCION, MOVIMIENTO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGOSUBPROYECTO, :NOMBRE, :DESCRIPCION, :MOVIMIENTO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGOSUBPROYECTO":"$CODIGOSUBPROYECTO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOSUBPROYECTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="0" name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="subproyectos">
+		<call-query href="insertSubproyectos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOSUBPROYECTO" query-param="CODIGOSUBPROYECTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSubproyectos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SUBPROYECTO WHERE SUBPROYECTO.COMPANIA= :KEY_COMPANIA AND SUBPROYECTO.CODIGOSUBPROYECTO= :KEY_CODIGOSUBPROYECTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOSUBPROYECTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="subproyectos">
+		<call-query href="deleteSubproyectos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOSUBPROYECTO" query-param="KEY_CODIGOSUBPROYECTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSubproyectosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CODIGOSUBPROYECTO, NOMBRE, DESCRIPCION,(CASE MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO FROM SUBPROYECTO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGOSUBPROYECTO IS NULL THEN ' ' ELSE UPPER(CODIGOSUBPROYECTO) END)  LIKE UPPER(:CODIGOSUBPROYECTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN MOVIMIENTO IS NULL THEN ' ' ELSE UPPER(MOVIMIENTO) END)  LIKE UPPER(:MOVIMIENTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGOSUBPROYECTO":"$CODIGOSUBPROYECTO(type:long)","NOMBRE":"$NOMBRE","DESCRIPCION":"$DESCRIPCION","MOVIMIENTO":"$MOVIMIENTO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOSUBPROYECTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="subproyectos">
+		<call-query href="getSubproyectosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOSUBPROYECTO" query-param="CODIGOSUBPROYECTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSubproyectosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CODIGOSUBPROYECTO, NOMBRE, DESCRIPCION,(CASE MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO FROM SUBPROYECTO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGOSUBPROYECTO IS NULL THEN ' ' ELSE UPPER(CODIGOSUBPROYECTO) END)  LIKE UPPER(:CODIGOSUBPROYECTO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN MOVIMIENTO IS NULL THEN ' ' ELSE UPPER(MOVIMIENTO) END)  LIKE UPPER(:MOVIMIENTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOSUBPROYECTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="subproyectos/numero">
+		<call-query href="getSubproyectosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOSUBPROYECTO" query-param="CODIGOSUBPROYECTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSubproyectos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SUBPROYECTO SET CODIGOSUBPROYECTO=:CODIGOSUBPROYECTO, NOMBRE=:NOMBRE, DESCRIPCION=:DESCRIPCION, MOVIMIENTO=:MOVIMIENTO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SUBPROYECTO.COMPANIA= :KEY_COMPANIA AND SUBPROYECTO.CODIGOSUBPROYECTO= :KEY_CODIGOSUBPROYECTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGOSUBPROYECTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOSUBPROYECTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="subproyectos">
+		<call-query href="updateSubproyectos">
+			<with-param name="CODIGOSUBPROYECTO" query-param="CODIGOSUBPROYECTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOSUBPROYECTO" query-param="KEY_CODIGOSUBPROYECTO"/>
+
+		</call-query>
+	</resource>
+
+</data>

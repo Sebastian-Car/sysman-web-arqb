@@ -1,0 +1,48 @@
+﻿<data name="filtros" transports="http https local">
+	<config enableOData="false" id="sysmanirisst">
+		<property name="carbon_datasource_name">SYSMANIRISST</property>
+	</config>
+	<query id="getFiltrosCodigoYNombreQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  CODIGO_FILTRO,NOMBRE_FILTRO  FROM FILTROS</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO_FILTRO":"$CODIGO_FILTRO","NOMBRE_FILTRO":"$NOMBRE_FILTRO"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="filtros/codigoynombre">
+		<call-query href="getFiltrosCodigoYNombreQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getFiltrosPagTodosPorCompaniaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO_FILTRO, NOMBRE_FILTRO  FROM FILTROS) WHERE (CASE WHEN CODIGO_FILTRO IS NULL THEN ' ' ELSE UPPER(CODIGO_FILTRO) END)  LIKE UPPER(:CODIGO_FILTRO || '%')  AND (CASE WHEN NOMBRE_FILTRO IS NULL THEN ' ' ELSE UPPER(NOMBRE_FILTRO) END)  LIKE UPPER( '%' || :NOMBRE_FILTRO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO_FILTRO":"$CODIGO_FILTRO","NOMBRE_FILTRO":"$NOMBRE_FILTRO"}]}}		</result>
+		<param name="CODIGO_FILTRO" sqlType="STRING"/>
+		<param name="NOMBRE_FILTRO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="filtros/todosporcompania/pag">
+		<call-query href="getFiltrosPagTodosPorCompaniaQuery">
+			<with-param name="CODIGO_FILTRO" query-param="CODIGO_FILTRO"/>
+			<with-param name="NOMBRE_FILTRO" query-param="NOMBRE_FILTRO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getFiltrosNumTodosPorCompaniaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO_FILTRO, NOMBRE_FILTRO  FROM FILTROS) WHERE (CASE WHEN CODIGO_FILTRO IS NULL THEN ' ' ELSE UPPER(CODIGO_FILTRO) END)  LIKE UPPER(:CODIGO_FILTRO || '%')  AND (CASE WHEN NOMBRE_FILTRO IS NULL THEN ' ' ELSE UPPER(NOMBRE_FILTRO) END)  LIKE UPPER( '%' || :NOMBRE_FILTRO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO_FILTRO" sqlType="STRING"/>
+		<param name="NOMBRE_FILTRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="filtros/todosporcompania/num">
+		<call-query href="getFiltrosNumTodosPorCompaniaQuery">
+			<with-param name="CODIGO_FILTRO" query-param="CODIGO_FILTRO"/>
+			<with-param name="NOMBRE_FILTRO" query-param="NOMBRE_FILTRO"/>
+
+		</call-query>
+	</resource>
+
+</data>

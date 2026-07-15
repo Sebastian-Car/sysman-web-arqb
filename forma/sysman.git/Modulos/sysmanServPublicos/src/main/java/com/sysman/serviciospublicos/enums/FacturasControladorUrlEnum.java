@@ -1,0 +1,90 @@
+/*
+ * FacturasControladorUrlEnum
+ *
+ * 1.0
+ *
+ * 09/09/2016
+ *
+ * Copyright Stefanini Sysman
+ */
+package com.sysman.serviciospublicos.enums;
+
+/**
+ * @author Processors-api
+ * 
+ * @version 1.0
+ * 
+ * Enumeracion que permite clasificar cada uno de los identificadores
+ * geenerados en el refactoring y asociados al codigo legacy obtenido
+ * con patrones de busqueda.
+ */
+public enum FacturasControladorUrlEnum {
+
+    URL001("FACTURASCONTROLADORURL001", "366002"),
+
+    URL002("FACTURASCONTROLADORURL002", "366001"),
+
+    URL003("FACTURASCONTROLADORURL003", "309007"),
+
+    URL004("FACTURASCONTROLADORURL004", "309008"),
+
+    URL005("FACTURASCONTROLADORURL005", "213211"),
+
+    URL006("FACTURASCONTROLADORURL006", "231004"),
+
+    URL007("FACTURASCONTROLADORURL007", "214097"),
+
+    URL26016("FACTURASCONTROLADORURL26016", "309002"),
+
+    URL30109("FACTURASCONTROLADORURL30109", "213063"),
+
+    URL33983("FACTURASCONTROLADORURL33983", "310005"),
+
+    URL40981("FACTURASCONTROLADORURL40981", "319001"),
+
+    URL59503("FACTURASCONTROLADORURL59503", "309012"),
+
+    URL38112("FACTURASCONTROLADORURL38112", "215032"),
+
+    URL38919("FACTURASCONTROLADORURL38919", "215013"),
+
+    URL37303("FACTURASCONTROLADORURL37303", "215032"),
+
+    URL28871("FACTURASCONTROLADORURL28871", "215002"),
+
+    URL36229("FACTURASCONTROLADORURL36229", "348003"),
+
+    URL58322("FACTURASCONTROLADORURL58322", "309011"),
+
+    URL29241("FACTURASCONTROLADORURL29241", "309003"),
+
+    URL29466("FACTURASCONTROLADORURL29466", "215002"),
+
+    URL37069("FACTURASCONTROLADORURL37069", "107001"),
+
+    URL31017("FACTURASCONTROLADORURL31017", "213063"),
+
+    URL31957("FACTURASCONTROLADORURL31957", "242005"),
+
+    URL28449("FACTURASCONTROLADORURL28449", "311001"),
+
+    URL35536("FACTURASCONTROLADORURL35536", "362001"),
+
+    URL39813("FACTURASCONTROLADORURL39813", "215013");
+
+    private final String key;
+    private final String value;
+
+    private FacturasControladorUrlEnum(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}

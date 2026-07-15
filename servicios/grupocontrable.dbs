@@ -1,0 +1,113 @@
+﻿<data name="grupocontrable" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getGrupocontrableTodosGrupocontableQuery"  useConfig="sysmandsunist">
+		<sql>SELECT GRUPO_CONTABLE.CODIGO, GRUPO_CONTABLE.NOMBRE FROM GRUPO_CONTABLE WHERE IND_ACTIVO = -1</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="grupocontrable/todosgrupocontable">
+		<call-query href="getGrupocontrableTodosGrupocontableQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getGrupocontrablePagTodosPorOrdenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT GRUPO_CONTABLE.CODIGO, GRUPO_CONTABLE.NOMBRE FROM GRUPO_CONTABLE WHERE IND_ACTIVO = -1 ORDER BY GRUPO_CONTABLE.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="grupocontrable/todospororden/pag">
+		<call-query href="getGrupocontrablePagTodosPorOrdenQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getGrupocontrableNumTodosPorOrdenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT GRUPO_CONTABLE.CODIGO, GRUPO_CONTABLE.NOMBRE FROM GRUPO_CONTABLE WHERE IND_ACTIVO = -1 ORDER BY GRUPO_CONTABLE.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="grupocontrable/todospororden/num">
+		<call-query href="getGrupocontrableNumTodosPorOrdenQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getGrupocontrablePaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA,CODIGO,NOMBRE,PARAMETRO_RELACIONADO,(CASE IND_ACTIVO WHEN 0 THEN 'false' ELSE 'true' END) IND_ACTIVO FROM GRUPO_CONTABLE) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN PARAMETRO_RELACIONADO IS NULL THEN ' ' ELSE UPPER(PARAMETRO_RELACIONADO) END) LIKE UPPER(CONCAT(CONCAT('%',:PARAMETRO_RELACIONADO), '%')) AND (CASE WHEN IND_ACTIVO IS NULL THEN ' ' ELSE UPPER(IND_ACTIVO) END) LIKE UPPER(CONCAT(:IND_ACTIVO, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","PARAMETRO_RELACIONADO":"$PARAMETRO_RELACIONADO","IND_ACTIVO":"$IND_ACTIVO(type:boolean)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PARAMETRO_RELACIONADO" sqlType="STRING"/>
+		<param name="IND_ACTIVO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="grupocontrable">
+		<call-query href="getGrupocontrablePaginaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PARAMETRO_RELACIONADO" query-param="PARAMETRO_RELACIONADO"/>
+			<with-param name="IND_ACTIVO" query-param="IND_ACTIVO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getGrupocontrableNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA,CODIGO,NOMBRE,PARAMETRO_RELACIONADO,(CASE IND_ACTIVO WHEN 0 THEN 'false' ELSE 'true' END) IND_ACTIVO FROM GRUPO_CONTABLE) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN PARAMETRO_RELACIONADO IS NULL THEN ' ' ELSE UPPER(PARAMETRO_RELACIONADO) END) LIKE UPPER(CONCAT(CONCAT('%',:PARAMETRO_RELACIONADO), '%')) AND (CASE WHEN IND_ACTIVO IS NULL THEN ' ' ELSE UPPER(IND_ACTIVO) END) LIKE UPPER(CONCAT(:IND_ACTIVO, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PARAMETRO_RELACIONADO" sqlType="STRING"/>
+		<param name="IND_ACTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="grupocontrable/numero">
+		<call-query href="getGrupocontrableNumeroQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PARAMETRO_RELACIONADO" query-param="PARAMETRO_RELACIONADO"/>
+			<with-param name="IND_ACTIVO" query-param="IND_ACTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateGrupocontrable" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE GRUPO_CONTABLE SET CODIGO=:CODIGO, NOMBRE=:NOMBRE, IND_ACTIVO=:IND_ACTIVO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE GRUPO_CONTABLE.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="IND_ACTIVO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="grupocontrable">
+		<call-query href="updateGrupocontrable">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="IND_ACTIVO" query-param="IND_ACTIVO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

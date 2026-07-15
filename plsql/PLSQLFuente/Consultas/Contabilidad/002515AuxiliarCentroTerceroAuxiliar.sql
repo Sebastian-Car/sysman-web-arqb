@@ -1,0 +1,203 @@
+MERGE INTO CONSULTAS FIN USING (SELECT '002515AuxiliarCentroTerceroAuxiliar' INFORME ,TO_CLOB(q'[SELECT 
+       CODIGO_CENTRO,
+       NOMBRE_CENTRO,
+       CODIGO_AUX,
+       NOMBRE_AUXILIAR,
+       CODIGO,
+       NOMBRECODIGO,
+       TERCERO,
+       NOMBRETERCERO,
+       NOCOMP,
+       NOANO,
+       TIPO_CPTE,
+       COMPROBANTE,
+       CONSECUTIVO,
+       FECHA,
+       HORA,
+       DESCRIPCION,
+       NODOCUMENTO,
+       DESCRIP,
+       VD,
+       VC,
+       0 SALDOACUMULA,
+       SALDOINI SALDOINICIAL,       
+       NOMBRECODIGO,
+       SUM(SALDO) SALDO,
+       ORDENIMP,
+       CODIGOREF,
+       CODIGO_FUENTE,
+       NOMBRE_FUENTE,
+       ID
+FROM ( SELECT 
+       P.COMPANIA NOCOMP,
+       P.ANO NOANO, 
+       SA.ID,
+       P.CODIGO CODIGO,
+       COALESCE(DE.VALOR_DEBITO,0) VD, 
+       COALESCE(DE.VALOR_CREDITO,0) VC,
+       DE.TIPO_CPTE,
+       DE.COMPROBANTE, 
+       DE.CONSECUTIVO,
+       DE.FECHA,
+       DE.HORA,
+       DE.DESCRIPCION_CNT DESCRIPCION, 
+       DE.NRO_DOCUMENTO NODOCUMENTO,
+       NVL(DE.DESCRIPCION_DET,DE.DESCRIPCION_CNT) DESCRIP,       
+       COALESCE(DE.TERCERO_NOM, TERCERO_SA.NOMBRE) NOMBRETERCERO,
+	   CASE WHEN 0 = s$mesInicial$s -1 THEN SA.SALDO0
+          WHEN 1 = s$mesInicial$s -1 THEN SA.SALDO1
+          WHEN 2 = s$mesInicial$s -1 THEN SA.SALDO2
+          WHEN 3 = s$mesInicial$s -1 THEN SA.SALDO3
+          WHEN 4 = s$mesInicial$s -1 THEN SA.SALDO4
+          WHEN 5 = s$mesInicial$s -1 THEN SA.SALDO5
+          WHEN 6 = s$mesInicial$s -1 THEN SA.SALDO6
+          WHEN 7 = s$mesInicial$s -1 THEN SA.SALDO7
+          WHEN 8 = s$mesInicial$s -1 THEN SA.SALDO8
+          WHEN 9 = s$mesInicial$s -1 THEN SA.SALDO9
+          WHEN 10 = s$mesInicial$s -1 THEN SA.SALDO10
+          WHEN 11 = s$mesInicial$s -1 THEN SA.SALDO11
+          WHEN 12 = s$mesInicial$s -1 THEN SA.SALDO12
+          WHEN 13 = s$mesInicial$s -1 THEN SA.SALDO13
+     END SALDOINI,
+       NVL(DE.SALDOALDIA,0) SALDOALDIA,       
+       P.NOMBRE NOMBRECODIGO,
+       CASE WHEN INSTR('ILB',DE.CLASE_CONTABLE)<>0 THEN 'E' ELSE 'S' END ORDENIMP,
+       COALESCE(CASE WHEN SA.NATURALEZA='D' THEN 1 ELSE -1 END * (DE.VALOR_DEBITO-DE.VALOR_CREDITO),0 ) SALDO, 
+       SA.REFERENCIA CODIGOREF,
+       SA.CENTRO_COSTO CODIGO_CENTRO,
+       CENTRO_COSTO_SA.NOMBRE NOMBRE_CENTRO,
+       SA.AUXILIAR CODIGO_AUX,
+       AUXILIAR_SA.NOMBRE NOMBRE_AUXILIAR,
+       SA.FUENTE_RECURSO CODIGO_FUENTE,
+       FUENTE_RECURSOS_SA.NOMBRE NOMBRE_FUENTE,
+       COALESCE(DE.TERCERO, SA.TERCERO) TERCERO
+FROM PLAN_CONTABLE P INNER JOIN   SALDO_AUX_CONTABLE SA 
+  ON P.COMPANIA = SA.COMPANIA
+  AND P.ANO     = SA.ANO
+  AND P.CODIGO  = SA.CODIGO
+                LEFT JOIN 
+                         (SELECT DETALLE_COMPROBANTE_CNT.COMPANIA, 
+                                 DETALLE_COMPROBANTE_CNT.ANO,
+                                 DETALLE_COMPROBANTE_CNT.CUENTA,
+                                 DETALLE_COMPROBANTE_CNT.ID,
+                                 DETALLE_COMPROBANTE_CNT.TIPO_CPTE,
+                                 DETALLE_COMPROBANTE_CNT.COMPROBANTE,
+                                 DETALLE_C]') || TO_CLOB(q'[OMPROBANTE_CNT.CONSECUTIVO,
+                                 DETALLE_COMPROBANTE_CNT.CENTRO_COSTOI,
+                                 DETALLE_COMPROBANTE_CNT.TERCEROI,
+                                 DETALLE_COMPROBANTE_CNT.SUCURSALI,
+                                 DETALLE_COMPROBANTE_CNT.AUXILIARI,
+                                 DETALLE_COMPROBANTE_CNT.REFERENCIAI,
+                                 DETALLE_COMPROBANTE_CNT.FUENTE_RECURSOI,
+                                 DETALLE_COMPROBANTE_CNT.CENTRO_COSTO,
+                                 DETALLE_COMPROBANTE_CNT.TERCERO,
+                                 DETALLE_COMPROBANTE_CNT.SUCURSAL,
+                                 DETALLE_COMPROBANTE_CNT.AUXILIAR,
+                                 DETALLE_COMPROBANTE_CNT.REFERENCIA,
+                                 DETALLE_COMPROBANTE_CNT.FUENTE_RECURSO,
+                                 DETALLE_COMPROBANTE_CNT.MES,
+                                 DETALLE_COMPROBANTE_CNT.HORA,
+                                 DETALLE_COMPROBANTE_CNT.FECHA,                                 
+                                 DETALLE_COMPROBANTE_CNT.VALOR_DEBITO,
+                                 DETALLE_COMPROBANTE_CNT.VALOR_CREDITO,
+                                 DETALLE_COMPROBANTE_CNT.NRO_DOCUMENTO,
+                                 DETALLE_COMPROBANTE_CNT.BASE_GRAVABLE,
+                                DETALLE_COMPROBANTE_CNT.DESCRIPCION DESCRIPCION_DET,
+                                TIP.CLASE_CONTABLE,
+                                CNT.NRO_DOCUMENTO NRO_DOCUMENTO_CNT,
+                                CNT.DESCRIPCION DESCRIPCION_CNT,
+                                CASE WHEN DETALLE_COMPROBANTE_CNT.FECHA< s$fechaInicial$s THEN
+                                DETALLE_COMPROBANTE_CNT.valor_debito - DETALLE_COMPROBANTE_CNT.valor_credito * CASE WHEN DETALLE_COMPROBANTE_CNT.naturaleza = 'D' THEN 1 ELSE -1 END
+                                ELSE 0 END saldoaldia,
+                                TERCERO_DET.NOMBRE AS TERCERO_NOM
+                          FROM COMPROBANTE_CNT CNT INNER JOIN TIPO_COMPROBANTE TIP
+                            ON CNT.COMPANIA= TIP.COMPANIA
+                           AND CNT.TIPO = TIP.CODIGO
+                           INNER JOIN DETALLE_COMPROBANTE_CNT 
+                            ON CNT.COMPANIA= DETALLE_COMPROBANTE_CNT.COMPANIA
+                           AND CNT.ANO = DETALLE_COMPROBANTE_CNT.ANO
+                           AND CNT.TIPO = DETALLE_COMPROBANTE_CNT.TIPO_CPTE
+                           AND CNT.NUMERO = DETALLE_COMPROBANTE_CNT.COMPROBANTE
+                           LEFT JOIN TERCERO TERCERO_DET
+                           ON DETALLE_COMPROBANTE_CNT.COMPANIA = TERCERO_DET.COMPANIA
+                           AND DETALLE_COMPROBANTE_CNT.TERCERO = TERCERO_DET.NIT
+                           AND DETALLE_COMPROBANTE_CNT.SUCURSAL = TERCERO_DET.SUCURSAL
+                    WHERE CNT.COMPANIA= s$compania$s
+                      AND CNT.ANO     =]') || TO_CLOB(q'[ s$anoTrabajo$s
+                      AND CNT.TIPO BETWEEN 's$tipoInicial$s'  AND 's$tipoFinal$s' 
+                      AND CNT.MES BETWEEN 1 AND 10
+                      AND DETALLE_COMPROBANTE_CNT.CUENTA  BETWEEN 's$codigoInicial$s'  AND 's$codigoFinal$s' 
+                      AND DETALLE_COMPROBANTE_CNT.CENTRO_COSTO BETWEEN 's$centroInicial$s' AND 's$centroFinal$s' 
+                      AND DETALLE_COMPROBANTE_CNT.TERCERO BETWEEN 's$terceroInicial$s' AND 's$terceroFinal$s' 
+                      AND DETALLE_COMPROBANTE_CNT.AUXILIAR BETWEEN 's$auxiliarInicial$s' AND 's$auxiliarFinal$s'
+                      AND DETALLE_COMPROBANTE_CNT.MES <= s$mesFinal$s  
+                        ) DE
+                          ON SA.COMPANIA       = DE.COMPANIA
+                         AND SA.ANO            = DE.ANO
+                         AND SA.CODIGO         = DE.CUENTA
+                         AND SA.CENTRO_COSTO   = DE.CENTRO_COSTOI
+                         AND SA.TERCERO        = DE.TERCEROI
+                         AND SA.SUCURSAL       = DE.SUCURSALI
+                         AND SA.AUXILIAR       = DE.AUXILIARI
+                         AND SA.REFERENCIA     = DE.REFERENCIAI
+                         AND SA.FUENTE_RECURSO = DE.FUENTE_RECURSOI                         
+    INNER JOIN CENTRO_COSTO CENTRO_COSTO_SA 
+   ON  SA.COMPANIA     = CENTRO_COSTO_SA.COMPANIA 
+   AND SA.ANO          = CENTRO_COSTO_SA.ANO 
+   AND COALESCE(DE.CENTRO_COSTO, SA.CENTRO_COSTO) = CENTRO_COSTO_SA.CODIGO 
+ INNER JOIN TERCERO TERCERO_SA
+   ON  SA.COMPANIA = TERCERO_SA.COMPANIA 
+   AND COALESCE(DE.TERCERO, SA.TERCERO) = TERCERO_SA.NIT
+   AND COALESCE(DE.SUCURSAL, SA.SUCURSAL) = TERCERO_SA.SUCURSAL     
+ INNER JOIN AUXILIAR AUXILIAR_SA
+    ON  SA.COMPANIA = AUXILIAR_SA.COMPANIA 
+  	AND SA.ANO      = AUXILIAR_SA.ANO 
+    AND COALESCE(DE.AUXILIAR, SA.AUXILIAR) = AUXILIAR_SA.CODIGO    
+ INNER JOIN REFERENCIA REFERENCIA_SA
+    ON  SA.COMPANIA   = REFERENCIA_SA.COMPANIA 
+  	AND SA.ANO        = REFERENCIA_SA.ANO 
+    AND COALESCE(DE.REFERENCIA, SA.REFERENCIA) = REFERENCIA_SA.CODIGO
+ INNER JOIN FUENTE_RECURSOS FUENTE_RECURSOS_SA
+    ON  SA.COMPANIA       = FUENTE_RECURSOS_SA.COMPANIA 
+  	AND SA.ANO            = FUENTE_RECURSOS_SA.ANO 
+    AND COALESCE(DE.FUENTE_RECURSO, SA.FUENTE_RECURSO)  = FUENTE_RECURSOS_SA.CODIGO   
+WHERE P.COMPANIA = s$compania$s
+  AND P.ANO      = s$anoTrabajo$s
+  AND P.CODIGO BETWEEN 's$codigoInicial$s'  AND 's$codigoFinal$s' 
+  AND COALESCE(DE.CENTRO_COSTO, SA.CENTRO_COSTO) BETWEEN 's$centroInicial$s' AND 's$centroFinal$s'  
+  AND COALESCE(DE.TERCERO, SA.TERCERO) BETWEEN 's$terceroInicial$s' AND 's$terceroFinal$s' 
+  AND COALESCE(DE.AUXILIAR, SA.AUXILIAR) BETWEEN 's$auxiliarInicial$s' AND 's$auxiliarFinal$s' 
+  AND (ABS(SA.SALDO1) 
+     + ABS(NVL(DE.SALDOALDIA,0))
++ ABS(NVL(DE.VALOR_DEBITO,0))    
++ ABS(NVL(DE.VALOR_CREDITO,0))    
+     ) <>0
+  AND ( P.MAN_CEN_CTO <> 0 AND P.MAN_AUX_TER <> 0 AND P.MAN_AUX_GEN <> 0)
+  )TABLA
+GROUP BY NOCOMP,
+       NOANO,
+      ]') || TO_CLOB(q'[ ID,
+       CODIGO,
+       VD,
+       VC,
+       TIPO_CPTE,
+       COMPROBANTE,
+       CONSECUTIVO,
+       FECHA,
+       HORA,
+       DESCRIPCION,
+       NODOCUMENTO,
+       SALDOINI,
+       DESCRIP,
+       NOMBRETERCERO,
+       NOMBRECODIGO,
+       CODIGOREF,
+       CODIGO_CENTRO,
+       NOMBRE_CENTRO,
+       CODIGO_AUX,
+       NOMBRE_AUXILIAR,
+       CODIGO_FUENTE,
+       NOMBRE_FUENTE,
+       TERCERO,
+       ORDENIMP
+ORDER BY CODIGO_CENTRO, CODIGO_AUX, ID, TERCERO]') CONSULTA, 1 APLICACION ,TO_CLOB(q'[]') CONSULTA_OPCIONAL, NULL CREATED_BY, NULL MODIFIED_BY  FROM DUAL ) INI ON (INI.INFORME = FIN.INFORME )  WHEN MATCHED THEN  UPDATE SET FIN.CONSULTA =  INI.CONSULTA, FIN.APLICACION =  INI.APLICACION, FIN.CONSULTA_OPCIONAL =  INI.CONSULTA_OPCIONAL, FIN.MODIFIED_BY = INI.MODIFIED_BY, FIN.DATE_MODIFIED = SYSDATE  WHEN NOT MATCHED THEN  INSERT (INFORME,CONSULTA, APLICACION,CONSULTA_OPCIONAL,CREATED_BY,DATE_CREATED)  VALUES (INI.INFORME,INI.CONSULTA, INI.APLICACION,INI.CONSULTA_OPCIONAL,INI.CREATED_BY,SYSDATE);

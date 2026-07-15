@@ -1,0 +1,47 @@
+SELECT PLAN_PPTAL_CONFIG.CODIGO_SIA||DETALLE_COMPROBANTE_PPTAL.CUENTA       "|I| Código Rubro Presupuestal",
+       DETALLE_COMPROBANTE_PPTAL.NRO_DOCUMENTO                              "|C| Acto Administrativo",
+       TO_CHAR(DETALLE_COMPROBANTE_PPTAL.FECHA,'DD/MM/YYYY')                "|F| Fecha",
+      SUM(CASE WHEN TIPO_COMPROBPP.CLASE='ADC'
+                     THEN VALOR_DEBITO
+                     ELSE
+                     0 END)                                                  "|D| Adición",
+      SUM(CASE WHEN TIPO_COMPROBPP.CLASE='RED'
+                     THEN VALOR_CREDITO
+                     ELSE
+                     0 END)                                                  "|D| Reducción",
+      SUM(CASE WHEN TIPO_COMPROBPP.CLASE='TRA'
+                     THEN VALOR_DEBITO
+                     ELSE
+                     0 END)                                                  "|D| Crédito",               
+       SUM(CASE WHEN TIPO_COMPROBPP.CLASE='TRA'
+                     THEN VALOR_CREDITO
+                     ELSE
+                    0 END)                                                  "|D| Contracrédito",
+       SUM(CASE WHEN TIPO_COMPROBPP.CLASE='APL'
+                     THEN VALOR_CREDITO
+                     ELSE
+                     0 END)                                                 "|D| Aplazamiento",
+	 SUM(CASE WHEN TIPO_COMPROBPP.CLASE='APL'
+                     THEN VALOR_DEBITO
+                     ELSE
+                     0 END)                                                 "|D| Desaplazamiento"  			 
+FROM DETALLE_COMPROBANTE_PPTAL INNER JOIN  PLAN_PPTAL_CONFIG
+    ON DETALLE_COMPROBANTE_PPTAL.COMPANIA=  PLAN_PPTAL_CONFIG.COMPANIA
+    AND DETALLE_COMPROBANTE_PPTAL.ANO=  PLAN_PPTAL_CONFIG.ANO
+    AND DETALLE_COMPROBANTE_PPTAL.CUENTA=  PLAN_PPTAL_CONFIG.CODIGO
+    AND DETALLE_COMPROBANTE_PPTAL.CENTRO_COSTO=  PLAN_PPTAL_CONFIG.CENTRO_COSTO
+    AND DETALLE_COMPROBANTE_PPTAL.AUXILIAR=  PLAN_PPTAL_CONFIG.AUXILIAR
+    AND DETALLE_COMPROBANTE_PPTAL.REFERENCIA=  PLAN_PPTAL_CONFIG.REFERENCIA 
+    AND DETALLE_COMPROBANTE_PPTAL.FUENTE_RECURSO=  PLAN_PPTAL_CONFIG.FUENTE_RECURSO
+ INNER JOIN TIPO_COMPROBPP
+      ON DETALLE_COMPROBANTE_PPTAL.COMPANIA=  TIPO_COMPROBPP.COMPANIA
+      AND DETALLE_COMPROBANTE_PPTAL.TIPO_CPTE=  TIPO_COMPROBPP.CODIGO
+WHERE DETALLE_COMPROBANTE_PPTAL.COMPANIA     = s$compania$s
+  AND DETALLE_COMPROBANTE_PPTAL.ANO          = s$ano$s
+  AND TIPO_COMPROBPP.CLASE                   IN ('ADC','RED','TRA','APL')
+  AND PLAN_PPTAL_CONFIG.NATURALEZA IN('D')
+  AND DETALLE_COMPROBANTE_PPTAL.MES          BETWEEN  s$mesInicial$s AND  s$mesFinal$s
+GROUP BY PLAN_PPTAL_CONFIG.CODIGO_SIA||DETALLE_COMPROBANTE_PPTAL.CUENTA,
+       DETALLE_COMPROBANTE_PPTAL.NRO_DOCUMENTO,
+       DETALLE_COMPROBANTE_PPTAL.FECHA
+ORDER BY PLAN_PPTAL_CONFIG.CODIGO_SIA||DETALLE_COMPROBANTE_PPTAL.CUENTA

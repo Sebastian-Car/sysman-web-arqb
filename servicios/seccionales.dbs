@@ -1,0 +1,120 @@
+﻿<data name="seccionales" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertSeccionales" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SECCIONALES (COMPANIA, CODIGO, NOMBRESECCIONAL, DIRECTOR, SUCURSAL, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :NOMBRESECCIONAL, :DIRECTOR, :SUCURSAL, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRESECCIONAL" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="DIRECTOR" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="seccionales">
+		<call-query href="insertSeccionales">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRESECCIONAL" query-param="NOMBRESECCIONAL"/>
+			<with-param name="DIRECTOR" query-param="DIRECTOR"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSeccionales" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SECCIONALES WHERE SECCIONALES.COMPANIA= :KEY_COMPANIA AND SECCIONALES.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="seccionales">
+		<call-query href="deleteSeccionales">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSeccionalesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SECCIONALES.COMPANIA, SECCIONALES.CODIGO, SECCIONALES.NOMBRESECCIONAL, SECCIONALES.DIRECTOR, TERCERO.NOMBRE NOMBREDIRECTOR, SECCIONALES.SUCURSAL  FROM SECCIONALES INNER JOIN TERCERO ON SECCIONALES.COMPANIA = TERCERO.COMPANIA AND SECCIONALES.DIRECTOR = TERCERO.NIT AND SECCIONALES.SUCURSAL = TERCERO.SUCURSAL WHERE SECCIONALES.COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRESECCIONAL IS NULL THEN ' ' ELSE UPPER(NOMBRESECCIONAL) END)  LIKE UPPER( '%' || :NOMBRESECCIONAL || '%')  AND (CASE WHEN DIRECTOR IS NULL THEN ' ' ELSE UPPER(DIRECTOR) END)  LIKE UPPER(:DIRECTOR || '%')  AND (CASE WHEN NOMBREDIRECTOR IS NULL THEN ' ' ELSE UPPER(NOMBREDIRECTOR) END)  LIKE UPPER( '%' || :NOMBREDIRECTOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRESECCIONAL":"$NOMBRESECCIONAL","DIRECTOR":"$DIRECTOR","NOMBREDIRECTOR":"$NOMBREDIRECTOR","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRESECCIONAL" sqlType="STRING"/>
+		<param name="DIRECTOR" sqlType="STRING"/>
+		<param name="NOMBREDIRECTOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="seccionales">
+		<call-query href="getSeccionalesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRESECCIONAL" query-param="NOMBRESECCIONAL"/>
+			<with-param name="DIRECTOR" query-param="DIRECTOR"/>
+			<with-param name="NOMBREDIRECTOR" query-param="NOMBREDIRECTOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSeccionalesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SECCIONALES.COMPANIA, SECCIONALES.CODIGO, SECCIONALES.NOMBRESECCIONAL, SECCIONALES.DIRECTOR, TERCERO.NOMBRE NOMBREDIRECTOR, SECCIONALES.SUCURSAL  FROM SECCIONALES INNER JOIN TERCERO ON SECCIONALES.COMPANIA = TERCERO.COMPANIA AND SECCIONALES.DIRECTOR = TERCERO.NIT AND SECCIONALES.SUCURSAL = TERCERO.SUCURSAL WHERE SECCIONALES.COMPANIA = :COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRESECCIONAL IS NULL THEN ' ' ELSE UPPER(NOMBRESECCIONAL) END)  LIKE UPPER( '%' || :NOMBRESECCIONAL || '%')  AND (CASE WHEN DIRECTOR IS NULL THEN ' ' ELSE UPPER(DIRECTOR) END)  LIKE UPPER(:DIRECTOR || '%')  AND (CASE WHEN NOMBREDIRECTOR IS NULL THEN ' ' ELSE UPPER(NOMBREDIRECTOR) END)  LIKE UPPER( '%' || :NOMBREDIRECTOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRESECCIONAL" sqlType="STRING"/>
+		<param name="DIRECTOR" sqlType="STRING"/>
+		<param name="NOMBREDIRECTOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="seccionales/numero">
+		<call-query href="getSeccionalesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRESECCIONAL" query-param="NOMBRESECCIONAL"/>
+			<with-param name="DIRECTOR" query-param="DIRECTOR"/>
+			<with-param name="NOMBREDIRECTOR" query-param="NOMBREDIRECTOR"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSeccionales" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SECCIONALES SET CODIGO=:CODIGO, NOMBRESECCIONAL=:NOMBRESECCIONAL, DIRECTOR=:DIRECTOR, SUCURSAL=:SUCURSAL, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SECCIONALES.COMPANIA= :KEY_COMPANIA AND SECCIONALES.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRESECCIONAL" sqlType="STRING"/>
+		<param name="DIRECTOR" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="seccionales">
+		<call-query href="updateSeccionales">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRESECCIONAL" query-param="NOMBRESECCIONAL"/>
+			<with-param name="DIRECTOR" query-param="DIRECTOR"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

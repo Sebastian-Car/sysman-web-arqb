@@ -1,0 +1,186 @@
+﻿<data name="seguimientoreciprocas" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSeguimientoreciprocasVigenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT ANO  FROM SEGUIMIENTO_RECIPROCAS WHERE COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="seguimientoreciprocas/vigencia">
+		<call-query href="getSeguimientoreciprocasVigenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSeguimientoreciprocas" keyColumns="COMPANIA,ANO,MES,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SEGUIMIENTO_RECIPROCAS (COMPANIA, CODIGO, NOMBRE, CONSECUTIVO, ANO, MES, TRIMESTRE, ENTIDAD_RECIPROCA, CODIGO_ENTIDAD_RECIPROCA, VALOR_CORRIENTE, VALOR_NO_CORRIENTE, OBSERVACIONES, FECHA_OBSERVACIONES, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGO, :NOMBRE, :CONSECUTIVO, :ANO, :MES, :TRIMESTRE, :ENTIDAD_RECIPROCA, :CODIGO_ENTIDAD_RECIPROCA, :VALOR_CORRIENTE, :VALOR_NO_CORRIENTE, :OBSERVACIONES, TO_DATE(:FECHA_OBSERVACIONES,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_MES":"$MES(type:integer)","KEY_CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="TRIMESTRE" sqlType="STRING"/>
+		<param name="ENTIDAD_RECIPROCA" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGO_ENTIDAD_RECIPROCA" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_CORRIENTE" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_NO_CORRIENTE" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACIONES" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_OBSERVACIONES" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="seguimientoreciprocas">
+		<call-query href="insertSeguimientoreciprocas">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="TRIMESTRE" query-param="TRIMESTRE"/>
+			<with-param name="ENTIDAD_RECIPROCA" query-param="ENTIDAD_RECIPROCA"/>
+			<with-param name="CODIGO_ENTIDAD_RECIPROCA" query-param="CODIGO_ENTIDAD_RECIPROCA"/>
+			<with-param name="VALOR_CORRIENTE" query-param="VALOR_CORRIENTE"/>
+			<with-param name="VALOR_NO_CORRIENTE" query-param="VALOR_NO_CORRIENTE"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHA_OBSERVACIONES" query-param="FECHA_OBSERVACIONES"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSeguimientoreciprocas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SEGUIMIENTO_RECIPROCAS WHERE SEGUIMIENTO_RECIPROCAS.COMPANIA= :KEY_COMPANIA AND SEGUIMIENTO_RECIPROCAS.ANO= :KEY_ANO AND SEGUIMIENTO_RECIPROCAS.MES= :KEY_MES AND SEGUIMIENTO_RECIPROCAS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_MES" sqlType="INTEGER"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="seguimientoreciprocas">
+		<call-query href="deleteSeguimientoreciprocas">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_MES" query-param="KEY_MES"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSeguimientoreciprocasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CODIGO, NOMBRE, CONSECUTIVO, ANO, MES, TRIMESTRE, ENTIDAD_RECIPROCA, CODIGO_ENTIDAD_RECIPROCA, VALOR_CORRIENTE, VALOR_NO_CORRIENTE, OBSERVACIONES,(TO_CHAR(FECHA_OBSERVACIONES,'DD/MM/YYYY HH24:MI:SS')) FECHA_OBSERVACIONES FROM SEGUIMIENTO_RECIPROCAS WHERE COMPANIA =:COMPANIA AND ANO =:ANO AND TRIMESTRE = :TRIMESTRE ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN ENTIDAD_RECIPROCA IS NULL THEN ' ' ELSE UPPER(ENTIDAD_RECIPROCA) END)  LIKE UPPER(:ENTIDAD_RECIPROCA || '%')  AND (CASE WHEN CODIGO_ENTIDAD_RECIPROCA IS NULL THEN ' ' ELSE UPPER(CODIGO_ENTIDAD_RECIPROCA) END)  LIKE UPPER( '%' || :CODIGO_ENTIDAD_RECIPROCA || '%')  AND (CASE WHEN VALOR_CORRIENTE IS NULL THEN ' ' ELSE UPPER(VALOR_CORRIENTE) END)  LIKE UPPER(:VALOR_CORRIENTE || '%')  AND (CASE WHEN VALOR_NO_CORRIENTE IS NULL THEN ' ' ELSE UPPER(VALOR_NO_CORRIENTE) END)  LIKE UPPER(:VALOR_NO_CORRIENTE || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER( '%' || :OBSERVACIONES || '%')  AND (CASE WHEN FECHA_OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(FECHA_OBSERVACIONES) END)  LIKE UPPER( '%' || :FECHA_OBSERVACIONES || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","CONSECUTIVO":"$CONSECUTIVO","ANO":"$ANO(type:integer)","MES":"$MES(type:integer)","TRIMESTRE":"$TRIMESTRE(type:integer)","ENTIDAD_RECIPROCA":"$ENTIDAD_RECIPROCA","CODIGO_ENTIDAD_RECIPROCA":"$CODIGO_ENTIDAD_RECIPROCA","VALOR_CORRIENTE":"$VALOR_CORRIENTE","VALOR_NO_CORRIENTE":"$VALOR_NO_CORRIENTE","OBSERVACIONES":"$OBSERVACIONES","FECHA_OBSERVACIONES":"$FECHA_OBSERVACIONES"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TRIMESTRE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="ENTIDAD_RECIPROCA" sqlType="STRING"/>
+		<param name="CODIGO_ENTIDAD_RECIPROCA" sqlType="STRING"/>
+		<param name="VALOR_CORRIENTE" sqlType="STRING"/>
+		<param name="VALOR_NO_CORRIENTE" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="FECHA_OBSERVACIONES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="seguimientoreciprocas">
+		<call-query href="getSeguimientoreciprocasPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TRIMESTRE" query-param="TRIMESTRE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="ENTIDAD_RECIPROCA" query-param="ENTIDAD_RECIPROCA"/>
+			<with-param name="CODIGO_ENTIDAD_RECIPROCA" query-param="CODIGO_ENTIDAD_RECIPROCA"/>
+			<with-param name="VALOR_CORRIENTE" query-param="VALOR_CORRIENTE"/>
+			<with-param name="VALOR_NO_CORRIENTE" query-param="VALOR_NO_CORRIENTE"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHA_OBSERVACIONES" query-param="FECHA_OBSERVACIONES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSeguimientoreciprocasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CODIGO, NOMBRE, CONSECUTIVO, ANO, MES, TRIMESTRE, ENTIDAD_RECIPROCA, CODIGO_ENTIDAD_RECIPROCA, VALOR_CORRIENTE, VALOR_NO_CORRIENTE, OBSERVACIONES,(TO_CHAR(FECHA_OBSERVACIONES,'DD/MM/YYYY HH24:MI:SS')) FECHA_OBSERVACIONES FROM SEGUIMIENTO_RECIPROCAS WHERE COMPANIA =:COMPANIA AND ANO =:ANO AND TRIMESTRE = :TRIMESTRE ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN ENTIDAD_RECIPROCA IS NULL THEN ' ' ELSE UPPER(ENTIDAD_RECIPROCA) END)  LIKE UPPER(:ENTIDAD_RECIPROCA || '%')  AND (CASE WHEN CODIGO_ENTIDAD_RECIPROCA IS NULL THEN ' ' ELSE UPPER(CODIGO_ENTIDAD_RECIPROCA) END)  LIKE UPPER( '%' || :CODIGO_ENTIDAD_RECIPROCA || '%')  AND (CASE WHEN VALOR_CORRIENTE IS NULL THEN ' ' ELSE UPPER(VALOR_CORRIENTE) END)  LIKE UPPER(:VALOR_CORRIENTE || '%')  AND (CASE WHEN VALOR_NO_CORRIENTE IS NULL THEN ' ' ELSE UPPER(VALOR_NO_CORRIENTE) END)  LIKE UPPER(:VALOR_NO_CORRIENTE || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER( '%' || :OBSERVACIONES || '%')  AND (CASE WHEN FECHA_OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(FECHA_OBSERVACIONES) END)  LIKE UPPER( '%' || :FECHA_OBSERVACIONES || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TRIMESTRE" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="ENTIDAD_RECIPROCA" sqlType="STRING"/>
+		<param name="CODIGO_ENTIDAD_RECIPROCA" sqlType="STRING"/>
+		<param name="VALOR_CORRIENTE" sqlType="STRING"/>
+		<param name="VALOR_NO_CORRIENTE" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="FECHA_OBSERVACIONES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="seguimientoreciprocas/numero">
+		<call-query href="getSeguimientoreciprocasNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TRIMESTRE" query-param="TRIMESTRE"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="ENTIDAD_RECIPROCA" query-param="ENTIDAD_RECIPROCA"/>
+			<with-param name="CODIGO_ENTIDAD_RECIPROCA" query-param="CODIGO_ENTIDAD_RECIPROCA"/>
+			<with-param name="VALOR_CORRIENTE" query-param="VALOR_CORRIENTE"/>
+			<with-param name="VALOR_NO_CORRIENTE" query-param="VALOR_NO_CORRIENTE"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHA_OBSERVACIONES" query-param="FECHA_OBSERVACIONES"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSeguimientoreciprocas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SEGUIMIENTO_RECIPROCAS SET NOMBRE=:NOMBRE, ENTIDAD_RECIPROCA=:ENTIDAD_RECIPROCA, CODIGO_ENTIDAD_RECIPROCA=:CODIGO_ENTIDAD_RECIPROCA, VALOR_CORRIENTE=:VALOR_CORRIENTE, VALOR_NO_CORRIENTE=:VALOR_NO_CORRIENTE, OBSERVACIONES=:OBSERVACIONES, FECHA_OBSERVACIONES=TO_DATE(:FECHA_OBSERVACIONES,'DD/MM/YYYY HH24:MI:SS'), DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SEGUIMIENTO_RECIPROCAS.COMPANIA= :KEY_COMPANIA AND SEGUIMIENTO_RECIPROCAS.ANO= :KEY_ANO AND SEGUIMIENTO_RECIPROCAS.MES= :KEY_MES AND SEGUIMIENTO_RECIPROCAS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="ENTIDAD_RECIPROCA" sqlType="STRING"/>
+		<param name="CODIGO_ENTIDAD_RECIPROCA" sqlType="STRING"/>
+		<param name="VALOR_CORRIENTE" sqlType="STRING"/>
+		<param name="VALOR_NO_CORRIENTE" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="FECHA_OBSERVACIONES" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_MES" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="seguimientoreciprocas">
+		<call-query href="updateSeguimientoreciprocas">
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="ENTIDAD_RECIPROCA" query-param="ENTIDAD_RECIPROCA"/>
+			<with-param name="CODIGO_ENTIDAD_RECIPROCA" query-param="CODIGO_ENTIDAD_RECIPROCA"/>
+			<with-param name="VALOR_CORRIENTE" query-param="VALOR_CORRIENTE"/>
+			<with-param name="VALOR_NO_CORRIENTE" query-param="VALOR_NO_CORRIENTE"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHA_OBSERVACIONES" query-param="FECHA_OBSERVACIONES"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_MES" query-param="KEY_MES"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+
+</data>

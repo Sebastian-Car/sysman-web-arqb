@@ -1,0 +1,36 @@
+SELECT  COMPANIA, 
+        ANO, 
+        CODIGO,
+        NATURALEZA,
+        NOMBRE NOMBRE,
+        CODIGO ORDEN,
+        CODIGO CLASE,
+        DEBITO,
+        CREDITO,
+        CASE WHEN (SALDOAUX.NATURALEZA = 'D' AND (SALDOAUX.SALDOANT)>=0) 
+                OR (SALDOAUX.NATURALEZA = 'C' AND (SALDOAUX.SALDOANT)<0)   
+              THEN ABS (SALDOANT) 
+              ELSE 
+                0 
+              END SALDOANTDEBITO,
+          CASE WHEN (SALDOAUX.NATURALEZA = 'C' AND (SALDOAUX.SALDOANT)>=0) 
+                 OR (SALDOAUX.NATURALEZA = 'D' AND (SALDOAUX.SALDOANT)<0)   
+              THEN ABS(SALDOANT)
+              ELSE 
+                0 
+              END SALDOANTCREDITO,  
+          CASE WHEN (SALDOAUX.NATURALEZA = 'D' AND (SALDOAUX.SALDOFIN)>=0) 
+                 OR (SALDOAUX.NATURALEZA = 'C' AND (SALDOAUX.SALDOFIN)<0)   
+              THEN ABS (SALDOAUX.SALDOFIN) ELSE 
+                0 
+              END SALDONUEDEBITO,     
+          CASE WHEN (SALDOAUX.NATURALEZA = 'C' AND (SALDOAUX.SALDOFIN)>=0) 
+                 OR (SALDOAUX.NATURALEZA = 'D' AND (SALDOAUX.SALDOFIN)<0)   
+              THEN ABS (SALDOAUX.SALDOFIN) ELSE 
+                0 
+              END SALDONUECREDITO   
+FROM (s$baseAuxiliar$s) SALDOAUX
+WHERE SALDOAUX.COMPANIA = s$compania$s
+  AND SALDOAUX.ANO      = s$anio$s
+  AND LENGTH(SALDOAUX.CODIGO) =1
+ORDER BY SALDOAUX.CODIGO

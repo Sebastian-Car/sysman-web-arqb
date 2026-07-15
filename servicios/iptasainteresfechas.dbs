@@ -1,0 +1,126 @@
+﻿<data name="iptasainteresfechas" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertIptasainteresfechas" keyColumns="COMPANIA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_TASAINTERES_FECHAS (COMPANIA, FECHAINICIAL, FECHAFINAL, TASAMES, TASADIARIA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, TO_DATE(:FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHAFINAL,'DD/MM/YYYY HH24:MI:SS'), :TASAMES, :TASADIARIA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_FECHAINICIAL":"$FECHAINICIAL","KEY_FECHAFINAL":"$FECHAFINAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param defaultValue="0" name="TASAMES" sqlType="STRING"/>
+		<param defaultValue="0" name="TASADIARIA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="iptasainteresfechas">
+		<call-query href="insertIptasainteresfechas">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="TASAMES" query-param="TASAMES"/>
+			<with-param name="TASADIARIA" query-param="TASADIARIA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteIptasainteresfechas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM IP_TASAINTERES_FECHAS WHERE IP_TASAINTERES_FECHAS.COMPANIA= :KEY_COMPANIA AND IP_TASAINTERES_FECHAS.FECHAINICIAL= TO_DATE(:KEY_FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS')  AND IP_TASAINTERES_FECHAS.FECHAFINAL= TO_DATE(:KEY_FECHAFINAL,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_FECHAINICIAL" sqlType="STRING"/>
+		<param name="KEY_FECHAFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="iptasainteresfechas">
+		<call-query href="deleteIptasainteresfechas">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_FECHAINICIAL" query-param="KEY_FECHAINICIAL"/>
+			<with-param name="KEY_FECHAFINAL" query-param="KEY_FECHAFINAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptasainteresfechasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA,(TO_CHAR(FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHAINICIAL,(TO_CHAR(FECHAFINAL,'DD/MM/YYYY HH24:MI:SS')) FECHAFINAL, TRIM(TO_CHAR(TASAMES,CONCAT( RPAD('9',18,'9'), '0D9999999')) ) TASAMES, TRIM(TO_CHAR(TASADIARIA,CONCAT( RPAD('9',18,'9'), '0D9999999')) ) TASADIARIA FROM IP_TASAINTERES_FECHAS WHERE COMPANIA =:COMPANIA ORDER BY IP_TASAINTERES_FECHAS.FECHAINICIAL, IP_TASAINTERES_FECHAS.FECHAFINAL) INI WHERE (CASE WHEN FECHAINICIAL IS NULL THEN ' ' ELSE UPPER(FECHAINICIAL) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHAINICIAL), '%')) AND (CASE WHEN FECHAFINAL IS NULL THEN ' ' ELSE UPPER(FECHAFINAL) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHAFINAL), '%')) AND (CASE WHEN TASAMES IS NULL THEN ' ' ELSE UPPER(TASAMES) END) LIKE UPPER(CONCAT(CONCAT('%',:TASAMES), '%')) AND (CASE WHEN TASADIARIA IS NULL THEN ' ' ELSE UPPER(TASADIARIA) END) LIKE UPPER(CONCAT(CONCAT('%',:TASADIARIA), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","FECHAINICIAL":"$FECHAINICIAL","FECHAFINAL":"$FECHAFINAL","TASAMES":"$TASAMES","TASADIARIA":"$TASADIARIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="TASAMES" sqlType="STRING"/>
+		<param name="TASADIARIA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iptasainteresfechas">
+		<call-query href="getIptasainteresfechasPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="TASAMES" query-param="TASAMES"/>
+			<with-param name="TASADIARIA" query-param="TASADIARIA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptasainteresfechasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA,(TO_CHAR(FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHAINICIAL,(TO_CHAR(FECHAFINAL,'DD/MM/YYYY HH24:MI:SS')) FECHAFINAL, TRIM(TO_CHAR(TASAMES,CONCAT( RPAD('9',18,'9'), '0D9999999')) ) TASAMES, TRIM(TO_CHAR(TASADIARIA,CONCAT( RPAD('9',18,'9'), '0D9999999')) ) TASADIARIA FROM IP_TASAINTERES_FECHAS WHERE COMPANIA =:COMPANIA ORDER BY IP_TASAINTERES_FECHAS.FECHAINICIAL, IP_TASAINTERES_FECHAS.FECHAFINAL) INI WHERE (CASE WHEN FECHAINICIAL IS NULL THEN ' ' ELSE UPPER(FECHAINICIAL) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHAINICIAL), '%')) AND (CASE WHEN FECHAFINAL IS NULL THEN ' ' ELSE UPPER(FECHAFINAL) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHAFINAL), '%')) AND (CASE WHEN TASAMES IS NULL THEN ' ' ELSE UPPER(TASAMES) END) LIKE UPPER(CONCAT(CONCAT('%',:TASAMES), '%')) AND (CASE WHEN TASADIARIA IS NULL THEN ' ' ELSE UPPER(TASADIARIA) END) LIKE UPPER(CONCAT(CONCAT('%',:TASADIARIA), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="TASAMES" sqlType="STRING"/>
+		<param name="TASADIARIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iptasainteresfechas/numero">
+		<call-query href="getIptasainteresfechasNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="TASAMES" query-param="TASAMES"/>
+			<with-param name="TASADIARIA" query-param="TASADIARIA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIptasainteresfechas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_TASAINTERES_FECHAS SET COMPANIA=:COMPANIA, FECHAINICIAL=TO_DATE(:FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS'), FECHAFINAL=TO_DATE(:FECHAFINAL,'DD/MM/YYYY HH24:MI:SS'), TASAMES=:TASAMES, TASADIARIA=:TASADIARIA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE IP_TASAINTERES_FECHAS.COMPANIA= :KEY_COMPANIA AND IP_TASAINTERES_FECHAS.FECHAINICIAL= TO_DATE(:KEY_FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS') AND IP_TASAINTERES_FECHAS.FECHAFINAL= TO_DATE(:KEY_FECHAFINAL,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="TASAMES" sqlType="STRING"/>
+		<param name="TASADIARIA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_FECHAINICIAL" sqlType="STRING"/>
+		<param name="KEY_FECHAFINAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="iptasainteresfechas">
+		<call-query href="updateIptasainteresfechas">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="TASAMES" query-param="TASAMES"/>
+			<with-param name="TASADIARIA" query-param="TASADIARIA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_FECHAINICIAL" query-param="KEY_FECHAINICIAL"/>
+			<with-param name="KEY_FECHAFINAL" query-param="KEY_FECHAFINAL"/>
+
+		</call-query>
+	</resource>
+
+</data>

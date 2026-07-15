@@ -1,0 +1,23 @@
+WITH RESUMEN AS ( 
+SELECT  
+    S.ANO, 
+    (SUM(S.REG_CONTRACT) + SUM(S.MODIF_REG_CONT)) + (SUM(S.REG_NO_CONTRACT) + SUM(S.MODIF_REG_NOCONT)) AS TOTALCOMPROMETIDO 
+FROM BP_RUBRO_INVERSION_DET R  
+  INNER JOIN (V_PLAN_PRESUPUESTAL P LEFT JOIN V_SALDO_PLAN_PPTAL S ON P.COMPANIA = S.COMPANIA 
+                                                                  AND P.ID = S.ID  
+                                                                  AND P.ANO = S.ANO)  
+      ON R.COMPANIA = P.COMPANIA 
+      AND R.RUBRO = P.ID 
+      AND R.VIGENCIA = P.ANO 
+WHERE R.COMPANIA=s$compania$s 
+    AND R.VIGENCIA BETWEEN s$anioInicial$s AND s$anioFinal$s  
+    AND R.NIVEL='s$nivel$s'  
+    AND DESCRIPCION = 's$descripcion$s' 
+    AND S.ANO IS NOT NULL
+GROUP BY  S.ANO 
+) 
+SELECT 
+  --RESUMEN.COMPANIA,  
+  RESUMEN.ANO, 
+  TOTALCOMPROMETIDO TOTALCOMPROMETIDO
+FROM RESUMEN

@@ -1,0 +1,91 @@
+﻿<data name="dicontratos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertDicontratos" keyColumns="COMPANIA,CLASEORDEN,REGISTRO,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO DI_CONTRATO (COMPANIA, CLASEORDEN, REGISTRO, CONSECUTIVO, ARCHIVO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CLASEORDEN, :REGISTRO, :CONSECUTIVO, :ARCHIVO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CLASEORDEN":"$CLASEORDEN","KEY_REGISTRO":"$REGISTRO(type:long)","KEY_CONSECUTIVO":"$CONSECUTIVO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param defaultValue="0" name="REGISTRO" sqlType="STRING"/>
+		<param defaultValue="0" name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="ARCHIVO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="dicontratos">
+		<call-query href="insertDicontratos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="REGISTRO" query-param="REGISTRO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="ARCHIVO" query-param="ARCHIVO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteDicontratos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM DI_CONTRATO WHERE DI_CONTRATO.COMPANIA= :KEY_COMPANIA AND DI_CONTRATO.CLASEORDEN= :KEY_CLASEORDEN AND DI_CONTRATO.REGISTRO= :KEY_REGISTRO AND DI_CONTRATO.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASEORDEN" sqlType="STRING"/>
+		<param name="KEY_REGISTRO" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="dicontratos">
+		<call-query href="deleteDicontratos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASEORDEN" query-param="KEY_CLASEORDEN"/>
+			<with-param name="KEY_REGISTRO" query-param="KEY_REGISTRO"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDicontratosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CLASEORDEN, REGISTRO, CONSECUTIVO, ARCHIVO  FROM DI_CONTRATO WHERE COMPANIA = :COMPANIA AND CLASEORDEN = :CLASEORDEN AND REGISTRO = :REGISTRO ORDER BY ARCHIVO) WHERE (CASE WHEN ARCHIVO IS NULL THEN ' ' ELSE UPPER(ARCHIVO) END)  LIKE UPPER( '%' || :ARCHIVO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CLASEORDEN":"$CLASEORDEN","REGISTRO":"$REGISTRO","CONSECUTIVO":"$CONSECUTIVO(type:integer)","ARCHIVO":"$ARCHIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="REGISTRO" sqlType="STRING"/>
+		<param name="ARCHIVO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dicontratos">
+		<call-query href="getDicontratosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="REGISTRO" query-param="REGISTRO"/>
+			<with-param name="ARCHIVO" query-param="ARCHIVO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDicontratosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CLASEORDEN, REGISTRO, CONSECUTIVO, ARCHIVO  FROM DI_CONTRATO WHERE COMPANIA = :COMPANIA AND CLASEORDEN = :CLASEORDEN AND REGISTRO = :REGISTRO ORDER BY ARCHIVO) WHERE (CASE WHEN ARCHIVO IS NULL THEN ' ' ELSE UPPER(ARCHIVO) END)  LIKE UPPER( '%' || :ARCHIVO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="REGISTRO" sqlType="STRING"/>
+		<param name="ARCHIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dicontratos/numero">
+		<call-query href="getDicontratosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="REGISTRO" query-param="REGISTRO"/>
+			<with-param name="ARCHIVO" query-param="ARCHIVO"/>
+
+		</call-query>
+	</resource>
+
+</data>

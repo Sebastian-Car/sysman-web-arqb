@@ -1,0 +1,227 @@
+﻿<data name="pacprogramado" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="deletePacprogramadoPortipoanocuentayconsecutivo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM PACPROGRAMADO  WHERE COMPANIA=:COMPANIA AND ANO=:ANO AND TIPO_CPTE=:TIPO AND COMPROBANTE=:NUMERO  AND CONSECUTIVO=:CONSECUTIVO AND CUENTA=:CUENTA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="pacprogramado/portipoanocuentayconsecutivo">
+		<call-query href="deletePacprogramadoPortipoanocuentayconsecutivo">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+
+		</call-query>
+	</resource>
+	<query id="getPacprogramadoTotaldebitoscreditosporcomprobantecuentaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT NVL(SUM(MOV_DEBITO),0) SUMADEBITO, NVL(SUM(MOV_CREDITO),0) SUMACREDITO FROM ( SELECT COMPANIA, ANO, TIPO_CPTE, COMPROBANTE, CONSECUTIVO, CUENTA, CENTRO_COSTO, AUXILIAR, ( TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS') ) FECHA, MOV_DEBITO, MOV_CREDITO FROM PACPROGRAMADO WHERE COMPANIA =:COMPANIA AND ANO =:ANIO AND TIPO_CPTE =:TIPOCOMPROBANTE AND COMPROBANTE =:NUMCOMPROBANTE AND CONSECUTIVO =:CONSECUTIVO AND CUENTA =:CUENTA ) WHERE ( CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END ) LIKE UPPER(CONCAT( '%',CONCAT(:FECHA, '%'))) AND ( CASE WHEN MOV_DEBITO IS NULL THEN ' ' ELSE UPPER(MOV_DEBITO) END ) LIKE UPPER(CONCAT('%',CONCAT(:MOV_DEBITO, '%'))) AND ( CASE WHEN MOV_CREDITO IS NULL THEN ' ' ELSE UPPER(MOV_CREDITO) END ) LIKE UPPER(CONCAT('%',CONCAT(:MOV_CREDITO, '%')))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SUMADEBITO":"$SUMADEBITO(type:double)","SUMACREDITO":"$SUMACREDITO(type:double)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="TIPOCOMPROBANTE" sqlType="STRING"/>
+		<param name="NUMCOMPROBANTE" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="MOV_DEBITO" sqlType="STRING"/>
+		<param name="MOV_CREDITO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="pacprogramado/totaldebitoscreditosporcomprobantecuenta">
+		<call-query href="getPacprogramadoTotaldebitoscreditosporcomprobantecuentaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="TIPOCOMPROBANTE" query-param="TIPOCOMPROBANTE"/>
+			<with-param name="NUMCOMPROBANTE" query-param="NUMCOMPROBANTE"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="MOV_DEBITO" query-param="MOV_DEBITO"/>
+			<with-param name="MOV_CREDITO" query-param="MOV_CREDITO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertPacprogramado" keyColumns="COMPANIA,ANO,TIPO_CPTE,COMPROBANTE,CONSECUTIVO,CUENTA,CENTRO_COSTO,AUXILIAR" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PACPROGRAMADO (COMPANIA, ANO, TIPO_CPTE, COMPROBANTE, CONSECUTIVO, CUENTA, CENTRO_COSTO, AUXILIAR, FECHA, MOV_DEBITO, MOV_CREDITO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :TIPO_CPTE, :COMPROBANTE, :CONSECUTIVO, :CUENTA, :CENTRO_COSTO, :AUXILIAR, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :MOV_DEBITO, :MOV_CREDITO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_TIPO_CPTE":"$TIPO_CPTE","KEY_COMPROBANTE":"$COMPROBANTE(type:long)","KEY_CONSECUTIVO":"$CONSECUTIVO(type:integer)","KEY_CUENTA":"$CUENTA","KEY_CENTRO_COSTO":"$CENTRO_COSTO","KEY_AUXILIAR":"$AUXILIAR","KEY_FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPO_CPTE" sqlType="STRING"/>
+		<param name="COMPROBANTE" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param defaultValue="99999999999999999999" name="CENTRO_COSTO" sqlType="STRING"/>
+		<param defaultValue="99999999999999999999" name="AUXILIAR" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param defaultValue="0" name="MOV_DEBITO" sqlType="STRING"/>
+		<param defaultValue="0" name="MOV_CREDITO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="pacprogramado">
+		<call-query href="insertPacprogramado">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPO_CPTE" query-param="TIPO_CPTE"/>
+			<with-param name="COMPROBANTE" query-param="COMPROBANTE"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="CENTRO_COSTO" query-param="CENTRO_COSTO"/>
+			<with-param name="AUXILIAR" query-param="AUXILIAR"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="MOV_DEBITO" query-param="MOV_DEBITO"/>
+			<with-param name="MOV_CREDITO" query-param="MOV_CREDITO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deletePacprogramado" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM PACPROGRAMADO WHERE PACPROGRAMADO.COMPANIA= :KEY_COMPANIA AND PACPROGRAMADO.ANO= :KEY_ANO AND PACPROGRAMADO.TIPO_CPTE= :KEY_TIPO_CPTE AND PACPROGRAMADO.COMPROBANTE= :KEY_COMPROBANTE AND PACPROGRAMADO.CONSECUTIVO= :KEY_CONSECUTIVO AND PACPROGRAMADO.CUENTA= :KEY_CUENTA AND PACPROGRAMADO.CENTRO_COSTO= :KEY_CENTRO_COSTO AND PACPROGRAMADO.AUXILIAR= :KEY_AUXILIAR AND PACPROGRAMADO.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_TIPO_CPTE" sqlType="STRING"/>
+		<param name="KEY_COMPROBANTE" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="INTEGER"/>
+		<param name="KEY_CUENTA" sqlType="STRING"/>
+		<param name="KEY_CENTRO_COSTO" sqlType="STRING"/>
+		<param name="KEY_AUXILIAR" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="pacprogramado">
+		<call-query href="deletePacprogramado">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPO_CPTE" query-param="KEY_TIPO_CPTE"/>
+			<with-param name="KEY_COMPROBANTE" query-param="KEY_COMPROBANTE"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+			<with-param name="KEY_CUENTA" query-param="KEY_CUENTA"/>
+			<with-param name="KEY_CENTRO_COSTO" query-param="KEY_CENTRO_COSTO"/>
+			<with-param name="KEY_AUXILIAR" query-param="KEY_AUXILIAR"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getPacprogramadoPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA,ANO,TIPO_CPTE,COMPROBANTE,CONSECUTIVO,CUENTA,CENTRO_COSTO,AUXILIAR,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, MOV_DEBITO, MOV_CREDITO  FROM PACPROGRAMADO WHERE COMPANIA = :COMPANIA AND ANO = :ANIO AND TIPO_CPTE = :TIPOCOMPROBANTE AND COMPROBANTE = :NUMCOMPROBANTE AND CONSECUTIVO = :CONSECUTIVO AND CUENTA = :CUENTA) WHERE (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN MOV_DEBITO IS NULL THEN ' ' ELSE UPPER(MOV_DEBITO) END)  LIKE UPPER( '%' || :MOV_DEBITO || '%')  AND (CASE WHEN MOV_CREDITO IS NULL THEN ' ' ELSE UPPER(MOV_CREDITO) END)  LIKE UPPER( '%' || :MOV_CREDITO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","TIPO_CPTE":"$TIPO_CPTE","COMPROBANTE":"$COMPROBANTE(type:long)","CONSECUTIVO":"$CONSECUTIVO(type:integer)","CUENTA":"$CUENTA","CENTRO_COSTO":"$CENTRO_COSTO","AUXILIAR":"$AUXILIAR","FECHA":"$FECHA","MOV_DEBITO":"$MOV_DEBITO","MOV_CREDITO":"$MOV_CREDITO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="TIPOCOMPROBANTE" sqlType="STRING"/>
+		<param name="NUMCOMPROBANTE" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="MOV_DEBITO" sqlType="STRING"/>
+		<param name="MOV_CREDITO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="pacprogramado">
+		<call-query href="getPacprogramadoPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="TIPOCOMPROBANTE" query-param="TIPOCOMPROBANTE"/>
+			<with-param name="NUMCOMPROBANTE" query-param="NUMCOMPROBANTE"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="MOV_DEBITO" query-param="MOV_DEBITO"/>
+			<with-param name="MOV_CREDITO" query-param="MOV_CREDITO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPacprogramadoNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA,ANO,TIPO_CPTE,COMPROBANTE,CONSECUTIVO,CUENTA,CENTRO_COSTO,AUXILIAR,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, MOV_DEBITO, MOV_CREDITO  FROM PACPROGRAMADO WHERE COMPANIA = :COMPANIA AND ANO = :ANIO AND TIPO_CPTE = :TIPOCOMPROBANTE AND COMPROBANTE = :NUMCOMPROBANTE AND CONSECUTIVO = :CONSECUTIVO AND CUENTA = :CUENTA) WHERE (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN MOV_DEBITO IS NULL THEN ' ' ELSE UPPER(MOV_DEBITO) END)  LIKE UPPER( '%' || :MOV_DEBITO || '%')  AND (CASE WHEN MOV_CREDITO IS NULL THEN ' ' ELSE UPPER(MOV_CREDITO) END)  LIKE UPPER( '%' || :MOV_CREDITO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="TIPOCOMPROBANTE" sqlType="STRING"/>
+		<param name="NUMCOMPROBANTE" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="MOV_DEBITO" sqlType="STRING"/>
+		<param name="MOV_CREDITO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="pacprogramado/numero">
+		<call-query href="getPacprogramadoNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="TIPOCOMPROBANTE" query-param="TIPOCOMPROBANTE"/>
+			<with-param name="NUMCOMPROBANTE" query-param="NUMCOMPROBANTE"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="MOV_DEBITO" query-param="MOV_DEBITO"/>
+			<with-param name="MOV_CREDITO" query-param="MOV_CREDITO"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePacprogramado" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PACPROGRAMADO SET FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), MOV_DEBITO=:MOV_DEBITO, MOV_CREDITO=:MOV_CREDITO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PACPROGRAMADO.COMPANIA= :KEY_COMPANIA AND PACPROGRAMADO.ANO= :KEY_ANO AND PACPROGRAMADO.TIPO_CPTE= :KEY_TIPO_CPTE AND PACPROGRAMADO.COMPROBANTE= :KEY_COMPROBANTE AND PACPROGRAMADO.CONSECUTIVO= :KEY_CONSECUTIVO AND PACPROGRAMADO.CUENTA= :KEY_CUENTA AND PACPROGRAMADO.CENTRO_COSTO= :KEY_CENTRO_COSTO AND PACPROGRAMADO.AUXILIAR= :KEY_AUXILIAR AND PACPROGRAMADO.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="MOV_DEBITO" sqlType="STRING"/>
+		<param name="MOV_CREDITO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_TIPO_CPTE" sqlType="STRING"/>
+		<param name="KEY_COMPROBANTE" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+		<param name="KEY_CUENTA" sqlType="STRING"/>
+		<param name="KEY_CENTRO_COSTO" sqlType="STRING"/>
+		<param name="KEY_AUXILIAR" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="pacprogramado">
+		<call-query href="updatePacprogramado">
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="MOV_DEBITO" query-param="MOV_DEBITO"/>
+			<with-param name="MOV_CREDITO" query-param="MOV_CREDITO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPO_CPTE" query-param="KEY_TIPO_CPTE"/>
+			<with-param name="KEY_COMPROBANTE" query-param="KEY_COMPROBANTE"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+			<with-param name="KEY_CUENTA" query-param="KEY_CUENTA"/>
+			<with-param name="KEY_CENTRO_COSTO" query-param="KEY_CENTRO_COSTO"/>
+			<with-param name="KEY_AUXILIAR" query-param="KEY_AUXILIAR"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+
+		</call-query>
+	</resource>
+
+</data>

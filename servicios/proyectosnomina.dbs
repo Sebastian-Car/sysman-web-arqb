@@ -1,0 +1,126 @@
+﻿<data name="proyectosnomina" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertProyectosnomina" keyColumns="COMPANIA,ID_DE_PROYECTO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PROYECTOSNOM (COMPANIA, ID_DE_PROYECTO, NOMBREPROYECTO, CODIGOPPTAL, DESCRIPCION, CONCEPTOASOCIADO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ID_DE_PROYECTO, :NOMBREPROYECTO, :CODIGOPPTAL, :DESCRIPCION, :CONCEPTOASOCIADO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_DE_PROYECTO":"$ID_DE_PROYECTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROYECTO" sqlType="STRING"/>
+		<param name="NOMBREPROYECTO" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOPPTAL" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="" name="CONCEPTOASOCIADO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="proyectosnomina">
+		<call-query href="insertProyectosnomina">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROYECTO" query-param="ID_DE_PROYECTO"/>
+			<with-param name="NOMBREPROYECTO" query-param="NOMBREPROYECTO"/>
+			<with-param name="CODIGOPPTAL" query-param="CODIGOPPTAL"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CONCEPTOASOCIADO" query-param="CONCEPTOASOCIADO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteProyectosnomina" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM PROYECTOSNOM WHERE PROYECTOSNOM.COMPANIA= :KEY_COMPANIA AND PROYECTOSNOM.ID_DE_PROYECTO= :KEY_ID_DE_PROYECTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_DE_PROYECTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="proyectosnomina">
+		<call-query href="deleteProyectosnomina">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_DE_PROYECTO" query-param="KEY_ID_DE_PROYECTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProyectosnominaPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, ID_DE_PROYECTO, NOMBREPROYECTO, CODIGOPPTAL, DESCRIPCION, CONCEPTOASOCIADO  FROM PROYECTOSNOM WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_DE_PROYECTO IS NULL THEN ' ' ELSE UPPER(ID_DE_PROYECTO) END)  LIKE UPPER(:ID_DE_PROYECTO || '%')  AND (CASE WHEN NOMBREPROYECTO IS NULL THEN ' ' ELSE UPPER(NOMBREPROYECTO) END)  LIKE UPPER( '%' || :NOMBREPROYECTO || '%')  AND (CASE WHEN CODIGOPPTAL IS NULL THEN ' ' ELSE UPPER(CODIGOPPTAL) END)  LIKE UPPER( '%' || :CODIGOPPTAL || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN CONCEPTOASOCIADO IS NULL THEN ' ' ELSE UPPER(CONCEPTOASOCIADO) END)  LIKE UPPER( '%' || :CONCEPTOASOCIADO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_DE_PROYECTO":"$ID_DE_PROYECTO","NOMBREPROYECTO":"$NOMBREPROYECTO","CODIGOPPTAL":"$CODIGOPPTAL","DESCRIPCION":"$DESCRIPCION","CONCEPTOASOCIADO":"$CONCEPTOASOCIADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROYECTO" sqlType="STRING"/>
+		<param name="NOMBREPROYECTO" sqlType="STRING"/>
+		<param name="CODIGOPPTAL" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="CONCEPTOASOCIADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="proyectosnomina">
+		<call-query href="getProyectosnominaPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROYECTO" query-param="ID_DE_PROYECTO"/>
+			<with-param name="NOMBREPROYECTO" query-param="NOMBREPROYECTO"/>
+			<with-param name="CODIGOPPTAL" query-param="CODIGOPPTAL"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CONCEPTOASOCIADO" query-param="CONCEPTOASOCIADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getProyectosnominaNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, ID_DE_PROYECTO, NOMBREPROYECTO, CODIGOPPTAL, DESCRIPCION, CONCEPTOASOCIADO  FROM PROYECTOSNOM WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_DE_PROYECTO IS NULL THEN ' ' ELSE UPPER(ID_DE_PROYECTO) END)  LIKE UPPER(:ID_DE_PROYECTO || '%')  AND (CASE WHEN NOMBREPROYECTO IS NULL THEN ' ' ELSE UPPER(NOMBREPROYECTO) END)  LIKE UPPER( '%' || :NOMBREPROYECTO || '%')  AND (CASE WHEN CODIGOPPTAL IS NULL THEN ' ' ELSE UPPER(CODIGOPPTAL) END)  LIKE UPPER( '%' || :CODIGOPPTAL || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN CONCEPTOASOCIADO IS NULL THEN ' ' ELSE UPPER(CONCEPTOASOCIADO) END)  LIKE UPPER( '%' || :CONCEPTOASOCIADO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_PROYECTO" sqlType="STRING"/>
+		<param name="NOMBREPROYECTO" sqlType="STRING"/>
+		<param name="CODIGOPPTAL" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="CONCEPTOASOCIADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="proyectosnomina/numero">
+		<call-query href="getProyectosnominaNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_PROYECTO" query-param="ID_DE_PROYECTO"/>
+			<with-param name="NOMBREPROYECTO" query-param="NOMBREPROYECTO"/>
+			<with-param name="CODIGOPPTAL" query-param="CODIGOPPTAL"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CONCEPTOASOCIADO" query-param="CONCEPTOASOCIADO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateProyectosnomina" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PROYECTOSNOM SET NOMBREPROYECTO=:NOMBREPROYECTO, CODIGOPPTAL=:CODIGOPPTAL, DESCRIPCION=:DESCRIPCION, CONCEPTOASOCIADO=:CONCEPTOASOCIADO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PROYECTOSNOM.COMPANIA= :KEY_COMPANIA AND PROYECTOSNOM.ID_DE_PROYECTO= :KEY_ID_DE_PROYECTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NOMBREPROYECTO" sqlType="STRING"/>
+		<param name="CODIGOPPTAL" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="CONCEPTOASOCIADO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_DE_PROYECTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="proyectosnomina">
+		<call-query href="updateProyectosnomina">
+			<with-param name="NOMBREPROYECTO" query-param="NOMBREPROYECTO"/>
+			<with-param name="CODIGOPPTAL" query-param="CODIGOPPTAL"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="CONCEPTOASOCIADO" query-param="CONCEPTOASOCIADO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_DE_PROYECTO" query-param="KEY_ID_DE_PROYECTO"/>
+
+		</call-query>
+	</resource>
+
+</data>

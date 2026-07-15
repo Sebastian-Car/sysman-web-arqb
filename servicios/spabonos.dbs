@@ -1,0 +1,289 @@
+﻿<data name="spabonos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSpabonosConsultarPorCodigorutaYCicloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(*) CUENTA  FROM SP_ABONOS WHERE COMPANIA = :COMPANIA AND CICLO = :CICLO AND CODIGORUTA = :CODIGORUTA AND BANCO IS NULL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTA":"$CUENTA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spabonos/consultarporcodigorutayciclo">
+		<call-query href="getSpabonosConsultarPorCodigorutaYCicloQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSpabonosAutorizacionAbonos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_ABONOS (COMPANIA,CICLO,CODIGORUTA,ANO,PERIODO,VALOR,INDABONADO,VALORABONADOPERIODO,CONSECUTIVO,CODIGOINTERNO,USUARIO,FECHAPROCESO,INDAUTORIZADO,FACTAUTORIZADA,VALORANTFACT,CREATED_BY,DATE_CREATED) VALUES(:COMPANIA,:CICLO,:CODIGORUTA,:ANO,:PERIODO,:ABONO,0,:ABONO,:CONSECUTIVO,:CODIGOINTERNO,:USUARIO,TO_DATE(:FECHAPROCESO,'DD/MM/YYYY HH24:MI:SS'),-1,:FACTAUTORIZADA,:VALORANTFACT,:CREATED_BY ,TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="ABONO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOINTERNO" sqlType="STRING"/>
+		<param defaultValue="" name="USUARIO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAPROCESO" sqlType="STRING"/>
+		<param defaultValue="0" name="FACTAUTORIZADA" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORANTFACT" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="spabonos/autorizacionabonos">
+		<call-query href="insertSpabonosAutorizacionAbonos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="ABONO" query-param="ABONO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="CODIGOINTERNO" query-param="CODIGOINTERNO"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="FECHAPROCESO" query-param="FECHAPROCESO"/>
+			<with-param name="FACTAUTORIZADA" query-param="FACTAUTORIZADA"/>
+			<with-param name="VALORANTFACT" query-param="VALORANTFACT"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpabonosActualcontotalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_ABONOS.COMPANIA, SP_ABONOS.CICLO, SP_ABONOS.CODIGORUTA, SP_ABONOS.ANO, SP_ABONOS.PERIODO, SP_ABONOS.CONSECUTIVO, SP_ABONOS.VALOR VALOR,(CASE SP_ABONOS.INDABONADO WHEN 0 THEN 'false' ELSE 'true' END) INDABONADO, SP_ABONOS.VALORABONADOPERIODO,(TO_CHAR(SP_ABONOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, SP_ABONOS.BANCO, SP_ABONOS.VALORANTFACT,(CASE SP_ABONOS.INDAUTORIZADO WHEN 0 THEN 'false' ELSE 'true' END) INDAUTORIZADO, SP_ABONOS.PAGOTERCERIZADO, SP_ABONOS.PAGOCONVENIOS, SP_ABONOS.OBSERVACION, SP_ABONOS.VALOR + SP_ABONOS.PAGOCONVENIOS + SP_ABONOS.PAGOTERCERIZADO TOTAL  FROM SP_ABONOS WHERE SP_ABONOS.COMPANIA = :COMPANIA AND SP_ABONOS.CICLO = :CICLO AND SP_ABONOS.CODIGORUTA = :CODIGODERUTA AND SP_ABONOS.ANO = :ANIO AND SP_ABONOS.PERIODO = :PERIODO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CICLO":"$CICLO(type:integer)","CODIGORUTA":"$CODIGORUTA","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO","CONSECUTIVO":"$CONSECUTIVO","VALOR":"$VALOR","INDABONADO":"$INDABONADO(type:boolean)","VALORABONADOPERIODO":"$VALORABONADOPERIODO","FECHA":"$FECHA","BANCO":"$BANCO","VALORANTFACT":"$VALORANTFACT","INDAUTORIZADO":"$INDAUTORIZADO(type:boolean)","PAGOTERCERIZADO":"$PAGOTERCERIZADO","PAGOCONVENIOS":"$PAGOCONVENIOS","OBSERVACION":"$OBSERVACION","TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGODERUTA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spabonos/actualcontotal">
+		<call-query href="getSpabonosActualcontotalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGODERUTA" query-param="CODIGODERUTA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpabonosPeriodosanterioresQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COMPANIA, CICLO, CODIGORUTA, ANO, PERIODO, CONSECUTIVO, VALOR VALOR,(CASE INDABONADO WHEN 0 THEN 'false' ELSE 'true' END) INDABONADO, VALORABONADOPERIODO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, BANCO, VALORANTFACT, PAGOTERCERIZADO, PAGOCONVENIOS, OBSERVACION, VALOR + PAGOCONVENIOS + PAGOTERCERIZADO TOTAL FROM SP_ABONOS WHERE COMPANIA =:COMPANIA AND CICLO =:CICLO AND CODIGORUTA =:CODIGODERUTA AND CONCAT(ANO , PERIODO) &lt;CONCAT(:ANIO ,:PERIODO)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CICLO":"$CICLO(type:integer)","CODIGORUTA":"$CODIGORUTA","ANO":"$ANO(type:integer)","PERIODO":"$PERIODO","CONSECUTIVO":"$CONSECUTIVO","VALOR":"$VALOR","INDABONADO":"$INDABONADO(type:boolean)","VALORABONADOPERIODO":"$VALORABONADOPERIODO","FECHA":"$FECHA","BANCO":"$BANCO","VALORANTFACT":"$VALORANTFACT","PAGOTERCERIZADO":"$PAGOTERCERIZADO","PAGOCONVENIOS":"$PAGOCONVENIOS","OBSERVACION":"$OBSERVACION","TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGODERUTA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spabonos/periodosanteriores">
+		<call-query href="getSpabonosPeriodosanterioresQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGODERUTA" query-param="CODIGODERUTA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpabonosTotalperiodoactualQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SUM(VALOR) VALOR  FROM SP_ABONOS WHERE COMPANIA = :COMPANIA AND CICLO = :CICLO AND CODIGORUTA = :CODIGODERUTA AND ANO = :ANIO AND PERIODO = :PERIODO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VALOR":"$VALOR(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGODERUTA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spabonos/totalperiodoactual">
+		<call-query href="getSpabonosTotalperiodoactualQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGODERUTA" query-param="CODIGODERUTA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpabonosCuentaabonoporanioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(1) CUENTAABONO  FROM SP_ABONOS WHERE COMPANIA= :COMPANIA AND CICLO = :CICLO AND CODIGORUTA= :CODIGORUTA AND ANO = :ANIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTAABONO":"$CUENTAABONO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spabonos/cuentaabonoporanio">
+		<call-query href="getSpabonosCuentaabonoporanioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSpabonosTotabonosanterioresQuery"  useConfig="sysmandsunist">
+		<sql>SELECT SUM(VALOR) TOTABONOANT FROM SP_ABONOS WHERE COMPANIA =:COMPANIA AND CICLO =:CICLO AND CODIGORUTA =:CODIGORUTA AND CONCAT(ANO , PERIODO) &lt;CONCAT( :ANIO ,:PERIODO)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTABONOANT":"$TOTABONOANT(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="spabonos/totabonosanteriores">
+		<call-query href="getSpabonosTotabonosanterioresQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSpabonos" keyColumns="COMPANIA,CICLO,CODIGORUTA,ANO,PERIODO,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_ABONOS (COMPANIA, CICLO, CODIGORUTA, ANO, PERIODO, CONSECUTIVO, VALOR, VALORABONADOPERIODO, FECHA, BANCO, VALORANTFACT, PAGOTERCERIZADO, PAGOCONVENIOS, OBSERVACION, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CICLO, :CODIGORUTA, :ANO, :PERIODO, :CONSECUTIVO, :VALOR, :VALORABONADOPERIODO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :BANCO, :VALORANTFACT, :PAGOTERCERIZADO, :PAGOCONVENIOS, :OBSERVACION, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CICLO":"$CICLO(type:integer)","KEY_CODIGORUTA":"$CODIGORUTA","KEY_ANO":"$ANO(type:integer)","KEY_PERIODO":"$PERIODO","KEY_CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORABONADOPERIODO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="BANCO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORANTFACT" sqlType="STRING"/>
+		<param defaultValue="0" name="PAGOTERCERIZADO" sqlType="STRING"/>
+		<param defaultValue="0" name="PAGOCONVENIOS" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACION" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="spabonos">
+		<call-query href="insertSpabonos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="VALORABONADOPERIODO" query-param="VALORABONADOPERIODO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="VALORANTFACT" query-param="VALORANTFACT"/>
+			<with-param name="PAGOTERCERIZADO" query-param="PAGOTERCERIZADO"/>
+			<with-param name="PAGOCONVENIOS" query-param="PAGOCONVENIOS"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSpabonos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SP_ABONOS WHERE SP_ABONOS.COMPANIA= :KEY_COMPANIA AND SP_ABONOS.CICLO= :KEY_CICLO AND SP_ABONOS.CODIGORUTA= :KEY_CODIGORUTA AND SP_ABONOS.ANO= :KEY_ANO AND SP_ABONOS.PERIODO= :KEY_PERIODO AND SP_ABONOS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CICLO" sqlType="INTEGER"/>
+		<param name="KEY_CODIGORUTA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_PERIODO" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="spabonos">
+		<call-query href="deleteSpabonos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CICLO" query-param="KEY_CICLO"/>
+			<with-param name="KEY_CODIGORUTA" query-param="KEY_CODIGORUTA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_PERIODO" query-param="KEY_PERIODO"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSpabonos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_ABONOS SET COMPANIA=:COMPANIA, CICLO=:CICLO, CODIGORUTA=:CODIGORUTA, ANO=:ANO, PERIODO=:PERIODO, CONSECUTIVO=:CONSECUTIVO, VALOR=:VALOR, INDABONADO=:INDABONADO, VALORABONADOPERIODO=:VALORABONADOPERIODO, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), BANCO=:BANCO, VALORANTFACT=:VALORANTFACT, INDAUTORIZADO=:INDAUTORIZADO, PAGOTERCERIZADO=:PAGOTERCERIZADO, PAGOCONVENIOS=:PAGOCONVENIOS, OBSERVACION=:OBSERVACION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SP_ABONOS.COMPANIA= :KEY_COMPANIA AND SP_ABONOS.CICLO= :KEY_CICLO AND SP_ABONOS.CODIGORUTA= :KEY_CODIGORUTA AND SP_ABONOS.ANO= :KEY_ANO AND SP_ABONOS.PERIODO= :KEY_PERIODO AND SP_ABONOS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CICLO" sqlType="STRING"/>
+		<param name="CODIGORUTA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PERIODO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="INDABONADO" sqlType="STRING"/>
+		<param name="VALORABONADOPERIODO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="VALORANTFACT" sqlType="STRING"/>
+		<param name="INDAUTORIZADO" sqlType="STRING"/>
+		<param name="PAGOTERCERIZADO" sqlType="STRING"/>
+		<param name="PAGOCONVENIOS" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CICLO" sqlType="STRING"/>
+		<param name="KEY_CODIGORUTA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_PERIODO" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="spabonos">
+		<call-query href="updateSpabonos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CICLO" query-param="CICLO"/>
+			<with-param name="CODIGORUTA" query-param="CODIGORUTA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PERIODO" query-param="PERIODO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="INDABONADO" query-param="INDABONADO"/>
+			<with-param name="VALORABONADOPERIODO" query-param="VALORABONADOPERIODO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="VALORANTFACT" query-param="VALORANTFACT"/>
+			<with-param name="INDAUTORIZADO" query-param="INDAUTORIZADO"/>
+			<with-param name="PAGOTERCERIZADO" query-param="PAGOTERCERIZADO"/>
+			<with-param name="PAGOCONVENIOS" query-param="PAGOCONVENIOS"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CICLO" query-param="KEY_CICLO"/>
+			<with-param name="KEY_CODIGORUTA" query-param="KEY_CODIGORUTA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_PERIODO" query-param="KEY_PERIODO"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+
+</data>

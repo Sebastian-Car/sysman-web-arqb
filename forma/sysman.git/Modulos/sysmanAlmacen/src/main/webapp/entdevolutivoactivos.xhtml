@@ -1,0 +1,567 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+                if("#{entdevolutivoactivosControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TT_FR492}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{entdevolutivoactivosControlador.cargarLista}" />
+		<section class="radius">
+			<h:form id="FR492">
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="lista" widgetVar="lista"
+					visible="#{entdevolutivoactivosControlador.accion==null}">
+					<p:confirmDialog global="true" showEffect="fade" id="confFR492"
+						widgetVar="confFR492"
+						rendered="#{entdevolutivoactivosControlador.permisos[1]}">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:dataTable id="TBFR492" widgetVar="TBFR492" var="reg"
+						value="#{entdevolutivoactivosControlador.listaInicial}"
+						editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" paginator="true" lazy="true">
+						<f:facet name="{Exporters}"
+							rendered="#{entdevolutivoactivosControlador.permisos[4] }">
+							<h:commandLink
+								rendered="#{entdevolutivoactivosControlador.permisos[4] }"
+								title="#{idm.TI_VER_EXCEL}">
+								<p:graphicImage name="/images/general/excel.png" width="24" />
+								<p:dataExporter type="xls" target="TBFR492" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+							<h:commandLink
+								rendered="#{entdevolutivoactivosControlador.permisos[4] }"
+								title="#{idm.TI_VER_PDF}">
+								<p:graphicImage name="/images/general/pdf.png" width="24" />
+								<p:dataExporter type="pdf" target="TBFR492" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+						</f:facet>
+						<f:facet name="header">
+							<div style="position: relative; height: 50px">
+								<h:panelGroup class="acme"
+									rendered="#{entdevolutivoactivosControlador.permisos[0] }">
+									<p:commandLink
+										action="#{entdevolutivoactivosControlador.cargarRegistroNuevo}"
+										update=":FR492_nuevo:nuevoPanel"
+										rendered="#{entdevolutivoactivosControlador.permisos[0]}"
+										onclick="try { PF('blockLista').show(); PF('TBCB1801').nuevo=true;} catch (e) { }"
+										oncomplete="try{ asignarEventoContGrande();
+validarCargaGrandes();
+  PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+										title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+										id="btNuevo">
+										<center>
+											<p:graphicImage name="/images/menus/32/add.png" />
+											<div>#{idm.TI_NUEVO}</div>
+										</center>
+									</p:commandLink>
+								</h:panelGroup>
+								<div class="acme">
+									<h:outputLink value="#{request.contextPath}/menu.sysman"
+										title="#{idm.TI_VOLVER}" style="padding-top: 10px;">
+										<center>
+											<p:graphicImage name="/images/menus/32/close.png" />
+											<div>#{idm.TI_CERRAR}</div>
+										</center>
+									</h:outputLink>
+								</div>
+							</div>
+                            #{idm.TT_FR492}
+                        </f:facet>
+						<p:column headerText="#{idm.TG_CONSECUTIVO}"
+							filterBy="#{reg.campos['CONSECUTIVO']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="11%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['CONSECUTIVO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_TIPO_DE_MOVIMIENTO}"
+							filterBy="#{reg.campos['TIPOMOVIMIENTO']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="0%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['TIPOMOVIMIENTO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_TIPO_DE_MOVIMIENTO}"
+							filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+							style="text-align:center; " width="32%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_FECHA4}"
+							filterBy="#{reg.campos['FECHA']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="14%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['FECHA']}"
+								style="float:left;  text-align:left;">
+								<f:convertDateTime pattern="dd/MM/yyyy"
+									timeZone="#{sessionBean.timeZone}" />
+							</h:outputText>
+						</p:column>
+						<p:column headerText="#{idm.TG_DESCRIPCION7}"
+							filterBy="#{reg.campos['DESCRIPCION']}"
+							filterMatchMode="contains" style="text-align:center; "
+							width="32%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['DESCRIPCION']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_REGISTRADO}"
+							filterBy="#{reg.campos['REGISTRADO']}" filterMatchMode="exact"
+							style="text-align:center; " width="11%">
+							<f:facet name="filter">
+								<p:selectOneMenu onchange="PF('TBFR492').filter()">
+									<f:selectItem itemLabel="#{idm.TI_TODOS}" itemValue="" />
+									<f:selectItem itemLabel="#{idm.TI_SI}" itemValue="true" />
+									<f:selectItem itemLabel="#{idm.TI_NO}" itemValue="false" />
+								</p:selectOneMenu>
+							</f:facet>
+							<h:outputText
+								value="#{reg.campos['REGISTRADO']=='false'? idm.TI_NO:idm.TI_SI}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column width="150" headerText="Acciones"
+							style="text-align: center" exportable="false">
+							<p:commandButton icon="ui-icon-search"
+								title="#{idm.TI_VER_REGISTRO}"
+								action="#{entdevolutivoactivosControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+								update=":FR492_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB1801').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{entdevolutivoactivosControlador.permisos[3]}"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-document-b"
+								title="#{idm.TI_EDITAR_REGISTRO}"
+								action="#{entdevolutivoactivosControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+								update=":FR492_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB1801').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{entdevolutivoactivosControlador.permisos[2] }"
+								oncomplete="try{asignarEventoContGrande();
+validarCargaGrandes();
+ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-trash"
+								title="#{idm.TI_ELIMINAR_REGISTRO}"
+								onclick="PF('blockListaGuardar').show()"
+								action="#{entdevolutivoactivosControlador.eliminarReg(reg)}"
+								update=":FR492:TBFR492,:FR492:alert"
+								rendered="#{entdevolutivoactivosControlador.permisos[1] }"
+								oncomplete=" PF('blockListaGuardar').hide();">
+								<p:confirm header="#{sessionBean.tituloMensajes}"
+									message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR492">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+			<h:form id="FR492_nuevo" style="margin-top: -20px;">
+				<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA"
+					my="left bottom" at="left bottom" for="BTBUSQUEDA"
+					hideEffect="fade"
+					rendered="#{entdevolutivoactivosControlador.accion!='i'}"
+					style="width: 500px">
+					<p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA" var="reg"
+						value="#{entdevolutivoactivosControlador.listaInicialF}"
+						editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" selectionMode="single"
+						rowKey="#{reg.llave}" paginator="true" lazy="true">
+						<p:ajax event="rowSelect"
+							listener="#{entdevolutivoactivosControlador.seleccionarFilaBusqueda}"
+							onstart="PF('blockNuevo').show()"
+							oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();    "
+							update="@form" />
+						<p:column headerText="#{idm.TG_CONSECUTIVO}"
+							filterBy="#{reg.campos['CONSECUTIVO']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="11%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['CONSECUTIVO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_TIPO_DE_MOVIMIENTO}"
+							filterBy="#{reg.campos['TIPOMOVIMIENTO']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="0%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['TIPOMOVIMIENTO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_TIPO_DE_MOVIMIENTO}"
+							filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+							style="text-align:center; " width="32%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+					</p:dataTable>
+				</p:overlayPanel>
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="nuevoPanel"
+					visible="#{entdevolutivoactivosControlador.accion!=null}"
+					widgetVar="nuevoPanel">
+					<div
+						style="position: relative; height: 50px; padding-bottom: 80px;">
+						<div class="acme"
+							style="display:#{entdevolutivoactivosControlador.accion=='v'?'none':'block'}">
+							<p:commandLink
+								action="#{entdevolutivoactivosControlador.agregarRegistroNuevo(false)}"
+								rendered="#{entdevolutivoactivosControlador.accion!='v'}"
+								update=":FR492_nuevo,#{!entdevolutivoactivosControlador.permisos[2]?':FR492':'' }"
+								onclick="if (!validarVacios(['CB1801','CP14994'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+								title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+								oncomplete="asignarEventoContGrande(); validarCargaGrandes(); ">
+								<center>
+									<p:graphicImage name="/images/menus/32/save.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{entdevolutivoactivosControlador.accion=='v' or !entdevolutivoactivosControlador.permisos[0]?'none':'block'}">
+							<p:commandLink
+								action="#{entdevolutivoactivosControlador.guardarNuevo}"
+								rendered="#{entdevolutivoactivosControlador.accion!='v' and entdevolutivoactivosControlador.permisos[0]}"
+								update=":FR492_nuevo"
+								onclick="if (!validarVacios(['CB1801','CP14994'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{entdevolutivoactivosControlador.accion!='i'  and entdevolutivoactivosControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+								oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+								title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}"
+								style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/savenew.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{entdevolutivoactivosControlador.accion=='i' or !entdevolutivoactivosControlador.permisos[0]?'none':'block'}">
+							<p:commandLink id="BTBUSQUEDA"
+								rendered="#{entdevolutivoactivosControlador.accion!='i' and entdevolutivoactivosControlador.permisos[0]}"
+								title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/search.png" />
+									<div style="height: 30px">#{idm.TI_BUSCAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme">
+							<p:commandLink update=":FR492:TBFR492"
+								onclick="try {
+		           PF('TBFR492').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+								title="#{idm.TI_ATRAS}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/back.png" />
+									<div style="height: 30px">#{idm.TI_VOLVER}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<p:panel
+							rendered="#{entdevolutivoactivosControlador.accion!='i'  and entdevolutivoactivosControlador.rid==null }"
+							styleClass="acme"
+							style="min-width: 350px; width:30%; padding: 10px;">
+							<center style="margin: 2px;">
+								<p:commandButton icon="ui-icon-seek-first"
+									action="#{entdevolutivoactivosControlador.irPrimero()}"
+									title="#{idm.TI_PRIMER_REGISTRO}" update=":FR492_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-prev"
+									action="#{entdevolutivoactivosControlador.irAnterior()}"
+									title="#{idm.TI_REGISTRO_ANTERIOR}" update=":FR492_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:outputLabel
+									value="#{idm.TI_REGISTRO} #{entdevolutivoactivosControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{entdevolutivoactivosControlador.listaInicial.rowCount} " />
+								<p:commandButton icon="ui-icon-seek-next"
+									title="#{idm.TI_REGISTRO_SIGUIENTE}"
+									action="#{entdevolutivoactivosControlador.irSiguiente()}"
+									update=":FR492_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-end"
+									title="#{idm.TI_ULTIMO_REGISTRO}"
+									action="#{entdevolutivoactivosControlador.irUltimo()}"
+									update=":FR492_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+							</center>
+						</p:panel>
+						<p:panel styleClass="acme" style="width:21%;">
+							<h:panelGrid columns="3"
+								style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+								<h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}" />
+								<p:inputText id="CPCREADO" readonly="true" widgetVar="CPCREADO"
+									value="#{entdevolutivoactivosControlador.registro.campos['CREATED_BY']}"
+									placeholder="#{idm.TI_CREADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPCREADOF" widgetVar="CPCREADOF"
+									value="#{entdevolutivoactivosControlador.registro.campos['DATE_CREATED']}"
+									disabled="true" />
+								<h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+								<p:inputText id="CPMODIFICADO" readonly="true"
+									widgetVar="CPMODIFICADO"
+									value="#{entdevolutivoactivosControlador.registro.campos['MODIFIED_BY']}"
+									placeholder="#{idm.TI_MODIFICADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPMODIFICADOF" widgetVar="CPMODIFICADOF"
+									value="#{entdevolutivoactivosControlador.registro.campos['DATE_MODIFIED']}"
+									disabled="true" />
+							</h:panelGrid>
+						</p:panel>
+					</div>
+					<p:dialog dynamic="true" closable="false" closeOnEscape="false"
+						header="#{sessionBean.tituloMensajes}" id="DG32" widgetVar="DG32"
+						resizable="false" modal="true" width="250">
+						<h:outputLabel value="#{idm.TE_DG32}" style="width: 100%;"
+							escape="false" />
+						<h:panelGrid columns="2" cellpadding="2" width="100%">
+							<h:outputLabel value="#{idm.TG_CONSECUTIVO}:" id="LCP15172"
+								style="display:true;" class="cont-inst-element" />
+							<p:inputText id="CP15172"
+								readonly="#{entdevolutivoactivosControlador.accion=='v'?true:false}"
+								widgetVar="CP15172" styleClass="inputTab"
+								value="#{entdevolutivoactivosControlador.nuevoConsecutivo}"
+								label="LCP15172" style="display:true; width: 95%; float: left;"
+								class="cont-inst-element">
+							</p:inputText>
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TG_ACEPTAR}"
+										style="padding:10px; width: 48%;" update="@form"
+										oncomplete=" if(true){ PF('DG32').hide(); PF('blockNuevo').hide();}  "
+										onclick="  if(true){ PF('blockNuevo').show(); }else{    PF('DG32').hide(); }  "
+										actionListener="#{entdevolutivoactivosControlador.aceptardgCambiar}" />
+									<p:commandButton value="#{idm.TG_CANCELAR}"
+										style="padding:10px; width: 48%;" update="@form"
+										oncomplete=" if(true){ PF('DG32').hide(); PF('blockNuevo').hide();} "
+										onclick=" if(true){ PF('blockNuevo').show(); }else{    PF('DG32').hide(); }  "
+										actionListener="#{entdevolutivoactivosControlador.cancelardgCambiar}" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<div id="PL1067" class="
+"
+						style="position: relative; height: 31px;">
+						<h:outputLabel id="LB12597" value="#{idm.TT_LB12597}"
+							style="position: absolute; width:533px; height: 25px; left: 10px;   top: 5px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 16px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<div id="PL1068" class="
+"
+						style="position: relative; height: 327px;">
+						<p:remoteCommand name="rc" update="@form" />
+						<p:commandButton id="BT987" widgetVar="BT987"
+							onclick="if (!validarVacios(['CB1801','CP14994'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+"
+							disabled="#{entdevolutivoactivosControlador.accion=='v'?true:false}"
+							update="@form" tabindex="6" value="#{idm.TG_TRASLADAR}"
+							actionListener="#{entdevolutivoactivosControlador.oprimircmdTrasladar}"
+							style="position: absolute; width:197px; height: 28px; left: 150px;   top: 193px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{entdevolutivoactivosControlador.visibleTrasladar};  color:#0000FF; border:#AAAAAA  solid  1px;">
+						</p:commandButton>
+						<p:commandButton id="BT989" widgetVar="BT989"
+							oncomplete="PrimeFaces.monitorDownload(vacio,rc);"
+							onclick="if (!validarVaciosViewModal(['CB1801'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                return false;
+                            }
+PrimeFaces.monitorDownload(vacio,rc);"
+							title="#{idm.TG_PRESENTAR_EN_PDF}"
+							disabled="#{entdevolutivoactivosControlador.accion=='v'?true:false}"
+							icon="ui-iconPdf" ajax="false" tabindex="8" value=""
+							actionListener="#{entdevolutivoactivosControlador.oprimirPresentar}"
+							style="position: absolute; width:50px; height: 50px; left: 389px;   top: 188px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#000000; border:#AAAAAA  solid  1px;">
+							<p:fileDownload
+								value="#{entdevolutivoactivosControlador.archivoDescarga}" />
+						</p:commandButton>
+						<p:commandButton id="BT990" widgetVar="BT990"
+							oncomplete="PrimeFaces.monitorDownload(vacio,rc);"
+							onclick="if (!validarVaciosViewModal(['CB1801'])) {
+                                PF('alert').renderMessage({'summary': '#{idm.TI_TT_ERROR_VALIDACION}',
+                                    'detail': '#{idm.TI_MS_ERROR_VALIDACION}',
+                                    'severity': 'error'});
+                                return false;
+                            }
+PrimeFaces.monitorDownload(vacio,rc);"
+							title="#{idm.TG_PRESENTAR_EN_EXCEL}"
+							disabled="#{entdevolutivoactivosControlador.accion=='v'?true:false}"
+							icon="ui-iconExcel" ajax="false" tabindex="7" value=""
+							actionListener="#{entdevolutivoactivosControlador.oprimirExcel}"
+							style="position: absolute; width:50px; height: 50px; left: 486px;   top: 188px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#000000; border:#AAAAAA  solid  1px;">
+							<p:fileDownload
+								value="#{entdevolutivoactivosControlador.archivoDescarga}" />
+						</p:commandButton>
+						<p:commandButton id="BT991" widgetVar="BT991"
+							disabled="#{entdevolutivoactivosControlador.accion=='v'?true:false}"
+							update="FR492_nuevo:alert" tabindex="10"
+							value="#{idm.TG_DETALLE2}"
+							actionListener="#{entdevolutivoactivosControlador.oprimirDetalleSub}"
+							style="position: absolute; width:197px; height: 28px; left: 150px;   top: 240px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#AAAAAA  solid  1px;">
+						</p:commandButton>
+						<p:inputText id="CP14995" widgetVar="CP14995"
+							styleClass="inputTab"
+							value="#{entdevolutivoactivosControlador.registro.campos['CONSECUTIVO']}"
+							readonly="true" tabindex="2" maxlength="22"
+							style="position: absolute; width:197px; height: 20px; text-decoration:none; left: 150px;   top: 37px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<h:outputLabel id="LB12572" value="#{idm.TT_LB12572}"
+							style="position: absolute; width:131px; height: 20px; left: 14px;   top: 10px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB12573" value="#{idm.TG_CONSECUTIVO2}"
+							style="position: absolute; width:131px; height: 20px; left: 14px;   top: 37px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB12574" value="#{idm.TG_DESCRIPCION8}"
+							style="position: absolute; width:131px; height: 20px; left: 14px;   top: 90px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB12575" value="#{idm.TG_FECHA5}"
+							style="position: absolute; width:131px; height: 20px; left: 14px;   top: 64px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  3px ;" />
+						<p:inputTextarea autoResize="false" id="CP14993"
+							widgetVar="CP14993"
+							value="#{entdevolutivoactivosControlador.registro.campos['DESCRIPCION']}"
+							placeholder="#{idm.AC_CP14993}"
+							readonly="#{entdevolutivoactivosControlador.accion=='v'?true:false}"
+							tabindex="5" styleClass="inputTab" maxlength="255"
+							style="resize: none; position: absolute; width:394px; height: 97px; left: 150px;   top: 90px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputTextarea>
+						<p:calendar locale="es" navigator="true" mask="true"
+							pattern="dd/MM/yyyy" id="CP14994" widgetVar="CP14994"
+							value="#{entdevolutivoactivosControlador.registro.campos['FECHA']}"
+							placeholder="#{idm.AC_CP14994}"
+							readonly="#{entdevolutivoactivosControlador.bloqueadoFecha or  entdevolutivoactivosControlador.accion=='v'?true:false}"
+							disabled="#{entdevolutivoactivosControlador.bloqueadoFecha or  entdevolutivoactivosControlador.accion=='v'?true:false}"
+							tabindex="4"
+							style="position: absolute; width:197px; height: 20px; left: 150px;   top: 64px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#AAAAAA  solid  1px;">
+						</p:calendar>
+						<p:commandButton id="BT986" widgetVar="BT986"
+							onclick="PF('DG32').show();"
+							disabled="#{entdevolutivoactivosControlador.accion=='v'?true:false}"
+							tabindex="3" value="#{idm.TG_CAMBIAR}"
+							actionListener="#{entdevolutivoactivosControlador.oprimirbtnCambiarConsecutivo}"
+							style="position: absolute; width:192px; height: 20px; left: 353px;   top: 37px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{entdevolutivoactivosControlador.visibleCambiarC};  color:#0000FF; border:#AAAAAA  solid  1px;">
+						</p:commandButton>
+						<p:inputText id="CB1801" widgetVar="CB1801"
+							onfocus="if(!false){PF('BTCB1801').jq.focus();}"
+							onclick="if(!false){PF('PLCB1801').show();}"
+							value="#{entdevolutivoactivosControlador.registro.campos['NOMBRE']}"
+							disabled="#{entdevolutivoactivosControlador.accion=='v'?true:false}"
+							tabindex="-1"
+							style="cursor:pointer; position: absolute; width:369px; height: 20px; left: 150px;   top: 10px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+						<p:commandButton id="BTCB1801" onblur="PF('CB1801').jq.blur();"
+							onfocus="PF('CB1801').jq.addClass('ui-state-focus');"
+							widgetVar="BTCB1801"
+							disabled="#{entdevolutivoactivosControlador.accion=='v'?true:false}"
+							type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+							style="position: absolute; width:25px; height:  20px; left: 517px;   top: 10px; display:block; "
+							tabindex="1" />
+						<p:overlayPanel widgetVar="PLCB1801" id="PLCB1801"
+							onShow="if(PF('TBCB1801').nuevo){ PF('TBCB1801').filter(); PF('TBCB1801').nuevo=false;}"
+							onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB1801').jq.focus();}"
+							my="left" at="left" for="BTCB1801" hideEffect="fade"
+							rendered="#{entdevolutivoactivosControlador.accion!='v'}"
+							style="width: 500px">
+							<p:dataTable id="TBCB1801" widgetVar="TBCB1801" var="reg"
+								value="#{entdevolutivoactivosControlador.listaTipoMovimiento}"
+								editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+								currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+								rows="11" rowIndexVar="rowIndex" selectionMode="single"
+								rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+								<p:ajax event="rowSelect"
+									listener="#{entdevolutivoactivosControlador.seleccionarFilaTipoMovimiento}"
+									update=":FR492_nuevo:CB1801,FR492_nuevo:CP14995"
+									oncomplete="PF('PLCB1801').hide(); " />
+								<p:column headerText="#{idm.TG_CODIGO7}"
+									style="text-align:center; " width="70"
+									filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['CODIGO']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_NOMBRE3}"
+									style="text-align:center; " width="243"
+									filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NOMBRE']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+							</p:dataTable>
+						</p:overlayPanel>
+					</div>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

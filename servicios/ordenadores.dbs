@@ -1,0 +1,372 @@
+﻿<data name="ordenadores" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getOrdenadoresPagTodosPorCedulaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DISTINCT TERCERO.NIT CEDULA, TERCERO.NOMBRE, TERCERO.EXPEDIDACEDULA EXPEDIDACEDULAORDENADOR, TERCERO.SUCURSAL FROM TERCERO WHERE TERCERO.COMPANIA = :COMPANIA ORDER BY TERCERO.NIT) INI WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END) LIKE UPPER(CONCAT(:CEDULA, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CEDULA":"$CEDULA","NOMBRE":"$NOMBRE","EXPEDIDACEDULAORDENADOR":"$EXPEDIDACEDULAORDENADOR","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenadores/todosporcedula/pag">
+		<call-query href="getOrdenadoresPagTodosPorCedulaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenadoresNumTodosPorCedulaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DISTINCT TERCERO.NIT CEDULA, TERCERO.NOMBRE, TERCERO.EXPEDIDACEDULA EXPEDIDACEDULAORDENADOR, TERCERO.SUCURSAL FROM TERCERO WHERE TERCERO.COMPANIA = :COMPANIA ORDER BY TERCERO.NIT) INI WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END) LIKE UPPER(CONCAT(:CEDULA, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenadores/todosporcedula/num">
+		<call-query href="getOrdenadoresNumTodosPorCedulaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenadoresTodosListaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT ORDENADOR.CEDULA, ORDENADOR.NOMBRE, ORDENADOR.SUCURSAL  FROM ORDENADOR WHERE ORDENADOR.COMPANIA = :COMPANIA AND ORDENADOR.IND_ACTIVOCON NOT IN (0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CEDULA":"$CEDULA","NOMBRE":"$NOMBRE","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenadores/todoslista">
+		<call-query href="getOrdenadoresTodosListaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenadoresPagTodosPorCompaniaOrdenNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ORDENADOR.CEDULA, UPPER(CARGO) CARGO, UPPER(ORDENADOR.NOMBRE) NOMBRE, ORDENADOR.SUCURSAL  FROM ORDENADOR WHERE ORDENADOR.COMPANIA = :COMPANIA ORDER BY UPPER(ORDENADOR.NOMBRE)) WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END)  LIKE UPPER(:CEDULA || '%')  AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END)  LIKE UPPER( '%' || :CARGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END)  LIKE UPPER(:SUCURSAL || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CEDULA":"$CEDULA","CARGO":"$CARGO","NOMBRE":"$NOMBRE","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenadores/todosporcompaniaordennombre/pag">
+		<call-query href="getOrdenadoresPagTodosPorCompaniaOrdenNombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenadoresNumTodosPorCompaniaOrdenNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ORDENADOR.CEDULA, UPPER(CARGO) CARGO, UPPER(ORDENADOR.NOMBRE) NOMBRE, ORDENADOR.SUCURSAL  FROM ORDENADOR WHERE ORDENADOR.COMPANIA = :COMPANIA ORDER BY UPPER(ORDENADOR.NOMBRE)) WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END)  LIKE UPPER(:CEDULA || '%')  AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END)  LIKE UPPER( '%' || :CARGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END)  LIKE UPPER( '%' || :SUCURSAL || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenadores/todosporcompaniaordennombre/num">
+		<call-query href="getOrdenadoresNumTodosPorCompaniaOrdenNombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenadoresPagOrdenadoresNoActivosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ORDENADOR.CEDULA, ORDENADOR.NOMBRE, ORDENADOR.CARGO, ORDENADOR.EXPEDIDACEDULAORDENADOR, ORDENADOR.NOMBRAMIENTO  FROM ORDENADOR WHERE ORDENADOR.COMPANIA = :COMPANIA AND ORDENADOR.IND_ACTIVO IN(0) ORDER BY ORDENADOR.CEDULA) WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END)  LIKE UPPER(:CEDULA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CEDULA":"$CEDULA","NOMBRE":"$NOMBRE","CARGO":"$CARGO","EXPEDIDACEDULAORDENADOR":"$EXPEDIDACEDULAORDENADOR","NOMBRAMIENTO":"$NOMBRAMIENTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenadores/ordenadoresnoactivos/pag">
+		<call-query href="getOrdenadoresPagOrdenadoresNoActivosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenadoresNumOrdenadoresNoActivosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ORDENADOR.CEDULA, ORDENADOR.NOMBRE, ORDENADOR.CARGO, ORDENADOR.EXPEDIDACEDULAORDENADOR, ORDENADOR.NOMBRAMIENTO  FROM ORDENADOR WHERE ORDENADOR.COMPANIA = :COMPANIA AND ORDENADOR.IND_ACTIVO IN(0) ORDER BY ORDENADOR.CEDULA) WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END)  LIKE UPPER(:CEDULA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenadores/ordenadoresnoactivos/num">
+		<call-query href="getOrdenadoresNumOrdenadoresNoActivosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenadoresNombporcedulordQuery"  useConfig="sysmandsunist">
+		<sql>SELECT NOMBRE, CARGO FROM ORDENADOR WHERE COMPANIA = :COMPANIA AND CEDULA = :CEDULAORDENADOR</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE":"$NOMBRE","CARGO":"$CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULAORDENADOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenadores/nombporcedulord">
+		<call-query href="getOrdenadoresNombporcedulordQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULAORDENADOR" query-param="CEDULAORDENADOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenadoresPagOrdenadorporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ORDENADOR.CEDULA, ORDENADOR.NOMBRE, ORDENADOR.SUCURSAL, ORDENADOR.CARGO, ORDENADOR.EXPEDIDACEDULAORDENADOR, ORDENADOR.NOMBRAMIENTO  FROM ORDENADOR WHERE ORDENADOR.COMPANIA = :COMPANIA AND ORDENADOR.IND_ACTIVO IN(0) ORDER BY ORDENADOR.CEDULA) WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END)  LIKE UPPER(:CEDULA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CEDULA":"$CEDULA","NOMBRE":"$NOMBRE","SUCURSAL":"$SUCURSAL","CARGO":"$CARGO","EXPEDIDACEDULAORDENADOR":"$EXPEDIDACEDULAORDENADOR","NOMBRAMIENTO":"$NOMBRAMIENTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenadores/ordenadorporcompania/pag">
+		<call-query href="getOrdenadoresPagOrdenadorporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertOrdenadores" keyColumns="COMPANIA,CEDULA,SUCURSAL" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ORDENADOR (COMPANIA, CEDULA, NOMBRE, CARGO, NOMBRAMIENTO, EXPEDIDACEDULAORDENADOR, IND_ACTIVO, SUCURSAL, USUARIO, IND_ACTIVOCON, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CEDULA, :NOMBRE, :CARGO, :NOMBRAMIENTO, :EXPEDIDACEDULAORDENADOR, :IND_ACTIVO, :SUCURSAL, :USUARIO, :IND_ACTIVOCON, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CEDULA":"$CEDULA","KEY_SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRAMIENTO" sqlType="STRING"/>
+		<param defaultValue="" name="EXPEDIDACEDULAORDENADOR" sqlType="STRING"/>
+		<param defaultValue="0" name="IND_ACTIVO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="" name="USUARIO" sqlType="STRING"/>
+		<param defaultValue="-1" name="IND_ACTIVOCON" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="ordenadores">
+		<call-query href="insertOrdenadores">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="NOMBRAMIENTO" query-param="NOMBRAMIENTO"/>
+			<with-param name="EXPEDIDACEDULAORDENADOR" query-param="EXPEDIDACEDULAORDENADOR"/>
+			<with-param name="IND_ACTIVO" query-param="IND_ACTIVO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="IND_ACTIVOCON" query-param="IND_ACTIVOCON"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteOrdenadores" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ORDENADOR WHERE ORDENADOR.COMPANIA= :KEY_COMPANIA AND ORDENADOR.CEDULA= :KEY_CEDULA AND ORDENADOR.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CEDULA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="ordenadores">
+		<call-query href="deleteOrdenadores">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CEDULA" query-param="KEY_CEDULA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenadoresPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ORDENADOR.COMPANIA, ORDENADOR.CEDULA, ORDENADOR.NOMBRE, ORDENADOR.CARGO, ORDENADOR.NOMBRAMIENTO, ORDENADOR.EXPEDIDACEDULAORDENADOR,(CASE ORDENADOR.IND_ACTIVO WHEN 0 THEN 'false' ELSE 'true' END) IND_ACTIVO,(CASE ORDENADOR.IND_ACTIVOCON WHEN 0 THEN 'false' ELSE 'true' END) IND_ACTIVOCON, ORDENADOR.SUCURSAL, ORDENADOR.USUARIO  FROM ORDENADOR WHERE ORDENADOR.COMPANIA = :COMPANIA ORDER BY ORDENADOR.NOMBRE) WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END)  LIKE UPPER( '%' || :CEDULA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END)  LIKE UPPER( '%' || :CARGO || '%')  AND (CASE WHEN NOMBRAMIENTO IS NULL THEN ' ' ELSE UPPER(NOMBRAMIENTO) END)  LIKE UPPER( '%' || :NOMBRAMIENTO || '%')  AND (CASE WHEN EXPEDIDACEDULAORDENADOR IS NULL THEN ' ' ELSE UPPER(EXPEDIDACEDULAORDENADOR) END)  LIKE UPPER( '%' || :EXPEDIDACEDULAORDENADOR || '%')  AND (CASE WHEN IND_ACTIVO IS NULL THEN ' ' ELSE UPPER(IND_ACTIVO) END)  LIKE UPPER(:IND_ACTIVO || '%')  AND (CASE WHEN IND_ACTIVOCON IS NULL THEN ' ' ELSE UPPER(IND_ACTIVOCON) END)  LIKE UPPER(:IND_ACTIVOCON || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CEDULA":"$CEDULA","NOMBRE":"$NOMBRE","CARGO":"$CARGO","NOMBRAMIENTO":"$NOMBRAMIENTO","EXPEDIDACEDULAORDENADOR":"$EXPEDIDACEDULAORDENADOR","IND_ACTIVO":"$IND_ACTIVO(type:boolean)","IND_ACTIVOCON":"$IND_ACTIVOCON(type:boolean)","SUCURSAL":"$SUCURSAL","USUARIO":"$USUARIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="NOMBRAMIENTO" sqlType="STRING"/>
+		<param name="EXPEDIDACEDULAORDENADOR" sqlType="STRING"/>
+		<param name="IND_ACTIVO" sqlType="STRING"/>
+		<param name="IND_ACTIVOCON" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenadores">
+		<call-query href="getOrdenadoresPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="NOMBRAMIENTO" query-param="NOMBRAMIENTO"/>
+			<with-param name="EXPEDIDACEDULAORDENADOR" query-param="EXPEDIDACEDULAORDENADOR"/>
+			<with-param name="IND_ACTIVO" query-param="IND_ACTIVO"/>
+			<with-param name="IND_ACTIVOCON" query-param="IND_ACTIVOCON"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenadoresNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ORDENADOR.COMPANIA, ORDENADOR.CEDULA, ORDENADOR.NOMBRE, ORDENADOR.CARGO, ORDENADOR.NOMBRAMIENTO, ORDENADOR.EXPEDIDACEDULAORDENADOR,(CASE ORDENADOR.IND_ACTIVO WHEN 0 THEN 'false' ELSE 'true' END) IND_ACTIVO,(CASE ORDENADOR.IND_ACTIVOCON WHEN 0 THEN 'false' ELSE 'true' END) IND_ACTIVOCON, ORDENADOR.SUCURSAL, ORDENADOR.USUARIO  FROM ORDENADOR WHERE ORDENADOR.COMPANIA = :COMPANIA ORDER BY ORDENADOR.NOMBRE) WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END)  LIKE UPPER( '%' || :CEDULA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END)  LIKE UPPER( '%' || :CARGO || '%')  AND (CASE WHEN NOMBRAMIENTO IS NULL THEN ' ' ELSE UPPER(NOMBRAMIENTO) END)  LIKE UPPER( '%' || :NOMBRAMIENTO || '%')  AND (CASE WHEN EXPEDIDACEDULAORDENADOR IS NULL THEN ' ' ELSE UPPER(EXPEDIDACEDULAORDENADOR) END)  LIKE UPPER( '%' || :EXPEDIDACEDULAORDENADOR || '%')  AND (CASE WHEN IND_ACTIVO IS NULL THEN ' ' ELSE UPPER(IND_ACTIVO) END)  LIKE UPPER(:IND_ACTIVO || '%')  AND (CASE WHEN IND_ACTIVOCON IS NULL THEN ' ' ELSE UPPER(IND_ACTIVOCON) END)  LIKE UPPER(:IND_ACTIVOCON || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="NOMBRAMIENTO" sqlType="STRING"/>
+		<param name="EXPEDIDACEDULAORDENADOR" sqlType="STRING"/>
+		<param name="IND_ACTIVO" sqlType="STRING"/>
+		<param name="IND_ACTIVOCON" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenadores/numero">
+		<call-query href="getOrdenadoresNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="NOMBRAMIENTO" query-param="NOMBRAMIENTO"/>
+			<with-param name="EXPEDIDACEDULAORDENADOR" query-param="EXPEDIDACEDULAORDENADOR"/>
+			<with-param name="IND_ACTIVO" query-param="IND_ACTIVO"/>
+			<with-param name="IND_ACTIVOCON" query-param="IND_ACTIVOCON"/>
+
+		</call-query>
+	</resource>
+	<query id="updateOrdenadores" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ORDENADOR SET COMPANIA=:COMPANIA, CEDULA=:CEDULA, NOMBRE=:NOMBRE, CARGO=:CARGO, NOMBRAMIENTO=:NOMBRAMIENTO, EXPEDIDACEDULAORDENADOR=:EXPEDIDACEDULAORDENADOR, IND_ACTIVO=:IND_ACTIVO, SUCURSAL=:SUCURSAL, USUARIO=:USUARIO, IND_ACTIVOCON=:IND_ACTIVOCON, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ORDENADOR.COMPANIA= :KEY_COMPANIA AND ORDENADOR.CEDULA= :KEY_CEDULA AND ORDENADOR.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="NOMBRAMIENTO" sqlType="STRING"/>
+		<param name="EXPEDIDACEDULAORDENADOR" sqlType="STRING"/>
+		<param name="IND_ACTIVO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="IND_ACTIVOCON" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CEDULA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="ordenadores">
+		<call-query href="updateOrdenadores">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="NOMBRAMIENTO" query-param="NOMBRAMIENTO"/>
+			<with-param name="EXPEDIDACEDULAORDENADOR" query-param="EXPEDIDACEDULAORDENADOR"/>
+			<with-param name="IND_ACTIVO" query-param="IND_ACTIVO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="IND_ACTIVOCON" query-param="IND_ACTIVOCON"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CEDULA" query-param="KEY_CEDULA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenadoresNumOrdenadorporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ORDENADOR.CEDULA, ORDENADOR.NOMBRE, ORDENADOR.SUCURSAL, ORDENADOR.CARGO, ORDENADOR.EXPEDIDACEDULAORDENADOR, ORDENADOR.NOMBRAMIENTO  FROM ORDENADOR WHERE ORDENADOR.COMPANIA = :COMPANIA AND ORDENADOR.IND_ACTIVO IN(0) ORDER BY ORDENADOR.CEDULA) WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END)  LIKE UPPER(:CEDULA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenadores/ordenadorporcompania/num">
+		<call-query href="getOrdenadoresNumOrdenadorporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenadoresPagOrdenadorporcompcedulQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ORDENADOR.CEDULA, ORDENADOR.NOMBRE, ORDENADOR.CARGO, ORDENADOR.EXPEDIDACEDULAORDENADOR, ORDENADOR.NOMBRAMIENTO  FROM ORDENADOR WHERE ORDENADOR.COMPANIA = :COMPANIA ORDER BY ORDENADOR.CEDULA) WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END)  LIKE UPPER(:CEDULA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CEDULA":"$CEDULA","NOMBRE":"$NOMBRE","CARGO":"$CARGO","EXPEDIDACEDULAORDENADOR":"$EXPEDIDACEDULAORDENADOR","NOMBRAMIENTO":"$NOMBRAMIENTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ordenadores/ordenadorporcompcedul/pag">
+		<call-query href="getOrdenadoresPagOrdenadorporcompcedulQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getOrdenadoresNumOrdenadorporcompcedulQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ORDENADOR.CEDULA, ORDENADOR.NOMBRE, ORDENADOR.CARGO, ORDENADOR.EXPEDIDACEDULAORDENADOR, ORDENADOR.NOMBRAMIENTO  FROM ORDENADOR WHERE ORDENADOR.COMPANIA = :COMPANIA ORDER BY ORDENADOR.CEDULA) WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END)  LIKE UPPER(:CEDULA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ordenadores/ordenadorporcompcedul/num">
+		<call-query href="getOrdenadoresNumOrdenadorporcompcedulQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+
+</data>

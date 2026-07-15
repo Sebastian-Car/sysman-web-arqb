@@ -1,0 +1,7 @@
+SELECT '32.0',  
+      SUM(PRESUPUESTO_INICIAL),
+      SUM(PRESUPUESTO_DEFINITIVO),
+      SUM(COMPROMISOS),
+      SUM(OBLIGACIONES), 
+      SUM(PAGOS)
+FROM (s$consultabase$s)

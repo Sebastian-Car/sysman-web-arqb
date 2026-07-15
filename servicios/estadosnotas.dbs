@@ -1,0 +1,109 @@
+﻿<data name="estadosnotas" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getEstadosnotasPagTodasFacturasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT ESTADO_NOTAS.CLASE, ESTADO_NOTAS.ESTADO,(TO_CHAR(ESTADO_NOTAS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, ESTADO_NOTAS.NUMFACTURA, ESTADO_NOTAS.NUMFORMATO, (SELECT SUM(VALOR_CREDITO) FROM DETALLE_COMPROBANTE_CNT WHERE COMPROBANTE = ESTADO_NOTAS.NUMFORMATO AND (TIPO_CPTE = 'CNA')) VALOR, ESTADO_NOTAS.OBSERVACION FROM ESTADO_NOTAS ORDER BY FECHA DESC, ESTADO_NOTAS.NUMFACTURA DESC) INI WHERE (CASE WHEN CLASE IS NULL THEN ' ' ELSE UPPER(CLASE) END) LIKE UPPER(CONCAT(CONCAT('%',:CLASE), '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN NUMFACTURA IS NULL THEN ' ' ELSE UPPER(NUMFACTURA) END) LIKE UPPER(CONCAT(:NUMFACTURA, '%')) AND (CASE WHEN NUMFORMATO IS NULL THEN ' ' ELSE UPPER(NUMFORMATO) END) LIKE UPPER(CONCAT(:NUMFORMATO, '%')) AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END) LIKE UPPER(CONCAT(:VALOR, '%')) AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END) LIKE UPPER(CONCAT(CONCAT('%',:OBSERVACION), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CLASE":"$CLASE","ESTADO":"$ESTADO","FECHA":"$FECHA","NUMFACTURA":"$NUMFACTURA","NUMFORMATO":"$NUMFORMATO","VALOR":"$VALOR(type:double)","OBSERVACION":"$OBSERVACION"}]}}		</result>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+		<param name="NUMFORMATO" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="estadosnotas/todasfacturas/pag">
+		<call-query href="getEstadosnotasPagTodasFacturasQuery">
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="NUMFORMATO" query-param="NUMFORMATO"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEstadosnotasNumTodasFacturasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT ESTADO_NOTAS.CLASE, ESTADO_NOTAS.ESTADO,(TO_CHAR(ESTADO_NOTAS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, ESTADO_NOTAS.NUMFACTURA, ESTADO_NOTAS.NUMFORMATO, (SELECT SUM(VALOR_CREDITO) FROM DETALLE_COMPROBANTE_CNT WHERE COMPROBANTE = ESTADO_NOTAS.NUMFORMATO AND (TIPO_CPTE = 'CNA')) VALOR, ESTADO_NOTAS.OBSERVACION FROM ESTADO_NOTAS ORDER BY FECHA DESC, ESTADO_NOTAS.NUMFACTURA DESC) INI WHERE (CASE WHEN CLASE IS NULL THEN ' ' ELSE UPPER(CLASE) END) LIKE UPPER(CONCAT(CONCAT('%',:CLASE), '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN NUMFACTURA IS NULL THEN ' ' ELSE UPPER(NUMFACTURA) END) LIKE UPPER(CONCAT(:NUMFACTURA, '%')) AND (CASE WHEN NUMFORMATO IS NULL THEN ' ' ELSE UPPER(NUMFORMATO) END) LIKE UPPER(CONCAT(:NUMFORMATO, '%')) AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END) LIKE UPPER(CONCAT(:VALOR, '%')) AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END) LIKE UPPER(CONCAT(CONCAT('%',:OBSERVACION), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+		<param name="NUMFORMATO" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="estadosnotas/todasfacturas/num">
+		<call-query href="getEstadosnotasNumTodasFacturasQuery">
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="NUMFORMATO" query-param="NUMFORMATO"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEstadosnotasTodosLosDatos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ESTADO_NOTAS</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+ 
+	</query>
+	<resource method="DELETE" path="estadosnotas/todoslosdatos">
+		<call-query href="deleteEstadosnotasTodosLosDatos">
+ 
+		</call-query>
+	</resource>
+	<query id="getEstadosnotasNotasNoExitosasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT NUMFACTURA,NUMFORMATO,CLASE, ESTADO FROM ESTADO_NOTAS WHERE ESTADO NOT IN ('EXITOSA')</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMFACTURA":"$NUMFACTURA","NUMFORMATO":"$NUMFORMATO","CLASE":"$CLASE","ESTADO":"$ESTADO"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="estadosnotas/notasnoexitosas">
+		<call-query href="getEstadosnotasNotasNoExitosasQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="insertEstadosnotas" keyColumns="NUMFACTURA,NUMFORMATO,CLASE" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ESTADO_NOTAS (CLASE, ESTADO, FECHA, NUMFACTURA, NUMFORMATO, OBSERVACION, TIPONOTA, DATE_CREATED, CREATED_BY) VALUES (:CLASE, :ESTADO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :NUMFACTURA, :NUMFORMATO, :OBSERVACION, :TIPONOTA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_NUMFACTURA":"$NUMFACTURA","KEY_NUMFORMATO":"$NUMFORMATO","KEY_CLASE":"$CLASE"}]}}		</result>
+		<param name="CLASE" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param name="NUMFACTURA" sqlType="STRING"/>
+		<param name="NUMFORMATO" sqlType="STRING"/>
+		<param defaultValue="0" name="OBSERVACION" sqlType="STRING"/>
+		<param defaultValue="0" name="TIPONOTA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="estadosnotas">
+		<call-query href="insertEstadosnotas">
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NUMFACTURA" query-param="NUMFACTURA"/>
+			<with-param name="NUMFORMATO" query-param="NUMFORMATO"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="TIPONOTA" query-param="TIPONOTA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+
+</data>

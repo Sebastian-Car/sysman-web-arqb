@@ -1,0 +1,134 @@
+﻿<data name="dfactorescalculo" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertDfactorescalculo" keyColumns="COMPANIA,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO D_FACTORES_CALCULO (COMPANIA, CODIGO, FECHA, FACTORES, OBSERVACION, VALOR_PARAMETRO, CREATED_BY, DATE_CREATED) VALUES (:COMPANIA, :CODIGO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :FACTORES, :OBSERVACION, :VALOR_PARAMETRO, :CREATED_BY, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO(type:integer)","KEY_FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="FACTORES" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACION" sqlType="STRING"/>
+		<param defaultValue="" name="VALOR_PARAMETRO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="dfactorescalculo">
+		<call-query href="insertDfactorescalculo">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FACTORES" query-param="FACTORES"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="VALOR_PARAMETRO" query-param="VALOR_PARAMETRO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteDfactorescalculo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM D_FACTORES_CALCULO WHERE D_FACTORES_CALCULO.COMPANIA= :KEY_COMPANIA AND D_FACTORES_CALCULO.CODIGO= :KEY_CODIGO AND D_FACTORES_CALCULO.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="INTEGER"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="dfactorescalculo">
+		<call-query href="deleteDfactorescalculo">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getDfactorescalculoPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, CODIGO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, FACTORES, OBSERVACION, VALOR_PARAMETRO FROM D_FACTORES_CALCULO WHERE COMPANIA = :COMPANIA AND CODIGO = :CODIGO ORDER BY FECHA DESC) INI WHERE (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN FACTORES IS NULL THEN ' ' ELSE UPPER(FACTORES) END) LIKE UPPER(CONCAT(CONCAT('%',:FACTORES), '%')) AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END) LIKE UPPER(CONCAT(CONCAT('%',:OBSERVACION), '%')) AND (CASE WHEN VALOR_PARAMETRO IS NULL THEN ' ' ELSE UPPER(VALOR_PARAMETRO) END) LIKE UPPER(CONCAT(CONCAT('%',:VALOR_PARAMETRO), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGO":"$CODIGO(type:integer)","FECHA":"$FECHA","FACTORES":"$FACTORES","OBSERVACION":"$OBSERVACION","VALOR_PARAMETRO":"$VALOR_PARAMETRO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="FACTORES" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="VALOR_PARAMETRO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="dfactorescalculo">
+		<call-query href="getDfactorescalculoPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FACTORES" query-param="FACTORES"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="VALOR_PARAMETRO" query-param="VALOR_PARAMETRO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDfactorescalculoNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, CODIGO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, FACTORES, OBSERVACION, VALOR_PARAMETRO FROM D_FACTORES_CALCULO WHERE COMPANIA = :COMPANIA AND CODIGO = :CODIGO) INI WHERE (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN FACTORES IS NULL THEN ' ' ELSE UPPER(FACTORES) END) LIKE UPPER(CONCAT(CONCAT('%',:FACTORES), '%')) AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END) LIKE UPPER(CONCAT(CONCAT('%',:OBSERVACION), '%')) AND (CASE WHEN VALOR_PARAMETRO IS NULL THEN ' ' ELSE UPPER(VALOR_PARAMETRO) END) LIKE UPPER(CONCAT(CONCAT('%',:VALOR_PARAMETRO), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="FACTORES" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="VALOR_PARAMETRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="dfactorescalculo/numero">
+		<call-query href="getDfactorescalculoNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FACTORES" query-param="FACTORES"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="VALOR_PARAMETRO" query-param="VALOR_PARAMETRO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDfactorescalculo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE D_FACTORES_CALCULO SET COMPANIA=:COMPANIA, CODIGO=:CODIGO, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), FACTORES=:FACTORES, OBSERVACION=:OBSERVACION, VALOR_PARAMETRO=:VALOR_PARAMETRO, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE D_FACTORES_CALCULO.COMPANIA= :KEY_COMPANIA AND D_FACTORES_CALCULO.CODIGO= :KEY_CODIGO AND D_FACTORES_CALCULO.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="FACTORES" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="VALOR_PARAMETRO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="dfactorescalculo">
+		<call-query href="updateDfactorescalculo">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="FACTORES" query-param="FACTORES"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="VALOR_PARAMETRO" query-param="VALOR_PARAMETRO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+
+		</call-query>
+	</resource>
+
+</data>

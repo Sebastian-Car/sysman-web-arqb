@@ -1,0 +1,402 @@
+﻿<data name="sfestrato" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSfestratoTodosPorConceptoRelaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO, NOMBRE, TARIFA  FROM SF_ESTRATO WHERE CONCEPTO_RELACIONADO = :CONCEPTO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","TARIFA":"$TARIFA"}]}}		</result>
+		<param name="CONCEPTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sfestrato/todosporconceptorela">
+		<call-query href="getSfestratoTodosPorConceptoRelaQuery">
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfestratoPagTodosPorAnoTipoYConcepQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE, TARIFA,(CASE TOMAR_VLR WHEN 0 THEN 'false' ELSE 'true' END) TOMAR_VLR FROM SF_ESTRATO WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND TIPOCOBRO = :TIPOCOBRO AND NVL(CONCEPTO_RELACIONADO, ' ') = CASE WHEN :CONCEPTO IS NULL THEN ' ' ELSE :CONCEPTO END) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TARIFA IS NULL THEN ' ' ELSE UPPER(TARIFA) END)  LIKE UPPER(:TARIFA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","TARIFA":"$TARIFA","TOMAR_VLR":"$TOMAR_VLR(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sfestrato/todosporanotipoyconcep/pag">
+		<call-query href="getSfestratoPagTodosPorAnoTipoYConcepQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfestratoNumTodosPorAnoTipoYConcepQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE, TARIFA,(CASE TOMAR_VLR WHEN 0 THEN 'false' ELSE 'true' END) TOMAR_VLR FROM SF_ESTRATO WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND TIPOCOBRO = :TIPOCOBRO AND NVL(CONCEPTO_RELACIONADO, ' ') = CASE WHEN :CONCEPTO IS NULL THEN ' ' ELSE :CONCEPTO END) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TARIFA IS NULL THEN ' ' ELSE UPPER(TARIFA) END)  LIKE UPPER(:TARIFA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sfestrato/todosporanotipoyconcep/num">
+		<call-query href="getSfestratoNumTodosPorAnoTipoYConcepQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfestratoConceptorelacionadoapartirdecompaniaanotipocobroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT SF_ESTRATO.CONCEPTO_RELACIONADO, SF_CONCEPTOS.NOMBRE  FROM SF_ESTRATO INNER JOIN SF_CONCEPTOS ON SF_ESTRATO.CONCEPTO_RELACIONADO = SF_CONCEPTOS.CODIGO WHERE SF_ESTRATO.COMPANIA =:COMPANIA AND SF_ESTRATO.ANO =:ANO AND SF_ESTRATO.TIPOCOBRO =:TIPOCOBRO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONCEPTO_RELACIONADO":"$CONCEPTO_RELACIONADO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sfestrato/conceptorelacionadoapartirdecompaniaanotipocobro">
+		<call-query href="getSfestratoConceptorelacionadoapartirdecompaniaanotipocobroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfestratoPagCodNomTarAnoActualQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE, TARIFA  FROM SF_ESTRATO WHERE COMPANIA = :COMPANIA AND ANO = EXTRACT(YEAR FROM SYSDATE) AND TIPOCOBRO = :TIPOCOBRO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TARIFA IS NULL THEN ' ' ELSE UPPER(TARIFA) END)  LIKE UPPER(:TARIFA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","TARIFA":"$TARIFA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sfestrato/codnomtaranoactual/pag">
+		<call-query href="getSfestratoPagCodNomTarAnoActualQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfestratoNumCodNomTarAnoActualQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE, TARIFA  FROM SF_ESTRATO WHERE COMPANIA = :COMPANIA AND ANO = EXTRACT(YEAR FROM SYSDATE) AND TIPOCOBRO = :TIPOCOBRO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN TARIFA IS NULL THEN ' ' ELSE UPPER(TARIFA) END)  LIKE UPPER(:TARIFA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sfestrato/codnomtaranoactual/num">
+		<call-query href="getSfestratoNumCodNomTarAnoActualQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfestratoPagEstratotipocobroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT SF_ESTRATO.CONCEPTO_RELACIONADO, SF_CONCEPTOS.NOMBRE  FROM SF_ESTRATO INNER JOIN SF_CONCEPTOS ON SF_ESTRATO.CONCEPTO_RELACIONADO = SF_CONCEPTOS.CODIGO WHERE SF_ESTRATO.COMPANIA =:COMPANIA AND SF_ESTRATO.ANO =:ANO AND SF_ESTRATO.TIPOCOBRO =:TIPOCOBRO) WHERE (CASE WHEN CONCEPTO_RELACIONADO IS NULL THEN ' ' ELSE UPPER(CONCEPTO_RELACIONADO) END)  LIKE UPPER(:CONCEPTO_RELACIONADO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONCEPTO_RELACIONADO":"$CONCEPTO_RELACIONADO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CONCEPTO_RELACIONADO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sfestrato/estratotipocobro/pag">
+		<call-query href="getSfestratoPagEstratotipocobroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CONCEPTO_RELACIONADO" query-param="CONCEPTO_RELACIONADO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfestratoNumEstratotipocobroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT SF_ESTRATO.CONCEPTO_RELACIONADO, SF_CONCEPTOS.NOMBRE  FROM SF_ESTRATO INNER JOIN SF_CONCEPTOS ON SF_ESTRATO.CONCEPTO_RELACIONADO = SF_CONCEPTOS.CODIGO WHERE SF_ESTRATO.COMPANIA =:COMPANIA AND SF_ESTRATO.ANO =:ANO AND SF_ESTRATO.TIPOCOBRO =:TIPOCOBRO) WHERE (CASE WHEN CONCEPTO_RELACIONADO IS NULL THEN ' ' ELSE UPPER(CONCEPTO_RELACIONADO) END)  LIKE UPPER(:CONCEPTO_RELACIONADO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CONCEPTO_RELACIONADO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sfestrato/estratotipocobro/num">
+		<call-query href="getSfestratoNumEstratotipocobroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CONCEPTO_RELACIONADO" query-param="CONCEPTO_RELACIONADO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfestratoPagEstratofinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT SF_ESTRATO.CODIGO, SF_ESTRATO.NOMBRE  FROM SF_ESTRATO WHERE SF_ESTRATO.COMPANIA =:COMPANIA AND SF_ESTRATO.ANO =:ANO AND SF_ESTRATO.TIPOCOBRO =:TIPOCOBRO AND SF_ESTRATO.CODIGO &gt;= :CONCEPTORELACIONADO ORDER BY SF_ESTRATO.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CONCEPTORELACIONADO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sfestrato/estratofinal/pag">
+		<call-query href="getSfestratoPagEstratofinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CONCEPTORELACIONADO" query-param="CONCEPTORELACIONADO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSfestrato" keyColumns="COMPANIA,ANO,TIPOCOBRO,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SF_ESTRATO (COMPANIA, ANO, CODIGO, NOMBRE, TARIFA, TIPOCOBRO, CONCEPTO_RELACIONADO, TOMAR_VLR, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :CODIGO, :NOMBRE, :TARIFA, :TIPOCOBRO, :CONCEPTO_RELACIONADO, :TOMAR_VLR, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_TIPOCOBRO":"$TIPOCOBRO","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="0" name="TARIFA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param defaultValue="" name="CONCEPTO_RELACIONADO" sqlType="STRING"/>
+		<param defaultValue="0" name="TOMAR_VLR" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="sfestrato">
+		<call-query href="insertSfestrato">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CONCEPTO_RELACIONADO" query-param="CONCEPTO_RELACIONADO"/>
+			<with-param name="TOMAR_VLR" query-param="TOMAR_VLR"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSfestrato" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SF_ESTRATO WHERE SF_ESTRATO.COMPANIA= :KEY_COMPANIA AND SF_ESTRATO.ANO= :KEY_ANO AND SF_ESTRATO.TIPOCOBRO= :KEY_TIPOCOBRO AND SF_ESTRATO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_TIPOCOBRO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="sfestrato">
+		<call-query href="deleteSfestrato">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPOCOBRO" query-param="KEY_TIPOCOBRO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfestratoPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, ANO, CODIGO, NOMBRE, TARIFA, TIPOCOBRO, CONCEPTO_RELACIONADO,(CASE TOMAR_VLR WHEN 0 THEN 'false' ELSE 'true' END) TOMAR_VLR FROM SF_ESTRATO WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND TIPOCOBRO = :TIPOCOBRO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN TARIFA IS NULL THEN ' ' ELSE UPPER(TARIFA) END) LIKE UPPER(CONCAT(CONCAT('%',:TARIFA), '%')) AND (CASE WHEN TOMAR_VLR IS NULL THEN ' ' ELSE UPPER(TOMAR_VLR) END) LIKE UPPER(CONCAT(CONCAT('%',:TOMAR_VLR), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","TARIFA":"$TARIFA","TIPOCOBRO":"$TIPOCOBRO","CONCEPTO_RELACIONADO":"$CONCEPTO_RELACIONADO","TOMAR_VLR":"$TOMAR_VLR(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+		<param name="TOMAR_VLR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sfestrato">
+		<call-query href="getSfestratoPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="TOMAR_VLR" query-param="TOMAR_VLR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfestratoNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, ANO, CODIGO, NOMBRE, TARIFA, TIPOCOBRO, CONCEPTO_RELACIONADO,(CASE TOMAR_VLR WHEN 0 THEN 'false' ELSE 'true' END) TOMAR_VLR FROM SF_ESTRATO WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND TIPOCOBRO = :TIPOCOBRO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN TARIFA IS NULL THEN ' ' ELSE UPPER(TARIFA) END) LIKE UPPER(CONCAT(CONCAT('%',:TARIFA), '%')) AND (CASE WHEN TOMAR_VLR IS NULL THEN ' ' ELSE UPPER(TOMAR_VLR) END) LIKE UPPER(CONCAT(CONCAT('%',:TOMAR_VLR), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+		<param name="TOMAR_VLR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sfestrato/numero">
+		<call-query href="getSfestratoNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="TOMAR_VLR" query-param="TOMAR_VLR"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSfestrato" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SF_ESTRATO SET NOMBRE=:NOMBRE, TARIFA=:TARIFA, CONCEPTO_RELACIONADO=:CONCEPTO_RELACIONADO, TOMAR_VLR=:TOMAR_VLR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SF_ESTRATO.COMPANIA= :KEY_COMPANIA AND SF_ESTRATO.ANO= :KEY_ANO AND SF_ESTRATO.TIPOCOBRO= :KEY_TIPOCOBRO AND SF_ESTRATO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+		<param name="CONCEPTO_RELACIONADO" sqlType="STRING"/>
+		<param name="TOMAR_VLR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_TIPOCOBRO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="sfestrato">
+		<call-query href="updateSfestrato">
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="CONCEPTO_RELACIONADO" query-param="CONCEPTO_RELACIONADO"/>
+			<with-param name="TOMAR_VLR" query-param="TOMAR_VLR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_TIPOCOBRO" query-param="KEY_TIPOCOBRO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfestratoNumEstratofinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT SF_ESTRATO.CODIGO, SF_ESTRATO.NOMBRE  FROM SF_ESTRATO WHERE SF_ESTRATO.COMPANIA =:COMPANIA AND SF_ESTRATO.ANO =:ANO AND SF_ESTRATO.TIPOCOBRO =:TIPOCOBRO AND SF_ESTRATO.CODIGO &gt;= :CONCEPTORELACIONADO ORDER BY SF_ESTRATO.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CONCEPTORELACIONADO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sfestrato/estratofinal/num">
+		<call-query href="getSfestratoNumEstratofinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CONCEPTORELACIONADO" query-param="CONCEPTORELACIONADO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfestratoPagEstratoinicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT SF_ESTRATO.CODIGO, SF_ESTRATO.NOMBRE  FROM SF_ESTRATO WHERE SF_ESTRATO.COMPANIA =:COMPANIA AND SF_ESTRATO.ANO =:ANO AND SF_ESTRATO.TIPOCOBRO =:TIPOCOBRO ORDER BY SF_ESTRATO.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sfestrato/estratoinicial/pag">
+		<call-query href="getSfestratoPagEstratoinicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSfestratoNumEstratoinicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT SF_ESTRATO.CODIGO, SF_ESTRATO.NOMBRE  FROM SF_ESTRATO WHERE SF_ESTRATO.COMPANIA =:COMPANIA AND SF_ESTRATO.ANO =:ANO AND SF_ESTRATO.TIPOCOBRO =:TIPOCOBRO ORDER BY SF_ESTRATO.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sfestrato/estratoinicial/num">
+		<call-query href="getSfestratoNumEstratoinicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+
+</data>

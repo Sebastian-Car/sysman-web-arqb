@@ -1,0 +1,2 @@
+SELECT  SUM(RESERVA_CONSTITUIDA)
+FROM (s$consultabase$s)

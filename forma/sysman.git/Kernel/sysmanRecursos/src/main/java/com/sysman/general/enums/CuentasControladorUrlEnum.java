@@ -1,0 +1,92 @@
+/*
+ * CuentasControladorUrlEnum
+ *
+ * 1.0
+ *
+ * 09/09/2016
+ *
+ * Copyright Stefanini Sysman
+ */
+package com.sysman.general.enums;
+
+/**
+ * @author Processors-api
+ * 
+ * @version 1.0
+ * 
+ * Enumeracion que permite clasificar cada uno de los identificadores
+ * geenerados en el refactoring y asociados al codigo legacy obtenido
+ * con patrones de busqueda.
+ */
+public enum CuentasControladorUrlEnum {
+
+    URL11357("CUENTASCONTROLADORURL11357", "192001"),
+
+    URL20827("CUENTASCONTROLADORURL20827", "187001"),
+
+    URL19307("CUENTASCONTROLADORURL19307", "63001"),
+
+    URL18313("CUENTASCONTROLADORURL18313", "62002"),
+
+    URL14451("CUENTASCONTROLADORURL14451", "61001"),
+
+    URL13294("CUENTASCONTROLADORURL13294", "59003"),
+
+    URL11138("CUENTASCONTROLADORURL11138", "58001"),
+
+    URL20828("CUENTASCONTROLADORURL20828", "57001"),
+
+    URL0001("CUENTASCONTROLADORURL0001", "54001"),
+
+    URL12938("CUENTASCONTROLADORURL12938", "47002"),
+
+    URL20829("CUENTASCONTROLADORURL20829", "14186"),
+
+    URL12452("CUENTASCONTROLADORURL12452", "5001"),
+
+    URL11869("CUENTASCONTROLADORURL11869", "2001"),
+
+    URL11543("CUENTASCONTROLADORURL11543", "1001"),
+
+    URL1864001("CUENTASCONTROLADORURL1864001", "1864001"),
+    
+    URL58008("CUENTASCONTROLADORURL58008","58008"),
+    
+    URL15081("CUENTASCONTROLADORURL15081","15081"),
+    
+    URL25055("CUENTASCONTROLADORURL25055","25055"),
+    
+    URL139031("CUENTASCONTROLADORURL139031","139031"),
+    
+    URL1946001("CUENTASCONTROLADORURL1946001","1946001"),
+    
+    URL1946002("CUENTASCONTROLADORURL1946002","1946002"),
+    
+    URL1946003("CUENTASCONTROLADORURL1946003","1946003"),
+    
+    URL1946004("CUENTASCONTROLADORURL1946003","1946004"),
+    
+    URL1946005("CUENTASCONTROLADORURL1946003","1946005"),
+    
+    URL1946006("CUENTASCONTROLADORURL1946003","1946006"),
+    
+    URL1946007("CUENTASCONTROLADORURL1946003","1946007"), 
+    
+    URL47038("CUENTASCONTROLADORURL47038","47038");
+
+    private final String key;
+    private final String value;
+
+    private CuentasControladorUrlEnum(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}

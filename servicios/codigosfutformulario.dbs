@@ -1,0 +1,208 @@
+﻿<data name="codigosfutformulario" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getCodigosfutformularioPagTodosPorTipoYAnioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TO_CHAR(CODIGOS_FUT_FORMULARIO.CODIGO) CODIGO, CODIGOS_FUT_FORMULARIO.NOMBRE, CODIGOS_FUT_FORMULARIO.NATURALEZA  FROM CODIGOS_FUT_FORMULARIO WHERE CODIGOS_FUT_FORMULARIO.COMPANIA = :COMPANIA AND CODIGOS_FUT_FORMULARIO.ANO = :ANO AND CODIGOS_FUT_FORMULARIO.FORMULARIO IN(:TIPO) ORDER BY TO_CHAR(CODIGOS_FUT_FORMULARIO.CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NATURALEZA IS NULL THEN ' ' ELSE UPPER(NATURALEZA) END)  LIKE UPPER(:NATURALEZA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","NATURALEZA":"$NATURALEZA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NATURALEZA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="codigosfutformulario/todosportipoyanio/pag">
+		<call-query href="getCodigosfutformularioPagTodosPorTipoYAnioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NATURALEZA" query-param="NATURALEZA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCodigosfutformularioNumTodosPorTipoYAnioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TO_CHAR(CODIGOS_FUT_FORMULARIO.CODIGO) CODIGO, CODIGOS_FUT_FORMULARIO.NOMBRE, CODIGOS_FUT_FORMULARIO.NATURALEZA  FROM CODIGOS_FUT_FORMULARIO WHERE CODIGOS_FUT_FORMULARIO.COMPANIA = :COMPANIA AND CODIGOS_FUT_FORMULARIO.ANO = :ANO AND CODIGOS_FUT_FORMULARIO.FORMULARIO IN(:TIPO) ORDER BY TO_CHAR(CODIGOS_FUT_FORMULARIO.CODIGO)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NATURALEZA IS NULL THEN ' ' ELSE UPPER(NATURALEZA) END)  LIKE UPPER(:NATURALEZA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NATURALEZA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="codigosfutformulario/todosportipoyanio/num">
+		<call-query href="getCodigosfutformularioNumTodosPorTipoYAnioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NATURALEZA" query-param="NATURALEZA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertCodigosfutformulario" keyColumns="COMPANIA,ANO,CODIGO,FORMULARIO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CODIGOS_FUT_FORMULARIO (COMPANIA, ANO, CODIGO, FORMULARIO, NOMBRE, MOVIMIENTO, CUENTA_PPTAL, NATURALEZA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :CODIGO, :FORMULARIO, :NOMBRE, :MOVIMIENTO, :CUENTA_PPTAL, :NATURALEZA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_CODIGO":"$CODIGO","KEY_FORMULARIO":"$FORMULARIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="FORMULARIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="0" name="MOVIMIENTO" sqlType="STRING"/>
+		<param defaultValue="" name="CUENTA_PPTAL" sqlType="STRING"/>
+		<param defaultValue="" name="NATURALEZA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="codigosfutformulario">
+		<call-query href="insertCodigosfutformulario">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="FORMULARIO" query-param="FORMULARIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="CUENTA_PPTAL" query-param="CUENTA_PPTAL"/>
+			<with-param name="NATURALEZA" query-param="NATURALEZA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCodigosfutformulario" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CODIGOS_FUT_FORMULARIO WHERE CODIGOS_FUT_FORMULARIO.COMPANIA= :KEY_COMPANIA AND CODIGOS_FUT_FORMULARIO.ANO= :KEY_ANO AND CODIGOS_FUT_FORMULARIO.CODIGO= :KEY_CODIGO AND CODIGOS_FUT_FORMULARIO.FORMULARIO= :KEY_FORMULARIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_FORMULARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="codigosfutformulario">
+		<call-query href="deleteCodigosfutformulario">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_FORMULARIO" query-param="KEY_FORMULARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCodigosfutformularioPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, ANO, CODIGO, FORMULARIO, CASE FORMULARIO WHEN 'D1' THEN 'DESPLAZADOS 1' WHEN 'CP' THEN 'CUENTAS POR PAGAR' WHEN 'FS' THEN 'EJECUCION FONDOS SALUD' WHEN 'TS' THEN 'TESORERIA SALUD' WHEN 'VI' THEN 'VIGENCIAS FUTURAS EJECUCION' WHEN 'IR' THEN 'INGRESO RESERVAS PRESUPUESTALES' WHEN 'V1' THEN 'VICTIMAS 1' END NOMBRE_FORMULARIO, NOMBRE ,(CASE MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO, CUENTA_PPTAL, NATURALEZA, CASE WHEN NATURALEZA = 'D' THEN 'GASTOS' ELSE 'INGRESOS' END NOMBRE_NATURALEZA  FROM CODIGOS_FUT_FORMULARIO WHERE COMPANIA = :COMPANIA AND ANO = :ANO ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN FORMULARIO IS NULL THEN ' ' ELSE UPPER(FORMULARIO) END)  LIKE UPPER(:FORMULARIO || '%')  AND (CASE WHEN NOMBRE_FORMULARIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_FORMULARIO) END)  LIKE UPPER( '%' || :NOMBRE_FORMULARIO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN MOVIMIENTO IS NULL THEN ' ' ELSE UPPER(MOVIMIENTO) END)  LIKE UPPER(:MOVIMIENTO || '%')  AND (CASE WHEN CUENTA_PPTAL IS NULL THEN ' ' ELSE UPPER(CUENTA_PPTAL) END)  LIKE UPPER(:CUENTA_PPTAL || '%')  AND (CASE WHEN NATURALEZA IS NULL THEN ' ' ELSE UPPER(NATURALEZA) END)  LIKE UPPER(:NATURALEZA || '%')  AND (CASE WHEN NOMBRE_NATURALEZA IS NULL THEN ' ' ELSE UPPER(NOMBRE_NATURALEZA) END)  LIKE UPPER( '%' || :NOMBRE_NATURALEZA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","CODIGO":"$CODIGO","FORMULARIO":"$FORMULARIO","NOMBRE_FORMULARIO":"$NOMBRE_FORMULARIO","NOMBRE":"$NOMBRE","MOVIMIENTO":"$MOVIMIENTO(type:boolean)","CUENTA_PPTAL":"$CUENTA_PPTAL","NATURALEZA":"$NATURALEZA","NOMBRE_NATURALEZA":"$NOMBRE_NATURALEZA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="FORMULARIO" sqlType="STRING"/>
+		<param name="NOMBRE_FORMULARIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="CUENTA_PPTAL" sqlType="STRING"/>
+		<param name="NATURALEZA" sqlType="STRING"/>
+		<param name="NOMBRE_NATURALEZA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="codigosfutformulario">
+		<call-query href="getCodigosfutformularioPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="FORMULARIO" query-param="FORMULARIO"/>
+			<with-param name="NOMBRE_FORMULARIO" query-param="NOMBRE_FORMULARIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="CUENTA_PPTAL" query-param="CUENTA_PPTAL"/>
+			<with-param name="NATURALEZA" query-param="NATURALEZA"/>
+			<with-param name="NOMBRE_NATURALEZA" query-param="NOMBRE_NATURALEZA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCodigosfutformularioNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, ANO, CODIGO, FORMULARIO, CASE FORMULARIO WHEN 'D1' THEN 'DESPLAZADOS 1' WHEN 'CP' THEN 'CUENTAS POR PAGAR' WHEN 'FS' THEN 'EJECUCION FONDOS SALUD' WHEN 'TS' THEN 'TESORERIA SALUD' WHEN 'VI' THEN 'VIGENCIAS FUTURAS EJECUCION' WHEN 'IR' THEN 'INGRESO RESERVAS PRESUPUESTALES' WHEN 'V1' THEN 'VICTIMAS 1' END NOMBRE_FORMULARIO, NOMBRE ,(CASE MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO, CUENTA_PPTAL, NATURALEZA, CASE WHEN NATURALEZA = 'D' THEN 'GASTOS' ELSE 'INGRESOS' END NOMBRE_NATURALEZA  FROM CODIGOS_FUT_FORMULARIO WHERE COMPANIA = :COMPANIA AND ANO = :ANO ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN FORMULARIO IS NULL THEN ' ' ELSE UPPER(FORMULARIO) END)  LIKE UPPER(:FORMULARIO || '%')  AND (CASE WHEN NOMBRE_FORMULARIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_FORMULARIO) END)  LIKE UPPER( '%' || :NOMBRE_FORMULARIO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN MOVIMIENTO IS NULL THEN ' ' ELSE UPPER(MOVIMIENTO) END)  LIKE UPPER(:MOVIMIENTO || '%')  AND (CASE WHEN CUENTA_PPTAL IS NULL THEN ' ' ELSE UPPER(CUENTA_PPTAL) END)  LIKE UPPER(:CUENTA_PPTAL || '%')  AND (CASE WHEN NATURALEZA IS NULL THEN ' ' ELSE UPPER(NATURALEZA) END)  LIKE UPPER(:NATURALEZA || '%')  AND (CASE WHEN NOMBRE_NATURALEZA IS NULL THEN ' ' ELSE UPPER(NOMBRE_NATURALEZA) END)  LIKE UPPER( '%' || :NOMBRE_NATURALEZA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="FORMULARIO" sqlType="STRING"/>
+		<param name="NOMBRE_FORMULARIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="CUENTA_PPTAL" sqlType="STRING"/>
+		<param name="NATURALEZA" sqlType="STRING"/>
+		<param name="NOMBRE_NATURALEZA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="codigosfutformulario/numero">
+		<call-query href="getCodigosfutformularioNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="FORMULARIO" query-param="FORMULARIO"/>
+			<with-param name="NOMBRE_FORMULARIO" query-param="NOMBRE_FORMULARIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="CUENTA_PPTAL" query-param="CUENTA_PPTAL"/>
+			<with-param name="NATURALEZA" query-param="NATURALEZA"/>
+			<with-param name="NOMBRE_NATURALEZA" query-param="NOMBRE_NATURALEZA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCodigosfutformulario" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CODIGOS_FUT_FORMULARIO SET ANO=:ANO, CODIGO=:CODIGO, FORMULARIO=:FORMULARIO, NOMBRE=:NOMBRE, MOVIMIENTO=:MOVIMIENTO, CUENTA_PPTAL=:CUENTA_PPTAL, NATURALEZA=:NATURALEZA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CODIGOS_FUT_FORMULARIO.COMPANIA= :KEY_COMPANIA AND CODIGOS_FUT_FORMULARIO.ANO= :KEY_ANO AND CODIGOS_FUT_FORMULARIO.CODIGO= :KEY_CODIGO AND CODIGOS_FUT_FORMULARIO.FORMULARIO= :KEY_FORMULARIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="FORMULARIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="CUENTA_PPTAL" sqlType="STRING"/>
+		<param name="NATURALEZA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_FORMULARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="codigosfutformulario">
+		<call-query href="updateCodigosfutformulario">
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="FORMULARIO" query-param="FORMULARIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="CUENTA_PPTAL" query-param="CUENTA_PPTAL"/>
+			<with-param name="NATURALEZA" query-param="NATURALEZA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_FORMULARIO" query-param="KEY_FORMULARIO"/>
+
+		</call-query>
+	</resource>
+
+</data>

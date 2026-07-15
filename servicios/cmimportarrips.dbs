@@ -1,0 +1,412 @@
+﻿<data name="cmimportarrips" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="updateCmimportarripsActualizarestadomensajesrips" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CM_IMPORTARRIPS SET MENSAJES =:MENSAJES, ESTADO =:ESTADO, DATE_MODIFIED = SYSDATE, MODIFIED_BY =:USUARIO WHERE CONSECUTIVO =:CONSECUTIVO AND COMPANIA =:COMPANIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="MENSAJES" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cmimportarrips/actualizarestadomensajesrips">
+		<call-query href="updateCmimportarripsActualizarestadomensajesrips">
+			<with-param name="MENSAJES" query-param="MENSAJES"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmimportarripsTraerestadomensajeQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CASE ESTADO WHEN 'P' THEN 'POR CARGAR' WHEN 'F' THEN 'FALLIDO' WHEN 'E' THEN 'EN PROCESO' WHEN 'C' THEN 'CARGADO' WHEN 'T' THEN 'FACTURADO' END ESTADO, MENSAJES FROM CM_IMPORTARRIPS WHERE CONSECUTIVO =:CONSECUTIVO AND COMPANIA =:COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ESTADO":"$ESTADO","MENSAJES":"$MENSAJES"}]}}		</result>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmimportarrips/traerestadomensaje">
+		<call-query href="getCmimportarripsTraerestadomensajeQuery">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmimportarripsPagCuentasRadicadasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CM_IMPORTARRIPS.COMPANIA, CM_IMPORTARRIPS.CONSECUTIVO, CM_IMPORTARRIPS.RADICADO, CM_IMPORTARRIPS.NIT, CM_IMPORTARRIPS.SUCURSAL, CM_ARCHIVO_TRANSACCIONES.NUM_IDENTIF_PRESTADOR COD_PREST_SERV_SALUD, PRESTADOR.NOMBRE1 NOMBRE_RAZON_SOCIAL,(TO_CHAR(CM_IMPORTARRIPS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, SUM(NVL( VALOR_NETO_A_PAGAR_ENTI_CONTR, 0 )) VALOR_PAGAR, CM_IMPORTARRIPS.AUDITOR, TERCERO.NOMBRE NOMBRE_AUDITOR,(TO_CHAR(CM_IMPORTARRIPS.FECHA_AUDIT,'DD/MM/YYYY HH24:MI:SS')) FECHA_AUDIT,(TO_CHAR(CM_IMPORTARRIPS.FECHA_CONCILIAC,'DD/MM/YYYY HH24:MI:SS')) FECHA_CONCILIAC,(TO_CHAR(CM_IMPORTARRIPS.FECHA_FIN_AUDIT,'DD/MM/YYYY HH24:MI:SS')) FECHA_FIN_AUDIT FROM CM_IMPORTARRIPS INNER JOIN CM_ARCHIVO_TRANSACCIONES ON CM_IMPORTARRIPS.COMPANIA = CM_ARCHIVO_TRANSACCIONES.COMPANIA AND CM_IMPORTARRIPS.CONSECUTIVO = CM_ARCHIVO_TRANSACCIONES.CONSECUTIVO_RIPS INNER JOIN TERCERO PRESTADOR ON CM_ARCHIVO_TRANSACCIONES.COMPANIA = PRESTADOR.COMPANIA AND CM_ARCHIVO_TRANSACCIONES.NUM_IDENTIF_PRESTADOR = PRESTADOR.NIT LEFT JOIN CM_AUDITORES ON CM_IMPORTARRIPS.COMPANIA = CM_AUDITORES.COMPANIA AND CM_IMPORTARRIPS.AUDITOR = CM_AUDITORES.NIT LEFT JOIN TERCERO ON CM_AUDITORES.COMPANIA = TERCERO.COMPANIA AND CM_AUDITORES.NIT = TERCERO.NIT AND CM_AUDITORES.SUCURSAL = TERCERO.SUCURSAL WHERE CM_IMPORTARRIPS.COMPANIA = :COMPANIA AND INSTR( :ESTADO, CONCAT( CONCAT( ',', CM_IMPORTARRIPS.ESTADO ), ',' ) ) &gt; 0 GROUP BY CM_IMPORTARRIPS.COMPANIA, CM_IMPORTARRIPS.CONSECUTIVO, CM_IMPORTARRIPS.RADICADO, CM_IMPORTARRIPS.NIT, CM_IMPORTARRIPS.SUCURSAL, CM_ARCHIVO_TRANSACCIONES.NUM_IDENTIF_PRESTADOR, PRESTADOR.NOMBRE1, CM_IMPORTARRIPS.FECHA, CM_IMPORTARRIPS.ESTADO, CM_IMPORTARRIPS.AUDITOR, TERCERO.NOMBRE, CM_IMPORTARRIPS.FECHA_AUDIT, CM_IMPORTARRIPS.FECHA_CONCILIAC, CM_IMPORTARRIPS.FECHA_FIN_AUDIT ORDER BY CM_IMPORTARRIPS.CONSECUTIVO DESC) INI WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END) LIKE UPPER(CONCAT(:CONSECUTIVO, '%')) AND (CASE WHEN RADICADO IS NULL THEN ' ' ELSE UPPER(RADICADO) END) LIKE UPPER(CONCAT(CONCAT('%',:RADICADO), '%')) AND (CASE WHEN COD_PREST_SERV_SALUD IS NULL THEN ' ' ELSE UPPER(COD_PREST_SERV_SALUD) END) LIKE UPPER(CONCAT(CONCAT('%',:COD_PREST_SERV_SALUD), '%')) AND (CASE WHEN NOMBRE_RAZON_SOCIAL IS NULL THEN ' ' ELSE UPPER(NOMBRE_RAZON_SOCIAL) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_RAZON_SOCIAL), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN VALOR_PAGAR IS NULL THEN ' ' ELSE UPPER(VALOR_PAGAR) END) LIKE UPPER(CONCAT(CONCAT('%',:VALOR_PAGAR), '%')) AND (CASE WHEN NOMBRE_AUDITOR IS NULL THEN ' ' ELSE UPPER(NOMBRE_AUDITOR) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_AUDITOR), '%')) AND (CASE WHEN FECHA_AUDIT IS NULL THEN ' ' ELSE UPPER(FECHA_AUDIT) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA_AUDIT), '%')) AND (CASE WHEN FECHA_CONCILIAC IS NULL THEN ' ' ELSE UPPER(FECHA_CONCILIAC) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA_CONCILIAC), '%')) AND (CASE WHEN FECHA_FIN_AUDIT IS NULL THEN ' ' ELSE UPPER(FECHA_FIN_AUDIT) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA_FIN_AUDIT), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO(type:integer)","RADICADO":"$RADICADO","NIT":"$NIT","SUCURSAL":"$SUCURSAL","COD_PREST_SERV_SALUD":"$COD_PREST_SERV_SALUD","NOMBRE_RAZON_SOCIAL":"$NOMBRE_RAZON_SOCIAL","FECHA":"$FECHA","VALOR_PAGAR":"$VALOR_PAGAR","AUDITOR":"$AUDITOR","NOMBRE_AUDITOR":"$NOMBRE_AUDITOR","FECHA_AUDIT":"$FECHA_AUDIT","FECHA_CONCILIAC":"$FECHA_CONCILIAC","FECHA_FIN_AUDIT":"$FECHA_FIN_AUDIT"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="COD_PREST_SERV_SALUD" sqlType="STRING"/>
+		<param name="NOMBRE_RAZON_SOCIAL" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="VALOR_PAGAR" sqlType="STRING"/>
+		<param name="NOMBRE_AUDITOR" sqlType="STRING"/>
+		<param name="FECHA_AUDIT" sqlType="STRING"/>
+		<param name="FECHA_CONCILIAC" sqlType="STRING"/>
+		<param name="FECHA_FIN_AUDIT" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cmimportarrips/cuentasradicadas/pag">
+		<call-query href="getCmimportarripsPagCuentasRadicadasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="COD_PREST_SERV_SALUD" query-param="COD_PREST_SERV_SALUD"/>
+			<with-param name="NOMBRE_RAZON_SOCIAL" query-param="NOMBRE_RAZON_SOCIAL"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="VALOR_PAGAR" query-param="VALOR_PAGAR"/>
+			<with-param name="NOMBRE_AUDITOR" query-param="NOMBRE_AUDITOR"/>
+			<with-param name="FECHA_AUDIT" query-param="FECHA_AUDIT"/>
+			<with-param name="FECHA_CONCILIAC" query-param="FECHA_CONCILIAC"/>
+			<with-param name="FECHA_FIN_AUDIT" query-param="FECHA_FIN_AUDIT"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmimportarripsNumCuentasRadicadasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CM_IMPORTARRIPS.COMPANIA, CM_IMPORTARRIPS.CONSECUTIVO, CM_IMPORTARRIPS.RADICADO, CM_IMPORTARRIPS.NIT, CM_IMPORTARRIPS.SUCURSAL, CM_ARCHIVO_TRANSACCIONES.NUM_IDENTIF_PRESTADOR COD_PREST_SERV_SALUD, PRESTADOR.NOMBRE1 NOMBRE_RAZON_SOCIAL,(TO_CHAR(CM_IMPORTARRIPS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, SUM(NVL( VALOR_NETO_A_PAGAR_ENTI_CONTR, 0 )) VALOR_PAGAR, CM_IMPORTARRIPS.AUDITOR, TERCERO.NOMBRE NOMBRE_AUDITOR,(TO_CHAR(CM_IMPORTARRIPS.FECHA_AUDIT,'DD/MM/YYYY HH24:MI:SS')) FECHA_AUDIT,(TO_CHAR(CM_IMPORTARRIPS.FECHA_CONCILIAC,'DD/MM/YYYY HH24:MI:SS')) FECHA_CONCILIAC,(TO_CHAR(CM_IMPORTARRIPS.FECHA_FIN_AUDIT,'DD/MM/YYYY HH24:MI:SS')) FECHA_FIN_AUDIT FROM CM_IMPORTARRIPS INNER JOIN CM_ARCHIVO_TRANSACCIONES ON CM_IMPORTARRIPS.COMPANIA = CM_ARCHIVO_TRANSACCIONES.COMPANIA AND CM_IMPORTARRIPS.CONSECUTIVO = CM_ARCHIVO_TRANSACCIONES.CONSECUTIVO_RIPS INNER JOIN TERCERO PRESTADOR ON CM_ARCHIVO_TRANSACCIONES.COMPANIA = PRESTADOR.COMPANIA AND CM_ARCHIVO_TRANSACCIONES.NUM_IDENTIF_PRESTADOR = PRESTADOR.NIT LEFT JOIN CM_AUDITORES ON CM_IMPORTARRIPS.COMPANIA = CM_AUDITORES.COMPANIA AND CM_IMPORTARRIPS.AUDITOR = CM_AUDITORES.NIT LEFT JOIN TERCERO ON CM_AUDITORES.COMPANIA = TERCERO.COMPANIA AND CM_AUDITORES.NIT = TERCERO.NIT AND CM_AUDITORES.SUCURSAL = TERCERO.SUCURSAL WHERE CM_IMPORTARRIPS.COMPANIA = :COMPANIA AND INSTR( :ESTADO, CONCAT( CONCAT( ',', CM_IMPORTARRIPS.ESTADO ), ',' ) ) &gt; 0 GROUP BY CM_IMPORTARRIPS.COMPANIA, CM_IMPORTARRIPS.CONSECUTIVO, CM_IMPORTARRIPS.RADICADO, CM_IMPORTARRIPS.NIT, CM_IMPORTARRIPS.SUCURSAL, CM_ARCHIVO_TRANSACCIONES.NUM_IDENTIF_PRESTADOR, PRESTADOR.NOMBRE1, CM_IMPORTARRIPS.FECHA, CM_IMPORTARRIPS.ESTADO, CM_IMPORTARRIPS.AUDITOR, TERCERO.NOMBRE, CM_IMPORTARRIPS.FECHA_AUDIT, CM_IMPORTARRIPS.FECHA_CONCILIAC, CM_IMPORTARRIPS.FECHA_FIN_AUDIT ORDER BY CM_IMPORTARRIPS.CONSECUTIVO DESC) INI WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END) LIKE UPPER(CONCAT(:CONSECUTIVO, '%')) AND (CASE WHEN RADICADO IS NULL THEN ' ' ELSE UPPER(RADICADO) END) LIKE UPPER(CONCAT(CONCAT('%',:RADICADO), '%')) AND (CASE WHEN COD_PREST_SERV_SALUD IS NULL THEN ' ' ELSE UPPER(COD_PREST_SERV_SALUD) END) LIKE UPPER(CONCAT(CONCAT('%',:COD_PREST_SERV_SALUD), '%')) AND (CASE WHEN NOMBRE_RAZON_SOCIAL IS NULL THEN ' ' ELSE UPPER(NOMBRE_RAZON_SOCIAL) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_RAZON_SOCIAL), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN VALOR_PAGAR IS NULL THEN ' ' ELSE UPPER(VALOR_PAGAR) END) LIKE UPPER(CONCAT(CONCAT('%',:VALOR_PAGAR), '%')) AND (CASE WHEN NOMBRE_AUDITOR IS NULL THEN ' ' ELSE UPPER(NOMBRE_AUDITOR) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_AUDITOR), '%')) AND (CASE WHEN FECHA_AUDIT IS NULL THEN ' ' ELSE UPPER(FECHA_AUDIT) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA_AUDIT), '%')) AND (CASE WHEN FECHA_CONCILIAC IS NULL THEN ' ' ELSE UPPER(FECHA_CONCILIAC) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA_CONCILIAC), '%')) AND (CASE WHEN FECHA_FIN_AUDIT IS NULL THEN ' ' ELSE UPPER(FECHA_FIN_AUDIT) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA_FIN_AUDIT), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="COD_PREST_SERV_SALUD" sqlType="STRING"/>
+		<param name="NOMBRE_RAZON_SOCIAL" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="VALOR_PAGAR" sqlType="STRING"/>
+		<param name="NOMBRE_AUDITOR" sqlType="STRING"/>
+		<param name="FECHA_AUDIT" sqlType="STRING"/>
+		<param name="FECHA_CONCILIAC" sqlType="STRING"/>
+		<param name="FECHA_FIN_AUDIT" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmimportarrips/cuentasradicadas/num">
+		<call-query href="getCmimportarripsNumCuentasRadicadasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="COD_PREST_SERV_SALUD" query-param="COD_PREST_SERV_SALUD"/>
+			<with-param name="NOMBRE_RAZON_SOCIAL" query-param="NOMBRE_RAZON_SOCIAL"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="VALOR_PAGAR" query-param="VALOR_PAGAR"/>
+			<with-param name="NOMBRE_AUDITOR" query-param="NOMBRE_AUDITOR"/>
+			<with-param name="FECHA_AUDIT" query-param="FECHA_AUDIT"/>
+			<with-param name="FECHA_CONCILIAC" query-param="FECHA_CONCILIAC"/>
+			<with-param name="FECHA_FIN_AUDIT" query-param="FECHA_FIN_AUDIT"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCmimportarripsUpdateauditor" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CM_IMPORTARRIPS SET AUDITOR=:AUDITOR, FECHA_AUDIT=TO_DATE(:FECHA_AUDIT,'DD/MM/YYYY HH24:MI:SS'), FECHA_CONCILIAC=TO_DATE(:FECHA_CONCILIAC,'DD/MM/YYYY HH24:MI:SS'), FECHA_FIN_AUDIT=TO_DATE(:FECHA_FIN_AUDIT,'DD/MM/YYYY HH24:MI:SS'), DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CM_IMPORTARRIPS.COMPANIA= :KEY_COMPANIA AND CM_IMPORTARRIPS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="AUDITOR" sqlType="STRING"/>
+		<param name="FECHA_AUDIT" sqlType="STRING"/>
+		<param name="FECHA_CONCILIAC" sqlType="STRING"/>
+		<param name="FECHA_FIN_AUDIT" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cmimportarrips/updateauditor">
+		<call-query href="updateCmimportarripsUpdateauditor">
+			<with-param name="AUDITOR" query-param="AUDITOR"/>
+			<with-param name="FECHA_AUDIT" query-param="FECHA_AUDIT"/>
+			<with-param name="FECHA_CONCILIAC" query-param="FECHA_CONCILIAC"/>
+			<with-param name="FECHA_FIN_AUDIT" query-param="FECHA_FIN_AUDIT"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmimportarripsPagRadicadosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CM_IMPORTARRIPS.CONSECUTIVO, CM_IMPORTARRIPS.RADICADO, CM_IMPORTARRIPS.NIT, TERCERO.NOMBRE, TO_CHAR(CM_IMPORTARRIPS.FECHA, 'DD/MM/YYYY') FECHA FROM CM_IMPORTARRIPS INNER JOIN TERCERO ON CM_IMPORTARRIPS.COMPANIA = TERCERO.COMPANIA AND CM_IMPORTARRIPS.NIT = TERCERO.NIT WHERE CM_IMPORTARRIPS.COMPANIA = :COMPANIA) INI WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END) LIKE UPPER(CONCAT(:CONSECUTIVO, '%')) AND (CASE WHEN RADICADO IS NULL THEN ' ' ELSE UPPER(RADICADO) END) LIKE UPPER(CONCAT(:RADICADO, '%')) AND (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END) LIKE UPPER(CONCAT(:NIT, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(:FECHA, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO(type:integer)","RADICADO":"$RADICADO","NIT":"$NIT","NOMBRE":"$NOMBRE","FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cmimportarrips/radicados/pag">
+		<call-query href="getCmimportarripsPagRadicadosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmimportarripsNumRadicadosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CM_IMPORTARRIPS.CONSECUTIVO, CM_IMPORTARRIPS.RADICADO, CM_IMPORTARRIPS.NIT, TERCERO.NOMBRE, TO_CHAR(CM_IMPORTARRIPS.FECHA, 'DD/MM/YYYY') FECHA FROM CM_IMPORTARRIPS INNER JOIN TERCERO ON CM_IMPORTARRIPS.COMPANIA = TERCERO.COMPANIA AND CM_IMPORTARRIPS.NIT = TERCERO.NIT WHERE CM_IMPORTARRIPS.COMPANIA = :COMPANIA) INI WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END) LIKE UPPER(CONCAT(:CONSECUTIVO, '%')) AND (CASE WHEN RADICADO IS NULL THEN ' ' ELSE UPPER(RADICADO) END) LIKE UPPER(CONCAT(:RADICADO, '%')) AND (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END) LIKE UPPER(CONCAT(:NIT, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(:FECHA, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmimportarrips/radicados/num">
+		<call-query href="getCmimportarripsNumRadicadosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+        </call-query>
+	</resource>
+	<query id="getCmimportarripsPagRadicadoscondevolucionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CM_IMPORTARRIPS.CONSECUTIVO, CM_IMPORTARRIPS.RADICADO, CM_IMPORTARRIPS.NIT, TERCERO.NOMBRE, TO_CHAR(CM_IMPORTARRIPS.FECHA, 'DD/MM/YYYY') AS FECHA FROM CM_IMPORTARRIPS INNER JOIN TERCERO ON CM_IMPORTARRIPS.COMPANIA = TERCERO.COMPANIA AND CM_IMPORTARRIPS.NIT = TERCERO.NIT WHERE CM_IMPORTARRIPS.COMPANIA = :COMPANIA AND EXISTS ( SELECT 1 FROM CM_AUDITORIA_GLOSAS WHERE CM_AUDITORIA_GLOSAS.COMPANIA = CM_IMPORTARRIPS.COMPANIA AND CM_AUDITORIA_GLOSAS.CONSECUTIVO_ARCHIVO = CM_IMPORTARRIPS.CONSECUTIVO AND CM_AUDITORIA_GLOSAS.DEVOLUCION_FACTURA &lt;&gt; 0 )) INI WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END) LIKE UPPER(CONCAT(:CONSECUTIVO, '%')) AND (CASE WHEN RADICADO IS NULL THEN ' ' ELSE UPPER(RADICADO) END) LIKE UPPER(CONCAT(:RADICADO, '%')) AND (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END) LIKE UPPER(CONCAT(:NIT, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(:FECHA, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO(type:integer)","RADICADO":"$RADICADO","NIT":"$NIT","NOMBRE":"$NOMBRE","FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cmimportarrips/radicadoscondevolucion/pag">
+		<call-query href="getCmimportarripsPagRadicadoscondevolucionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmimportarripsNumRadicadoscondevolucionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CM_IMPORTARRIPS.CONSECUTIVO, CM_IMPORTARRIPS.RADICADO, CM_IMPORTARRIPS.NIT, TERCERO.NOMBRE, TO_CHAR(CM_IMPORTARRIPS.FECHA, 'DD/MM/YYYY') AS FECHA FROM CM_IMPORTARRIPS INNER JOIN TERCERO ON CM_IMPORTARRIPS.COMPANIA = TERCERO.COMPANIA AND CM_IMPORTARRIPS.NIT = TERCERO.NIT WHERE CM_IMPORTARRIPS.COMPANIA = :COMPANIA AND EXISTS ( SELECT 1 FROM CM_AUDITORIA_GLOSAS WHERE CM_AUDITORIA_GLOSAS.COMPANIA = CM_IMPORTARRIPS.COMPANIA AND CM_AUDITORIA_GLOSAS.CONSECUTIVO_ARCHIVO = CM_IMPORTARRIPS.CONSECUTIVO AND CM_AUDITORIA_GLOSAS.DEVOLUCION_FACTURA &lt;&gt; 0 )) INI WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END) LIKE UPPER(CONCAT(:CONSECUTIVO, '%')) AND (CASE WHEN RADICADO IS NULL THEN ' ' ELSE UPPER(RADICADO) END) LIKE UPPER(CONCAT(:RADICADO, '%')) AND (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END) LIKE UPPER(CONCAT(:NIT, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(:FECHA, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmimportarrips/radicadoscondevolucion/num">
+		<call-query href="getCmimportarripsNumRadicadoscondevolucionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+		</call-query>
+	</resource>
+	<query id="insertCmimportarrips" keyColumns="COMPANIA,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CM_IMPORTARRIPS (CONSECUTIVO, COMPANIA, FECHA, RADICADO, NIT, SUCURSAL, ESTADO, ESTADOCUENTA, CLASECUENTA, DESCRIPCION, AUDITOR, RIPS_JSON, NRO_CONTRATO, OBSERVACIONES, DATE_CREATED, CREATED_BY) VALUES (:CONSECUTIVO, :COMPANIA, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :RADICADO, :NIT, :SUCURSAL, :ESTADO, :ESTADOCUENTA, :CLASECUENTA, :DESCRIPCION, :AUDITOR, :RIPS_JSON, :NRO_CONTRATO, :OBSERVACIONES, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CONSECUTIVO":"$CONSECUTIVO(type:integer)"}]}}		</result>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADOCUENTA" sqlType="STRING"/>
+		<param defaultValue="" name="CLASECUENTA" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="" name="AUDITOR" sqlType="STRING"/>
+		<param defaultValue="0" name="RIPS_JSON" sqlType="STRING"/>
+		<param defaultValue="" name="NRO_CONTRATO" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="cmimportarrips">
+		<call-query href="insertCmimportarrips">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="ESTADOCUENTA" query-param="ESTADOCUENTA"/>
+			<with-param name="CLASECUENTA" query-param="CLASECUENTA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="AUDITOR" query-param="AUDITOR"/>
+			<with-param name="RIPS_JSON" query-param="RIPS_JSON"/>
+			<with-param name="NRO_CONTRATO" query-param="NRO_CONTRATO"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCmimportarrips" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CM_IMPORTARRIPS WHERE CM_IMPORTARRIPS.COMPANIA= :KEY_COMPANIA AND CM_IMPORTARRIPS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="cmimportarrips">
+		<call-query href="deleteCmimportarrips">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmimportarripsPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CONSECUTIVO, COMPANIA, TO_CHAR(FECHA,'DD/MM/YYYY') FECHA, RADICADO, NIT, SUCURSAL, ARCHIVO, CASE ESTADO WHEN 'P' THEN 'POR CARGAR' WHEN 'E' THEN 'EN PROCESO' WHEN 'F' THEN 'FALLIDO' WHEN 'C' THEN 'CARGADO' WHEN 'T' THEN 'CAUSADO' END ESTADO, MENSAJES, CASE WHEN ESTADO IN ('P','F') THEN 'true' ELSE 'false' END ACCION, AUDITOR FROM CM_IMPORTARRIPS ORDER BY CONSECUTIVO DESC) INI WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END) LIKE UPPER(CONCAT(:CONSECUTIVO, '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(:FECHA, '%')) AND (CASE WHEN RADICADO IS NULL THEN ' ' ELSE UPPER(RADICADO) END) LIKE UPPER(CONCAT(:RADICADO, '%')) AND (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END) LIKE UPPER(CONCAT(:NIT, '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(:ESTADO, '%')) AND (CASE WHEN AUDITOR IS NULL THEN ' ' ELSE UPPER(AUDITOR) END) LIKE UPPER(CONCAT(:AUDITOR, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO(type:integer)","COMPANIA":"$COMPANIA","FECHA":"$FECHA","RADICADO":"$RADICADO","NIT":"$NIT","SUCURSAL":"$SUCURSAL","ARCHIVO":"$ARCHIVO","ESTADO":"$ESTADO","MENSAJES":"$MENSAJES","ACCION":"$ACCION","AUDITOR":"$AUDITOR"}]}}		</result>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="AUDITOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cmimportarrips">
+		<call-query href="getCmimportarripsPaginaQuery">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="AUDITOR" query-param="AUDITOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmimportarripsNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CONSECUTIVO, COMPANIA, TO_CHAR(FECHA,'DD/MM/YYYY') FECHA, RADICADO, NIT, SUCURSAL, ARCHIVO, CASE ESTADO WHEN 'P' THEN 'POR CARGAR' WHEN 'E' THEN 'EN PROCESO' WHEN 'F' THEN 'FALLIDO' WHEN 'C' THEN 'CARGADO' WHEN 'T' THEN 'CAUSADO' END ESTADO, MENSAJES, CASE WHEN ESTADO IN ('P','F') THEN 'true' ELSE 'false' END ACCION, AUDITOR FROM CM_IMPORTARRIPS ORDER BY CONSECUTIVO DESC) INI WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END) LIKE UPPER(CONCAT(:CONSECUTIVO, '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(:FECHA, '%')) AND (CASE WHEN RADICADO IS NULL THEN ' ' ELSE UPPER(RADICADO) END) LIKE UPPER(CONCAT(:RADICADO, '%')) AND (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END) LIKE UPPER(CONCAT(:NIT, '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(:ESTADO, '%')) AND (CASE WHEN AUDITOR IS NULL THEN ' ' ELSE UPPER(AUDITOR) END) LIKE UPPER(CONCAT(:AUDITOR, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="AUDITOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmimportarrips/numero">
+		<call-query href="getCmimportarripsNumeroQuery">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="AUDITOR" query-param="AUDITOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmimportarripsRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CM_IMPORTARRIPS.CONSECUTIVO, CM_IMPORTARRIPS.COMPANIA, TO_CHAR( CM_IMPORTARRIPS.FECHA, 'DD/MM/YYYY HH24:MI:SS' ) FECHA, CM_IMPORTARRIPS.RADICADO, CM_IMPORTARRIPS.NIT, TERCERO.NOMBRE, CM_IMPORTARRIPS.SUCURSAL, CM_IMPORTARRIPS.ARCHIVO, CM_IMPORTARRIPS.MENSAJES, CM_IMPORTARRIPS.ESTADO, CASE CM_IMPORTARRIPS.ESTADO WHEN 'P' THEN 'POR CARGAR' WHEN 'F' THEN 'FALLIDO' WHEN 'E' THEN 'EN PROCESO' WHEN 'C' THEN 'CARGADO' WHEN 'T' THEN 'CAUSADO' END NOMBRE_ESTADO, CM_IMPORTARRIPS.ESTADOCUENTA, CM_ESTADOCUENTA.NOMBRE NOMBRE_ESTADOCUENTA, CM_IMPORTARRIPS.CLASECUENTA, CM_CLASECUENTA.NOMBRE NOMBRE_CLASECUENTA, CM_IMPORTARRIPS.DESCRIPCION, CM_IMPORTARRIPS.AUDITOR,(CASE CM_IMPORTARRIPS.RIPS_JSON WHEN 0 THEN 'false' ELSE 'true' END) RIPS_JSON, CM_IMPORTARRIPS.NRO_CONTRATO, CM_IMPORTARRIPS.OBSERVACIONES FROM CM_IMPORTARRIPS INNER JOIN TERCERO ON CM_IMPORTARRIPS.COMPANIA = TERCERO.COMPANIA AND CM_IMPORTARRIPS.NIT = TERCERO.NIT LEFT JOIN CM_ESTADOCUENTA ON CM_IMPORTARRIPS.COMPANIA = CM_ESTADOCUENTA.COMPANIA AND CM_IMPORTARRIPS.ESTADOCUENTA = CM_ESTADOCUENTA.CODIGO LEFT JOIN CM_CLASECUENTA ON CM_IMPORTARRIPS.COMPANIA = CM_CLASECUENTA.COMPANIA AND CM_IMPORTARRIPS.CLASECUENTA = CM_CLASECUENTA.CODIGO WHERE CM_IMPORTARRIPS.COMPANIA= :KEY_COMPANIA AND CM_IMPORTARRIPS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO(type:integer)","COMPANIA":"$COMPANIA","FECHA":"$FECHA","RADICADO":"$RADICADO","NIT":"$NIT","NOMBRE":"$NOMBRE","SUCURSAL":"$SUCURSAL","ARCHIVO":"$ARCHIVO","MENSAJES":"$MENSAJES","ESTADO":"$ESTADO","NOMBRE_ESTADO":"$NOMBRE_ESTADO","ESTADOCUENTA":"$ESTADOCUENTA","NOMBRE_ESTADOCUENTA":"$NOMBRE_ESTADOCUENTA","CLASECUENTA":"$CLASECUENTA","NOMBRE_CLASECUENTA":"$NOMBRE_CLASECUENTA","DESCRIPCION":"$DESCRIPCION","AUDITOR":"$AUDITOR","RIPS_JSON":"$RIPS_JSON(type:boolean)","NRO_CONTRATO":"$NRO_CONTRATO","OBSERVACIONES":"$OBSERVACIONES"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmimportarrips/data">
+		<call-query href="getCmimportarripsRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCmimportarrips" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CM_IMPORTARRIPS SET CONSECUTIVO=:CONSECUTIVO, COMPANIA=:COMPANIA, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), RADICADO=:RADICADO, NIT=:NIT, SUCURSAL=:SUCURSAL, ARCHIVO=:ARCHIVO, MENSAJES=:MENSAJES, ESTADO=:ESTADO, ESTADOCUENTA=:ESTADOCUENTA, CLASECUENTA=:CLASECUENTA, DESCRIPCION=:DESCRIPCION, AUDITOR=:AUDITOR, RIPS_JSON=:RIPS_JSON, NRO_CONTRATO=:NRO_CONTRATO, OBSERVACIONES=:OBSERVACIONES, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CM_IMPORTARRIPS.COMPANIA= :KEY_COMPANIA AND CM_IMPORTARRIPS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="RADICADO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="ARCHIVO" sqlType="STRING"/>
+		<param name="MENSAJES" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="ESTADOCUENTA" sqlType="STRING"/>
+		<param name="CLASECUENTA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="AUDITOR" sqlType="STRING"/>
+		<param name="RIPS_JSON" sqlType="STRING"/>
+		<param name="NRO_CONTRATO" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cmimportarrips">
+		<call-query href="updateCmimportarrips">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="RADICADO" query-param="RADICADO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="ARCHIVO" query-param="ARCHIVO"/>
+			<with-param name="MENSAJES" query-param="MENSAJES"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="ESTADOCUENTA" query-param="ESTADOCUENTA"/>
+			<with-param name="CLASECUENTA" query-param="CLASECUENTA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="AUDITOR" query-param="AUDITOR"/>
+			<with-param name="RIPS_JSON" query-param="RIPS_JSON"/>
+			<with-param name="NRO_CONTRATO" query-param="NRO_CONTRATO"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+
+</data>

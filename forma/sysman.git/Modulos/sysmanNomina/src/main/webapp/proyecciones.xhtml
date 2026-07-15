@@ -1,0 +1,593 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+                if("#{proyeccionesControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TG_PROYECCIONES}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{proyeccionesControlador.cargarLista}" />
+		<section class="radius">
+			<h:form id="FR38">
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="lista" widgetVar="lista"
+					visible="#{proyeccionesControlador.accion==null}">
+					<p:confirmDialog global="true" showEffect="fade" id="confFR38"
+						widgetVar="confFR38"
+						rendered="#{proyeccionesControlador.permisos[1]}">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:dataTable id="TBFR38" widgetVar="TBFR38" var="reg"
+						value="#{proyeccionesControlador.listaInicial}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" paginator="true" lazy="true">
+						<f:facet name="{Exporters}"
+							rendered="#{proyeccionesControlador.permisos[4] }">
+							<h:commandLink rendered="#{proyeccionesControlador.permisos[4] }"
+								title="#{idm.TI_VER_EXCEL}">
+								<p:graphicImage name="/images/general/excel.png" width="24" />
+								<p:dataExporter type="xls" target="TBFR38" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+							<h:commandLink rendered="#{proyeccionesControlador.permisos[4] }"
+								title="#{idm.TI_VER_PDF}">
+								<p:graphicImage name="/images/general/pdf.png" width="24" />
+								<p:dataExporter type="pdf" target="TBFR38" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+						</f:facet>
+						<f:facet name="header">
+							<div style="position: relative; height: 50px">
+								<div class="acme">
+									<h:outputLink value="#{request.contextPath}/menu.sysman"
+										title="#{idm.TI_VOLVER}" style="padding-top: 10px;">
+										<center>
+											<p:graphicImage name="/images/menus/32/close.png" />
+											<div>#{idm.TI_CERRAR}</div>
+										</center>
+									</h:outputLink>
+								</div>
+							</div>
+                            #{idm.TG_PROYECCIONES}
+                        </f:facet>
+						<p:column headerText="#{idm.TG_CODIGO_DEL_EMPLEADO}"
+							filterBy="#{reg.campos['ID_DE_EMPLEADO']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['ID_DE_EMPLEADO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_NOMBRE3}"
+							filterBy="#{reg.campos['NOMBRES']}" filterMatchMode="contains"
+							style="text-align:center; " filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRES']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_FR38_2}"
+							filterBy="#{reg.campos['NUMERO_DCTO']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NUMERO_DCTO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column width="150" headerText="Acciones"
+							style="text-align: center" exportable="false">
+							<p:commandButton icon="ui-icon-search"
+								title="#{idm.TI_VER_REGISTRO}"
+								action="#{proyeccionesControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+								update=":FR38_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB76').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{proyeccionesControlador.permisos[3]}"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-document-b"
+								title="#{idm.TI_EDITAR_REGISTRO}"
+								action="#{proyeccionesControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+								update=":FR38_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB76').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{proyeccionesControlador.permisos[2] and proyeccionesControlador.perActivo}"
+								oncomplete="try{asignarEventoContGrande();
+validarCargaGrandes();
+ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR38">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+			<h:form id="FR38_nuevo" style="margin-top: -20px;">
+				<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA"
+					my="left bottom" at="left bottom" for="BTBUSQUEDA"
+					hideEffect="fade" rendered="#{proyeccionesControlador.accion!='i'}"
+					style="width: 500px">
+					<p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA" var="reg"
+						value="#{proyeccionesControlador.listaInicialF}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" selectionMode="single"
+						rowKey="#{reg.llave}" paginator="true" lazy="true">
+						<p:ajax event="rowSelect"
+							listener="#{proyeccionesControlador.seleccionarFilaBusqueda}"
+							onstart="PF('blockNuevo').show()"
+							oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide(); asignarEventoContGrande();
+validarCargaGrandes();
+   "
+							update="@form" />
+						<p:column headerText="#{idm.TG_NOMBRE3}"
+							filterBy="#{reg.campos['NOMBRES']}" filterMatchMode="contains"
+							style="text-align:center; " filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRES']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_FR38_2}"
+							filterBy="#{reg.campos['NUMERO_DCTO']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NUMERO_DCTO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+					</p:dataTable>
+				</p:overlayPanel>
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="nuevoPanel"
+					visible="#{proyeccionesControlador.accion!=null}"
+					widgetVar="nuevoPanel">
+					<div
+						style="position: relative; height: 50px; padding-bottom: 80px;">
+						<div class="acme"
+							style="display:#{proyeccionesControlador.accion=='i' or !proyeccionesControlador.permisos[0]?'none':'block'}">
+							<p:commandLink id="BTBUSQUEDA"
+								rendered="#{proyeccionesControlador.accion!='i' and proyeccionesControlador.permisos[0]}"
+								title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/search.png" />
+									<div style="height: 30px">#{idm.TI_BUSCAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme">
+							<p:commandLink update=":FR38:TBFR38"
+								onclick="try {
+		           PF('TBFR38').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+								title="#{idm.TI_ATRAS}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/back.png" />
+									<div style="height: 30px">#{idm.TI_VOLVER}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<p:panel
+							rendered="#{proyeccionesControlador.accion!='i'  and proyeccionesControlador.rid==null }"
+							styleClass="acme"
+							style="min-width: 350px; width:30%; padding: 10px;">
+							<center style="margin: 2px;">
+								<p:commandButton icon="ui-icon-seek-first"
+									action="#{proyeccionesControlador.irPrimero()}"
+									title="#{idm.TI_PRIMER_REGISTRO}" update=":FR38_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide();asignarEventoContGrande();
+validarCargaGrandes();
+ ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-prev"
+									action="#{proyeccionesControlador.irAnterior()}"
+									title="#{idm.TI_REGISTRO_ANTERIOR}" update=":FR38_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide();asignarEventoContGrande();
+validarCargaGrandes();
+ ">
+								</p:commandButton>
+								<p:outputLabel
+									value="#{idm.TI_REGISTRO} #{proyeccionesControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{proyeccionesControlador.listaInicial.rowCount} " />
+								<p:commandButton icon="ui-icon-seek-next"
+									title="#{idm.TI_REGISTRO_SIGUIENTE}"
+									action="#{proyeccionesControlador.irSiguiente()}"
+									update=":FR38_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide();asignarEventoContGrande();
+validarCargaGrandes();
+ ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-end"
+									title="#{idm.TI_ULTIMO_REGISTRO}"
+									action="#{proyeccionesControlador.irUltimo()}"
+									update=":FR38_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide();asignarEventoContGrande();
+validarCargaGrandes();
+ ">
+								</p:commandButton>
+							</center>
+						</p:panel>
+						<p:panel styleClass="acme" style="width:21%;">
+							<h:panelGrid columns="3"
+								style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+								<h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}" />
+								<p:inputText id="CPCREADO" readonly="true" widgetVar="CPCREADO"
+									value="#{proyeccionesControlador.registro.campos['CREATED_BY']}"
+									placeholder="#{idm.TI_CREADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPCREADOF" widgetVar="CPCREADOF"
+									value="#{proyeccionesControlador.registro.campos['DATE_CREATED']}"
+									disabled="true" />
+								<h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+								<p:inputText id="CPMODIFICADO" readonly="true"
+									widgetVar="CPMODIFICADO"
+									value="#{proyeccionesControlador.registro.campos['MODIFIED_BY']}"
+									placeholder="#{idm.TI_MODIFICADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPMODIFICADOF" widgetVar="CPMODIFICADOF"
+									value="#{proyeccionesControlador.registro.campos['DATE_MODIFIED']}"
+									disabled="true" />
+							</h:panelGrid>
+						</p:panel>
+					</div>
+					<div id="PL89" class="
+" style="position: relative; height: 34px;">
+						<h:outputLabel id="LB217" value="#{idm.TT_LB217}"
+							style="position: absolute; width:694px; height: 34px; left: 28px;   top: 0px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<div id="PL90" class="
+"
+						style="position: relative; height: 550px;">
+						<h:outputLabel id="LB11172"
+							value="#{proyeccionesControlador.titulo}"
+							style="position: absolute; width:700px; height: 20px; left: 19px;   top: 60px; text-align: left; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#0000FF; border:none;" />
+						<p:inputText id="CP315" widgetVar="CP315" styleClass="inputTab"
+							value="#{proyeccionesControlador.registro.campos['NOMBRES']}"
+							placeholder="#{idm.TG_CODIGO_DEL_EMPLEADO}" readonly="true"
+							tabindex="1"
+							style="position: absolute; width:365px; height: 22px; text-decoration:none; left: 106px;   top: 23px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<h:panelGroup id="SF8"
+							style="position: absolute; width:682px; height: 300px; left: 5px;   top: 74px; ">
+							<p:overlayPanel widgetVar="PLCB76" id="PLCB76"
+								onShow="if(PF('TBCB76').nuevo){ PF('TBCB76').filter(); PF('TBCB76').nuevo=false;}"
+								onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB76').jq.focus();}"
+								my="left" at="left" for="BTCB76" hideEffect="fade"
+								rendered="#{proyeccionesControlador.accion!='v'}"
+								style="width: 500px">
+								<p:dataTable id="TBCB76" widgetVar="TBCB76" var="reg"
+									value="#{proyeccionesControlador.listaIdConcepto}"
+									editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+									currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+									rows="11" rowIndexVar="rowIndex" selectionMode="single"
+									rowKey="#{reg.campos['ID_DE_CONCEPTO']}" paginator="true"
+									lazy="true">
+									<p:ajax event="rowSelect"
+										listener="#{proyeccionesControlador.seleccionarFilaIdConcepto}"
+										update=":FR38_nuevo:CB76,:FR38_nuevo:BTCB76,:FR38_nuevo:CP314,:FR38_nuevo:alert"
+										oncomplete="PF('PLCB76').hide(); $('#speCB76').remove();  " />
+									<p:column headerText="#{idm.TG_CODIGO7}"
+										style="text-align:center; " width="15%"
+										filterBy="#{reg.campos['ID_DE_CONCEPTO']}"
+										filterMatchMode="startsWith" filterStyle="width:100%;">
+										<h:outputText value="#{reg.campos['ID_DE_CONCEPTO']}"
+											style="float:left;  text-align:left;  min-height: 20px;" />
+									</p:column>
+									<p:column headerText="#{idm.TG_NOMBRE3}"
+										style="text-align:center; " width="73%"
+										filterBy="#{reg.campos['NOMBRE_CONCEPTO']}"
+										filterMatchMode="contains" filterStyle="width:100%;">
+										<h:outputText value="#{reg.campos['NOMBRE_CONCEPTO']}"
+											style="float:left;  text-align:left;  min-height: 20px;" />
+									</p:column>
+									<p:column headerText="#{idm.TG_CLASE4}"
+										style="text-align:center; " width="12%"
+										filterBy="#{reg.campos['CLASE']}" filterMatchMode="startsWith"
+										filterStyle="width:100%;">
+										<h:outputText value="#{reg.campos['CLASE']}"
+											style="float:left;  text-align:left;  min-height: 20px;" />
+									</p:column>
+								</p:dataTable>
+							</p:overlayPanel>
+							<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}"
+								id="dlg8" widgetVar="dlg8" resizable="false" modal="true"
+								rendered="#{proyeccionesControlador.permisos[0]}"
+								onHide="restaurarCampos(['CB76','CP312','CP314'])">
+								<h:panelGrid columns="2" cellpadding="2">
+									<h:outputLabel value="#{idm.TC_CB76}:" id="LCB76" style="
+"
+										class="cont-inst-element" />
+									<h:panelGroup style="
+">
+										<p:inputText id="CB76" widgetVar="CB76"
+											onfocus="if(!false){PF('BTCB76').jq.focus();}"
+											onclick="if(!false){PF('PLCB76').show();}"
+											value="#{proyeccionesControlador.registroSub.campos['ID_DE_CONCEPTO']}"
+											style="cursor:pointer; width: 80%;" tabindex="-1"
+											class="cont-inst-element" />
+										<p:commandButton id="BTCB76" widgetVar="BTCB76"
+											onclick="PF('PLCB76').show();" onblur="PF('CB76').jq.blur();"
+											onfocus="PF('CB76').jq.addClass('ui-state-focus');"
+											type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+											style="width:25px; height:  23px; top:3px; border-left-width: 0; "
+											class="cont-inst-element" />
+									</h:panelGroup>
+									<h:outputLabel value="#{idm.TG_NOMBRE_CONCEPTO}:" id="LCP314"
+										class="cont-inst-element" />
+									<p:inputText id="CP314" readonly="true" widgetVar="CP314"
+										styleClass="inputTab"
+										value="#{proyeccionesControlador.registroSub.campos['NOMBRE_CONCEPTO']}"
+										label="LCP314" style=" width: 95%; float: left;"
+										class="cont-inst-element" maxlength="60">
+									</p:inputText>
+									<h:outputLabel value="#{idm.TG_VALOR4}:" id="LCP312"
+										class="cont-inst-element" />
+									<pe:inputNumber id="CP312" widgetVar="CP312"
+										value="#{proyeccionesControlador.registroSub.campos['VALOR']}"
+										label="LCP312" decimalPlaces="2" thousandSeparator=","
+										decimalSeparator="." styleClass="inputTab"
+										maxValue="999999999999999999.99"
+										minValue="-999999999999999999.99"
+										converter="convertidorDouble" style=" width: 95%;float: left;"
+										class="cont-inst-element">
+									</pe:inputNumber>
+									<h:outputLabel value="#{idm.TG_OBSERVACIONES3}:" id="LCP313"
+										class="cont-inst-element" />
+									<p:inputText id="CP313" widgetVar="CP313" styleClass="inputTab"
+										value="#{proyeccionesControlador.registroSub.campos['OBSERVACIONES']}"
+										label="LCP313" style=" width: 95%; float: left;"
+										class="cont-inst-element" maxlength="4000">
+									</p:inputText>
+									<f:facet name="footer">
+										<center>
+											<p:commandButton value="#{idm.TI_GUARDAR}"
+												style="padding:10px;"
+												update=":FR38_nuevo:alert,tablePL91,dlg8,"
+												actionListener="#{proyeccionesControlador.agregarRegistroSubProyecciones}"
+												oncomplete="PF('dlg8').hide();PF('blockNuevoGuardar').hide();"
+												onclick="    if (!validarVaciosModal(['CB76','CP312','CP314'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockNuevoGuardar').show();" />
+											<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+												href="#" onclick="PF('dlg8').hide();" />
+										</center>
+									</f:facet>
+								</h:panelGrid>
+							</p:dialog>
+							<div id="PL91" class="
+"
+								style="position: relative; height: 300px;">
+								<center style="height: 0px">
+									<p:inputText id="HCB76" widgetVar="HCB76"
+										value="#{proyeccionesControlador.auxiliar}"
+										style="width: 0px; height: 0px; border: #ffffff; background: #FFFFFF; box-shadow: none"
+										disabled="true" />
+								</center>
+								<p:overlayPanel widgetVar="PLSCB76" id="PLSCB76"
+									onShow="if(PF('TBSCB76').nuevo){ PF('TBSCB76').clearFilters(); PF('TBSCB76').nuevo=false;}"
+									onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){aux= aux.replace(':BT',':'); aux=aux.replace(/:/g,'\\:'); $('#'+aux).focus();}"
+									for="HCB76" hideEffect="fade" style="width:500px; ">
+									<p:dataTable id="TBSCB76" widgetVar="TBSCB76" var="reg"
+										value="#{proyeccionesControlador.listaIdConceptoE}"
+										editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+										currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+										rows="11" rowIndexVar="rowIndex" selectionMode="single"
+										rowKey="#{reg.campos['ID_DE_CONCEPTO']}" paginator="true"
+										lazy="true">
+										<p:ajax event="rowSelect"
+											listener="#{proyeccionesControlador.seleccionarFilaIdConceptoE}"
+											update=":FR38_nuevo:HCB76"
+											oncomplete="aux=aux.replace(/\\/g,''); aux= aux.replace(':BT',':'); aux=aux.replace(/:/g,'\\:'); $('#'+aux)[0].value=PF('HCB76').jq[0].value;  PF('PLSCB76').hide();  $('#'+aux).change(); ind=false; " />
+										<p:column headerText="#{idm.TG_CODIGO7}"
+											style="text-align:center; " width="15%"
+											filterBy="#{reg.campos['ID_DE_CONCEPTO']}"
+											filterMatchMode="startsWith" filterStyle="width:100%;">
+											<h:outputText value="#{reg.campos['ID_DE_CONCEPTO']}"
+												style="float:left;  text-align:left;  min-height: 20px;" />
+										</p:column>
+										<p:column headerText="#{idm.TG_NOMBRE3}"
+											style="text-align:center; " width="73%"
+											filterBy="#{reg.campos['NOMBRE_CONCEPTO']}"
+											filterMatchMode="contains" filterStyle="width:100%;">
+											<h:outputText value="#{reg.campos['NOMBRE_CONCEPTO']}"
+												style="float:left;  text-align:left;  min-height: 20px;" />
+										</p:column>
+										<p:column headerText="#{idm.TG_CLASE4}"
+											style="text-align:center; " width="12%"
+											filterBy="#{reg.campos['CLASE']}"
+											filterMatchMode="startsWith" filterStyle="width:100%;">
+											<h:outputText value="#{reg.campos['CLASE']}"
+												style="float:left;  text-align:left;  min-height: 20px;" />
+										</p:column>
+									</p:dataTable>
+								</p:overlayPanel>
+								<p:remoteCommand name="refreshTabPL91" update="tablePL91" />
+								<p:dataTable id="tablePL91" var="reg"
+									value="#{proyeccionesControlador.listaProyecciones}"
+									emptyMessage="#{idm.TI_EMPTY_MESSAGE}" scrollable="true"
+									scrollHeight="300" scrollWidth="682" rowIndexVar="rowNun"
+									editable="true" widgetVar="tablePL91" tabindex="0">
+									<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+									<p:ajax event="rowEdit" update=":FR38_nuevo:alert,tablePL91,"
+										onstart="PF('blockNuevoGuardar').show()"
+										oncomplete="refreshTabPL91(); PF('blockNuevoGuardar').hide();  mostarEditor();"
+										listener="#{proyeccionesControlador.editarRegSubProyecciones}" />
+									<p:ajax event="rowEditCancel" update="tablePL91
+"
+										listener="#{proyeccionesControlador.cancelarEdicionProyecciones}"
+										oncomplete=" mostarEditor();" />
+									<f:facet name="header">
+										<div style="position: relative; height: 50px">
+											<h:panelGroup class="acme" style="width: 50px;"
+												rendered="#{proyeccionesControlador.accion=='m' 
+}">
+												<h:outputLink value="javascript:void(0)"
+													onclick=" PF('dlg8').show();"
+													title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+													tabindex="0">
+													<center>
+														<p:graphicImage name="/images/menus/32/adds.png" />
+														<div style="font-size: 12px">#{idm.TI_NUEVO}</div>
+													</center>
+												</h:outputLink>
+											</h:panelGroup>
+										</div>    
+			#{idm.TG_PROYECCIONES}
+                                            </f:facet>
+									<p:column headerText="#{idm.TC_CB76}" width="122" style="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['ID_DE_CONCEPTO']}" />
+											</f:facet>
+											<f:facet name="input">
+												<h:panelGroup>
+													<p:inputText id="CB76" widgetVar="CB76"
+														onfocus="if(!false){onfocusCBG('#{component.clientId}');}"
+														onchange="return ind;"
+														value="#{reg.campos['ID_DE_CONCEPTO']}"
+														onclick="if(!false){ PF('PLSCB76').show('#{component.clientId}');} aux= '#{component.clientId}'; ind = true;"
+														style="cursor:pointer; width: 75%;" tabindex="-1">
+														<p:ajax
+															listener="#{proyeccionesControlador.cambiarIdConceptoC(rowNun)}"
+															update="CP314,:FR38_nuevo:alert" />
+													</p:inputText>
+													<p:commandButton id="BTCB76" type="button"
+														icon="ui-icon ui-icon-triangle-1-s ui-c"
+														onclick="PF('PLSCB76').show('#{component.clientId}'); aux= '#{component.clientId}'; ind = true;"
+														onblur="onblurBTCBG('#{component.clientId}');"
+														onfocus="onfocusBTCBG('#{component.clientId}');"
+														style="width:25px; height:  21px; top:5px; border-left-width: 0; " />
+												</h:panelGroup>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TG_NOMBRE_CONCEPTO}" width="184px"
+										style="
+" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['NOMBRE_CONCEPTO']}" />
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="CP314" styleClass="inputTab"
+													value="#{reg.campos['NOMBRE_CONCEPTO']}" style="width:100%"
+													readonly="true" maxlength="60">
+												</p:inputText>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TG_VALOR4}" width="81px" style="
+"
+										styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['VALOR']}"
+													converter="convertidorDoubleContinuo"
+													style="text-align:  left; float:  left" />
+											</f:facet>
+											<f:facet name="input">
+												<pe:inputNumber id="CP312" value="#{reg.campos['VALOR']}"
+													styleClass="inputTab" style="width:100%" decimalPlaces="2"
+													thousandSeparator="," decimalSeparator="."
+													maxValue="999999999999999999.99"
+													minValue="-999999999999999999.99"
+													converter="convertidorDouble">
+												</pe:inputNumber>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TG_OBSERVACIONES3}" width="295px"
+										style="
+" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['OBSERVACIONES']}" />
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="CP313" styleClass="inputTab"
+													value="#{reg.campos['OBSERVACIONES']}" style="width:100%"
+													maxlength="4000">
+												</p:inputText>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column width="30"
+										rendered="#{proyeccionesControlador.accion=='m'}">
+										<p:rowEditor />
+									</p:column>
+									<p:column width="30"
+										rendered="#{proyeccionesControlador.accion=='m'}">
+										<p:commandButton icon="ui-icon-trash"
+											title="#{idm.TI_ELIMINAR_REGISTRO}"
+											action="#{proyeccionesControlador.eliminarRegSubProyecciones(reg)}"
+											oncomplete="PF('blockNuevoGuardar').hide(); refreshTabPL91();"
+											onclick="PF('blockNuevoGuardar').show();"
+											update=":FR38_nuevo:alert,tablePL91,"
+											style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;"
+											tabindex="0">
+											<p:confirm header="#{sessionBean.tituloMensajes}"
+												message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+										</p:commandButton>
+									</p:column>
+								</p:dataTable>
+							</div>
+						</h:panelGroup>
+						<h:outputLabel id="LB218" value="#{idm.TG_EMPLEADO2}"
+							style="position: absolute; width:78px; height: 20px; left: 19px;   top: 23px; text-align: left; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

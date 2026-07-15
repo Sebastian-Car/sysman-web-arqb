@@ -1,0 +1,182 @@
+﻿<data name="tasadecambio" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTasadecambioTodosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT TASADECAMBIO.MONEDADESTINO, TASADECAMBIO.MONEDAORIGEN, MONEDA.NOMBRE,(TO_CHAR(TASADECAMBIO.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, TASADECAMBIO.VALOR  FROM TASADECAMBIO LEFT JOIN MONEDA ON TASADECAMBIO.MONEDADESTINO=MONEDA.CODIGO WHERE TASADECAMBIO.MONEDAORIGEN=:MONEDAORIGEN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"MONEDADESTINO":"$MONEDADESTINO","MONEDAORIGEN":"$MONEDAORIGEN","NOMBRE":"$NOMBRE","FECHA":"$FECHA","VALOR":"$VALOR"}]}}		</result>
+		<param name="MONEDAORIGEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tasadecambio/todos">
+		<call-query href="getTasadecambioTodosQuery">
+			<with-param name="MONEDAORIGEN" query-param="MONEDAORIGEN"/>
+
+		</call-query>
+	</resource>
+	<query id="getTasadecambioPagSinActualQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM MONEDA WHERE MONEDA.CODIGO NOT IN (:MONEDA)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="MONEDA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tasadecambio/sinactual/pag">
+		<call-query href="getTasadecambioPagSinActualQuery">
+			<with-param name="MONEDA" query-param="MONEDA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTasadecambioNumSinActualQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM MONEDA WHERE MONEDA.CODIGO NOT IN (:MONEDA)) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="MONEDA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tasadecambio/sinactual/num">
+		<call-query href="getTasadecambioNumSinActualQuery">
+			<with-param name="MONEDA" query-param="MONEDA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertTasadecambio" keyColumns="MONEDAORIGEN,MONEDADESTINO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TASADECAMBIO (MONEDAORIGEN, MONEDADESTINO, FECHA, VALOR, DATE_CREATED, CREATED_BY) VALUES (:MONEDAORIGEN, :MONEDADESTINO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :VALOR, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_MONEDAORIGEN":"$MONEDAORIGEN","KEY_MONEDADESTINO":"$MONEDADESTINO","KEY_FECHA":"$FECHA"}]}}		</result>
+		<param defaultValue="COP" name="MONEDAORIGEN" sqlType="STRING"/>
+		<param defaultValue="COP" name="MONEDADESTINO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="tasadecambio">
+		<call-query href="insertTasadecambio">
+			<with-param name="MONEDAORIGEN" query-param="MONEDAORIGEN"/>
+			<with-param name="MONEDADESTINO" query-param="MONEDADESTINO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTasadecambio" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TASADECAMBIO WHERE TASADECAMBIO.MONEDAORIGEN= :KEY_MONEDAORIGEN AND TASADECAMBIO.MONEDADESTINO= :KEY_MONEDADESTINO AND TASADECAMBIO.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_MONEDAORIGEN" sqlType="STRING"/>
+		<param name="KEY_MONEDADESTINO" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="tasadecambio">
+		<call-query href="deleteTasadecambio">
+			<with-param name="KEY_MONEDAORIGEN" query-param="KEY_MONEDAORIGEN"/>
+			<with-param name="KEY_MONEDADESTINO" query-param="KEY_MONEDADESTINO"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTasadecambioPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TASADECAMBIO.MONEDAORIGEN, TASADECAMBIO.MONEDADESTINO, TO_CHAR(TASADECAMBIO.FECHA,'DD/MM/YYYY') FECHA, TASADECAMBIO.VALOR  FROM TASADECAMBIO WHERE TASADECAMBIO.MONEDAORIGEN = :CODIGO ORDER BY TASADECAMBIO.MONEDAORIGEN, TASADECAMBIO.MONEDADESTINO, TASADECAMBIO.FECHA DESC) WHERE (CASE WHEN MONEDAORIGEN IS NULL THEN ' ' ELSE UPPER(MONEDAORIGEN) END)  LIKE UPPER(:MONEDAORIGEN || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER(:FECHA || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"MONEDAORIGEN":"$MONEDAORIGEN","MONEDADESTINO":"$MONEDADESTINO","FECHA":"$FECHA","VALOR":"$VALOR"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="MONEDAORIGEN" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="tasadecambio">
+		<call-query href="getTasadecambioPaginaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MONEDAORIGEN" query-param="MONEDAORIGEN"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTasadecambioNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TASADECAMBIO.MONEDAORIGEN, TASADECAMBIO.MONEDADESTINO, TO_CHAR(TASADECAMBIO.FECHA,'DD/MM/YYYY') FECHA, TASADECAMBIO.VALOR  FROM TASADECAMBIO WHERE TASADECAMBIO.MONEDAORIGEN = :CODIGO ORDER BY TASADECAMBIO.MONEDAORIGEN, TASADECAMBIO.MONEDADESTINO, TASADECAMBIO.FECHA DESC) WHERE (CASE WHEN MONEDAORIGEN IS NULL THEN ' ' ELSE UPPER(MONEDAORIGEN) END)  LIKE UPPER(:MONEDAORIGEN || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER(:FECHA || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="MONEDAORIGEN" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tasadecambio/numero">
+		<call-query href="getTasadecambioNumeroQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MONEDAORIGEN" query-param="MONEDAORIGEN"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getTasadecambioRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT TASADECAMBIO.MONEDAORIGEN, TASADECAMBIO.MONEDADESTINO,(TO_CHAR(TASADECAMBIO.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, TASADECAMBIO.VALOR  FROM TASADECAMBIO WHERE TASADECAMBIO.MONEDAORIGEN= :KEY_MONEDAORIGEN AND TASADECAMBIO.MONEDADESTINO= :KEY_MONEDADESTINO AND TASADECAMBIO.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS') </sql>
+		<result outputType="json">{"elementos":{"elemento":[{"MONEDAORIGEN":"$MONEDAORIGEN","MONEDADESTINO":"$MONEDADESTINO","FECHA":"$FECHA","VALOR":"$VALOR"}]}}		</result>
+		<param name="KEY_MONEDAORIGEN" sqlType="STRING"/>
+		<param name="KEY_MONEDADESTINO" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="tasadecambio/data">
+		<call-query href="getTasadecambioRegistroQuery">
+			<with-param name="KEY_MONEDAORIGEN" query-param="KEY_MONEDAORIGEN"/>
+			<with-param name="KEY_MONEDADESTINO" query-param="KEY_MONEDADESTINO"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTasadecambio" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TASADECAMBIO SET MONEDAORIGEN=:MONEDAORIGEN, MONEDADESTINO=:MONEDADESTINO, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), VALOR=:VALOR, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TASADECAMBIO.MONEDAORIGEN= :KEY_MONEDAORIGEN AND TASADECAMBIO.MONEDADESTINO= :KEY_MONEDADESTINO AND TASADECAMBIO.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS') </sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="MONEDAORIGEN" sqlType="STRING"/>
+		<param name="MONEDADESTINO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_MONEDAORIGEN" sqlType="STRING"/>
+		<param name="KEY_MONEDADESTINO" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="tasadecambio">
+		<call-query href="updateTasadecambio">
+			<with-param name="MONEDAORIGEN" query-param="MONEDAORIGEN"/>
+			<with-param name="MONEDADESTINO" query-param="MONEDADESTINO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_MONEDAORIGEN" query-param="KEY_MONEDAORIGEN"/>
+			<with-param name="KEY_MONEDADESTINO" query-param="KEY_MONEDADESTINO"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+
+		</call-query>
+	</resource>
+
+</data>

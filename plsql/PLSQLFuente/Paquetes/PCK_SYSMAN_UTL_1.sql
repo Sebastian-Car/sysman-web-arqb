@@ -1,0 +1,6026 @@
+create or replace PACKAGE BODY "PCK_SYSMAN_UTL" AS
+/**@package:  Utilidades **/
+
+--1
+FUNCTION FC_IIF    
+/*
+    @NAME:  devolverIifBooleano
+    @METHOD:  GET  
+*/    
+  (
+    UN_CONDICION  IN BOOLEAN,
+    UN_SI         IN VARCHAR2,
+    UN_NO         IN VARCHAR2 DEFAULT NULL
+  )
+RETURN VARCHAR2 
+AS   
+  BEGIN    
+      IF UN_CONDICION  THEN
+         RETURN (UN_SI);
+      ELSE 
+         RETURN (UN_NO);   
+      END IF;
+END FC_IIF;
+
+--2
+FUNCTION FC_IIF     
+/*
+    @NAME:  devolverIifTexto
+    @METHOD:  GET  
+*/  
+  (
+    UN_CONDICION  IN VARCHAR2,
+    UN_SI         IN VARCHAR2,
+    UN_NO         IN VARCHAR2 DEFAULT NULL
+  )
+RETURN VARCHAR2 
+AS
+  MI_CONDICION  PCK_SUBTIPOS.TI_CONDICION;
+  BEGIN
+    MI_CONDICION:=FC_EVAL(UN_CONDICION);
+    IF MI_CONDICION <> 0  THEN
+       RETURN (UN_SI);
+    ELSE 
+       RETURN (UN_NO);
+    END IF;
+END FC_IIF;
+
+--3
+FUNCTION FC_IIF
+/*
+    @NAME:  devolverIifFecha
+    @METHOD:  GET  
+*/ 
+  (
+    UN_CONDICION  IN BOOLEAN,
+    UN_SI         IN DATE,
+    UN_NO         IN DATE DEFAULT NULL
+  )
+RETURN DATE 
+AS
+  BEGIN
+      IF UN_CONDICION THEN
+         RETURN (UN_SI);
+      ELSE
+         RETURN (UN_NO);
+      END IF;
+END FC_IIF;
+
+--4
+FUNCTION FC_IIF
+/*
+    @NAME:  devolverIifTimestamp
+    @METHOD:  GET  
+*/ 
+  (
+    UN_CONDICION  IN BOOLEAN,
+    UN_SI         IN TIMESTAMP WITH LOCAL TIME ZONE,
+    UN_NO         IN TIMESTAMP WITH LOCAL TIME ZONE DEFAULT NULL
+  )
+RETURN TIMESTAMP WITH LOCAL TIME ZONE 
+AS
+  BEGIN
+      IF UN_CONDICION THEN
+         RETURN (UN_SI);
+      ELSE
+         RETURN (UN_NO);
+      END IF;
+END FC_IIF;
+
+--5
+FUNCTION FC_IIF
+/*
+    @NAME:  devolverIifnumerico
+    @METHOD:  GET  
+*/ 
+  (
+    UN_CONDICION  IN BOOLEAN,
+    UN_SI         IN PCK_SUBTIPOS.TI_LOGICO,
+    UN_NO         IN PCK_SUBTIPOS.TI_LOGICO DEFAULT 0
+  )
+RETURN NUMBER    
+AS
+BEGIN
+      IF UN_CONDICION THEN
+         RETURN (UN_SI);
+      ELSE
+         RETURN (UN_NO);
+      END IF;
+END FC_IIF;
+
+--6
+FUNCTION FC_IIF
+/*
+    @NAME:  devolverIifcondicionado
+    @METHOD:  GET  
+*/
+  (
+    UN_CONDICION IN BOOLEAN
+  )
+RETURN BOOLEAN    
+AS
+  BEGIN
+      IF UN_CONDICION THEN
+         RETURN TRUE;
+      ELSE
+         RETURN FALSE;
+      END IF;
+END FC_IIF;
+
+--7
+FUNCTION FC_EVAL 
+/*
+    @NAME:  devolverValorDeCadena
+    @METHOD:  GET  
+*/
+  (
+    UN_CADENA IN VARCHAR2
+  ) 
+RETURN VARCHAR2 
+AS
+  MI_STR      PCK_SUBTIPOS.TI_STRSQL;
+  MI_RTA      PCK_SUBTIPOS.TI_STRSQL;
+  BEGIN
+    MI_STR := '  SELECT ' || UN_CADENA || '  FROM SYS.DUAL';
+    EXECUTE IMMEDIATE MI_STR  INTO MI_RTA;
+    RETURN MI_RTA;
+  EXCEPTION WHEN OTHERS THEN
+  RETURN 0;
+END;
+
+--8
+FUNCTION FC_EVALC 
+/*
+    @NAME:  devolverValorDeCadenaC
+    @METHOD:  GET  
+*/
+  (
+    UN_CADENA IN VARCHAR2
+  ) 
+RETURN NUMBER  
+AS
+    STR      PCK_SUBTIPOS.TI_STRSQL;
+    V_NUMERO PCK_SUBTIPOS.TI_LOGICO;    
+  BEGIN
+    STR := 'SELECT  IIF(' || UN_CADENA || ',1,0) FROM SYS.DUAL';
+    EXECUTE IMMEDIATE STR INTO V_NUMERO;
+    RETURN V_NUMERO;
+  EXCEPTION WHEN OTHERS THEN
+    RETURN 0;
+END;
+
+FUNCTION FC_EVALCPPTO 
+/*
+    @NAME:  devolverValorBooleanoEnCadena
+    @METHOD:  GET  
+*/
+  (
+    UN_CADENA IN VARCHAR2
+  ) 
+RETURN NUMBER  
+AS
+    STR      PCK_SUBTIPOS.TI_STRSQL;
+    V_NUMERO PCK_SUBTIPOS.TI_LOGICO;    
+  BEGIN
+    --STR := 'SELECT  IIF(' || CADENA || ',1,0) FROM SYS.DUAL';
+    STR:='SELECT CASE WHEN ' || UN_CADENA || ' THEN 1 ELSE 0 END FROM SYS.DUAL';
+    EXECUTE IMMEDIATE STR INTO V_NUMERO;
+    RETURN V_NUMERO;
+  EXCEPTION WHEN OTHERS THEN
+    RETURN 0;
+END;
+
+--9
+FUNCTION FC_EVALUAR_ERROR  
+  /*
+    NAME              : EVALUAR_ERROR 
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR            : SANDRA MILENA DAZA LEGUIZAMON
+    DATE              : 22/01/2015
+    TIME              : 9:00 AM 
+    DESCRIPTION       : Recibe un codigo de error y evalua si ya se encuentra 
+                        registrado en la BD, de no ser asi lo registra, crea el log de errores con los d¿s par¿tros y posteriormente lo envia a interfaz 
+    @NAME:  evaluarCodigoDeError
+    @METHOD:  GET                          
+  */
+  (
+    UN_CODERROR     IN NUMBER := NULL,
+    UN_TXTERROR     IN VARCHAR2 := NULL,
+    UN_TABLAERROR   IN PCK_SUBTIPOS.TI_TABLA,
+    UN_SQLERROR     IN CLOB,
+    UN_ERROR_ORA    IN VARCHAR2
+  )
+RETURN VARCHAR2 
+AS
+  MI_MSG        PCK_SUBTIPOS.TI_STRSQL:= 'N';  
+  MI_CAMPOS     PCK_SUBTIPOS.TI_CAMPOS;
+  MI_VALORES    CLOB;
+  MI_RTA        PCK_SUBTIPOS.TI_STRSQL;
+  MI_CODERROR   PCK_SUBTIPOS.TI_ERROR_FUN;
+  MI_TXTERROR   PCK_SUBTIPOS.TI_STRSQL;
+  MI_ERROR_NUM  PCK_SUBTIPOS.TI_ERROR_FUN;
+  MI_ERROR_MSG  PCK_SUBTIPOS.TI_STRSQL;
+  MI_STRSQL     CLOB;
+  MI_CODIGO     PCK_SUBTIPOS.TI_ENTERO_LARGO;
+  MI_IND        PCK_SUBTIPOS.TI_ENTERO;
+  MI_I          PCK_SUBTIPOS.TI_ENTERO;
+  MI_TEM        CLOB;
+  MI_ERRINI     PCK_SUBTIPOS.TI_ENTERO;
+  PRAGMA AUTONOMOUS_TRANSACTION;
+BEGIN
+  ROLLBACK;     
+
+
+  IF UN_CODERROR IS NOT NULL THEN           --Evalua el error cuando este corresponde a un proceso PL/SQL
+    MI_CODERROR := UN_CODERROR;
+    MI_TXTERROR := NULL;
+  ELSE
+    RETURN 'No es posible evaluar el evento sin un c¿o de error';
+  END IF;
+
+  --verificar si el codigo de error se encuentra ya en la base de datos
+  BEGIN
+    SELECT   MSG_INTERFAZ   
+      INTO   MI_MSG
+      FROM   ERROR    
+      WHERE  ID_CODIGO = MI_CODERROR;   
+
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      MI_MSG:='N';
+  END;  
+    --Esta linea es para que me respete el mensaje de cara del cliente que se envia cuando se genera un error por control de un trigger
+    IF INSTR(UN_ERROR_ORA,'ORA-04088:',1)>0 THEN
+      MI_ERRINI :=INSTR(UN_ERROR_ORA,'ORA-',2)-1;
+      IF MI_ERRINI>0 THEN
+        MI_MSG :=SUBSTR(UN_ERROR_ORA,1,MI_ERRINI);
+      ELSE
+        MI_MSG :=UN_ERROR_ORA;
+      END IF;
+    END IF;
+
+    IF MI_MSG = 'N' THEN 
+      MI_MSG := NULL;
+      MI_CAMPOS := 'ID_CODIGO,  MSG_ERROR';
+      MI_VALORES := '' || MI_CODERROR || ',''' || MI_TXTERROR || '''';
+      MI_STRSQL:=' INSERT INTO ERROR '|| '(' || MI_CAMPOS || ') VALUES (' || MI_VALORES || ') '  ;
+      EXECUTE IMMEDIATE MI_STRSQL ;
+      COMMIT;
+    END IF;
+    MI_CODIGO:=0;
+    --Registar el error en el log de errores
+    MI_CAMPOS := 'CODERROR,  LOG_USUARIO, LOG_FECHA, LOG_TABLA_ORIGEN, LOG_COMPT,  DESC_SQL, ID_FORM_MENU, MSG_CAPTURADO, MSG_ORACLE';
+    MI_VALORES := REPLACE(UN_SQLERROR,CHR(39),CHR(39) || CHR(39));
+    MI_IND  :=LENGTH(MI_VALORES)/3000;
+    IF TRUNC(MI_IND)<>MI_IND THEN
+      MI_IND := TRUNC(MI_IND)+1;
+    END IF;
+    MI_TEM :=''' ''';
+    IF UN_SQLERROR IS NOT NULL THEN
+      <<DESC_SQL>>
+    FOR MI_I IN 1..MI_IND LOOP
+        MI_TEM := MI_TEM || ' || TO_CLOB(''' || SUBSTR(MI_VALORES,((MI_I*3000)-3000)+1, 3000) || ''') ';    
+      END LOOP DESC_SQL;
+    END IF;  
+
+    MI_VALORES := MI_CODERROR || ', ''' || PCK_CONEXION.FC_GETUSER || ''', SYSDATE, ''' || UN_TABLAERROR || ''',''' || PCK_CONEXION.FC_GETIP || ''',' || MI_TEM || ',''' || PCK_CONEXION.FC_GETFORM_MENU || ''',''' || UN_TXTERROR || ''',''' || REPLACE(UN_ERROR_ORA,CHR(39),CHR(39) || CHR(39)) || '''' ;
+    EXECUTE IMMEDIATE ' INSERT INTO LOG_ERROR '|| '(' || MI_CAMPOS || ') VALUES (' || MI_VALORES || ') RETURNING LOG_IDENT INTO :1 ' RETURNING INTO MI_CODIGO;
+    --EXECUTE IMMEDIATE MI_STRSQL  RETURNING INTO MI_CODIGO ;
+    COMMIT;
+
+
+    IF MI_MSG IS NOT  NULL THEN
+       MI_TXTERROR := CHR(10) || 'Log: ' || MI_CODIGO || CHR(10) || MI_MSG || CHR(10) || '@#FIN#@';         
+    END IF;
+    RETURN MI_TXTERROR;  
+   EXCEPTION WHEN OTHERS THEN
+      -- SE DEBE VERIFICAR QUE HACER CUANDO SE PRESENTAN EXCEPCIONES EN LA RUTINA DE ERRORES
+      MI_ERROR_NUM := SQLCODE;
+      MI_ERROR_MSG := SQLERRM;
+      RETURN MI_ERROR_MSG || ' - ' || PCK_CONEXION.FC_GETFORM_MENU;  
+
+END FC_EVALUAR_ERROR;  
+
+--10
+FUNCTION FC_PAR
+   /*
+    NAME              : PAR
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR MIGRACION  : HARVEY DIMATE - Rutinas de PL\SQL para mejorar procesos en Access
+    DATE MIGRADOR     : 17/09/2010
+    TIME              : 
+    MODIFIER          : SANDRA MILENA DAZA LEGUIZAMON / JOSE PASCUAL GOMEZ
+    DATE MODIFIED     : 19/01/2015 - 23/01/2015 // 22/07/2015
+    TIME              : 5:50 PM // 12:30
+    DESCRIPTION       : Consulta el valor de un par¿tro de Sistema y lo retorna
+    MODIFICATIONS     : - Incluir manejo de errores, incluir la fecha del parametro 
+    @NAME:  consultarParametro
+    @METHOD:  GET                  
+      PARAMETERS        : UN_COMPANIA => COMPANIA EN LA QUE SE ESTÁ TRABAJANDO.
+                          UN_CICLO    => CICLO POR EL CUAL SE VA A FILTRAR LA INFORMACIÓN.
+  */  
+  (
+    UN_COMPANIA  IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_NOMBRE    IN VARCHAR2,
+    UN_MODULO    IN PCK_SUBTIPOS.TI_MODULO,
+    UN_FECHA_PAR IN DATE,
+    UN_IND_MAYUS IN PCK_SUBTIPOS.TI_LOGICO:=-1
+  )
+RETURN VARCHAR2 AS 
+  MI_ERROR_FUN  PCK_SUBTIPOS.TI_ERROR_FUN := GL_ERROR_NUM + 10;
+  MI_VALOR      VARCHAR2(4000 CHAR);
+BEGIN
+  BEGIN  
+    SELECT VALOR 
+      INTO MI_VALOR
+    FROM(
+          SELECT VALOR
+          FROM   PARAMETRO
+          WHERE COMPANIA = UN_COMPANIA 
+            AND UPPER(TRIM(NOMBRE))   = UPPER(UN_NOMBRE)
+            AND MODULO    = UN_MODULO
+            AND FECHA_INICIAL < = UN_FECHA_PAR
+          ORDER BY FECHA_INICIAL DESC)
+      WHERE ROWNUM<2;
+    IF UN_IND_MAYUS=-1 THEN
+      MI_VALOR:=UPPER(MI_VALOR);
+    END IF;
+  RETURN MI_VALOR;
+
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    BEGIN
+      SELECT VALOR
+      INTO   MI_VALOR
+      FROM   PARAMETRO
+      WHERE COMPANIA = UN_COMPANIA 
+        AND UPPER(TRIM(NOMBRE))   = UPPER(UN_NOMBRE)
+        AND MODULO    = -1
+        AND FECHA_INICIAL < = UN_FECHA_PAR
+        AND ROWNUM<2
+      ORDER BY FECHA_INICIAL DESC;
+      IF UN_IND_MAYUS=-1 THEN
+        MI_VALOR:=UPPER(MI_VALOR);
+      END IF;
+    RETURN MI_VALOR;
+
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      RETURN NULL;
+    END;
+  END;
+END FC_PAR;
+
+--11
+FUNCTION FC_IIF 
+/*
+    @NAME:  convertirEnExpresionIif
+    @METHOD:  GET             
+*/    
+  (
+    UN_CONDICION  IN PCK_SUBTIPOS.TI_CONDICION
+  )  
+RETURN VARCHAR2 
+AS  
+  MI_CONDICION  PCK_SUBTIPOS.TI_STRSQL;       
+  MI_SI         PCK_SUBTIPOS.TI_STRSQL;        
+  MI_NO         PCK_SUBTIPOS.TI_STRSQL;
+  MI_AUX        PCK_SUBTIPOS.TI_STRSQL;  
+  BEGIN
+    MI_CONDICION := SUBSTR(MI_CONDICION, INSTR(MI_CONDICION, '(' ) +1 , (INSTR(MI_CONDICION, ',' ) -1)- INSTR(MI_CONDICION, '(' ) );
+    MI_AUX := SUBSTR(MI_CONDICION, INSTR(MI_CONDICION, ',' ) +1 , LENGTH(MI_CONDICION));
+    MI_SI := SUBSTR(MI_AUX, 1 , INSTR(MI_AUX, ',' )-1 );
+    MI_NO := SUBSTR(MI_AUX, INSTR(MI_AUX, ',' )+1, (INSTR(MI_AUX, ')') -1) -INSTR(MI_AUX, ',' ) );
+    MI_AUX:= FC_IIF(MI_CONDICION, MI_SI, MI_NO); 
+    RETURN MI_AUX;
+
+END FC_IIF;  
+
+--12
+
+FUNCTION FC_IIFPPTO 
+/*
+    @NAME:  convertirEnExpresionIifPpto
+    @METHOD:  GET             
+*/    
+  (
+    UN_CONDICION  IN PCK_SUBTIPOS.TI_CONDICION
+  )  
+RETURN VARCHAR2 
+AS  
+  MI_CONDICION  PCK_SUBTIPOS.TI_STRSQL;       
+  MI_SI         PCK_SUBTIPOS.TI_STRSQL;        
+  MI_NO         PCK_SUBTIPOS.TI_STRSQL;
+  MI_AUX        PCK_SUBTIPOS.TI_STRSQL;  
+  BEGIN
+    MI_CONDICION := SUBSTR(UN_CONDICION, INSTR(UN_CONDICION, '(' ) +1 , (INSTR(UN_CONDICION, ',' ) -1)- INSTR(UN_CONDICION, '(' ) );
+    MI_AUX := SUBSTR(UN_CONDICION, INSTR(UN_CONDICION, ',' ) +1 , LENGTH(UN_CONDICION));
+    MI_AUX := SUBSTR(UN_CONDICION, INSTR(UN_CONDICION, ',') +1 , LENGTH(MI_AUX)-1);
+    MI_SI := SUBSTR(MI_AUX, 1 , INSTR(MI_AUX, ',' )-1 );
+    MI_NO := SUBSTR(MI_AUX, INSTR(MI_AUX, ',' )+1, (INSTR(MI_AUX, ')') +500) -INSTR(MI_AUX, ',' ) );
+    MI_AUX:= FC_EVALCPPTO(MI_CONDICION); 
+    MI_AUX:=CASE WHEN MI_AUX =1 THEN MI_SI ELSE MI_NO END;
+    RETURN MI_AUX;
+
+END FC_IIFPPTO; 
+
+FUNCTION FC_SPLIT_SYS 
+  (
+  /*
+    NAME              : SPLIT_SYS
+    AUTHORS           : SYSMAN  
+    AUTHOR MIGRACION  : JOS¿PASCUAL GOMEZ BLANCO
+    DATE MIGRADOR     : 10/02/2015
+    TIME              : 02:49 PM
+    MODIFIER          : JOS¿PASCUAL GOMEZ BLANCO
+    DATE MODIFIED     : 10/02/2015
+    TIME              : 02:49 PM
+    DESCRIPTION       : Simula la funci¿PLIT devolviendo un tipo T_SPLIT
+    @NAME:  delimitarCadena
+    @METHOD:  GET                 
+  */ 
+  UN_LISTA       IN VARCHAR2,
+  UN_DELIMITADOR IN VARCHAR2 :=','
+  )
+  RETURN T_SPLIT 
+  AS
+  MI_I     INTEGER:=0;
+  MI_POS   INTEGER:=0; 
+  MI_LISTA PCK_SUBTIPOS.TI_STRSQL:=UN_LISTA;
+  MI_VALOR T_SPLIT;
+  BEGIN
+    MI_POS:= INSTR(MI_LISTA, UN_DELIMITADOR,1,1);
+    IF MI_POS=0 THEN
+      MI_VALOR(1):=MI_LISTA;
+    ELSE
+      WHILE MI_POS<>0 LOOP
+        MI_I:=MI_I+1;
+        MI_VALOR(MI_I):=SUBSTR(MI_LISTA,1,MI_POS-1);
+        MI_LISTA :=SUBSTR(MI_LISTA, MI_POS+LENGTH(UN_DELIMITADOR),LENGTH(MI_LISTA));
+        MI_POS:=INSTR(MI_LISTA, UN_DELIMITADOR,1,1);
+        IF MI_POS=0 AND LENGTH(MI_LISTA)> 0 THEN
+          MI_VALOR(MI_I+1):=MI_LISTA;      
+        END IF;
+      END LOOP;
+    END IF;
+    RETURN MI_VALOR;
+END FC_SPLIT_SYS;
+
+FUNCTION FC_SPLIT_SYS 
+  (
+  /*
+    NAME              : SPLIT_SYS
+    AUTHORS           : SYSMAN  
+    AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ BLANCO
+    DATE MIGRADOR     : 10/02/2015
+    TIME              : 02:49 PM
+    MODIFIER          : LEYDI MILENA CORTES FORERO
+    DATE MODIFIED     : 07/04/2017
+    TIME              : 12:51 PM
+    DESCRIPTION       : Simula la funci¿PLIT devolviendo un tipo T_SPLIT
+    MODIFY            : Recibir parametro Clob
+    @NAME:  delimitarCadena
+    @METHOD:  GET                 
+  */ 
+  UN_LISTA       IN CLOB,
+  UN_DELIMITADOR IN VARCHAR2 :=','
+  )
+  RETURN T_SPLIT 
+  AS
+  MI_I     INTEGER:=0;
+  MI_POS   INTEGER:=0; 
+  MI_LISTA CLOB:=UN_LISTA;
+  MI_VALOR T_SPLIT;
+  BEGIN
+    MI_POS:= INSTR(MI_LISTA, UN_DELIMITADOR,1,1);
+    IF MI_POS=0 THEN
+      MI_VALOR(1):=MI_LISTA;
+    ELSE
+      WHILE MI_POS<>0 LOOP
+        MI_I:=MI_I+1;
+        MI_VALOR(MI_I):=SUBSTR(MI_LISTA,1,MI_POS-1);
+        MI_LISTA :=SUBSTR(MI_LISTA, MI_POS+LENGTH(UN_DELIMITADOR),LENGTH(MI_LISTA));
+        MI_POS:=INSTR(MI_LISTA, UN_DELIMITADOR,1,1);
+        IF LENGTH(MI_LISTA)> 0 AND MI_POS=0 THEN
+          MI_VALOR(MI_I+1):=MI_LISTA;      
+        END IF;
+      END LOOP;
+    END IF;
+    RETURN MI_VALOR;
+END FC_SPLIT_SYS;
+
+--13
+FUNCTION FC_LISTA_CAMPOS
+  (
+  /*
+    NAME              : SPLIT_SYS
+    AUTHORS           : SYSMAN  
+    AUTHOR MIGRACION  : JOS¿PASCUAL GOMEZ BLANCO
+    DATE MIGRADOR     : 07/02/2015
+    TIME              : 02:49 PM
+    MODIFIER          : JOS¿PASCUAL GOMEZ BLANCO  - JHONATAN ACELAS AREVALO
+    DATE MODIFIED     : 07/02/2015 / 10/02/2015   - 15/12/2015  15/12/2015
+    TIME              : 02:49 PM   / 03:00 PM 
+    DESCRIPTION       : Devuelve una cadena separada por comas de los campos de una tabla
+    El parametro UN_CAMPOSCLOB puede tomar valor 0= cuando trae todos los campos
+                                                 1= cuando trae todos excepto los tipo CLOB
+                                                 2= cuando trae solo los campos CLOB
+    El parametro UN_VIRTUAL puede tomar valor    0= trae todos los campos 
+                                                 1= trae todos los campos virtuales de la tabla
+                                                 2= trae todos los campos NO virtuales de la tabla 
+    @NAME:  listarCamposDeTabla
+    @METHOD:  GET                                                   
+  */ 
+   UN_TABLA      IN PCK_SUBTIPOS.TI_TABLA,
+   UN_EXCLUIDOS  IN VARCHAR2 DEFAULT '',
+   UN_CAMPOSCLOB IN PCK_SUBTIPOS.TI_LOGICO DEFAULT 0,
+   UN_CONDOMINIO IN NUMBER DEFAULT 0,
+   UN_VIRTUAL    IN PCK_SUBTIPOS.TI_LOGICO DEFAULT 0
+)
+RETURN VARCHAR2 
+AS
+  MI_CAMPOS     PCK_SUBTIPOS.TI_CAMPOS;
+  MI_EXCLUIDOS  PCK_SUBTIPOS.TI_STRSQL;
+  BEGIN
+
+    IF NOT UN_EXCLUIDOS IS NULL THEN
+      MI_EXCLUIDOS :=  UN_EXCLUIDOS || ',';
+    ELSE
+      MI_EXCLUIDOS := ',';
+    END IF;
+    MI_EXCLUIDOS := ',CREATED_BY,DATE_CREATED,MODIFIED_BY,DATE_MODIFIED,' || MI_EXCLUIDOS;
+    MI_EXCLUIDOS:=REPLACE(MI_EXCLUIDOS,' ','');
+    MI_CAMPOS:='';
+    <<CAMPOS>>
+    FOR RS IN (
+      SELECT COLUMN_NAME
+      FROM USER_TAB_COLS
+      WHERE TABLE_NAME  = UN_TABLA
+        AND (DATA_TYPE   <> DECODE(UN_CAMPOSCLOB,1,'CLOB','Z')  AND DATA_TYPE NOT IN ('RAW'))
+        AND DATA_TYPE   =  DECODE(UN_CAMPOSCLOB,2,'CLOB',DATA_TYPE)
+        AND VIRTUAL_COLUMN IN DECODE(UN_VIRTUAL,1,'YES','NO')
+        AND HIDDEN_COLUMN<>'YES'
+      ORDER BY COLUMN_ID
+      )
+    LOOP
+      IF INSTR(MI_EXCLUIDOS,',' || RS.COLUMN_NAME || ',',1)=0   THEN
+        IF UN_CONDOMINIO<>0 THEN
+          MI_CAMPOS:= MI_CAMPOS || UN_TABLA || '.' || RS.COLUMN_NAME || ',';
+        ELSE
+          MI_CAMPOS:= MI_CAMPOS || RS.COLUMN_NAME || ',';
+        END IF;
+      END IF;
+    END LOOP CAMPOS;
+    MI_CAMPOS:=SUBSTR(MI_CAMPOS,1,LENGTH(MI_CAMPOS)-1);  
+    RETURN MI_CAMPOS;
+END FC_LISTA_CAMPOS;
+
+--14
+FUNCTION FC_EXISTECAMPO
+  (
+  /*
+    NAME              : EXISTECAMPO
+    AUTHORS           : SYSMAN  
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 26/02/2015
+    TIME              : 03:49 PM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Retorna falso o verdadero seg¿a existencia del campo en una tabla
+    @NAME:  verificarCampoExistente
+    @METHOD:  GET                                      
+
+  */ 
+   UN_TABLA       IN PCK_SUBTIPOS.TI_TABLA,
+   UN_CAMPO       IN  VARCHAR2
+)
+RETURN BOOLEAN 
+AS
+  MI_EXISTE     VARCHAR2(1 CHAR);
+  BEGIN
+
+    SELECT 'X'
+    INTO  MI_EXISTE
+    FROM USER_TAB_COLS
+    WHERE TABLE_NAME  = UN_TABLA
+      AND COLUMN_NAME = UN_CAMPO;
+
+    RETURN TRUE;
+
+    EXCEPTION WHEN OTHERS THEN
+      RETURN FALSE;
+END FC_EXISTECAMPO;
+
+--15
+FUNCTION FC_SDATE
+/*    
+    @NAME:  formatearCadenaFecha
+    @METHOD:  GET                  
+*/    
+  (
+    UN_FECHA  IN DATE
+  )
+RETURN VARCHAR2
+AS
+  MI_FECHA VARCHAR2(128 CHAR);
+  BEGIN
+    MI_FECHA := ' TO_DATE(''' || TO_CHAR(UN_FECHA, 'MM/DD/YYYY HH:MI:SS') || ''',  ''MM/DD/YYYY HH:MI:SS'')';  
+  RETURN MI_FECHA;
+END FC_SDATE;
+
+--16
+FUNCTION FC_SDATE
+/*    
+    @NAME:  incluirFormatoCadenaFecha
+    @METHOD:  GET  
+*/    
+  (
+    UN_FECHA   IN VARCHAR2,
+    UN_FORMATO IN VARCHAR2
+  )
+RETURN VARCHAR2
+AS
+MI_FECHA VARCHAR2(128 CHAR);
+BEGIN
+  MI_FECHA := ' TO_DATE(''' || UN_FECHA || ''',  ''' || UN_FORMATO || ''')';  
+  RETURN MI_FECHA;
+END FC_SDATE;
+
+--17
+FUNCTION FC_SFORMATN
+/*    
+    @NAME:  asignarFormatoNumerico
+    @METHOD:  GET  
+*/    
+  (
+    UN_NUMERO       IN PCK_SUBTIPOS.TI_ENTERO_LARGO,
+    UN_NEG_PARENT   IN BOOLEAN DEFAULT FALSE
+  )
+RETURN VARCHAR2
+AS
+  MI_NUMFORMATO   VARCHAR2(128 CHAR);
+  BEGIN
+    IF UN_NEG_PARENT THEN
+      MI_NUMFORMATO  := 'TO_CHAR( ' || UN_NUMERO || ', ''FMB999G999G999G999G999G999G999D9999PR'') ';
+    ELSE
+      MI_NUMFORMATO  := 'TO_CHAR( ' || UN_NUMERO || ', ''FMB999G999G999G999G999G999G999D9999'') ';
+    END IF;
+  RETURN MI_NUMFORMATO;
+END FC_SFORMATN;  
+
+--18
+ FUNCTION FC_DCH
+  (
+  /*
+    NAME              : DCH
+    AUTHORS           : SYSMAN  
+    AUTHOR MIGRACION  : JAVIER VILLATE
+    DATE MIGRADOR     : 16/02/2015
+    TIME              : 04:35 PM
+    MODIFIER          : JAVIER VILLATE - CARLOS ALBERTO MANRIQUE
+    DATE MODIFIED     : 16/02/2015 - 18/03/2015
+    TIME              : 04:35 PM - 11:00 AM
+    DESCRIPTION       : DEVUELVE EL DIGITO DE VERIFICACION DE UN TERCERO    
+    @NAME:  generarDigitoDeVerificacion
+    @METHOD:  GET  
+  */ 
+  UN_NUMERO   IN VARCHAR2 DEFAULT '0'
+  )  
+  RETURN NUMBER
+  DETERMINISTIC
+  AS
+  ACUM      PCK_SUBTIPOS.TI_ENTERO;
+  MI_NUMERO PCK_SUBTIPOS.TI_ENTERO_LARGO;
+  NTL       PCK_SUBTIPOS.TI_STRSQL;
+  MI_POS    NUMBER;
+  MI_DIGITO NUMBER(5,0);
+  TYPE DCH1 IS VARRAY(15) OF INTEGER;
+  DCH2 DCH1; 
+    BEGIN
+  --  BEGIN
+      MI_POS := INSTR(UN_NUMERO, '-');
+      IF MI_POS>0 THEN
+        RETURN SUBSTR(UN_NUMERO,MI_POS+1,1);
+      END IF;
+      BEGIN
+        MI_NUMERO:=TRUNC(TO_NUMBER(UN_NUMERO)); 
+      EXCEPTION WHEN VALUE_ERROR THEN
+        MI_DIGITO:=-1;
+      RETURN MI_DIGITO;
+      END;
+
+      DCH2 := DCH1(71,67,59,53,47,43,41,37,29,23,19,17,13,7,3);
+      NTL:= LPAD(MI_NUMERO,15,0);
+      ACUM:=0;
+    <<GENERAACUMULADO>>
+      FOR I IN 1..15 LOOP
+        ACUM:= ACUM + SUBSTR(NTL, I, 1) * DCH2(I);
+      END LOOP GENERAACUMULADO;
+      MI_DIGITO:= ACUM - TRUNC(ACUM / 11) * 11;
+      MI_DIGITO:= FC_IIF(MI_DIGITO = 0, 0, FC_IIF(MI_DIGITO = 1, 1, 11 - MI_DIGITO));
+      RETURN MI_DIGITO;
+    EXCEPTION WHEN OTHERS THEN
+      MI_DIGITO:=-1;    
+    RETURN MI_DIGITO;
+END FC_DCH;      
+
+--19
+FUNCTION FC_MESESCOMPLETOS 
+  /*
+    NAME              : MESESCOMPLETOS
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 02/03/2015
+    TIME              : 08.15 AM
+    MODIFIER          : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MODIFIED     : 02/03/2015
+    TIME              : 9:38 AM
+    DESCRIPTION       : RETORNA LA CANTIDAD DE MESES COMPLETOS ENTRE DOS FECHAS
+                        Se modifica para usar una funcio de Oracle que calcula la diferencia de meses entre fechas. y asi evitar validaciones de los par¿tros 
+    @NAME:  calcularDiferenciaEnMeses
+    @METHOD:  GET  
+  */ 
+  (
+    UN_FECHA1 IN DATE,
+    UN_FECHA2 IN DATE
+  )
+RETURN NUMBER
+AS
+  MI_ANOS  PCK_SUBTIPOS.TI_ENTERO_LARGO;
+  MI_MESES PCK_SUBTIPOS.TI_ENTERO_LARGO := 0 ;
+  BEGIN
+    MI_ANOS := FC_VIGENCIA(UN_FECHA2) - FC_VIGENCIA(UN_FECHA1);
+    MI_MESES := 12 * MI_ANOS + (FC_MES(UN_FECHA2) - FC_MES(UN_FECHA1) + 1);
+    IF FC_DIA(UN_FECHA1) > 1 THEN
+      MI_MESES := MI_MESES -1;
+    END IF;
+    IF (FC_MES(UN_FECHA2) = 2 AND FC_DIA(UN_FECHA2) < 28) OR (FC_MES(UN_FECHA2) <> 2 AND FC_DIA(UN_FECHA2) < 30) THEN
+      MI_MESES := MI_MESES -1;
+    END IF;
+    IF (FC_DIA(UN_FECHA1) > 1 OR FC_DIA(UN_FECHA2) > FC_DIA(LAST_DAY(UN_FECHA2)))  AND (FC_MES(UN_FECHA1)= FC_MES(UN_FECHA2)) AND MI_ANOS = 0 THEN
+      MI_MESES := 0;
+    END IF;
+
+    IF MI_MESES < 0 THEN
+      MI_MESES := 0;
+    END IF;
+
+  RETURN MI_MESES;
+
+END FC_MESESCOMPLETOS;
+
+--20
+FUNCTION FC_DIA  
+  /*
+    NAME              : DIA
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 02/03/2015
+    TIME              : 09:40 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : RETORNA EL DIA DE LA FECHA INGRESADA
+    @NAME:  retornarDiaDeFecha
+    @METHOD:  GET                          
+  */ 
+  ( 
+    UN_FECHA IN DATE
+   )
+RETURN NUMBER
+AS
+  MI_DIA  PCK_SUBTIPOS.TI_DIA;
+  BEGIN
+    MI_DIA := TO_NUMBER(TO_CHAR(UN_FECHA, 'DD'));
+  RETURN MI_DIA;
+END FC_DIA;
+
+--21
+FUNCTION FC_MES  
+  /*
+    NAME              : MES
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 02/03/2015
+    TIME              : 09:45 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : RETORNA EL MES DE LA FECHA INGRESADA
+    @NAME:  retornarMesDeFecha
+    @METHOD:  GET                                     
+  */ 
+  ( 
+    UN_FECHA IN DATE
+   )
+RETURN NUMBER
+AS
+  MI_MES  PCK_SUBTIPOS.TI_MES;
+  BEGIN
+    MI_MES := TO_NUMBER(TO_CHAR(UN_FECHA, 'MM'));
+  RETURN MI_MES;
+END FC_MES; 
+--22
+FUNCTION FC_ANIO  
+  /*
+    NAME              : FC_ANIO
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : NICOLÁS GÓMEZ BARBOSA
+    DATE MIGRADOR     : 31/03/2016
+    TIME              : 08:30 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : RETORNA EL AÑO DE LA FECHA INGRESADA
+    @NAME:  retornarAnoDeFecha
+    @METHOD:  GET                                     
+  */ 
+  ( 
+    UN_FECHA IN DATE
+   )
+RETURN NUMBER
+AS
+  MI_ANIO  PCK_SUBTIPOS.TI_ANIO;
+BEGIN
+  MI_ANIO := TO_NUMBER(TO_CHAR(UN_FECHA, 'YYYY'));
+  RETURN MI_ANIO;
+END FC_ANIO; 
+--23
+FUNCTION FC_VIGENCIA  
+  /*
+    NAME              : VIGENCIA
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 02/03/2015
+    TIME              : 09:50 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : RETORNA EL A¿ DE LA FECHA INGRESADA
+    @NAME:  retornarVigenciaDeFecha
+    @METHOD:  GET                                          
+  */ 
+  ( 
+    UN_FECHA IN DATE
+   )
+RETURN NUMBER
+AS
+  MI_VIG  PCK_SUBTIPOS.TI_ANIO;
+  BEGIN
+    MI_VIG := TO_NUMBER(TO_CHAR(UN_FECHA, 'YYYY'));
+  RETURN MI_VIG;
+END FC_VIGENCIA; 
+
+--24
+FUNCTION FC_DIASMESCOMERCIAL
+  /*
+    NAME              : DIASCOMERCIALES
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 02/03/2015
+    TIME              : 10:00 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : RETORNA LOS DIAS COMERCIALES QUE EXISTEN ENTRE DOS FECHAS
+    @NAME:  retornarDiasComerciales
+    @METHOD:  GET                                          
+  */ 
+  (
+    UN_FECHAIN  IN DATE,
+    UN_FECHAFIN IN DATE
+  )
+RETURN NUMBER
+AS
+  MI_FECHAINI DATE;
+  MI_FECHAFIN DATE;
+  MI_DIAS     PCK_SUBTIPOS.TI_ENTERO_LARGO;
+  BEGIN 
+  -- CALCULA EL N¿ERO DE DIAS ENTRE DOS FECHAS CONTANDO MESES COMERCIALES DE 30 DIAS
+    IF UN_FECHAIN > UN_FECHAFIN THEN
+      MI_FECHAINI := UN_FECHAFIN;
+      MI_FECHAFIN := UN_FECHAIN;
+    ELSE 
+      MI_FECHAINI := UN_FECHAIN;
+      MI_FECHAFIN := UN_FECHAFIN;
+    END IF;
+
+    IF FC_DIA(MI_FECHAINI) = 1 AND ((FC_MES(MI_FECHAFIN) = 2 AND FC_DIA(MI_FECHAFIN) >= 28) OR (FC_MES(MI_FECHAFIN) <> 2 AND FC_DIA(MI_FECHAFIN) >= 30)) THEN
+      MI_DIAS := FC_MESESCOMPLETOS(MI_FECHAINI, MI_FECHAFIN) * 30;
+    ELSIF FC_DIA(MI_FECHAINI) = 1 THEN
+      MI_DIAS := FC_MESESCOMPLETOS(MI_FECHAINI, MI_FECHAFIN) * 30 + FC_DIA(MI_FECHAFIN);
+    ELSIF (FC_MES(MI_FECHAFIN) = 2 AND FC_DIA(MI_FECHAFIN) >= 28) OR (FC_MES(MI_FECHAFIN) <> 2 AND FC_DIA(MI_FECHAFIN) >= 30) THEN
+      MI_DIAS := FC_MESESCOMPLETOS(MI_FECHAINI, MI_FECHAFIN) * 30 + 30 - FC_DIA(MI_FECHAINI) + 1 ;
+    ELSIF (FC_MES(MI_FECHAINI) =  FC_MES(MI_FECHAFIN) AND FC_VIGENCIA(MI_FECHAINI) = FC_VIGENCIA(MI_FECHAFIN))  AND (FC_DIA(MI_FECHAINI) > 1 OR FC_DIA(MI_FECHAFIN) < FC_DIA(LAST_DAY(MI_FECHAFIN))) THEN
+      MI_DIAS := FC_DIA(MI_FECHAFIN) - FC_DIA(MI_FECHAINI) + 1;
+    ELSE
+      MI_DIAS := FC_MESESCOMPLETOS(MI_FECHAINI, MI_FECHAFIN) * 30 + 30 - FC_DIA(MI_FECHAINI) + FC_DIA(MI_FECHAFIN) + 1;
+    END IF;
+  RETURN MI_DIAS;
+END FC_DIASMESCOMERCIAL;
+
+--25
+FUNCTION FC_EXISTETABLA
+  /*
+    NAME              : EXISTETABLA
+    AUTHORS           : SYSMAN  
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 07/03/2015
+    TIME              : 03:50 PM
+    MODIFIER          : YESIKA PAOLA BECERRA CASTRO
+    DATE MODIFIED     : 28/09/2017
+    TIME              : 
+    DESCRIPTION       : Retorna falso o verdadero seg¿a existencia  una tabla/Se ajusta tipo de retorno
+    @NAME:  consultarTablaExistente
+    @METHOD:  GET                      
+  */ 
+  (
+   UN_TABLA       IN PCK_SUBTIPOS.TI_TABLA
+  )
+RETURN PCK_SUBTIPOS.TI_LOGICO 
+AS
+  MI_EXISTE     VARCHAR2(1 CHAR);
+  BEGIN
+
+    SELECT 'X'
+    INTO  MI_EXISTE
+    FROM USER_TABLES
+    WHERE TABLE_NAME  = UN_TABLA;  
+
+  RETURN -1;
+
+  EXCEPTION WHEN OTHERS THEN
+    RETURN 0;
+END FC_EXISTETABLA;
+--26
+FUNCTION FC_WEEKDAY
+/*
+    NAME              : DIA_SEMANA
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 14/03/2015  
+    TIME              : 8:20 AM     
+    MODIFIER          : JOSE PASCUAL GÓMEZ
+    DATE MODIFIED     : 10/08/2015
+    TIME              : 8:32
+    DESCRIPTION       : IDENTIFICAR EL DÍA DE LA SEMANA DE 1 A 7 EMPEZANDO LA SEMANA DE ACUERDO AL PARAMETRO UN_ARRANCA
+                        SINO SE ENVIA POR DEFECTO ARRANCA EL DOMINGO
+    @NAME:  retornarDiaDeLaSemana
+    @METHOD:  GET                                          
+  */
+  (
+    UN_FECHA   IN DATE,
+    UN_ARRANCA IN PCK_SUBTIPOS.TI_ENTERO DEFAULT 1
+  ) 
+RETURN NUMBER 
+AS
+  MI_NUMDIA         PCK_SUBTIPOS.TI_ENTERO;
+  MI_INICIA         PCK_SUBTIPOS.TI_ENTERO;
+  MI_INICIO         PCK_SUBTIPOS.TI_ENTERO;
+  BEGIN
+    IF UN_ARRANCA =NULL THEN
+      MI_INICIO :=1;
+    ELSIF UN_ARRANCA < 0 OR UN_ARRANCA>7 THEN
+      RETURN NULL;
+    ELSE
+      MI_INICIO :=UN_ARRANCA;
+    END IF;
+    --Por cuestiones de territorio (NLS_TERRITORY) el inicio de semana se puede dar el domingo o el lunes
+    SELECT TO_CHAR(TO_DATE('01/01/1900','DD/MM/YYYY') , 'D') 
+    INTO MI_INICIA
+    FROM DUAL;
+
+    SELECT TO_CHAR(UN_FECHA , 'D') 
+    INTO MI_NUMDIA 
+    FROM DUAL;    
+
+  --Por defecto se inicializa la semana en domingo y en base a eso se devuelve
+    IF MI_INICIA=1 THEN
+      MI_NUMDIA :=MI_NUMDIA+1;
+    IF MI_NUMDIA=8 THEN
+      MI_NUMDIA:=1;
+    END IF;
+  END IF;
+
+  MI_NUMDIA :=MI_NUMDIA-MI_INICIO+1;
+  IF MI_NUMDIA<=0 THEN
+    MI_NUMDIA:=7+MI_NUMDIA;
+  END IF;  
+  RETURN (MI_NUMDIA);   
+  EXCEPTION WHEN OTHERS THEN
+  RETURN (1);
+END FC_WEEKDAY;
+
+--27
+FUNCTION FC_VALOR_LETRAS
+/*
+  NAME              : VALOR_LETRAS  
+  AUTHORS           : SYSMAN LTDA
+  AUTHOR MIGRACION  : SANDRA MILENA DAZA
+  DATE MIGRADOR     : 15/01/2010
+  TIME              : 8:52 AM
+  DESCRIPTION       : CONVIERTE UNA EXPRESION NUMERICA A SU EQUIVALENTE EN LETRAS
+  @NAME:  convetirValorEnLetras
+  @METHOD:  GET                    
+*/
+(
+  UN_NUMT IN PCK_SUBTIPOS.TI_DOBLE,
+  UN_CTVS IN NUMBER DEFAULT 0
+)
+RETURN VARCHAR2
+AS
+    MI_UN              VARCHAR2(255 CHAR); --' CADENA DE CARACTERES PARA LAS UNIDADES
+    MI_DEC             VARCHAR2(255 CHAR); --' CADENA DE CARACTERES PARA LAS DECENAS
+    MI_CEN             VARCHAR2(255 CHAR); --' CADENA DE CARACTERES PARA LAS CENTENAS
+    MI_MIL             VARCHAR2(255 CHAR); --' NUMERO DE UNIDADES DE MIL DEL PARAMETRO
+    MI_NNU             VARCHAR2(255 CHAR); --' NUMERO DE UNIDADES DEL PARAMETRO
+    MI_LETRAS          VARCHAR2(255 CHAR); --' CADENA DE CARACTERES DE RESULTADO
+    MI_PARTE           VARCHAR2(255 CHAR); --' NUMERO DE ITERACIONES
+    MI_CANT            VARCHAR2(255 CHAR); --' VALOR DE CADA TRIPLA POREN POR CADA ITERACION
+    MI_CENT            NUMBER;
+    MI_UCIEN           VARCHAR2(255 CHAR); --' CEBTENAS DE CADA ITERACION
+    MI_UDIEZ           VARCHAR2(255 CHAR); --' DECENAS DE CADA ITERACION
+    MI_UNID            VARCHAR2(255 CHAR); --' UNIDADES DE CADA ITERACION
+    MI_MILLON          VARCHAR2(255 CHAR); --' UNIDADES DE MILLON DEL PARAMETRO
+    MI_BILLON          VARCHAR2(255 CHAR); --' UNIDADES DE BILLON DEL PARAMETRO
+    MI_VB              VARCHAR2(255 CHAR); --' POSICION DENTRO DE UNA CADENA
+    MI_PIX             VARCHAR2(255 CHAR); --' POSICION DENTRO DE UNA CADENA
+    MI_PF              VARCHAR2(255 CHAR); --'-- POSICION FINAL DENTRO DE UNA CADENA
+    MI_TB              VARCHAR2(255 CHAR); --' CADENA DE CARACTERES TEMPORAL
+    MI_DECT            VARCHAR2(255 CHAR); --' DECIMALES DENTRO DE CADA TRIPLA
+    MI_SD              VARCHAR2(255 CHAR); --' POSICION DENTRO DE UNA CADENA
+    MI_SW              PCK_SUBTIPOS.TI_LOGICO;        --' INDICADOR DE ITERACION LOOP
+    MI_MONEDACOPIA     VARCHAR2(255 CHAR);
+    MI_OTRAMONEDACOPIA VARCHAR2(255 CHAR);
+    MI_INTUBICACION    PCK_SUBTIPOS.TI_ENTERO_LARGO;
+    MI_KBILLON         PCK_SUBTIPOS.TI_ENTERO_LARGO:= 1000000000;
+    MI_KMILLON         PCK_SUBTIPOS.TI_ENTERO:= 1000000;
+    MI_KMIL            PCK_SUBTIPOS.TI_ENTERO:= 1000;
+    MI_KCIEN           PCK_SUBTIPOS.TI_ENTERO:= 100;
+    MI_KDIEZ           PCK_SUBTIPOS.TI_ENTERO:= 10;
+    MI_VALORLETRAS     VARCHAR2(2000 CHAR);
+    MI_NUMT            PCK_SUBTIPOS.TI_DOBLE;
+    MI_CTVS            NUMBER;
+  BEGIN
+    IF UN_NUMT < 0 THEN
+      MI_NUMT := -UN_NUMT;
+    ELSE
+      MI_NUMT := UN_NUMT;
+    END IF;
+    MI_CTVS:=UN_CTVS;
+
+    IF MI_NUMT IS NULL THEN 
+      MI_NUMT := 0;
+    END IF;
+
+    MI_NUMT          := ROUND(MI_NUMT, 2);
+    MI_LETRAS        := '';
+    MI_UN            := '1UN 2DOS 3TRES 4CUATRO 5CINCO 6SEIS 7SIETE 8OCHO 9NUEVE 10DIEZ ';
+    MI_DEC           := '11ONCE 12DOCE 13TRECE 14CATORCE 15QUINCE 16DIECISÉIS 17DIECISIETE 18DIECIOCHO 19DIECINUEVE 10DIEZ 20VEINTI 30TREINTA 40CUARENTA 50CINCUENTA 60SESENTA 70SETENTA 80OCHENTA 90NOVENTA '; --JM 08/05/2024
+    MI_CEN           := '1CIENTO 2DOSCIENTOS 3TRESCIENTOS 4CUATROCIENTOS 5QUINIENTOS 6SEISCIENTOS 7SETECIENTOS 8OCHOCIENTOS 9NOVECIENTOS ';
+    MI_BILLON        := FLOOR(MI_NUMT  / MI_KBILLON);
+    MI_MILLON        := FLOOR((MI_NUMT - MI_BILLON * MI_KBILLON) / MI_KMILLON);
+    MI_MIL           := FLOOR((MI_NUMT - MI_BILLON * MI_KBILLON - MI_MILLON * MI_KMILLON) / MI_KMIL);
+    MI_NNU           := FLOOR(MI_NUMT  - MI_BILLON * MI_KBILLON - MI_MILLON * MI_KMILLON - MI_MIL * MI_KMIL);
+    MI_PARTE         := 0;
+    MI_DECT          := 0;
+    IF FLOOR(MI_NUMT) = 0 THEN
+      MI_LETRAS      := 'CERO ';
+      MI_PARTE       := 4;
+    END IF;
+    WHILE MI_PARTE < 4
+    LOOP
+      MI_SD      := 0;
+      MI_SW      := 1;
+      MI_PARTE   := MI_PARTE + 1;
+      IF MI_PARTE = 1 THEN
+        MI_CANT  := MI_BILLON;
+      END IF;
+      IF MI_PARTE = 2 THEN
+        MI_CANT  := MI_MILLON;
+      END IF;
+      IF MI_PARTE = 3 THEN
+        MI_CANT  := MI_MIL;
+      END IF;
+      IF MI_PARTE = 4 THEN
+        MI_CANT  := MI_NNU;
+      END IF;
+      IF MI_CANT = 0 THEN
+        MI_SW   := 0;
+      END IF;
+      IF MI_SW      <> 0 THEN
+        MI_UCIEN    := FLOOR(MI_CANT  / MI_KCIEN);
+        MI_UDIEZ    := FLOOR((MI_CANT - MI_UCIEN * MI_KCIEN) / MI_KDIEZ);
+        MI_UNID     := MI_CANT        - MI_UCIEN * MI_KCIEN - MI_UDIEZ * MI_KDIEZ;
+        IF MI_CANT   = MI_KCIEN THEN
+          MI_LETRAS := MI_LETRAS || 'CIEN ';
+        END IF;
+        IF MI_CANT    <> MI_KCIEN THEN
+          IF MI_UCIEN <> 0 THEN
+            MI_TB     := MI_CEN;
+            MI_VB     := MI_UCIEN;
+            MI_PIX    := INSTR(MI_TB, MI_VB,1);
+            MI_PF     := INSTR(SUBSTR(MI_TB, MI_PIX + 1, LENGTH(MI_TB) - MI_PIX),' ',1);
+            MI_LETRAS := MI_LETRAS || SUBSTR(MI_TB, MI_PIX + 1, MI_PF - 1) || ' ';
+          END IF;
+          MI_DECT       := 0;
+          IF MI_UDIEZ   <> 0 THEN
+            MI_TB       := MI_DEC;
+            MI_DECT     := MI_UDIEZ * MI_KDIEZ + MI_UNID;
+            IF MI_DECT   = 20 THEN
+              MI_LETRAS := MI_LETRAS || 'VEINTE ';
+            ELSE
+              MI_TB     := MI_DEC;
+              IF MI_DECT > MI_KDIEZ  AND MI_DECT <= 19 THEN --JM 08/05/2024
+                MI_VB   := LPAD(MI_DECT, 2);
+              ELSE
+                MI_VB := LPAD(MI_UDIEZ * MI_KDIEZ, 2);  
+              END IF;
+
+              MI_SD       := 0;
+              MI_PIX      := INSTR(MI_TB, MI_VB,1);
+              MI_PF       := INSTR(SUBSTR(MI_TB, MI_PIX + 1, LENGTH(MI_TB) - MI_PIX),' ', 1);
+              MI_LETRAS   := MI_LETRAS || SUBSTR(MI_TB, MI_PIX + 2, MI_PF - 1);
+              IF MI_DECT   > 10  AND MI_DECT <= 19 OR FLOOR(MI_DECT / 10) * 10 = MI_DECT AND MI_DECT > 0 THEN --JM 08/05/2024
+                MI_LETRAS := MI_LETRAS ||  ' ';
+                MI_SD     := 1;
+              END IF;
+              IF MI_SD       = 0 THEN
+                IF MI_UDIEZ <> 2 THEN
+                  MI_LETRAS := MI_LETRAS || ' Y ';
+                END IF;
+              END IF;
+            END IF;
+          END IF;
+          IF MI_DECT        <> 20 THEN
+            IF MI_SD         = 0 THEN
+              IF MI_UNID    <> 0 THEN
+                MI_TB       := MI_UN;
+                IF MI_PARTE  = 4 AND MI_UNID = 1 THEN
+                  MI_LETRAS := MI_LETRAS || 'UN ';
+                ELSE
+                  MI_TB := MI_UN;
+                  MI_VB := LPAD(MI_UNID, 1);
+                  /**/
+                  MI_PIX    := INSTR(MI_TB, MI_VB,1);
+                  MI_PF     := INSTR(SUBSTR(MI_TB, MI_PIX + 1, LENGTH(MI_TB) - MI_PIX),' ',1);
+                  MI_LETRAS := MI_LETRAS || SUBSTR(MI_TB, MI_PIX + 1, MI_PF - 1) || ' ' ;
+                  MI_LETRAS := CASE WHEN  MI_PARTE <> 2 AND MI_LETRAS = 'UN ' THEN '' ELSE MI_LETRAS END; --JM 08/05/2024
+                END IF;
+              END IF;
+            END IF;
+          END IF;
+        END IF;
+        IF MI_PARTE    = 1 THEN
+          IF MI_CANT   > 1 THEN
+            MI_LETRAS := MI_LETRAS || 'MIL MILLONES ';
+          ELSE
+            MI_LETRAS := MI_LETRAS || 'MIL MILLONES ';
+          END IF;
+        END IF;
+        IF MI_PARTE    = 2 THEN
+          IF MI_CANT   > 1 THEN
+            MI_LETRAS := MI_LETRAS || 'MILLONES ';
+          ELSE
+            MI_LETRAS := MI_LETRAS || 'MILLON ';
+          END IF;
+        END IF;
+        IF MI_PARTE  = 3 THEN
+          MI_LETRAS := MI_LETRAS || 'MIL ';
+        END IF;
+      END IF;  
+    END LOOP;
+
+    IF (MI_BILLON >= 1 OR MI_MILLON >= 1) AND MI_MIL = 0 AND MI_NNU = 0 THEN
+      MI_LETRAS := MI_LETRAS || ' DE ';
+    END IF;
+
+    IF MI_CTVS = 0 OR MI_CTVS IS NULL THEN
+      MI_LETRAS := MI_LETRAS || 'PESOS ';
+    END IF;
+
+    IF MI_NUMT  - FLOOR(MI_NUMT) <> 0 THEN
+      MI_LETRAS := MI_LETRAS || 'CON ' || FC_VALOR_LETRAS(TO_CHAR((MI_NUMT - FLOOR(MI_NUMT)) * 100), -1) || ' CTVS.';
+    END IF;
+
+    IF MI_CTVS = 0  OR MI_CTVS IS NULL THEN
+      MI_LETRAS := MI_LETRAS || 'MC. ';
+    END IF;
+
+    MI_LETRAS := REPLACE(MI_LETRAS, 'VEINTI ', 'VEINTI');
+
+    MI_VALORLETRAS := UPPER(MI_LETRAS);
+    MI_INTUBICACION := INSTR(MI_VALORLETRAS, 'MILLONES',1) - 1;
+    IF MI_INTUBICACION > 0 THEN
+      MI_MONEDACOPIA := SUBSTR(MI_VALORLETRAS, 1, MI_INTUBICACION);
+      MI_OTRAMONEDACOPIA := SUBSTR(MI_VALORLETRAS, MI_INTUBICACION + 9, LENGTH(MI_VALORLETRAS));
+      IF INSTR( MI_OTRAMONEDACOPIA, 'MILLONES',1) > 0 THEN
+        MI_VALORLETRAS := MI_MONEDACOPIA || MI_OTRAMONEDACOPIA;
+      END IF;
+    END IF;
+--    MI_VALORLETRAS := REPLACE(MI_VALORLETRAS, ' ' , ' ');
+    RETURN MI_VALORLETRAS;
+END FC_VALOR_LETRAS;
+
+--28
+FUNCTION FC_ROUND
+/*
+    @NAME:  redondearValor
+    @METHOD:  GET                  
+*/    
+  ( 
+    UN_VALOR   IN PCK_SUBTIPOS.TI_DOBLE,
+    UN_PRECISION IN PCK_SUBTIPOS.TI_ENTERO DEFAULT 0
+  )
+RETURN NUMBER
+AS
+  MI_VLRETORNO PCK_SUBTIPOS.TI_DOBLE :=0;
+BEGIN
+  IF UN_VALOR >= 0 THEN
+     --MI_VLRETORNO :=  ROUND(UN_VALOR - POWER(10,-UN_PRECISION-6),UN_PRECISION);
+     MI_VLRETORNO := TRUNC(UN_VALOR * POWER(10, UN_PRECISION) + 0.49999999999) / POWER(10 , UN_PRECISION);
+  ELSE
+     --MI_VLRETORNO := ROUND(UN_VALOR + POWER(10,-UN_PRECISION-6),UN_PRECISION);
+      MI_VLRETORNO := TRUNC(UN_VALOR * POWER(10, UN_PRECISION) - 0.49999999999) / POWER(10 , UN_PRECISION);
+  END IF;
+  RETURN MI_VLRETORNO;
+END FC_ROUND;
+
+--29
+FUNCTION FC_DURACION
+/*
+    @NAME:  calcularDiferenciaDeTiempo
+    @METHOD:  GET                  
+*/    
+  (
+    UN_TIEMPOI IN DATE,
+    UN_TIEMPOF IN DATE
+  )
+RETURN VARCHAR2
+AS
+  MI_ANOS     PCK_SUBTIPOS.TI_ENTERO_LARGO:=0;
+  MI_MESES    PCK_SUBTIPOS.TI_ENTERO_LARGO:=0;
+  MI_DIAS     PCK_SUBTIPOS.TI_ENTERO_LARGO:=0;
+  MI_HORAS    PCK_SUBTIPOS.TI_ENTERO_LARGO:=0;
+  MI_MINUTOS  PCK_SUBTIPOS.TI_ENTERO_LARGO:=0;
+  MI_SEGUNDOS   PCK_SUBTIPOS.TI_ENTERO_LARGO:=0;
+  MI_DIF    PCK_SUBTIPOS.TI_ENTERO_LARGO:=0;
+  MI_RETORNO  PCK_SUBTIPOS.TI_STRSQL :='';
+BEGIN
+  MI_DIF := UN_TIEMPOF -UN_TIEMPOI;
+  MI_DIAS:=TRUNC(MI_DIF);
+  MI_DIF:=(MI_DIF-TRUNC(MI_DIF))*24*3600;
+  MI_SEGUNDOS := MOD(MI_DIF,60);
+  MI_DIF := (MI_DIF - MI_SEGUNDOS)/60; -- EN MINUTOS
+  MI_MINUTOS := MOD(MI_DIF,60);
+  MI_DIF := (MI_DIF - MI_MINUTOS) / 60; -- EN HORAS
+  MI_HORAS := MOD(MI_DIF,24 );
+  MI_DIF := (MI_DIF - MI_HORAS)/24 ; -- EN DIAS
+  IF MI_SEGUNDOS <> 0 THEN
+    MI_RETORNO := TO_NUMBER(ROUND(MI_SEGUNDOS,0)) || ' segundos ';
+  END IF;
+  IF MI_MINUTOS <> 0 THEN
+    MI_RETORNO := TO_NUMBER(MI_MINUTOS) || ' minutos ' || MI_RETORNO ;
+  END IF;
+  IF MI_HORAS <> 0 THEN
+    MI_RETORNO := TO_NUMBER(MI_HORAS) || ' horas ' || MI_RETORNO ;
+  END IF;
+  IF MI_DIAS <> 0 THEN
+    MI_RETORNO := TO_NUMBER(MI_DIAS) || ' días ' || MI_RETORNO ;
+  END IF;
+/*
+  MI_DIAS := MOD(MI_DIF,30);
+  MI_DIF := (MI_DIF - MI_DIAS)/30 ; -- EN MESES
+  IF MI_DIAS <> 0 THEN
+    MI_RETORNO := TO_NUMBER(MI_DIAS) || ' d¿ ' || MI_RETORNO ;
+  END IF;
+  MI_MESES := MOD(MI_DIF,12);
+  MI_DIF := (MI_DIF - MI_MESES)/12 ; -- EN A¿S
+  IF MI_MESES <> 0 THEN
+    MI_RETORNO := TO_NUMBER(MI_MESES) || ' meses ' || MI_RETORNO ;
+  END IF;
+  MI_ANOS:=MI_DIF;
+  IF MI_ANOS <> 0 THEN
+    MI_RETORNO := TO_NUMBER(MI_ANOS) || ' a¿' || MI_RETORNO ;
+  END IF;
+*/
+  RETURN MI_RETORNO ;
+END FC_DURACION;
+
+--30
+FUNCTION FC_GENCONSECUTIVO
+ /*
+    NAME              : FC_GENCONSECUTIVO
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 13/05/2015
+    TIME              : 8:30 AM
+    SOURCE MODULE     : NominaP2015.04.02UNIFICADA.accdb
+    MODIFIER          : JUAN CARLOS RODRÍGUEZ AMÉZQUITA
+    DATE MODIFIED     : 27/08/2015
+    TIME              : 03:42 PM
+    DESCRIPTION       : GENERA EL SIGUIENTE CONSECUTIVO DEL CAMPOS DE LA TABLA SELECCIONADA Y TENIENDO EN CUENTA 
+                        EL CRITERIO
+    MODIFICATIONS     : SE AGREGA VALIDACIÓN EN CASO DE QUE NO SE REQUIERA ESPECIFICAR UN CRITERIO DE SELECCIÓN
+    @NAME:  generarSiguienteConsecutivo
+    @METHOD:  GET                      
+  */
+  (
+    UN_TABLA    IN PCK_SUBTIPOS.TI_TABLA,
+    UN_CRITERIO IN PCK_SUBTIPOS.TI_CONDICION,
+    UN_CAMPO    IN VARCHAR2
+  )
+RETURN NUMBER
+AS
+  MI_STRSQL     PCK_SUBTIPOS.TI_STRSQL;
+  MI_VLRETORNO  PCK_SUBTIPOS.TI_ENTERO_LARGO := 0;
+  MI_CRITERIO   PCK_SUBTIPOS.TI_CONDICION := '';
+  BEGIN
+    IF UN_CRITERIO IS NOT NULL THEN
+      MI_CRITERIO := ' WHERE '   || UN_CRITERIO ;
+    END IF;
+    MI_STRSQL := 'SELECT MAX(TO_NUMBER('   || UN_CAMPO || '))' ||
+                 ' FROM   '   || UN_TABLA || 
+                 MI_CRITERIO || 
+                 ' ORDER BY ' || UN_CAMPO || ' DESC ';
+    EXECUTE IMMEDIATE MI_STRSQL INTO MI_VLRETORNO;
+    RETURN NVL(MI_VLRETORNO,0) + 1;
+
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    RETURN 1;
+END FC_GENCONSECUTIVO;
+
+--31
+FUNCTION FC_GENCONSECUTIVO
+ /*
+    NAME              : FC_GENCONSECUTIVO
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 13/05/2015
+    TIME              : 8:30 AM
+    SOURCE MODULE     : NominaP2015.04.02UNIFICADA.accdb
+    MODIFIER          : DIEGO FERNANDO MALDONADO MORALES
+                        JUAN CARLOS RODRIGUEZ AMEZQUITA
+    DATE MODIFIED     : 05/10/2015
+                        18/10/2018
+    TIME              : 04:02 PM
+                        05:14 PM
+    DESCRIPTION       : GENERA EL SIGUIENTE CONSECUTIVO DEL CAMPOS DE LA TABLA SELECCIONADA Y TENIENDO EN CUENTA 
+                        EL CRITERIO
+    MODIFICATIONS     : SE REALIZA LA SOBRECARGA CON EL FIN DE PERMITIR EL INGRESO DE UN VALOR INICIAL EN CASO DE QUE NO SE ENCUENTREN DATOS
+                        SE VALIDA SI UN_INICIAL ES NULO, EN VEZ DE MI_INICIAL, PARA RETORNAR EL VALOR 1 COMO CONSECUTIVO
+    @NAME:  generarConsecutivoConValorInicial
+    @METHOD:  GET                     
+  */
+  (
+    UN_TABLA    IN PCK_SUBTIPOS.TI_TABLA,
+    UN_CRITERIO IN PCK_SUBTIPOS.TI_CONDICION,
+    UN_CAMPO    IN VARCHAR2,
+    UN_INICIAL  IN VARCHAR2
+  )
+RETURN NUMBER
+AS
+  MI_STRSQL     PCK_SUBTIPOS.TI_STRSQL;
+  MI_VLRETORNO  PCK_SUBTIPOS.TI_LONG := 0;
+  MI_CRITERIO   PCK_SUBTIPOS.TI_CONDICION := '';
+  MI_INICIAL    PCK_SUBTIPOS.TI_STRSQL:= '';
+BEGIN
+  IF UN_CRITERIO IS NOT NULL THEN
+    MI_CRITERIO := ' WHERE '   || UN_CRITERIO ;
+  END IF;
+  MI_STRSQL := ' SELECT MAX(TO_NUMBER('   || UN_CAMPO || '))' ||
+               ' FROM   '   || UN_TABLA || 
+               MI_CRITERIO || 
+               ' ORDER BY TO_NUMBER(' || UN_CAMPO || ') DESC ';
+  EXECUTE IMMEDIATE MI_STRSQL INTO MI_VLRETORNO;
+  --IF MI_VLRETORNO=0 OR MI_VLRETORNO IS NULL THEN
+  IF  MI_VLRETORNO IS NULL THEN
+    MI_INICIAL := NVL(UN_INICIAL,'');
+    IF UN_INICIAL IS NULL THEN
+        RETURN 1;
+    ELSE
+        RETURN MI_INICIAL;
+    END IF;
+  END IF;    
+  RETURN NVL(MI_VLRETORNO,0) + 1;
+
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    RETURN MI_INICIAL;
+END FC_GENCONSECUTIVO;
+
+--32
+FUNCTION FC_NOMTERCERO
+/*
+    @NAME:  consultarNombreDeTercero
+    @METHOD:  GET  
+*/    
+  (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_NIT        IN PCK_SUBTIPOS.TI_TERCERO,
+    UN_SUCURSAL   IN PCK_SUBTIPOS.TI_SUCURSAL
+  )
+RETURN VARCHAR2
+AS
+  MI_VLRETORNO  VARCHAR2(4000 CHAR) :=  '';
+  BEGIN
+    SELECT NOMBRE
+    INTO   MI_VLRETORNO 
+    FROM   TERCERO
+    WHERE  COMPANIA = UN_COMPANIA
+      AND  NIT = UN_NIT
+      AND  SUCURSAL = UN_SUCURSAL;
+
+    RETURN MI_VLRETORNO;
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    RETURN MI_VLRETORNO ;
+END FC_NOMTERCERO;
+
+--33
+FUNCTION FC_NOMBRECUENTA
+/*
+    @NAME:  consultarNombreCuentaContable
+    @METHOD:  GET  
+*/    
+  (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_ANO        IN PCK_SUBTIPOS.TI_ANIO,
+    UN_CUENTA     IN PCK_SUBTIPOS.TI_CODIGOCONTA
+  )
+RETURN VARCHAR2
+AS
+  MI_VLRETORNO  VARCHAR2(200 CHAR) :=  '';
+BEGIN
+  SELECT NOMBRE
+  INTO   MI_VLRETORNO 
+  FROM   V_PLAN_CONTABLE
+  WHERE  COMPANIA = UN_COMPANIA
+    AND  ANO = UN_ANO
+    AND  CODIGO = UN_CUENTA;
+
+  RETURN MI_VLRETORNO;
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    RETURN MI_VLRETORNO ;
+END FC_NOMBRECUENTA;
+
+--34
+FUNCTION FC_NOMBRECENTROCOSTO
+/*
+    @NAME:  consultarNombreCentroDeCosto
+    @METHOD:  GET  
+*/ 
+  (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_ANO        IN PCK_SUBTIPOS.TI_ANIO,
+    UN_CODIGO     IN PCK_SUBTIPOS.TI_CENTRO_COSTO
+  )
+RETURN VARCHAR2
+AS
+  MI_VLRETORNO  VARCHAR2(60 CHAR) :=  '';
+BEGIN
+  SELECT NOMBRE
+  INTO   MI_VLRETORNO 
+  FROM   CENTRO_COSTO
+  WHERE  COMPANIA = UN_COMPANIA
+    AND  ANO      = UN_ANO  
+    AND  CODIGO   = UN_CODIGO;
+
+  RETURN MI_VLRETORNO;
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    RETURN MI_VLRETORNO ;
+END FC_NOMBRECENTROCOSTO;
+
+--35
+FUNCTION FC_NOMBREAUXILIAR
+/*
+    @NAME:  consultarNombreAuxiliar
+    @METHOD:  GET  
+*/ 
+  (
+    UN_COMPANIA    IN PCK_SUBTIPOS.TI_COMPANIA,
+  UN_ANO         IN PCK_SUBTIPOS.TI_ANIO,
+  UN_CODIGO      IN PCK_SUBTIPOS.TI_AUXILIAR
+  )
+RETURN VARCHAR2
+AS
+  MI_VLRETORNO  VARCHAR2(120 CHAR) :=  '';
+BEGIN
+  SELECT NOMBRE
+  INTO   MI_VLRETORNO 
+  FROM   AUXILIAR
+  WHERE  COMPANIA = UN_COMPANIA
+    AND  ANO      = UN_ANO  
+    AND  CODIGO = UN_CODIGO;
+
+  RETURN MI_VLRETORNO;
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    RETURN MI_VLRETORNO ;
+END FC_NOMBREAUXILIAR;
+
+--36
+FUNCTION FC_NOMBRE_MES
+/*
+    NAME              : FC_NOMBRE_MES
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : CARLOS ALBERTO MANRIQUE PALACIOS
+    DATE MIGRADOR     : 25/05/2015
+    TIME              : 10:22 AM
+    SOURCE MODULE     : NominaP2015.04.02UNIFICADA.accdb
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : RETORNA EL NOMBRE DEL MES DE ACUERDO AL NUMERO INGRESADO POR PARAMETRO
+                        SIENDO 0 INICIAL, 13 FINAL, 1 ENERO .. ETC
+    @NAME:  mostrarNombreDeMes
+    @METHOD:  GET                          
+  */
+  (
+  UN_NUMERO_MES   IN NUMBER
+  )
+RETURN VARCHAR2
+DETERMINISTIC
+AS
+  MI_MES    VARCHAR2(15 CHAR);
+  BEGIN
+    MI_MES:=CASE UN_NUMERO_MES 
+            WHEN 0 THEN 'Inicial'
+            WHEN 1 THEN 'Enero'
+            WHEN 2 THEN 'Febrero'
+            WHEN 3 THEN 'Marzo'
+            WHEN 4 THEN 'Abril'
+            WHEN 5 THEN 'Mayo'
+            WHEN 6 THEN 'Junio'
+            WHEN 7 THEN 'Julio'
+            WHEN 8 THEN 'Agosto'
+            WHEN 9 THEN 'Septiembre'
+            WHEN 10 THEN 'Octubre'
+            WHEN 11 THEN 'Noviembre'
+            WHEN 12 THEN 'Diciembre'
+            WHEN 13 THEN 'Final'
+            ELSE 'Mes no válido'
+            END;
+          RETURN MI_MES;
+  EXCEPTION WHEN OTHERS THEN
+    MI_MES:='Mes no válido';
+    RETURN MI_MES;
+END FC_NOMBRE_MES;
+
+--37
+FUNCTION FC_STRZERO
+/*
+    @NAME:  generarCerosIzquierda
+    @METHOD:  GET  
+*/ 
+  (
+  UN_NUMERO    IN  PCK_SUBTIPOS.TI_ENTERO_LARGO,
+  UN_LONGITUD IN PCK_SUBTIPOS.TI_ENTERO_LARGO
+  )
+RETURN VARCHAR2 AS
+  MI_ERROR_FUN   PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 37; 
+  MI_AUX     VARCHAR2(30 CHAR);
+  MI_RESULTADO   VARCHAR2(30 CHAR); 
+  MI_NUMERO    PCK_SUBTIPOS.TI_ENTERO_LARGO;
+  BEGIN 
+  MI_NUMERO:=TRUNC(UN_NUMERO);
+  IF MI_NUMERO IS NULL THEN
+    MI_NUMERO:=0;
+  END IF;
+    -- Funcion que rellena de 0s en caso de que el numero sea menor que longitud, en otro caso, corta el numero por la izquierda en el tamaño longitud
+    If LENGTH(MI_NUMERO) <= UN_LONGITUD THEN
+  <<CONCATENAAUX>>
+      FOR I IN 1 .. (UN_LONGITUD - LENGTH(TO_CHAR(MI_NUMERO))) LOOP
+        MI_AUX:=concat(MI_AUX,'0'); 
+      END lOOP CONCATENAAUX; 
+        MI_RESULTADO:=concat(MI_AUX,SUBSTR(TO_CHAR(MI_NUMERO),0,UN_LONGITUD)); 
+
+    ELSE
+        MI_RESULTADO := SUBSTR(TO_CHAR(MI_NUMERO),0,UN_LONGITUD); 
+    END IF;
+
+    RETURN MI_RESULTADO; 
+  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Interrupción durante el proceso de formateo de numeros con longitud'|| UN_LONGITUD;
+    PCK_DATOS.GL_ERROR_MSG := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'NOMINA COM1','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+  END FC_STRZERO;
+
+--38
+FUNCTION FC_STRZERO
+/*
+    @NAME:  generarCerosIzquierda
+    @METHOD:  GET  
+*/ 
+  (
+  UN_NUMERO   IN VARCHAR2,
+  UN_LONGITUD IN  PCK_SUBTIPOS.TI_ENTERO_LARGO
+  )
+RETURN VARCHAR2 AS
+  MI_ERROR_FUN   PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 38; 
+  MI_AUX            VARCHAR2(30);
+  MI_RESULTADO      VARCHAR2(30);
+  MI_NUMERO       PCK_SUBTIPOS.TI_ENTERO_LARGO;
+  BEGIN 
+    IF(TRANSLATE(UN_NUMERO, 'T 0123456789,', 'T') IS NULL) THEN
+      MI_NUMERO:=TO_NUMBER(UN_NUMERO);
+      RETURN FC_STRZERO(MI_NUMERO, UN_LONGITUD);
+    ELSE
+  <<CONCATENAAUX>>
+      FOR I in 1 .. UN_LONGITUD LOOP
+          MI_AUX:= concat(MI_AUX,'0'); 
+        END lOOP CONCATENAAUX; 
+        MI_RESULTADO:=MI_AUX;  
+        RETURN MI_RESULTADO; 
+    END IF;
+  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Interrupción durante el proceso de formateo de numeros con longitud'|| UN_LONGITUD;
+    PCK_DATOS.GL_ERROR_MSG := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'NOMINA COM1','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+  END FC_STRZERO;
+
+--39
+FUNCTION FC_FECHAFINALHABIL
+/*
+    NAME              : FC_FECHAFINALHABIL
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 14/08/2015
+    TIME              : 8:30 AM
+    SOURCE MODULE     : NominaP2015.04.02UNIFICADA.accdb
+    MODIFIER          :
+    DATE MODIFIED     :
+    TIME              :
+    DESCRIPTION       : RETORNA LA FECHA RESULTADO DE TOMAR LA FECHA QUE INGRESA POR PARAMETRO Y SUMAR LOS DIAS HABILES VALIDOS.
+                        SI EL PARAMETRO UN_SABANO ES DIFERENTE DE NULO TOMARA EL DIA SABADO COMO DIA HABIL.
+    @NAME:  retornarFechaMasDiasHabiles
+    @METHOD:  GET
+  */
+  (
+    UN_COMPANIA IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_FECHA    IN DATE,
+    UN_DIAS     IN PCK_SUBTIPOS.TI_ENTERO,
+    UN_SABADO   IN PCK_SUBTIPOS.TI_ENTERO DEFAULT 0
+  )
+RETURN DATE
+AS
+    MI_NRODIA     PCK_SUBTIPOS.TI_ENTERO;
+    MI_FECHAHABIL DATE;
+    MI_CONTADOR   NUMBER;
+    MI_I          PCK_SUBTIPOS.TI_ENTERO:= 0;
+    MI_EXISTE     VARCHAR2(1 CHAR);
+BEGIN
+    MI_FECHAHABIL := UN_FECHA;
+    IF UN_FECHA IS NULL OR UN_DIAS = 0 THEN    --(MZANGUNA:18/12/2018)Se adiciona condición, casos como nómina que enviaba fechas de retiros nulas)
+        RETURN NULL;
+    END IF;
+    IF UN_SABADO =0 THEN
+        WHILE MI_I <= UN_DIAS LOOP
+            MI_NRODIA := PCK_SYSMAN_UTL.FC_WEEKDAY(MI_FECHAHABIL);
+            IF MI_NRODIA <> 1 AND MI_NRODIA <> 7 THEN
+                BEGIN
+                    SELECT  'X'
+                    INTO    MI_EXISTE
+                    FROM    FESTIVOS
+                    WHERE   COMPANIA = UN_COMPANIA
+                      AND   TO_CHAR(ID_DE_FESTIVO,'YYYYMMDD') = TO_CHAR(MI_FECHAHABIL, 'YYYYMMDD');
+                EXCEPTION WHEN NO_DATA_FOUND THEN
+                    MI_I := MI_I + 1;
+                END;
+            END IF;
+            IF MI_I < UN_DIAS THEN
+                MI_FECHAHABIL := MI_FECHAHABIL +1;
+            END IF;
+        END LOOP;
+    ELSE
+        WHILE MI_I <= UN_DIAS LOOP
+            MI_NRODIA := PCK_SYSMAN_UTL.FC_WEEKDAY(MI_FECHAHABIL);
+            IF MI_NRODIA <> 1 THEN
+                BEGIN
+                    SELECT  'X'
+                    INTO    MI_EXISTE
+                    FROM    FESTIVOS
+                    WHERE   COMPANIA = UN_COMPANIA
+                      AND   TO_CHAR(ID_DE_FESTIVO,'YYYYMMDD') = TO_CHAR(MI_FECHAHABIL, 'YYYYMMDD');
+
+                EXCEPTION WHEN NO_DATA_FOUND THEN
+                    MI_I := MI_I + 1;
+                END;
+            END IF;
+            IF MI_I < UN_DIAS THEN
+                MI_FECHAHABIL := MI_FECHAHABIL +1;
+            END IF;
+        END LOOP;
+    END IF;
+
+    RETURN MI_FECHAHABIL;
+END FC_FECHAFINALHABIL;
+
+--40
+FUNCTION FC_PADC
+/*
+    NAME              : PADC
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JOSE PASCUAL GÓMEZ BLANCO
+    DATE MIGRADOR     : 15/08/2015
+    TIME              : 08:13 AM
+    SOURCE MODULE     : NominaP2015.04.01DUI.accdb
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Genera el una cadena de longitud fija centrando el texto dado
+    @NAME:  centrarTexto
+    @METHOD:  GET      
+  */
+  (
+      UN_CADENA     IN VARCHAR2,
+    UN_LONGITUD   IN PCK_SUBTIPOS.TI_ENTERO_LARGO,
+    UN_CARACTER   IN VARCHAR2 DEFAULT ' '
+  )
+RETURN VARCHAR2
+AS
+  MI_ERROR_FUN   PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 40; 
+  MI_RETORNO     PCK_SUBTIPOS.TI_STRSQL;  
+  MI_CARACTER    PCK_SUBTIPOS.TI_STRSQL;
+BEGIN
+  IF UN_CARACTER= NULL THEN
+    MI_CARACTER:=' ';
+  ELSE
+    MI_CARACTER:=UN_CARACTER;
+  END IF;
+
+  MI_CARACTER:= SUBSTR(MI_CARACTER,1,1);
+  MI_RETORNO:=TRIM(LPAD(TRIM(UN_CADENA),UN_LONGITUD));
+
+  MI_RETORNO:=RPAD(LPAD(MI_CARACTER, (UN_LONGITUD - LENGTH(TRIM(MI_RETORNO))) / 2, MI_CARACTER) || MI_RETORNO, UN_LONGITUD, MI_CARACTER);
+
+  RETURN MI_RETORNO;
+
+  EXCEPTION WHEN OTHERS THEN
+  RETURN 0;
+  PCK_DATOS.GL_ERROR_MSG := 'Interrupción al intentar generar el padc';
+  PCK_DATOS.GL_ERROR_MSG := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'ERRORES','',SQLERRM );
+  RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END FC_PADC;
+
+--41
+FUNCTION FC_MINIT 
+  /*
+    NAME              : FC_MINIT
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMÒN
+    DATE MIGRADOR     : 20/08/2015
+    TIME              : 10:13 AM
+    SOURCE MODULE     : NominaP2015.04.01DUI.accdb
+    MODIFIER          : PABLO ANDRES ESPITIA CUCA
+    DATE MODIFIED     : 27/03/2017
+    TIME              : 09:11
+    DESCRIPTION       : DA FORMATO AL NIT DE LA ENTIDAD SEGUN LA OPCION SELECCIONADA
+                        (27/03/2017) : En la consulta a la tabla PARAMETROS_DE_ENTRADA se adiciono un filtro para que solo 
+                        muestre el registro con la primer coindidencia.
+    @NAME:  formatearNitEntidad
+    @METHOD:  GET  
+  */
+  (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+  UN_OPCION     IN PCK_SUBTIPOS.TI_ENTERO
+  )
+RETURN VARCHAR2 
+AS 
+  MI_NIT        PARAMETROS_DE_ENTRADA.NIT%TYPE;
+  MI_NITRETORNO PARAMETROS_DE_ENTRADA.NIT%TYPE;
+  MI_POS        PCK_SUBTIPOS.TI_ENTERO;
+  MI_CONTADOR   PCK_SUBTIPOS.TI_ENTERO_LARGO :=1;
+BEGIN
+  BEGIN
+    SELECT NIT
+    INTO   MI_NIT
+    FROM   PARAMETROS_DE_ENTRADA
+    WHERE  COMPANIA = UN_COMPANIA
+      AND ROWNUM   <= 1;
+
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      RETURN MI_NITRETORNO;
+  END;
+
+  MI_POS := INSTR(MI_NIT, '-');
+
+  IF UN_OPCION = 1 THEN
+    IF MI_POS > 0 THEN
+      MI_NITRETORNO := SUBSTR(MI_NIT, MI_POS+1, 1);
+    ELSE
+      MI_NITRETORNO := REPLACE(MI_NITRETORNO, '.', '');
+      MI_NITRETORNO := FC_DCH(MI_NITRETORNO);
+    END IF;
+  ELSIF UN_OPCION = 31 THEN
+    IF MI_POS > 0 THEN
+      MI_NITRETORNO := SUBSTR(MI_NIT, 1,MI_POS-1);
+    ELSE
+      MI_NITRETORNO := MI_NIT;
+    END IF;
+    MI_NITRETORNO := REPLACE(MI_NITRETORNO, '.', '');
+  ELSIF UN_OPCION = 311 THEN
+    IF MI_POS > 0 THEN
+      MI_NITRETORNO := SUBSTR(MI_NIT, 1,MI_POS-1);
+    ELSE
+      MI_NITRETORNO := MI_NIT;
+    END IF;    
+  ELSIF UN_OPCION = 312 THEN
+    IF MI_POS > 0 THEN
+      MI_NITRETORNO := SUBSTR(MI_NIT, 1,MI_POS-1);
+    ELSE
+      MI_NITRETORNO := MI_NIT;
+    END IF;
+    MI_NITRETORNO := REPLACE(MI_NITRETORNO, '.', '');
+    MI_NIT        :=MI_NITRETORNO;
+    MI_NITRETORNO := '';
+
+    WHILE MI_CONTADOR <= LENGTH(MI_NIT) LOOP
+      MI_NITRETORNO := MI_NITRETORNO || SUBSTR(MI_NIT, MI_CONTADOR,1) || ' ';  
+      MI_CONTADOR   := MI_CONTADOR + 1;
+    END LOOP;
+
+  ELSE
+    MI_NITRETORNO := ' ';
+  END IF;
+
+  RETURN MI_NITRETORNO;
+END FC_MINIT;
+--42
+FUNCTION FC_ESFESTIVO 
+  /*
+    NAME              : FC_ESFESTIVO 
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ BLANCO
+    DATE MIGRADOR     : 20/08/2015
+    TIME              : 10:13 AM
+    SOURCE MODULE     : NominaP2015.04.01DUI.accdb
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : IDENTIFICA SI EL DIA DE LA FECHA ENTREGADA ES UN FESTIVO O NO
+    @NAME:  consultarDiaFestivo
+    @METHOD:  GET     
+  */
+  (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+  UN_FECHA      IN DATE
+  )
+RETURN NUMBER
+AS 
+  MI_RETORNO    PCK_SUBTIPOS.TI_LOGICO:=0;
+  MI_ERROR_FUN      PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 42;
+BEGIN
+  SELECT -1 
+  INTO MI_RETORNO
+  FROM FESTIVOS 
+  WHERE COMPANIA=UN_COMPANIA
+    AND ID_DE_FESTIVO = UN_FECHA;
+  RETURN MI_RETORNO;
+  EXCEPTION WHEN OTHERS THEN
+    RETURN 0;
+    PCK_DATOS.GL_ERROR_MSG := 'Interrupción al generar consultar si es festivo --> ' ;
+    PCK_DATOS.GL_ERROR_MSG := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'VERIFICANDO SI ES FESTIVO','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );  
+END FC_ESFESTIVO;
+--43
+FUNCTION FC_DIASHABIL
+/*
+    NAME              : PERIODOSVACACIONES
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 14/03/2015
+    TIME              : 9:00 AM
+    SOURCE MODULE     : NominaP2015.04.01DUI.accdb
+    MODIFIER          : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MODIFIED     : 14/04/2015
+    TIME              : 10:20
+    DESCRIPTION       : ESTA FUNCION RETORNA LA CANTIDAD DE DIAS HABILES ENTRE DOS FECHAS ENVIADAS POR PARAMETRO
+                        14/04/2015 - SE INCLUYE RUTINA PARA CONTROL DE EXCEPCIONES
+    @NAME:  retornarDiasHabilesEntreFechas
+    @METHOD:  GET                         
+  */
+  (
+    UN_COMPANIA     IN PCK_SUBTIPOS.TI_COMPANIA,
+  UN_FECHAINI     IN DATE, 
+  UN_FECHAFIN     IN DATE, 
+  UN_SABADOS      IN PCK_SUBTIPOS.TI_ENTERO_LARGO DEFAULT NULL
+  )
+RETURN NUMBER
+AS
+  MI_ERROR_FUN  PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 42;
+  MI_CANT       PCK_SUBTIPOS.TI_ENTERO:=0;
+  MI_VLRETORNO  PCK_SUBTIPOS.TI_ENTERO:=0;
+  MI_AUXFEC     DATE;
+BEGIN
+--' CALCULA LOS DIAS HABILES ENTRE DOS FECHAS
+  BEGIN
+    IF NOT UN_SABADOS IS NULL THEN
+      SELECT  COUNT(0) 
+      INTO    MI_CANT
+      FROM    FESTIVOS 
+      WHERE   COMPANIA = UN_COMPANIA
+        AND   TO_CHAR(ID_DE_FESTIVO,'YYYYMMDD') >= TO_CHAR(UN_FECHAINI, 'YYYYMMDD')
+        AND   TO_CHAR(ID_DE_FESTIVO,'YYYYMMDD') <= TO_CHAR(UN_FECHAFIN, 'YYYYMMDD')
+        AND   PCK_SYSMAN_UTL.FC_WEEKDAY(ID_DE_FESTIVO)<>1;
+    ELSE
+      SELECT  COUNT(0)
+      INTO    MI_CANT
+      FROM    FESTIVOS 
+      WHERE   COMPANIA = UN_COMPANIA 
+        AND   TO_CHAR(ID_DE_FESTIVO,'YYYYMMDD') >= TO_CHAR(UN_FECHAINI, 'YYYYMMDD')
+        AND   TO_CHAR(ID_DE_FESTIVO,'YYYYMMDD') <=  TO_CHAR(UN_FECHAFIN, 'YYYYMMDD')
+        AND   PCK_SYSMAN_UTL.FC_WEEKDAY(ID_DE_FESTIVO,1) NOT IN(1,7) ;
+         --' [ID_DE_FESTIVO])<>1 120208
+    END IF;
+  END;
+
+  MI_VLRETORNO := UN_FECHAFIN - UN_FECHAINI + 1 - MI_CANT;
+--  FOR I = CLNG(UN_FECHAINI) TO CLNG(GL_FECHAFIN)
+  MI_CANT := UN_FECHAFIN - UN_FECHAINI ;
+  MI_AUXFEC := UN_FECHAINI;
+  <<DIADELASEMANA>>  
+  FOR I IN 1 .. MI_CANT LOOP
+    MI_AUXFEC := MI_AUXFEC +1;
+
+    IF (UN_SABADOS IN(1) OR UN_SABADOS IN(-1)) AND (PCK_SYSMAN_UTL.FC_WEEKDAY(MI_AUXFEC) = 7 AND PCK_SYSMAN_UTL.FC_WEEKDAY(MI_AUXFEC) NOT IN(1)) THEN
+     MI_VLRETORNO := MI_VLRETORNO - 1;
+    ELSIF (UN_SABADOS IN (0) OR  UN_SABADOS IS NULL ) AND (PCK_SYSMAN_UTL.FC_WEEKDAY(MI_AUXFEC) = 1 OR PCK_SYSMAN_UTL.FC_WEEKDAY(MI_AUXFEC) = 7) THEN
+     MI_VLRETORNO := MI_VLRETORNO - 1;
+    END IF;
+  END LOOP DIADELASEMANA;
+  RETURN MI_VLRETORNO;
+
+  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Interrupción durante el cálculo de días hábiles entre las fechas  ' || UN_FECHAINI || ' y ' || UN_FECHAFIN ;
+    PCK_DATOS.GL_ERROR_MSG := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'FESTIVOS','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END FC_DIASHABIL;
+--44
+FUNCTION FC_NOMBRECOMPLETO
+/*
+    NAME              : FC_NOMBRECOMPLETO  --> EN ACCESS UnIFicarNombre  -
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : DIEGO ALFREDO SUESCA RODRÌGUEZ
+    DATE MIGRADOR     : 29/09/2015
+    TIME              : 12:39 AM
+    SOURCE MODULE     : CONTRATOS_PROCESOS
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Rertorna el nombre completo de un tercero dependiendo el parametro 'MANEJA TERCERO POR APELLIDO'
+    @NAME:  consutarNombreCompletoDeTerceroConParametro
+    @METHOD:  GET     
+  */
+  (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_NOMBRE1    IN VARCHAR2,
+    UN_NOMBRE2    IN VARCHAR2,
+    UN_APELLIDO1  IN VARCHAR2,
+    UN_APELLIDO2  IN VARCHAR2
+  )
+RETURN VARCHAR2
+DETERMINISTIC
+  AS 
+    MI_ERROR_FUN  PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 44; 
+    MI_RESULTADO  VARCHAR2(1000 CHAR):='';
+    MI_PARAMETRO  PCK_SUBTIPOS.TI_PARAMETRO;
+BEGIN 
+   MI_RESULTADO:= ' ';
+   MI_PARAMETRO:=PCK_SYSMAN_UTL.FC_PAR(UN_COMPANIA,'MANEJA TERCERO POR APELLIDO',1,SYSDATE);
+    IF UPPER(MI_PARAMETRO) = 'NO' THEN    
+        IF UN_NOMBRE1 IS NOT NULL THEN
+          MI_RESULTADO := NVL(UN_NOMBRE1, '');
+        END IF;
+        IF UN_NOMBRE2 IS NOT NULL THEN 
+          MI_RESULTADO := MI_RESULTADO || ' ' || UN_NOMBRE2;
+        END IF; 
+        IF UN_APELLIDO1 IS NOT NULL THEN 
+          MI_RESULTADO := MI_RESULTADO || ' ' || UN_APELLIDO1;
+        END IF; 
+        IF UN_APELLIDO2 IS NOT NULL THEN 
+         MI_RESULTADO := MI_RESULTADO || ' ' || UN_APELLIDO2;
+        END IF; 
+    ELSE
+        IF UN_APELLIDO1 IS NOT NULL THEN
+          MI_RESULTADO := NVL(UN_APELLIDO1, '');
+        END IF;
+        IF UN_APELLIDO2 IS NOT NULL THEN 
+            MI_RESULTADO := MI_RESULTADO || ' ' || UN_APELLIDO2;
+        END IF;  
+        IF UN_NOMBRE1 IS NOT NULL THEN 
+            MI_RESULTADO := MI_RESULTADO || ' ' || UN_NOMBRE1;
+        END IF;  
+        IF UN_NOMBRE2 IS NOT NULL THEN 
+            MI_RESULTADO := MI_RESULTADO || ' ' || UN_NOMBRE2;
+        END IF;
+     END IF;     
+  RETURN TRIM(MI_RESULTADO);   
+  EXCEPTION WHEN OTHERS THEN
+    RETURN NULL;
+    PCK_DATOS.GL_ERROR_MSG:= 'Interrupción Opteniendo Nombre Completo';
+    PCK_DATOS.GL_ERROR_MSG:= PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'SYSMAN UTL','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END FC_NOMBRECOMPLETO;
+--45
+FUNCTION FC_CODIGO_PPTAL
+/*
+    NAME              : Codigo_Pptal
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JAVIER VILLATE
+    DATE MIGRADOR     : 14/10/2015
+    TIME              : 12:28 AM
+    SOURCE MODULE     : Presupuesto.accdb
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : FUNCIÓN QUE ARMA EL ID CORRESPONDIENTE A UN DETERMINADO CÓDIGO PRESUPUESTAL.
+    @NAME:  crearCodigoPresupuestal
+    @METHOD:  GET     
+  */
+  (
+    UN_COMPANIA     IN PCK_SUBTIPOS.TI_COMPANIA,
+  UN_ANO          IN PCK_SUBTIPOS.TI_ANIO,    
+  UN_CUENTA       IN PCK_SUBTIPOS.TI_CODIGOPPTAL,
+  UN_CENTRO_COSTO IN PCK_SUBTIPOS.TI_CENTRO_COSTO,
+  UN_TERCERO      IN PCK_SUBTIPOS.TI_TERCERO,
+  UN_SUCURSAL     IN PCK_SUBTIPOS.TI_SUCURSAL,
+  UN_AUXILIAR     IN PCK_SUBTIPOS.TI_AUXILIAR,
+  UN_REFERENCIA   IN PCK_SUBTIPOS.TI_REFERENCIA,
+  UN_FUENTE       IN PCK_SUBTIPOS.TI_FUENTE_RECURSOS
+  )
+RETURN VARCHAR2
+DETERMINISTIC
+  AS
+    MI_VLRETORNO   VARCHAR2(32000 CHAR) :=  '';
+    MI_ERROR_FUN   PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 45; 
+BEGIN
+  MI_VLRETORNO:=UN_CUENTA;
+  BEGIN
+    /*SELECT RPAD(CODIGO,32) || DECODE(MAN_CEN_CTO, -1, RPAD(UN_CENTRO_COSTO,20),RPAD('99999999999999999999',20)) 
+                           || DECODE(MAN_AUX_TER, -1, RPAD(UN_TERCERO     ,18),RPAD('999999999999999999'  ,18)) 
+                           || DECODE(MAN_AUX_TER, -1, RPAD(UN_SUCURSAL    ,3 ),RPAD('999'                 , 3)) 
+                           || DECODE(MAN_AUX_GEN, -1, RPAD(UN_AUXILIAR    ,20),RPAD('99999999999999999999',20)) 
+                           || DECODE(MAN_AUX_REF, -1, RPAD(UN_REFERENCIA  ,20),RPAD('99999999999999999999',20)) 
+                           || DECODE(MAN_AUX_FUE, -1, RPAD(UN_FUENTE      ,20),RPAD('99999999999999999999',20)) AS CUENTA
+    INTO MI_VLRETORNO
+    FROM PLAN_PRESUPUESTAL
+    WHERE COMPANIA=UN_COMPANIA AND ANO=UN_ANO AND CODIGO=UN_CUENTA;
+    */
+    SELECT TRIM(CASE WHEN PLAN_PRESUPUESTAL.ANO<2022 THEN RPAD(CODIGO,32) ELSE RPAD(CODIGO,100) END  || DECODE(MAN_CEN_CTO, -1, RPAD(UN_CENTRO_COSTO,20),RPAD(' '  ,20)) 
+                                || DECODE(MAN_AUX_TER, -1, RPAD(UN_TERCERO     ,18),RPAD(' '  ,18)) 
+                                || DECODE(MAN_AUX_TER, -1, RPAD(UN_SUCURSAL    ,3 ),RPAD(' '  , 3)) 
+                                || DECODE(MAN_AUX_GEN, -1, RPAD(UN_AUXILIAR    ,20),RPAD(' '  ,20)) 
+                                || DECODE(MAN_AUX_REF, -1, RPAD(UN_REFERENCIA  ,20),RPAD(' '  ,20)) 
+                                || DECODE(MAN_AUX_FUE, -1, RPAD(UN_FUENTE      ,20),RPAD(' '  ,20))) AS CUENTA
+    INTO MI_VLRETORNO
+    FROM PLAN_PRESUPUESTAL
+    WHERE COMPANIA=UN_COMPANIA AND ANO=UN_ANO AND CODIGO=UN_CUENTA;
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      RETURN MI_VLRETORNO ;
+  END;
+  RETURN MI_VLRETORNO;  
+
+  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG:= 'Interrrupción en la función que retorna el id concatenado de la cuenta Presupuestal';
+    PCK_DATOS.GL_ERROR_MSG:= PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'PLAN_PRESUPUESTAL','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );  
+END FC_CODIGO_PPTAL;
+
+--46
+FUNCTION FC_CODIGO_CNT
+/*
+    NAME              : Codigo_Cnt
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JAVIER VILLATE
+    DATE MIGRADOR     : 22/01/2016
+    TIME              : 03:42 PM
+    SOURCE MODULE     : Contabilidad.accdb
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : FUNCIÓN QUE ARMA EL ID CORRESPONDIENTE A UN DETERMINADO CÓDIGO CONTABLE.
+    @NAME:  crearCodigoContable
+    @METHOD:  GET     
+  */
+  (
+    UN_COMPANIA     IN PCK_SUBTIPOS.TI_COMPANIA,
+  UN_ANO          IN PCK_SUBTIPOS.TI_ANIO,        
+  UN_CUENTA       IN PCK_SUBTIPOS.TI_CODIGOCONTA,
+  UN_CENTRO_COSTO IN PCK_SUBTIPOS.TI_CENTRO_COSTO,
+  UN_TERCERO      IN PCK_SUBTIPOS.TI_TERCERO,
+  UN_SUCURSAL     IN PCK_SUBTIPOS.TI_SUCURSAL,
+  UN_AUXILIAR     IN PCK_SUBTIPOS.TI_AUXILIAR,
+  UN_REFERENCIA   IN PCK_SUBTIPOS.TI_REFERENCIA,
+  UN_FUENTE       IN PCK_SUBTIPOS.TI_FUENTE_RECURSOS
+  )
+RETURN VARCHAR2
+DETERMINISTIC
+  AS
+    MI_VLRETORNO   PCK_SUBTIPOS.TI_STRSQL :=  '';
+    MI_ERROR_FUN   PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 47; 
+BEGIN
+  MI_VLRETORNO:=UN_CUENTA;
+  BEGIN
+    SELECT TRIM(RPAD(CODIGO,32) || DECODE(MAN_CEN_CTO, -1, RPAD(UN_CENTRO_COSTO,20),RPAD(' '  ,20)) 
+                                || DECODE(MAN_AUX_TER, -1, RPAD(UN_TERCERO     ,18),RPAD(' '  ,18)) 
+                                || DECODE(MAN_AUX_TER, -1, RPAD(UN_SUCURSAL    ,3 ),RPAD(' '  , 3)) 
+                                || DECODE(MAN_AUX_GEN, -1, RPAD(UN_AUXILIAR    ,20),RPAD(' '  ,20)) 
+                                || DECODE(MAN_AUX_REF, -1, RPAD(UN_REFERENCIA  ,20),RPAD(' '  ,20)) 
+                                || DECODE(MAN_AUX_FUE, -1, RPAD(UN_FUENTE      ,20),RPAD(' '  ,20))) AS CUENTA
+    INTO MI_VLRETORNO
+    FROM PLAN_CONTABLE
+    WHERE COMPANIA=UN_COMPANIA AND ANO=UN_ANO AND CODIGO=UN_CUENTA;
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      RETURN MI_VLRETORNO ;
+  END;
+  RETURN MI_VLRETORNO;  
+
+  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG:= 'Interrrupción en la función que retorna el id concatenado de la cuenta Contable';
+    PCK_DATOS.GL_ERROR_MSG:= PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'PLAN_CONTABLE','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );  
+END FC_CODIGO_CNT;
+
+--47
+FUNCTION FC_EDAD
+/*
+    NAME              : EDAD
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 17/03/2015
+    TIME              : 12:20 AM
+    SOURCE MODULE     : NominaP2015.04.01DUI.accdb
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : 
+    @NAME:  calcularDiferenciaEntreFechas
+    @METHOD:  GET
+  */
+  (
+  UN_FECHAINI   IN DATE,
+  UN_FECHAFIN   IN DATE, 
+  UN_FORMATO    IN PCK_SUBTIPOS.TI_ENTERO,
+  UN_EDADPERSONA  IN PCK_SUBTIPOS.TI_ENTERO DEFAULT 0
+  )
+RETURN VARCHAR2 
+  AS 
+    MI_ERROR_FUN    PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 47; 
+    MI_DIFANO       PCK_SUBTIPOS.TI_ENTERO;
+    MI_DIFMES       PCK_SUBTIPOS.TI_ENTERO;
+    MI_DIFDIA       PCK_SUBTIPOS.TI_ENTERO;
+    MI_FECHAINI     DATE;
+    MI_DFECHAINI    PCK_SUBTIPOS.TI_ENTERO;
+    MI_FECHAFIN     DATE;
+    MI_DFECHAFIN    PCK_SUBTIPOS.TI_ENTERO;
+    MI_DIFDIA1      BOOLEAN;
+    MI_VLRETORNO    VARCHAR2(100 CHAR);
+    MI_LASTDAY      DATE;
+    MI_DLASTDAY     PCK_SUBTIPOS.TI_ENTERO;
+    MI_PARAMETRO    PARAMETRO.VALOR%TYPE;
+    MI_COMPANIA     PCK_SUBTIPOS.TI_COMPANIA;
+    MI_31SABDOM     PCK_SUBTIPOS.TI_ENTERO;
+    MI_31FESTIVO     PCK_SUBTIPOS.TI_ENTERO;
+    MI_DFECHAFINAUX  PCK_SUBTIPOS.TI_ENTERO; --MOD JM CC 2879
+	MI_PARD31VAC_FSF PARAMETRO.VALOR%TYPE; --CC_3452(11/02/2026 JCROJAS)																	
+BEGIN
+  --' RETORNA EL VALOR EN MESES DE TREINTA DIAS PARA CÃ¿LCULO DE NOMINA
+  --      ' PARAMETROS:
+  --      '             VFECHA1: TIPO VARIANT
+  --      '             VFECHA2: TIPO VARIANT
+  --      '             VFORMATO: 1 PARA RETORNO "AA-MM-MI_DIFDIA"
+  --      '                 2 EN DIAS EN FORMA ALFANUMERICA
+  --      '                 3 EN DIAS EN FORMA NUMERICA
+   
+    BEGIN
+      -- TICKET 7741181 EFCM: Se adiciona to_char para evitar error al llamar la funcion desde un DSS,
+      --            ya que el parametro es DATE y puede venir con formato
+        SELECT LAST_DAY(TO_DATE(TO_CHAR(UN_FECHAINI,'DD/MM/YYYY'),'DD/MM/YYYY')) INTO MI_LASTDAY FROM DUAL;
+        -- TICKET 7741181 EFCM --
+        SELECT TO_NUMBER(TO_CHAR(MI_LASTDAY, 'D', 'NLS_DATE_LANGUAGE=ENGLISH')) INTO MI_31SABDOM FROM DUAL;
+        -- DETERMINAR SI EL 31 ES DOMINGO = 1 SABADO = 7; JM 7741460
+        SELECT  COUNT(0)  INTO MI_31FESTIVO FROM  FESTIVOS  WHERE   COMPANIA = MI_COMPANIA AND   TO_CHAR(ID_DE_FESTIVO,'YYYYMMDD') = TO_CHAR(MI_LASTDAY, 'YYYYMMDD');
+        -- DETERMINAR SI EL 31 ES FESTIVO JM 7741460
+    END;
+     
+     MI_COMPANIA := PCK_ENTORNO.FC_GETCOMPANIA;
+     MI_PARAMETRO := PCK_SYSMAN_UTL.FC_PAR(MI_COMPANIA,'CONTAR SABADOS COMO DIA HABIL',6,SYSDATE);
+     IF (UPPER(MI_PARAMETRO) = 'SI') AND MI_31SABDOM = 7  THEN 
+        MI_31SABDOM := 0;  -- JM 7741460 SI SE CUENTAN LOS SABADOS COMO DIA HABIL Y ES 31 
+     END IF;
+     MI_PARAMETRO := PCK_SYSMAN_UTL.FC_PAR(MI_COMPANIA,'DIFERIR FECHAS CONTANDO MESES DE 31 Y 28 DIAS',6,SYSDATE);
+	 --CC_3452(11/02/2026 JCROJAS)
+     MI_PARD31VAC_FSF := NVL(PCK_SYSMAN_UTL.FC_PAR(MI_COMPANIA,'TOMAR DIA 31 EN VACACIONES AUNQUE SEA FIN DE SEMANA O FESTIVO',6,SYSDATE),'NO');																																				
+  IF UN_FECHAFIN < UN_FECHAINI THEN 
+    MI_FECHAINI := UN_FECHAFIN;
+    MI_FECHAFIN := UN_FECHAINI;
+  ELSE
+    MI_FECHAINI := UN_FECHAINI;
+    MI_FECHAFIN := UN_FECHAFIN;
+  END IF; 
+  
+  MI_DFECHAINI    := PCK_SYSMAN_UTL.FC_DIA(MI_FECHAINI); 
+  MI_DFECHAFIN    := PCK_SYSMAN_UTL.FC_DIA(MI_FECHAFIN); 
+  MI_DFECHAFINAUX := MI_DFECHAFIN; --MOD JM CC 2879
+  MI_DLASTDAY     := PCK_SYSMAN_UTL.FC_DIA(MI_LASTDAY); 
+   
+  IF MI_DFECHAINI > 30 THEN 
+    MI_DFECHAINI := 30;
+  END  IF;
+  IF MI_DFECHAFIN > 30 THEN
+    MI_DFECHAFIN := 30;
+  END IF;
+  --POR FAVOR NO QUITAR LA SUMA DE 1 PUES SE UTILIZA PARA HALLAR LOS DIAS TRABAJADOS CUANDO SOLO TRABAJA UN DIA
+  IF UN_EDADPERSONA = 0 THEN
+    MI_DIFDIA := MI_DFECHAFIN - MI_DFECHAINI + 1;
+  ELSE
+    MI_DIFDIA := MI_DFECHAFIN - MI_DFECHAINI;
+  END IF;
+  MI_DIFMES := PCK_SYSMAN_UTL.FC_MES(MI_FECHAFIN) - PCK_SYSMAN_UTL.FC_MES(MI_FECHAINI);
+  MI_DIFANO := PCK_SYSMAN_UTL.FC_VIGENCIA(MI_FECHAFIN) - PCK_SYSMAN_UTL.FC_VIGENCIA(MI_FECHAINI);
+  MI_DIFDIA1 := FALSE;
+  IF MI_DIFDIA < 0 THEN
+     MI_DIFDIA1 := TRUE;
+     
+     IF (UPPER(MI_PARAMETRO) = 'SI' AND MI_DLASTDAY = 31) THEN
+		--CC_3452(11/02/2026 JCROJAS): Se agrega validacion con la variable MI_PARD31VAC_FSF para que tenga en cuenta el dia 31, sin importar si es sabado, domingo o festivo.																																									  
+        MI_DIFDIA := 31 + MI_DIFDIA - CASE WHEN MI_PARD31VAC_FSF = 'SI' THEN 0 ELSE CASE WHEN MI_31SABDOM = 1 OR MI_31SABDOM = 7 OR MI_31FESTIVO <> 0 THEN 1 ELSE 0 END END; 
+        --SI EL 31 ES SABADO / DOMINGO O FESTIVO NO CONTAR 31 DIAS JM 7741460
+      ELSE 
+        MI_DIFDIA := 30 + MI_DIFDIA; 
+      END IF;
+      
+     MI_DIFMES := PCK_SYSMAN_UTL.FC_IIF(MI_DIFMES > 0, MI_DIFMES - 1, MI_DIFMES - 2);
+
+     ELSE --JM INI MOD CC 2777
+         IF (UPPER(MI_PARAMETRO) = 'SI' AND MI_DLASTDAY = 31 AND MI_DFECHAFINAUX = 31) THEN --MOD JM CC 2879
+            MI_DIFDIA := MI_DIFDIA + CASE WHEN MI_31SABDOM = 1 OR MI_31SABDOM = 7 OR MI_31FESTIVO <> 0 THEN 0 ELSE 1 END;
+          END IF;--JM FIN  MOD CC 2777
+  END IF;
+  IF MI_DIFMES < 0 THEN
+     MI_DIFMES := PCK_SYSMAN_UTL.FC_IIF(MI_DIFDIA1, 13 + MI_DIFMES, 12 + MI_DIFMES);
+     MI_DIFANO := MI_DIFANO - 1;
+  END IF;
+  IF MI_DIFDIA >= 30 THEN
+     MI_DIFMES := MI_DIFMES + 1;
+     MI_DIFDIA := MI_DIFDIA - 30;
+  END IF;
+  IF MI_DIFMES >= 12 THEN
+     MI_DIFANO := MI_DIFANO + 1;
+     MI_DIFMES := MI_DIFMES - 12;
+  END IF;
+  IF UN_FORMATO = 1 THEN
+    MI_VLRETORNO := LPAD(MI_DIFANO, 2, '0000') || '-' || LPAD(MI_DIFMES, 2, '0') || '-' || LPAD(MI_DIFDIA, 2, '0');
+  ELSIF UN_FORMATO = 2 THEN
+    MI_VLRETORNO := LPAD(MI_DIFANO * 360 + MI_DIFMES * 30 + MI_DIFDIA, 8,'0');
+  ELSIF UN_FORMATO = 3 THEN
+    MI_VLRETORNO := MI_DIFANO * 360 + MI_DIFMES * 30 + MI_DIFDIA;
+  ELSE 
+      MI_VLRETORNO := MI_DIFANO;
+  END IF;
+  RETURN MI_VLRETORNO;
+
+  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Interrrupción en la función de calculo de edad teniendo en cuenta un rango de fechas' ;
+    PCK_DATOS.GL_ERROR_MSG := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'FC_EDAD','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END FC_EDAD;
+
+--48
+FUNCTION FC_EDAD
+/*
+    NAME              : EDAD
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR            : HENRY PUERTO
+    DATE              : 23/04/2015
+    TIME              : 10:00 AM
+    SOURCE MODULE     : NominaP2015.04.01DUI.accdb
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : 
+    @NAME:  calcularDiferenciaEnDias
+    @METHOD:  GET    
+
+  */
+  (
+    UN_FECHAINI IN DATE,
+    UN_FECHAFIN IN DATE
+  )
+RETURN NUMBER
+  AS
+    MI_ERROR_FUN    PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 48; 
+BEGIN 
+  RETURN FC_EDAD(UN_FECHAINI, UN_FECHAFIN,3);
+
+  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Interrupción en la función de calculo de edad teniendo en cuenta un rango de fechas' ;
+    PCK_DATOS.GL_ERROR_MSG := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'FC_EDAD','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END FC_EDAD;
+--49
+FUNCTION FC_EDAD
+/*
+    NAME              : EDAD
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JAVIER VILLATE
+    DATE MIGRADOR     : 15/10/2015
+    TIME              : 08:10 AM
+    SOURCE MODULE     : Presupuesto.accdb
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : FUNCIÓN QUE RETORNA LA DIFERENCIA EN AÑOS ENTRE DOS FECHAS PARA CALCULAR CUMPLEAÑOS DE LAS PERSONAS.
+    @NAME:  calcularEdadDelPersonal
+    @METHOD:  GET      
+  */
+  (
+    UN_FECHA IN DATE
+  )
+RETURN NUMBER
+DETERMINISTIC
+AS
+    MI_ERROR_FUN   PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 48; 
+BEGIN 
+  RETURN FC_EDAD(UN_FECHA, SYSDATE,4,-1);
+ /* SELECT TRUNC(MONTHS_BETWEEN(TO_CHAR(SYSDATE,'DD/MM/YYYY'),TO_CHAR(TO_DATE(UN_FECHA,'DD/MM/YYYY')))/12) 
+  INTO   MI_VLRETORNO
+  FROM DUAL;
+  RETURN MI_VLRETORNO;
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    RETURN MI_VLRETORNO ;
+    */
+END FC_EDAD;
+--50
+FUNCTION FC_GEN_AUXILIARPPTAL_VIRTUAL
+/*
+    NAME              : GEN_AUXILIARPPTAL_VIRTUAL
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JAVIER VILLATE
+    DATE MIGRADOR     : 14/10/2015
+    TIME              : 12:28 AM
+    SOURCE MODULE     : Presupuesto.accdb
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : FUNCIÓN QUE DEVUELVE EL VALOR DE CADA CAMPO SEGÚN LOS INDICADORES DEL PLAN PRESUPUESTAL.
+    @NAME:  generarValorDeCamposAuxiliaresPresupuestales
+    @METHOD:  GET     
+  */
+  (
+    UN_COMPANIA     IN PCK_SUBTIPOS.TI_COMPANIA,
+  UN_ANO          IN PCK_SUBTIPOS.TI_ANIO, 
+  UN_CUENTA       IN PCK_SUBTIPOS.TI_CODIGOPPTAL,
+  UN_CAMPO        IN VARCHAR2,
+  UN_VALOR        IN PCK_SUBTIPOS.TI_ENTERO_LARGO
+  )
+RETURN VARCHAR2
+DETERMINISTIC
+  AS
+    MI_VLRETORNO   VARCHAR2(3200 CHAR) :=  '';
+    MI_ERROR_FUN   PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 49; 
+BEGIN
+  MI_VLRETORNO:=UN_CUENTA;
+  BEGIN
+    SELECT 
+    DECODE(UN_VALOR,1,DECODE(MAN_CEN_CTO,-1,UN_CAMPO,'99999999999999999999'),
+    DECODE(UN_VALOR,2,DECODE(MAN_AUX_TER,-1,UN_CAMPO,'999999999999999999'),
+    DECODE(UN_VALOR,3,DECODE(MAN_AUX_TER,-1,UN_CAMPO,'999'),
+    DECODE(UN_VALOR,4,DECODE(MAN_AUX_GEN,-1,UN_CAMPO,'99999999999999999999'),
+    DECODE(UN_VALOR,5,DECODE(MAN_AUX_REF,-1,UN_CAMPO,'99999999999999999999'),
+    DECODE(UN_VALOR,6,DECODE(MAN_AUX_FUE,-1,UN_CAMPO,'99999999999999999999'))))))) AS RETORNO
+    INTO MI_VLRETORNO
+    FROM PLAN_PRESUPUESTAL
+    WHERE COMPANIA=UN_COMPANIA AND ANO=UN_ANO AND CODIGO=UN_CUENTA;
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      RETURN MI_VLRETORNO ;
+  END;
+  RETURN MI_VLRETORNO;  
+
+  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG:= 'Interrrupción en la función que retorna el valor correspondiente de cada campo según los indicadores del plan Presupuestal';
+    PCK_DATOS.GL_ERROR_MSG:= PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'PLAN_PRESUPUESTAL','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );  
+END FC_GEN_AUXILIARPPTAL_VIRTUAL;
+--51
+FUNCTION FC_GEN_AUXILIARCNT_VIRTUAL
+/*
+    NAME              : GEN_AUXILIARCNT_VIRTUAL
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JAVIER VILLATE
+    DATE MIGRADOR     : 14/10/2015
+    TIME              : 12:28 AM
+    SOURCE MODULE     : Contabilidad.accdb
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : FUNCIÓN QUE DEVUELVE EL VALOR DE CADA CAMPO SEGÚN LOS INDICADORES DEL PLAN CONTABLE.
+    @NAME:  generarValorDeCamposAuxiliaresContables
+    @METHOD:  GET         
+  */
+  (
+      UN_COMPANIA     IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_ANO          IN PCK_SUBTIPOS.TI_ANIO, 
+    UN_CUENTA       IN PCK_SUBTIPOS.TI_CODIGOCONTA,
+    UN_CAMPO        IN VARCHAR2,
+    UN_VALOR        IN PCK_SUBTIPOS.TI_ENTERO_LARGO
+  )
+RETURN VARCHAR2
+DETERMINISTIC
+  AS
+    MI_VLRETORNO   VARCHAR2(3200 CHAR) :=  '';
+    MI_ERROR_FUN   PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 51; 
+BEGIN
+  MI_VLRETORNO:=UN_CUENTA;
+  BEGIN
+    SELECT 
+    DECODE(UN_VALOR,1,DECODE(MAN_CEN_CTO,-1,UN_CAMPO,'99999999999999999999'),
+    DECODE(UN_VALOR,2,DECODE(MAN_AUX_TER,-1,UN_CAMPO,'999999999999999999'),
+    DECODE(UN_VALOR,3,DECODE(MAN_AUX_TER,-1,UN_CAMPO,'999'),
+    DECODE(UN_VALOR,4,DECODE(MAN_AUX_GEN,-1,UN_CAMPO,'99999999999999999999'),
+    DECODE(UN_VALOR,5,DECODE(MAN_AUX_REF,-1,UN_CAMPO,'99999999999999999999'),
+    DECODE(UN_VALOR,6,DECODE(MAN_AUX_FUE,-1,UN_CAMPO,'99999999999999999999'))))))) AS RETORNO
+    INTO MI_VLRETORNO
+    FROM PLAN_CONTABLE
+    WHERE COMPANIA=UN_COMPANIA AND ANO=UN_ANO AND CODIGO=UN_CUENTA;
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      RETURN MI_VLRETORNO ;
+  END;
+  RETURN MI_VLRETORNO;  
+
+  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG:= 'Interrrupción en la función que retorna el valor correspondiente de cada campo según los indicadores del plan Contable';
+    PCK_DATOS.GL_ERROR_MSG:= PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'PLAN_CONTABLE','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );  
+END FC_GEN_AUXILIARCNT_VIRTUAL;
+--52
+FUNCTION FC_LISTA_CAMPOMERGE
+  (
+  /*
+    NAME              : FC_LISTA_CAMPOWEB
+    AUTHORS           : SYSMAN  
+    AUTHOR MIGRACION  : JOS¿PASCUAL GOMEZ BLANCO
+    DATE MIGRADOR     : 23/09/2015
+    TIME              : 02:49 PM
+    MODIFIER          : JOS¿PASCUAL GOMEZ BLANCO
+    DATE MODIFIED     : 23/09/2015 / 24/09/2015
+    TIME              : 02:49 PM   / 08:00 AM
+    DESCRIPTION       : Devuelve una cadena separada por comas de los campos de una tabla
+    @NAME:  listarCamposDeTabla 
+    @METHOD:  GET         
+  */ 
+    UN_TABLA      IN PCK_SUBTIPOS.TI_TABLA,
+    UN_EXCLUIDOS  IN VARCHAR2 DEFAULT '',
+    UN_TIPO       IN VARCHAR2,
+    UN_ALIASINI   IN VARCHAR2 DEFAULT 'TABLA',
+    UN_ALIASFIN   IN VARCHAR2 DEFAULT 'VISTA',
+    UN_CAMPOSCLOB IN PCK_SUBTIPOS.TI_LOGICO   DEFAULT 0,
+    UN_CONDOMINIO IN NUMBER   DEFAULT 0,
+    UN_VIRTUAL    IN PCK_SUBTIPOS.TI_LOGICO DEFAULT 0
+
+)
+RETURN CLOB 
+AS
+  MI_CAMPOS     CLOB;
+  MI_EXCLUIDOS  PCK_SUBTIPOS.TI_STRSQL;
+BEGIN
+
+
+  IF NOT UN_EXCLUIDOS IS NULL THEN
+    MI_EXCLUIDOS :=  UN_EXCLUIDOS || ',';
+  ELSE
+    MI_EXCLUIDOS := ',';
+  END IF;
+  MI_EXCLUIDOS := ',' || MI_EXCLUIDOS;
+  MI_EXCLUIDOS:=REPLACE(MI_EXCLUIDOS,' ','');
+  MI_CAMPOS:='';
+  <<USER_TAB_COLS>>
+  FOR RS IN (
+    SELECT COLUMN_NAME
+    FROM USER_TAB_COLS
+    WHERE TABLE_NAME  = UN_TABLA
+      AND DATA_TYPE   <> DECODE(UN_CAMPOSCLOB,1,'CLOB','Z')  
+      AND DATA_TYPE   =  DECODE(UN_CAMPOSCLOB,2,'CLOB',DATA_TYPE)
+      AND VIRTUAL_COLUMN <> DECODE(UN_VIRTUAL,1,'NO','Z')
+      AND VIRTUAL_COLUMN <> DECODE(UN_VIRTUAL,2,'YES','Z')
+      AND HIDDEN_COLUMN<>'YES'
+    ORDER BY COLUMN_ID
+    )
+  LOOP
+    IF INSTR(MI_EXCLUIDOS,',' || RS.COLUMN_NAME || ',',1)=0   THEN
+      IF UN_TIPO='U' THEN
+        MI_CAMPOS:=  MI_CAMPOS || ',' || UN_ALIASINI || '.' || RPAD(RS.COLUMN_NAME,32,' ') || '='  || UN_ALIASFIN || '.' || RS.COLUMN_NAME || CHR(13) || CHR(10);
+      ELSIF UN_TIPO='IV' THEN
+        MI_CAMPOS:=  MI_CAMPOS || ',' || UN_ALIASFIN || '.' || RS.COLUMN_NAME ||  CHR(13) || CHR(10);
+      ELSIF UN_TIPO='IC' THEN
+        --CAMPOS PARA EL INSERT  
+        MI_CAMPOS:=  MI_CAMPOS || ',' ||  RS.COLUMN_NAME ||  CHR(13) || CHR(10);
+      END IF;
+    END IF;
+  END LOOP USER_TAB_COLS;
+  MI_CAMPOS:= SUBSTR(MI_CAMPOS,2);  
+  RETURN MI_CAMPOS;
+END FC_LISTA_CAMPOMERGE;
+--53
+FUNCTION FC_FECHAFINAL
+  (
+   /*
+    NAME              : FC_FECHAFINAL en ACCES --> FechaFinalNov
+    AUTHORS           : SYSMAN  
+    AUTHOR MIGRACION  : DIEGO ALFREDO SUESCA RODRÍGUEZ
+    DATE MIGRADOR     : 27/10/2015
+    TIME              : 11:46 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Devuelve una fecha final dependiendo de los parametros fecha inicial, dias que suman, mescomercial que es opcional, si este último parametro
+                        es nulo, tomarà los mese como 30 dìas.
+    @NAME:  fechaFinalMasDiasComerciales 
+    @METHOD:  GET                          
+  */ 
+    UN_FECHAINICIAL IN DATE,
+    UN_DIAS         IN PCK_SUBTIPOS.TI_ENTERO_LARGO,
+    UN_MESCOMERCIAL IN PCK_SUBTIPOS.TI_LOGICO DEFAULT 0
+  )
+RETURN DATE
+  AS
+    MI_ERROR_FUN      PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 53; 
+    MI_FECHAFIN       DATE;
+    MI_AI             PCK_SUBTIPOS.TI_ENTERO;
+    MI_MI             PCK_SUBTIPOS.TI_ENTERO;
+    MI_DI             PCK_SUBTIPOS.TI_ENTERO;
+    MI_DIAS           PCK_SUBTIPOS.TI_ENTERO_LARGO;
+    MI_FECHAINICIAL   DATE;
+BEGIN
+  MI_DIAS:=UN_DIAS-1;
+  IF MI_DIAS <= 0 THEN 
+    MI_FECHAFIN:=UN_FECHAINICIAL;
+    RETURN MI_FECHAFIN;
+  END IF;
+
+  IF UN_MESCOMERCIAL = 0 THEN
+    MI_DI:=EXTRACT(DAY FROM UN_FECHAINICIAL);
+    MI_MI:=EXTRACT(MONTH FROM UN_FECHAINICIAL);
+    MI_AI:=EXTRACT(YEAR FROM UN_FECHAINICIAL);
+    IF MI_DI>30 THEN
+      MI_DI:=30;
+    END IF;
+    MI_AI:=MI_AI + TRUNC(MI_DIAS/360);
+    MI_DIAS:=MI_DIAS - TRUNC(MI_DIAS/360) * 360;
+    MI_MI:=MI_MI+TRUNC(MI_DIAS/30);
+    MI_DIAS:=MI_DIAS- TRUNC(MI_DIAS/30)*30;
+    MI_DI:=MI_DI+MI_DIAS;
+    IF MI_DI > 30 THEN
+      MI_MI:=MI_MI+1;
+      MI_DI:=MI_DI-30;
+    END IF;
+    IF MI_MI>12 THEN
+      MI_AI:=MI_AI+1;
+      MI_MI:=MI_MI-12; 
+    END IF;  
+
+    MI_FECHAINICIAL:=TO_DATE(''||TO_CHAR(MI_DI)||'/'||TO_CHAR(MI_MI)||'/'||TO_CHAR(MI_AI)||'','DD/MM/YYYY');
+    MI_FECHAFIN:=MI_FECHAINICIAL;
+  ELSE
+    MI_FECHAFIN:=UN_FECHAINICIAL+MI_DIAS;
+  END IF;
+
+RETURN   MI_FECHAFIN; 
+EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG:= 'Interrupción generando fecha final';
+    PCK_DATOS.GL_ERROR_MSG:= PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  '','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );  
+END FC_FECHAFINAL;
+--54
+FUNCTION FC_NOMBRECOMPLETO
+(
+/*
+    NAME              : FC_NOMBRECOMPLETO  --> EN ACCESS   -
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : DIEGO ALFREDO SUESCA RODRÌGUEZ
+    DATE MIGRADOR     : 29/09/2015
+    TIME              : 12:39 AM
+    SOURCE MODULE     : CONTARTOS_PROCESOS
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Rertorna el nombre completo de un tercero con los nombres primero y despuès los apellidos
+    @NAME:  consutarNombreCompletoDeTercero
+    @METHOD:  GET      
+  */
+    UN_NOMBRE1    IN VARCHAR2,
+    UN_NOMBRE2    IN VARCHAR2,
+    UN_APELLIDO1  IN VARCHAR2,
+    UN_APELLIDO2  IN VARCHAR2 
+  )
+RETURN VARCHAR2
+  AS 
+    MI_ERROR_FUN  PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 54; 
+    MI_RESULTADO  VARCHAR2(200 CHAR):=''; 
+BEGIN  
+    IF LENGTH(UN_NOMBRE1) > 0 AND LENGTH(UN_NOMBRE2) > 0 AND LENGTH(UN_APELLIDO1) > 0 AND LENGTH(UN_APELLIDO2) > 0 THEN
+        MI_RESULTADO := TRIM(UN_NOMBRE1 || ' ' || UN_NOMBRE2 || ' ' || UN_APELLIDO1 || ' ' || UN_APELLIDO2);
+    ELSIF UN_NOMBRE1 <> '' AND UN_NOMBRE2 = '' AND UN_APELLIDO1 <> '' AND UN_APELLIDO2 <> '' THEN
+        MI_RESULTADO := TRIM(UN_NOMBRE1 || ' ' || UN_APELLIDO1 || ' ' || UN_APELLIDO2);
+    ELSIF UN_NOMBRE1 <> '' AND UN_NOMBRE2 = '' AND UN_APELLIDO1 <> '' AND UN_APELLIDO2 = '' THEN
+        MI_RESULTADO := TRIM(UN_NOMBRE1 || ' ' || UN_APELLIDO1);
+    ELSIF UN_NOMBRE1 <> '' AND UN_NOMBRE2 = '' AND UN_APELLIDO1 = '' AND UN_APELLIDO2 = '' THEN
+        MI_RESULTADO := TRIM(UN_NOMBRE1);
+    END IF; 
+  RETURN MI_RESULTADO;   
+  EXCEPTION WHEN OTHERS THEN
+
+    PCK_DATOS.GL_ERROR_MSG:= 'Interrupción generando fecha final';
+    PCK_DATOS.GL_ERROR_MSG:= PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  '','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );  
+END FC_NOMBRECOMPLETO; 
+--55
+FUNCTION FC_LISTA_LLAVESTABLA
+(
+  /*
+    NAME              : FC_LISTA_CAMPOWEB
+    AUTHORS           : SYSMAN  
+    AUTHOR MIGRACION  : JHONATAN ACELAS AREVALO
+    DATE MIGRADOR     : 14/12/2015
+    TIME              : 09:51 PM
+    MODIFIER          : JHONATAN ACELAS AREVALO
+    DATE MODIFIED     : 
+    TIME              : 09:51 PM  
+    DESCRIPTION       : Devuelve una cadena con la lista de las llaves de la  tabla
+    @NAME:  consutarIndiceDeTabla
+    @METHOD:  GET     
+  */ 
+    UN_TABLA      IN PCK_SUBTIPOS.TI_TABLA,
+    UN_EXCLUIDOS  VARCHAR2 DEFAULT '',
+    UN_TIPO       VARCHAR2,
+    UN_ALIASINI   VARCHAR2 DEFAULT 'TABLA',
+    UN_ALIASFIN   VARCHAR2 DEFAULT 'VISTA' 
+)
+RETURN VARCHAR2 
+AS
+  MI_CAMPOS     PCK_SUBTIPOS.TI_CAMPOS;
+  MI_EXCLUIDOS  PCK_SUBTIPOS.TI_STRSQL;
+BEGIN
+
+
+  IF NOT UN_EXCLUIDOS IS NULL THEN
+    MI_EXCLUIDOS :=  UN_EXCLUIDOS || ',';
+  ELSE
+    MI_EXCLUIDOS := ',';
+  END IF;
+
+  MI_EXCLUIDOS := ',' || MI_EXCLUIDOS;
+  MI_EXCLUIDOS:=REPLACE(MI_EXCLUIDOS,' ','');
+  MI_CAMPOS:='';
+<<USER_CONS_COLUMNS>> 
+ FOR RS IN (
+    SELECT USER_CONS_COLUMNS.COLUMN_NAME
+    FROM USER_CONSTRAINTS INNER JOIN USER_CONS_COLUMNS
+      ON USER_CONSTRAINTS.OWNER=USER_CONS_COLUMNS.OWNER
+    AND USER_CONSTRAINTS.CONSTRAINT_NAME=USER_CONS_COLUMNS.CONSTRAINT_NAME
+    WHERE USER_CONSTRAINTS.OWNER =(SELECT USER
+                                    FROM DUAL)
+     AND USER_CONSTRAINTS.TABLE_NAME=UN_TABLA 
+     AND USER_CONSTRAINTS.CONSTRAINT_TYPE='P'   )
+  LOOP
+    IF INSTR(MI_EXCLUIDOS,',' || RS.COLUMN_NAME || ',',1)=0   THEN
+      IF UN_TIPO='U' THEN
+        MI_CAMPOS:=    MI_CAMPOS || ' AND '   || UN_ALIASINI || '.' || RPAD(RS.COLUMN_NAME,32,' ') || '='  || UN_ALIASFIN || '.' || RS.COLUMN_NAME || CHR(13) || CHR(10);
+      ELSIF UN_TIPO='IV' THEN
+        MI_CAMPOS:=  MI_CAMPOS || ',' || UN_ALIASFIN || '.' || RS.COLUMN_NAME ||  CHR(13) || CHR(10);
+      ELSIF UN_TIPO='IC' THEN
+        --CAMPOS PARA EL INSERT  
+        MI_CAMPOS:=  MI_CAMPOS || ',' ||  RS.COLUMN_NAME ||  CHR(13) || CHR(10);
+      END IF;
+    END IF;
+  END LOOP USER_CONS_COLUMNS;
+
+  IF UN_TIPO = 'U' THEN 
+    MI_CAMPOS:= ' ON ' ||  SUBSTR(MI_CAMPOS,5);  
+  ELSE 
+    MI_CAMPOS:=  SUBSTR(MI_CAMPOS,2);  
+
+  END IF ;
+  RETURN MI_CAMPOS;
+END FC_LISTA_LLAVESTABLA;
+--56
+PROCEDURE PR_INSERTA_FALTANTES(
+  /*
+    NAME              :  FC_INSERTA_FALTANTES
+    AUTHORS           : SYSMAN  
+    AUTHOR MIGRACION  : JHONATAN ACELAS AREVALO
+    DATE MIGRADOR     : 14/12/2015
+    TIME              : 12:04 PM
+    MODIFIER          : JHONATAN ACELAS AREVALO
+    DATE MODIFIED     : 
+    TIME              :    
+    DESCRIPTION       :  Inserta los registros faltantes de la misma tabla cambiando una de sus llaves primarias  
+    @NAME:  anexarDatosEnTabla
+    @METHOD:  POST     
+  */ 
+    UN_TABLA           IN PCK_SUBTIPOS.TI_TABLA,
+    UN_EXCLUIDOS       IN VARCHAR2,
+    UN_VALOR_NUEVO     IN VARCHAR2,
+    UN_BASE_EXCLUIDO   IN VARCHAR2,
+    UN_CONDICION       IN PCK_SUBTIPOS.TI_CONDICION DEFAULT NULL
+) 
+AS
+  MI_ERROR_FUN     PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 56; 
+  MI_CAMPOS        PCK_SUBTIPOS.TI_CAMPOS;
+  MI_VALORES       PCK_SUBTIPOS.TI_VALORES;
+BEGIN
+
+MI_CAMPOS :=  PCK_SYSMAN_UTL.FC_LISTA_CAMPOMERGE(UN_TABLA,UN_EXCLUIDOS,'IC','','',0,0,2) || ',' || UN_EXCLUIDOS;
+
+MI_VALORES := ' SELECT ' || PCK_SYSMAN_UTL.FC_LISTA_CAMPOMERGE(UN_TABLA,UN_EXCLUIDOS,'IV','','BASE',0,0,2) ||',''' || UN_VALOR_NUEVO ||''' ' ||
+                     ' FROM ' ||
+                        UN_TABLA || ' BASE   LEFT JOIN 
+                          (SELECT * FROM ' || UN_TABLA  || ' WHERE ' ||  UN_EXCLUIDOS || '=''' ||  UN_VALOR_NUEVO || ''' )  NUEVO ' || 
+                       PCK_SYSMAN_UTL.FC_LISTA_LLAVESTABLA(UN_TABLA,UN_EXCLUIDOS,'U','NUEVO','BASE') || 
+                       ' WHERE BASE.' ||  UN_EXCLUIDOS || '=''' ||  UN_BASE_EXCLUIDO || 
+                       ''' AND NUEVO.' ||  UN_EXCLUIDOS || ' IS NULL ' ;
+
+IF  UN_CONDICION IS NOT NULL  THEN 
+  MI_VALORES := MI_VALORES || ' AND '  ||  UN_CONDICION ;
+END IF;
+
+PCK_DATOS.GL_RTA := PCK_DATOS.FC_ACME (UN_TABLA, 'IS', MI_CAMPOS, MI_VALORES, NULL, NULL ); 
+
+
+END PR_INSERTA_FALTANTES;
+--57
+FUNCTION FC_COLOCARCOMILLAS(
+  /*
+    NAME              :  FC_COLOCARCOMILLAS --> ColocarComillas
+    AUTHORS           : SYSMAN  
+    AUTHOR MIGRACION  : DIEGO ALFREDO SUESCA RODRÍGUEZ
+    DATE MIGRADOR     : 28/12/2015
+    TIME              : 17:06
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              :    
+    DESCRIPTION       :  Inserta comillas a cada valor de una cadena separada por comas
+    @NAME:  adicionarComillasEnCadena
+    @METHOD:  GET     
+  */ 
+  UN_CADENA        IN  VARCHAR2
+) 
+RETURN VARCHAR2
+AS
+
+  MI_RESULTADO       PCK_SUBTIPOS.TI_STRSQL;
+BEGIN
+
+MI_RESULTADO:=REPLACE(UN_CADENA,' ','');
+MI_RESULTADO:='''' || MI_RESULTADO || '''';
+MI_RESULTADO:=REPLACE(MI_RESULTADO,',',''',''');
+
+RETURN MI_RESULTADO;  
+
+END FC_COLOCARCOMILLAS;
+--58
+PROCEDURE PR_INSERTARPARAMETRO
+  /*
+    NAME              : PR_INSERTARPARAMETRO  --> EN ACCESS INSERTARPARAMETRO  -
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JAVIER ANDRES RODRIGUEZ RIOS
+    DATE MIGRADOR     : 15/07/2015
+    TIME              : 2:15 PM
+    SOURCE MODULE     : NOMINAP2015.04.02 UNIFICADAS MPV 11052015_MPV - 185  - WEB para migrar final  4TO envio.accdb
+    MODIFIER          : YESSICA SANA
+    DATE MODIFIED     : 26/10/2017
+    TIME              : 
+    DESCRIPTION       :INGRESA UN PARAMETRO
+                       SE MODIFICA LA VALIDACION DE FECHA PARA LA CREACIÓN DEL PARAMETRO DE SYSDATE A UN_FECHA.
+    @NAME:  insertarParametro
+    @METHOD:  POST     
+  */
+  (
+        UN_NOMBRE  IN VARCHAR2,
+    UN_VALOR   IN VARCHAR2,
+    UN_FECHA   IN DATE,
+    UN_MODULO  IN PCK_SUBTIPOS.TI_MODULO,
+    UN_USUARIO IN PCK_SUBTIPOS.TI_USUARIO DEFAULT PCK_CONEXION.FC_GETUSER()
+ )
+     AS
+         MI_ERROR_FUN   PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 58; 
+         MI_VALORES     PCK_SUBTIPOS.TI_VALORES;
+         MI_CAMPOS      PCK_SUBTIPOS.TI_CAMPOS;
+         MI_NUM         PCK_SUBTIPOS.TI_RTA_ACME;
+         MI_NOMBRE      PARAMETRO.NOMBRE%TYPE;
+         MI_VALOR       PARAMETRO.VALOR%TYPE;
+
+  BEGIN
+          FOR RS IN (SELECT TO_CHAR(CODIGO) CODIGO 
+                       FROM COMPANIA
+                      ORDER BY CODIGO)
+          LOOP
+           IF PCK_SYSMAN_UTL.FC_PAR( RS.CODIGO,UN_NOMBRE,UN_MODULO,UN_FECHA) IS NULL THEN
+                  MI_VALORES:=  ''''|| RS.CODIGO ||''','''
+                                    || UN_NOMBRE ||''','''
+                                    || UN_VALOR ||''','''
+                                    || UN_FECHA||''','''
+                                    || UN_MODULO||''',0,'''
+                                    ||1||'''';
+                  MI_CAMPOS:='COMPANIA,NOMBRE,VALOR,FECHA_INICIAL,MODULO,NIVEL,TIPOPARAMETRO';
+                  MI_NUM:=PCK_DATOS.FC_ACME('PARAMETRO', 'I', MI_CAMPOS, MI_VALORES, NULL, NULL);
+             END IF;
+          END LOOP;
+   ---------NO ES NECESARIO CONTROL DE ERRORES YA QUE LA FUNCION ACME ATRAPA LA EXCEPCION
+END PR_INSERTARPARAMETRO;
+--59
+FUNCTION FC_VISTA_CAMPOS(
+  /*
+    NAME              :  
+    AUTHORS           : SYSMAN  
+    AUTHOR MIGRACION  : JHONATAN ACELAS AREVALO
+    DATE MIGRADOR     : 29/12/2015
+    TIME              : 14:55
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              :    
+    DESCRIPTION       : 
+    @NAME:  seleccionarListaDeCampos
+    @METHOD:  GET     
+  */ 
+  UN_CONSULTA  IN VARCHAR2
+) 
+ RETURN VARCHAR2
+AS 
+  MI_COLUMNAS PCK_SUBTIPOS.TI_STRSQL;
+  MI_CURSOR_ID INTEGER;
+  MI_COL_CNT INTEGER;
+  MI_COLUMNS DBMS_SQL.DESC_TAB;
+BEGIN 
+
+  MI_CURSOR_ID := SYS.DBMS_SQL.OPEN_CURSOR;
+  SYS.DBMS_SQL.PARSE(MI_CURSOR_ID , UN_CONSULTA , DBMS_SQL.NATIVE);
+  SYS.DBMS_SQL.DESCRIBE_COLUMNS(MI_CURSOR_ID,MI_COL_CNT , MI_COLUMNS);
+  <<NOMBRECOLUMNA>>
+  FOR I IN 1 .. MI_COLUMNS.COUNT LOOP
+    MI_COLUMNAS := MI_COLUMNAS || MI_COLUMNS(I).COL_NAME || ','  ;
+
+  END LOOP NOMBRECOLUMNA;
+
+      RETURN MI_COLUMNAS;
+
+END FC_VISTA_CAMPOS;
+--60
+FUNCTION FC_CONSULTA_TABLA
+  /*
+    NAME              : FC_CONSULTA_TABLA
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : EDGAR LEONARDO SARMIENTO
+    DATE MIGRADOR     : 05/01/2016
+    TIME              : 08:00 AM
+    SOURCE MODULE     : 
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       :PERMITE CONSULTAR UN CAMPO ESPECÍFICO DE UNA TABLA TENIENDO EN CUENTA UNA CONDICIÓN
+    @NAME:  ejecutarConsultaDeSeleccion
+    @METHOD:  GET     
+  */
+(
+    UN_TABLA          IN PCK_SUBTIPOS.TI_TABLA,
+  UN_CAMPO          IN VARCHAR2,
+  UN_CONDICION      IN PCK_SUBTIPOS.TI_CONDICION
+) 
+RETURN VARCHAR2
+AS
+    MI_RETORNO          VARCHAR2(100 CHAR) := '';
+    MI_STRSQL           PCK_SUBTIPOS.TI_STRSQL;
+    MI_ERROR_FUN        PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 60; 
+BEGIN
+
+    IF(UN_TABLA IS NOT NULL AND UN_CAMPO IS NOT NULL AND UN_CONDICION IS NOT NULL)THEN
+      IF(INSTR(PCK_SYSMAN_UTL.FC_LISTA_CAMPOS(UN_TABLA,0,0), UN_CAMPO) <> 0) THEN
+        MI_STRSQL:='SELECT '||UN_CAMPO||'
+                    FROM '||UN_TABLA||'        
+                    WHERE '||UN_CONDICION;
+
+        BEGIN
+          EXECUTE IMMEDIATE MI_STRSQL INTO MI_RETORNO;
+
+          EXCEPTION WHEN NO_DATA_FOUND THEN
+                MI_RETORNO:='';
+        END;
+      END IF;
+    END IF;
+
+    RETURN MI_RETORNO;
+
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Falló al consultar campo de la tabla';
+    PCK_DATOS.GL_ERROR_MSG := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'ERRORES','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+
+END FC_CONSULTA_TABLA;
+--61
+FUNCTION FC_CERODECIMAL
+ /*
+    NAME              : FC_CERODECIMAL
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : EDGAR LEONARDO SARMIENTO PACANCHIQUE
+    DATE MIGRADOR     : 07/01/2016
+    TIME              : 11:23 AM
+    SOURCE MODULE     : 
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : CONVIERTE UN NÚMERO EN CADENA DE TEXTO TENIENDO EN CUENTA EL CERO CUANDO EL NÚMERO ES MENOR DE 1
+    @NAME:  convertirNumericoEnTexto
+    @METHOD:  GET     
+  */
+(
+  UN_NUMERO     IN PCK_SUBTIPOS.TI_ENTERO_LARGO
+)RETURN VARCHAR2
+AS
+    MI_RETORNO      VARCHAR2(100 CHAR):='';
+    MI_ERROR_FUN    PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 61; 
+BEGIN
+    IF(UN_NUMERO IS NOT NULL) THEN
+        IF(UN_NUMERO < 0) THEN
+            MI_RETORNO:=SUBSTR(UN_NUMERO, 1,1)||'0'||SUBSTR(UN_NUMERO,2, LENGTH(UN_NUMERO));
+        ELSIF (UN_NUMERO>0 AND UN_NUMERO < 1) THEN
+            MI_RETORNO:='0'||UN_NUMERO;
+        ELSE
+            MI_RETORNO:=TO_CHAR(UN_NUMERO);
+        END IF;
+    END IF;
+    RETURN MI_RETORNO;
+
+    EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Error al convertir número en cadena';
+    PCK_DATOS.GL_ERROR_MSG := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  '','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+
+END FC_CERODECIMAL;
+--62
+FUNCTION FC_QUITAR_TILDES
+  /*
+    NAME              : FC_QUITAR_TILDES 
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : NICOLAS GOMEZ BARBOSA
+    DATE MIGRADOR     : 13/01/2016
+    TIME              : 09:40 AM
+    SOURCE MODULE     : Sysman_UBP2014.09.01.accdb
+    DESCRIPTION       : Quita las tildes de las vocales a una cadena. 
+    @NAME:  eliminarCaracterTilde
+    @METHOD:  GET     
+  */
+  (
+  UN_EXPRESION  IN VARCHAR2
+  )
+  RETURN VARCHAR2
+  AS
+  MI_ERROR_FUN    PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 62; 
+  MI_RTA          PCK_SUBTIPOS.TI_STRSQL;
+  BEGIN
+
+  MI_RTA:=REPLACE(UN_EXPRESION,'Á','A');
+  MI_RTA:=REPLACE(MI_RTA,'À','A');
+  MI_RTA:=REPLACE(MI_RTA,'É','E');
+  MI_RTA:=REPLACE(MI_RTA,'È','E');
+  MI_RTA:=REPLACE(MI_RTA,'Í','I');
+  MI_RTA:=REPLACE(MI_RTA,'Ì','I');
+  MI_RTA:=REPLACE(MI_RTA,'Ó','O');
+  MI_RTA:=REPLACE(MI_RTA,'Ò','O');
+  MI_RTA:=REPLACE(MI_RTA,'Ú','U');
+  MI_RTA:=REPLACE(MI_RTA,'Ù','U');
+  MI_RTA:=REPLACE(MI_RTA,'á','a');
+  MI_RTA:=REPLACE(MI_RTA,'à','a');
+  MI_RTA:=REPLACE(MI_RTA,'é','e');
+  MI_RTA:=REPLACE(MI_RTA,'è','e');
+  MI_RTA:=REPLACE(MI_RTA,'í','i');
+  MI_RTA:=REPLACE(MI_RTA,'ì','i');
+  MI_RTA:=REPLACE(MI_RTA,'ó','o');
+  MI_RTA:=REPLACE(MI_RTA,'ò','o');
+  MI_RTA:=REPLACE(MI_RTA,'ú','u');
+  MI_RTA:=REPLACE(MI_RTA,'ù','u');
+
+  RETURN MI_RTA;
+
+  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Error al quitar tildes en cadena';
+    PCK_DATOS.GL_ERROR_MSG := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'PROYECTOS','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+
+END FC_QUITAR_TILDES;
+--63
+FUNCTION FC_FECHAFINALNOV
+/*
+    NAME              : FC_FECHAFINALNOV --->  EN ACCESS FECHAFINALNOV
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JAVIER ANDRES RODRIGUEZ
+    DATE MIGRADOR     : 15/01/2016
+    TIME              : 10:15 AM
+    SOURCE MODULE     : sysmanTT2015.07.02.accdb
+    DESCRIPTION       : Quita las tildes de las vocales a una cadena. 
+        --'CALCULA UNA FECHA_FINAL PARA INCAPACIDADES Y LICENCIAS
+      --'O CUALQUIER FECHA TENIENDO EN CUENTA LOS DIAS A INCREMENTAR A UNA FECHA
+      --'FECHAINICIAL: FECHA INICIAL
+      --'DIAS        : NUMERO DE DIAS PARA CALCULAR UNA FECHA_FINAL
+      --' PAR ES UN PARAMETRO OPCIONAL QUE CALCULA LA FECHA FINAL CON TANDO O NO MESES DE 31 Y 28 DIAS
+    @NAME:  fechaFinalMasDiasComercialesTT
+    @METHOD:  GET      
+  */
+
+(
+    UN_FECHAINICIAL   IN DATE, 
+    UN_DIAS           IN PCK_SUBTIPOS.TI_ENTERO_LARGO, 
+    UN_MESCOMERCIAL   IN PCK_SUBTIPOS.TI_ENTERO_LARGO
+)  RETURN DATE
+AS
+ MI_AI           INTEGER;
+ MI_MI           INTEGER;
+ MI_DI           INTEGER;
+ MI_DIAS         INTEGER;
+ MI_RESULTADO    DATE;
+ MI_FECHAINICIAL DATE;
+ MI_ERROR_FUN    PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 63; 
+BEGIN
+MI_DIAS := UN_DIAS - 1;
+MI_FECHAINICIAL:=UN_FECHAINICIAL;
+IF UN_DIAS <= 0 THEN
+   MI_RESULTADO := UN_FECHAINICIAL;
+   RETURN MI_RESULTADO; 
+END IF;
+IF UN_MESCOMERCIAL = 0 THEN
+   MI_DI := TO_NUMBER(TO_CHAR(UN_FECHAINICIAL,'DD'));
+   MI_MI := TO_NUMBER(TO_CHAR(UN_FECHAINICIAL,'MM'));
+   MI_AI := TO_NUMBER(TO_CHAR(UN_FECHAINICIAL,'YYYY'));
+   MI_DI := FC_IIF(MI_DI > 30, 30, MI_DI);
+   MI_AI := MI_AI + TRUNC(MI_DIAS / 360);
+   MI_DIAS := MI_DIAS - TRUNC(MI_DIAS / 360) * 360;
+   MI_MI := MI_MI + TRUNC(MI_DIAS / 30);
+   MI_DIAS := MI_DIAS - TRUNC(MI_DIAS / 30) * 30;
+   MI_DI := MI_DI + MI_DIAS;
+   IF MI_DI > 30 THEN
+      MI_MI := MI_MI + 1;
+      MI_DI := MI_DI - 30;
+   END IF;
+   IF MI_MI > 12 THEN
+      MI_AI := MI_AI + 1;
+      MI_MI := MI_MI - 12;
+   END IF;
+   MI_FECHAINICIAL := TO_DATE(TO_CHAR(MI_DI||'/'||MI_MI||'/'||MI_AI),'DD/MM/YYYY');
+   MI_RESULTADO := MI_FECHAINICIAL;
+ELSE
+   MI_RESULTADO := TO_DATE(UN_FECHAINICIAL) + MI_DIAS;
+END IF;
+RETURN MI_RESULTADO;
+
+ EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Falló al calcular la fecha Final';
+    PCK_DATOS.GL_ERROR_MSG := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'ERRORES','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END FC_FECHAFINALNOV;
+--64
+FUNCTION FC_ESNUMERO
+/*
+    NAME              : FC_ESNUMERO 
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JAVIER ANDRES RODRIGUEZ
+    DATE MIGRADOR     : 18/01/2016
+    TIME              : 10:15 AM
+    SOURCE MODULE     : 
+    DESCRIPTION       : Regresa un valor numerico si la cadena es numero. 
+    @NAME:  identificarNumerico
+    @METHOD:  GET     
+  */
+
+(
+   UN_STR   IN VARCHAR2
+)  RETURN INT
+AS
+ MI_NUM          PCK_SUBTIPOS.TI_LOGICO;
+ MI_ERROR_FUN    PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 64; 
+BEGIN
+  MI_NUM:=TO_NUMBER(UN_STR);
+RETURN 1;
+EXCEPTION WHEN OTHERS THEN 
+RETURN 0;
+END FC_ESNUMERO;
+--65
+FUNCTION FC_LEFT
+/*
+NAME         : LEFT_MW
+AUTHORS      : Federico Ruiz (ruiz_fede@hotmail.com)
+DATE CREATOR : 14/01/2009
+TIME         : 12:08
+DESCRIPTION  : recibe una cadena y devuelve la parte izquierda
+@NAME:  truncarCadenaIzquierda
+@METHOD:  GET
+*/
+
+(
+    UN_STRVALOR IN VARCHAR2,
+    UN_DIGITOS  IN PCK_SUBTIPOS.TI_ENTERO 
+
+)
+RETURN VARCHAR2
+IS
+BEGIN
+  RETURN  SUBSTR(UN_STRVALOR, 1, UN_DIGITOS);
+  EXCEPTION
+  WHEN OTHERS THEN
+  RETURN  '';
+END FC_LEFT;
+--66
+FUNCTION FC_RIGHT
+/*
+NAME         : LEFT_MW
+AUTHORS      : Federico Ruiz (ruiz_fede@hotmail.com)
+DATE CREATOR : 14/01/2009
+TIME         : 12:08
+DESCRIPTION  : recibe una cadena y devuelve la parte Derecha
+@NAME:  truncarCadenaDerecha
+@METHOD:  GET
+*/
+(
+  UN_STRVALOR IN VARCHAR2,
+  UN_DIGITOS  IN PCK_SUBTIPOS.TI_ENTERO  
+)
+
+RETURN VARCHAR2
+IS
+  BEGIN
+    RETURN  SUBSTR(UN_STRVALOR, LENGTH(UN_STRVALOR) -UN_DIGITOS, LENGTH(UN_STRVALOR));
+  EXCEPTION
+  WHEN OTHERS THEN
+  RETURN  '';
+END FC_RIGHT;
+--67
+FUNCTION EVAL
+  /*
+  NOMBRE          : EVAL
+  AUTOR           : JESUS ALBEIRO AVENDA?O BECERRA JAAB.
+  FECHA CREACION  : 26-AGO-10
+  DESCRIPCION     : RECIBE UNA CADENA VALIDA Y LA EVALUA COMO UNA OPERACION MATEMATICA
+  @NAME:  evaluarExpresion
+  @METHOD:  GET   
+  */
+  (
+  UN_FORMULA  IN VARCHAR2
+  )
+RETURN NUMBER AS
+  MI_RESULTADO  PCK_SUBTIPOS.TI_ENTERO_LARGO;
+  MI_STRSQL     PCK_SUBTIPOS.TI_STRSQL;
+BEGIN
+  IF INSTR(UN_FORMULA, 'FROM', 1, 1)> 0 THEN
+    MI_STRSQL := 'SELECT ' || UN_FORMULA || '';
+  ELSE
+    MI_STRSQL := 'SELECT ' || UN_FORMULA || ' FROM DUAL';
+  END IF;
+
+  EXECUTE IMMEDIATE MI_STRSQL INTO MI_RESULTADO;
+
+  RETURN MI_RESULTADO;
+
+  /*EXCEPTION WHEN OTHERS THEN
+    RETURN -9999999999;*/
+
+END EVAL;
+
+ FUNCTION FC_VERIFICAR_ESTADOANO
+ /*
+    NAME              : FC_VERIFICAR_ESTADOANO ADAPTACION DE VERIFICARPERIODO DE ACCESS
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 08/03/2016
+    TIME              : 3:00 PM
+    SOURCE MODULE     : 
+    DESCRIPTION       : Recibe la compañia, ano, aplicación y proceso de la cual se desea evaluar el estado del ano
+                        Si retorna E --> no se encontraron datos de configuración para los parámetros ingresados. 
+                                        Se cancela cualquier proceos
+                                   A --> periodo activo, se valida para continuar con los procesos requeridos
+                                   C --> periodo cerrado, se cancela cualquier proceso solicitado
+    @NAME:  verificarEstadoPeriodoAnual
+    @METHOD:  GET                                    
+  */
+  (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_ANO        IN PCK_SUBTIPOS.TI_ANIO,
+    UN_MODULO     IN PCK_SUBTIPOS.TI_MODULO,
+    UN_PROCESO    IN PCK_SUBTIPOS.TI_ENTERO
+  )
+RETURN VARCHAR2
+AS   
+  MI_CANT   PCK_SUBTIPOS.TI_ENTERO;
+  MI_EXISTE VARCHAR2(1 CHAR);
+BEGIN
+  BEGIN 
+    SELECT DISTINCT 'X'
+    INTO   MI_EXISTE
+    FROM   DIA_BLOQUEO
+    WHERE  COMPANIA     = UN_COMPANIA
+      AND  ANO          = UN_ANO
+      AND  APLICACION   = UN_MODULO
+      AND  PROCESO      = UN_PROCESO;
+
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      RETURN 'E';                     -- NO EXISTEN DATOS PARA LOS PARAMETROS INGRESADOS. NO ES POSIBLE ESTABLECER EL ESTADO 
+  END;    
+
+  SELECT COUNT(0) 
+  INTO   MI_CANT
+  FROM   DIA_BLOQUEO
+  WHERE  COMPANIA     = UN_COMPANIA
+    AND  ANO          = UN_ANO
+    AND  APLICACION   = UN_MODULO
+    AND  PROCESO      = UN_PROCESO
+    AND  ESTADO       = 'A';
+  IF MI_CANT > 0 THEN
+    RETURN 'A';                     -- CON SOLO UN REGISTRO ACTIVO SE CONSIDERA QUE TODO EL MES ESTA ABIERTO. 
+  ELSE
+    RETURN 'C';                     -- CUALQUIER OTRO ESTADO DIFERENTE DE ACTIVO SE TOMA COMO CERRADO
+  END IF;
+
+END FC_VERIFICAR_ESTADOANO;
+--68 
+ FUNCTION FC_VERIFICAR_ESTADOMES
+ /*
+    NAME              : FC_VERIFICAR_ESTADOMES ADAPTACION DE VERIFICARPERIODO DE ACCESS
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 08/03/2016
+    TIME              : 3:00 PM
+    SOURCE MODULE     : 
+    DESCRIPTION       : Recibe la compañia, ano, mes y aplicación de la cual se desea evaluar el estado del mes
+                        Si retorna E --> no se encontraron datos de configuración para los parámetros ingresados. 
+                                        Se cancela cualquier proceos
+                                   A -- > periodo activo, se valida para continuar con los procesos requeridos
+                                   C -- > periodo cerrado, se cancela cualquier proceso solicitado
+    @NAME:  verificarEstadoPeriodoMensual
+    @METHOD:  GET                                    
+  */
+  (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_ANO        IN PCK_SUBTIPOS.TI_ANIO,
+    UN_MES        IN PCK_SUBTIPOS.TI_MES,
+    UN_MODULO     IN PCK_SUBTIPOS.TI_MODULO,
+    UN_PROCESO    IN PCK_SUBTIPOS.TI_ENTERO
+  )
+RETURN VARCHAR2
+AS   
+  MI_CANT   PCK_SUBTIPOS.TI_ENTERO;
+  MI_EXISTE VARCHAR2(1 CHAR);
+BEGIN
+  BEGIN 
+    SELECT DISTINCT 'X'
+    INTO   MI_EXISTE
+    FROM   DIA_BLOQUEO
+    WHERE  COMPANIA     = UN_COMPANIA
+      AND  ANO          = UN_ANO
+      AND  MES          = UN_MES
+      AND  APLICACION   = UN_MODULO
+      AND  PROCESO      = UN_PROCESO;
+
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      RETURN 'E';                     -- NO EXISTEN DATOS PARA LOS PARAMETROS INGRESADOS. NO ES POSIBLE ESTABLECER EL ESTADO 
+  END;    
+
+  SELECT COUNT(0) 
+  INTO   MI_CANT
+  FROM   DIA_BLOQUEO
+  WHERE  COMPANIA     = UN_COMPANIA
+    AND  ANO          = UN_ANO
+    AND  MES          = UN_MES
+    AND  APLICACION   = UN_MODULO
+    AND  PROCESO      = UN_PROCESO
+    AND  ESTADO       = 'A';
+  IF MI_CANT > 0 THEN
+    RETURN 'A';                     -- CON SOLO UN REGISTRO ACTIVO SE CONSIDERA QUE TODO EL MES ESTA ABIERTO. 
+  ELSE
+    RETURN 'C';                     -- CUALQUIER OTRO ESTADO DIFERENTE DE ACTIVO SE TOMA COMO CERRADO
+  END IF;
+
+END FC_VERIFICAR_ESTADOMES;
+--69
+FUNCTION FC_VERIFICAR_ESTADODIA
+ /*
+    NAME              : FC_VERIFICAR_ESTADODIA ADAPTACION DE VERIFICARPERIODO DE ACCESS
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 08/03/2016
+    TIME              : 3:30 PM
+    SOURCE MODULE     : 
+    DESCRIPTION       : Recibe la compañia, ano, mes , dia y aplicación de la cual se desea evaluar el estado dia especifico
+                        Si retorna E --> no se encontraron datos de configuración para los parámetros ingresados. 
+                                        Se cancela cualquier proceos
+                                   A -- > periodo activo, se valida para continuar con los procesos requeridos
+                                   C -- > periodo cerrado, se cancela cualquier proceso solicitado
+    @NAME:  verificarEstadoDiario
+    @METHOD:  GET                                    
+  */
+  (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_ANO        IN PCK_SUBTIPOS.TI_ANIO,
+    UN_MES        IN PCK_SUBTIPOS.TI_MES,
+    UN_DIA        IN PCK_SUBTIPOS.TI_DIA,
+    UN_MODULO     IN PCK_SUBTIPOS.TI_MODULO,
+    UN_PROCESO    IN PCK_SUBTIPOS.TI_ENTERO
+  )
+RETURN VARCHAR2
+AS   
+  MI_ESTADO   VARCHAR2(1 CHAR);
+BEGIN
+  BEGIN 
+    SELECT ESTADO
+    INTO   MI_ESTADO
+    FROM   DIA_BLOQUEO
+    WHERE  COMPANIA     = UN_COMPANIA
+      AND  ANO          = UN_ANO
+      AND  MES          = UN_MES
+      AND  DIA          = UN_DIA
+      AND  APLICACION   = UN_MODULO
+      AND  PROCESO      = UN_PROCESO;
+
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      RETURN 'E';                     -- NO EXISTEN DATOS PARA LOS PARAMETROS INGRESADOS. NO ES POSIBLE ESTABLECER EL ESTADO 
+  END;    
+  RETURN MI_ESTADO;
+
+END FC_VERIFICAR_ESTADODIA;
+--70
+FUNCTION FC_CODIGO_CNT_CCYOPAL
+/*
+    NAME              : Codigo_Cnt
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JAVIER RODRIGUEZ
+    DATE MIGRADOR     : 31/03/2016
+    TIME              : 02:40 PM
+    SOURCE MODULE     : Contabilidad.accdb
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : FUNCIÓN QUE ARMA EL ID CORRESPONDIENTE A UN DETERMINADO CÓDIGO CONTABLE.
+    @NAME:  generarCuentaRecibiendoAuxiliares 
+    @METHOD:  GET     
+  */
+  (
+    UN_COMPANIA     IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_ANO          IN PCK_SUBTIPOS.TI_ANIO,
+    UN_CUENTA       IN VARCHAR2,
+    UN_CENTRO_COSTO IN PCK_SUBTIPOS.TI_CENTRO_COSTO,
+    UN_TERCERO      IN PCK_SUBTIPOS.TI_TERCERO,
+    UN_SUCURSAL     IN PCK_SUBTIPOS.TI_SUCURSAL,
+    UN_AUXILIAR     IN PCK_SUBTIPOS.TI_AUXILIAR,
+    UN_REFERENCIA   IN PCK_SUBTIPOS.TI_REFERENCIA,
+    UN_FUENTE       IN PCK_SUBTIPOS.TI_FUENTE_RECURSOS
+  )
+RETURN VARCHAR2
+DETERMINISTIC
+  AS
+    MI_VLRETORNO  PCK_SUBTIPOS.TI_STRSQL :=  '';
+    MI_ERROR_FUN  PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 70; 
+BEGIN
+  MI_VLRETORNO:=UN_CUENTA;
+  BEGIN
+    SELECT TRIM(RPAD(UN_CUENTA,32) || CASE WHEN UN_CENTRO_COSTO IS NOT NULL 
+                                      THEN RPAD(UN_CENTRO_COSTO,20)
+                                      ELSE RPAD(' '  ,20)
+                                      END 
+                                || CASE WHEN UN_TERCERO IS NOT NULL  
+                                        THEN RPAD(UN_TERCERO     ,18)
+                                        ELSE RPAD(' '  ,18)
+                                        END 
+                                || CASE WHEN UN_SUCURSAL IS NOT NULL 
+                                        THEN RPAD(UN_SUCURSAL    ,3 )
+                                        ELSE RPAD(' '  , 3)
+                                        END 
+                                || CASE WHEN UN_AUXILIAR IS NOT NULL 
+                                        THEN RPAD(UN_AUXILIAR    ,20)
+                                        ELSE RPAD(' '  ,20)
+                                        END 
+                                || CASE WHEN UN_REFERENCIA IS NOT NULL 
+                                        THEN RPAD(UN_REFERENCIA  ,20)
+                                        ELSE RPAD(' '  ,20)
+                                        END 
+                                || CASE WHEN UN_FUENTE IS NOT NULL 
+                                        THEN RPAD(UN_FUENTE      ,20)
+                                        ELSE RPAD(' '  ,20)
+                                        END) AS CUENTA
+    INTO MI_VLRETORNO
+    FROM DUAL;
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      RETURN MI_VLRETORNO ;
+  END;
+  RETURN MI_VLRETORNO;  
+
+  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG:= 'Interrrupción en la función que retorna el id concatenado de la cuenta Contable sin indicadores auxiliares';
+    PCK_DATOS.GL_ERROR_MSG:= PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'PLAN_CONTABLE','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );  
+END FC_CODIGO_CNT_CCYOPAL;
+--71
+FUNCTION FC_NOCARDINALES
+/* 
+    @NAME:  retornarNombreCardinal
+    @METHOD:  GET 
+*/ 
+( 
+  UN_NUMERO IN PCK_SUBTIPOS.TI_ENTERO, 
+    UN_TIPO   IN PCK_SUBTIPOS.TI_LOGICO
+) 
+RETURN VARCHAR2
+AS
+MI_NOCARDINALES  VARCHAR2(10 CHAR);
+MI_TIPO          PCK_SUBTIPOS.TI_ENTERO;
+BEGIN
+--' SYSMAN SOFTWARE.
+--' FUNCION QUE RETORNA EL NOMBRE CARDINAL DE UN NUMERO DE 1 A 10
+--' AUTOR : CARLOS ALBERTO ROJAS
+--' RECIBE UN   NUMERO DE 1 A 10 Y EL TIPO 1 => TERCER Y 2 => TERCERO Y 3 => TRI
+MI_TIPO:=UN_TIPO;
+IF MI_TIPO IS NULL AND MI_TIPO = 0 THEN
+   MI_TIPO:= 1;
+END IF;
+
+IF MI_TIPO = 3 THEN
+CASE UN_NUMERO WHEN 2 THEN MI_NOCARDINALES := 'BI';
+               WHEN 3 THEN MI_NOCARDINALES := 'TRI';
+               WHEN 4 THEN MI_NOCARDINALES := 'CUATRI';
+               WHEN 6 THEN MI_NOCARDINALES := 'SE';
+END CASE;
+RETURN MI_NOCARDINALES;
+END IF;
+
+CASE UN_NUMERO WHEN 1  THEN MI_NOCARDINALES := CASE WHEN MI_TIPO = 1 THEN 'PRIMER' ELSE 'PRIMERO' END;
+               WHEN 2  THEN MI_NOCARDINALES := 'SEGUNDO';
+               WHEN 3  THEN MI_NOCARDINALES := CASE WHEN MI_TIPO = 1 THEN 'TERCER' ELSE 'TERCERO' END;
+               WHEN 4  THEN MI_NOCARDINALES := 'CUARTO';
+               WHEN 5  THEN MI_NOCARDINALES := 'QUINTO';
+               WHEN 6  THEN MI_NOCARDINALES := 'SEXTO';
+               WHEN 7  THEN MI_NOCARDINALES := 'SEPTIMO';
+               WHEN 8  THEN MI_NOCARDINALES := 'OCTAVO';
+               WHEN 9  THEN MI_NOCARDINALES := 'NOVENO';
+               WHEN 10 THEN MI_NOCARDINALES := 'DECIMO';
+END CASE;
+RETURN MI_NOCARDINALES;
+END FC_NOCARDINALES;
+--71
+FUNCTION FC_SUMARDIAS_FECHA
+/*
+    NAME              : FC_SUMARDIAS_FECHA
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 25/10/2016
+    TIME              : 05:20 PM
+    SOURCE MODULE     : 
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : FUNCIÓN QUE SUMA DIAS A LA FECHA INGRESADA POR PARÁMETRO.
+    @name             : sumarDiasFecha
+    @method           : GET
+    @parameters       : UN_FECHA, fecha a la cual se le adicionará los dias
+                        UN_DIAS, dias a sumar a la fecha. Si el valor es positivo se suma de 
+                                lo contrario se restaran
+  */
+  (
+  UN_FECHA IN DATE , 
+  UN_DIAS  IN PCK_SUBTIPOS.TI_ENTERO
+  )
+RETURN DATE
+AS 
+  MI_FECHARETORNO DATE;
+BEGIN
+  SELECT UN_FECHA + UN_DIAS
+  INTO   MI_FECHARETORNO
+  FROM   DUAL;
+
+  RETURN MI_FECHARETORNO;
+END FC_SUMARDIAS_FECHA;
+
+
+  --73
+  FUNCTION FC_VERIFICARCONSULTAPLANTILLA
+    /*
+      NAME              : FC_VERIFICARCONSULTAPLANTILLA 
+      AUTHORS           : SYSMAN  SAS
+      AUTHOR MIGRACION  : LEYDI MILENA CORTÉS FORERO
+      DATE MIGRADOR     : 16/02/2017
+      TIME              : 12:17 PM
+      SOURCE MODULE     : PREDIAL - PredialP2017.01.06VB
+      DESCRIPTION       : Proceso que permite verificar si la estructura de una consulta ingresada 
+                          para el modelo de una plantilla es correcta.
+      PARAMETERS        : UN_CONSULTA  => Cadena que contiene la consulta a verificar enviada desde el bean.
+
+      @NAME:  verificarConsultaPlantilla
+      @METHOD:  GET
+      */
+    (
+      UN_CONSULTA     IN CLOB
+    )
+  RETURN VARCHAR2 
+  AS 
+    MI_STR VARCHAR2(32000 CHAR);
+  BEGIN
+    MI_STR := UN_CONSULTA ;
+    --23/07/2018  @jreina se agrega excepcion
+    BEGIN
+        BEGIN
+          EXECUTE IMMEDIATE MI_STR;
+          EXCEPTION WHEN OTHERS THEN
+            RAISE PCK_EXCEPCIONES.EXC_GENERAL;
+        END;
+         EXCEPTION WHEN PCK_EXCEPCIONES.EXC_GENERAL THEN
+              PCK_ERR_MSG.RAISE_WITH_MSG( UN_EXC_COD    =>  SQLCODE,
+                                          UN_ERROR_COD  =>  PCK_ERRORES.ERROR_GRAL_CONSULTA
+       );
+    END;
+    RETURN 'OK';
+  END FC_VERIFICARCONSULTAPLANTILLA;
+
+--74
+PROCEDURE PR_REPLICAR_DATOS_TABLA 
+/*
+  NAME              : PR_REPLICAR_DATOS_TABLA
+  AUTHORS           : STEFANINI SYSMAN
+  AUTHOR CREATION   : PABLO ANDRES ESPITIA CUCA
+  DATE CREATION     : 27/09/2018
+  TIME              : 11:45
+  SOURCE MODULE     : GENERAL (-1)
+  DESCRIPTION       : Replica los registros de una tabla cambiando el valor de una de sus llaves.
+  MODIFIED BY       : 
+
+  @NAME  : replicarDatosTabla
+  @METHOD: POST
+*/
+(
+  UN_TABLA     IN PCK_SUBTIPOS.TI_TABLA,                 -- Nombre de la tabla
+  UN_CLAVE     IN VARCHAR2,                              -- Nombre del campo que hace parte de la llave
+  UN_NEW_VALOR IN VARCHAR2,                              -- Valor asignado a la clave en la replica.
+  UN_OLD_VALOR IN VARCHAR2,                              -- Valor de la clave donde se obtiene la replica.
+  UN_EXCLUIDOS IN PCK_SUBTIPOS.TI_CAMPOS    DEFAULT NULL,-- Lista de campos separados por coma, excluidos de la replica
+  UN_CONDICION IN PCK_SUBTIPOS.TI_CONDICION DEFAULT NULL,-- Condicion que deben cumplir los datos origen (OLD) y destino (NEW).
+  UN_USUARIO   IN PCK_SUBTIPOS.TI_USUARIO   DEFAULT NULL -- Codigo del usuario que desencadena el proceso
+ )
+AS 
+  MI_CAMPOS       PCK_SUBTIPOS.TI_CAMPOS;
+  MI_CAMPOS_ALIAS PCK_SUBTIPOS.TI_CAMPOS;
+  MI_EXCLUIDOS    PCK_SUBTIPOS.TI_CAMPOS;
+  MI_VALORES      PCK_SUBTIPOS.TI_VALORES;
+  MI_ENLACE_ON    PCK_SUBTIPOS.TI_CAMPOS;
+
+  MI_RTA_ACME     PCK_SUBTIPOS.TI_RTA_ACME;
+  MI_REEMPLAZOS   PCK_SUBTIPOS.TI_CLAVEVALOR;
+BEGIN
+  MI_EXCLUIDOS := UN_CLAVE ||',CREATED_BY,DATE_CREATED';
+
+  IF UN_EXCLUIDOS IS NOT NULL THEN
+    MI_EXCLUIDOS := MI_EXCLUIDOS ||','||UN_EXCLUIDOS;
+  END IF;
+
+  MI_CAMPOS := PCK_SYSMAN_UTL.FC_LISTA_CAMPOMERGE(UN_TABLA     => UN_TABLA
+                                                 ,UN_EXCLUIDOS => MI_EXCLUIDOS
+                                                 ,UN_TIPO      => 'IC')
+        ||','||UN_CLAVE||',CREATED_BY,DATE_CREATED';
+
+  MI_CAMPOS_ALIAS := PCK_SYSMAN_UTL.FC_LISTA_CAMPOMERGE(UN_TABLA     => UN_TABLA
+                                                       ,UN_EXCLUIDOS => MI_EXCLUIDOS
+                                                       ,UN_TIPO      => 'IV'
+                                                       ,UN_ALIASFIN  => 'OLD');
+
+  MI_ENLACE_ON := PCK_SYSMAN_UTL.FC_LISTA_LLAVESTABLA(UN_TABLA     => UN_TABLA
+                                                     ,UN_EXCLUIDOS => UN_CLAVE
+                                                     ,UN_TIPO      => 'U'
+                                                     ,UN_ALIASINI  => 'NEW'
+                                                     ,UN_ALIASFIN  => 'OLD');
+
+  MI_VALORES := 'SELECT '
+                 ||MI_CAMPOS_ALIAS
+   ||','||CHR(39)||UN_NEW_VALOR||CHR(39)
+   ||','||CHR(39)||UN_USUARIO  ||CHR(39)
+   ||',SYSDATE 
+                 FROM '||UN_TABLA||' OLD 
+                 LEFT JOIN (SELECT * 
+                            FROM '||UN_TABLA
+                        ||' WHERE '||UN_CLAVE||' = '||CHR(39)||UN_NEW_VALOR||CHR(39)||') NEW '
+             ||MI_ENLACE_ON
+             ||' WHERE OLD.'||UN_CLAVE||' = '||CHR(39)||UN_OLD_VALOR||CHR(39)
+             ||'   AND NEW.'||UN_CLAVE||' IS NULL ';
+
+  IF UN_CONDICION IS NOT NULL THEN
+    MI_VALORES := MI_VALORES ||' AND '|| UN_CONDICION;
+  END IF;
+
+  BEGIN
+    BEGIN
+      MI_RTA_ACME := PCK_DATOS.FC_ACME(UN_TABLA   => UN_TABLA
+                                      ,UN_ACCION  => 'IS'
+                                      ,UN_CAMPOS  => MI_CAMPOS
+                                      ,UN_VALORES => MI_VALORES);
+
+    EXCEPTION WHEN PCK_EXCEPCIONES.EXC_INSERTAR THEN
+      MI_REEMPLAZOS(1).CLAVE := 'CLAVE';
+      MI_REEMPLAZOS(1).VALOR := UN_CLAVE;
+      MI_REEMPLAZOS(2).CLAVE := 'OLD_VALOR';
+      MI_REEMPLAZOS(2).VALOR := UN_OLD_VALOR;
+      MI_REEMPLAZOS(3).CLAVE := 'NEW_VALOR';
+      MI_REEMPLAZOS(4).VALOR := UN_NEW_VALOR;      
+
+      RAISE PCK_EXCEPCIONES.EXC_GENERAL;
+    END;
+
+  EXCEPTION WHEN PCK_EXCEPCIONES.EXC_GENERAL THEN
+    PCK_ERR_MSG.RAISE_WITH_MSG(UN_EXC_COD    => SQLCODE
+                              ,UN_ERROR_COD  => PCK_ERRORES.ERR_G_PR_REPDATTAB_IS_TABLA
+                              ,UN_TABLAERROR => UN_TABLA
+                              ,UN_REEMPLAZOS => MI_REEMPLAZOS);
+  END;
+
+END PR_REPLICAR_DATOS_TABLA;
+
+  FUNCTION FC_NITVALIDAR
+  (
+    /*
+      NAME              : FC_NITVALIDAR --> EN ACCESS NitValidar
+      AUTHORS           : SYSMAN  SAS
+      AUTHOR MIGRACION  : YESIKA PAOLA BECERRA CASTRO
+      DATE MIGRADOR     : 29/08/2016
+      TIME              : 09:50 AM
+      SOURCE MODULE     : SERVICIOS PUBLICOS
+      MODIFIER          : YEISSON ALEJANDRO ROJAS RUIZ
+      DATE MODIFIED     : 04/01/2017
+      TIME              : 12:30 PM
+      MODIFICATIONS     : CORRECCIÓN SEGÚN ESTÁNDAR DE PROGRAMACIÓN.
+      DESCRIPTION       : Función que retorna solo el número de nit.
+      PARAMETERS        : UN_COMPANIA => COMPANIA EN LA QUE SE ESTÁ TRABAJANDO.
+                          UN_NIT      => NIT QUE SE VA A VALIDAR.
+
+      @NAME:    validarNit 
+      @METHOD:  GET
+    */
+    UN_COMPANIA  IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_NIT       IN  VARCHAR2 -- VARCHAR2 debido a que no existe un tipo de dato con las mismas características en el paquete PCK_SUBTIPOS.
+  )
+  RETURN VARCHAR2 AS
+    MI_NIT        VARCHAR2(30 CHAR); -- VARCHAR2 debido a que no existe un tipo de dato con las mismas características en el paquete PCK_SUBTIPOS.
+
+  BEGIN
+    MI_NIT := REPLACE(UN_NIT, '.' , '' );
+    MI_NIT := REPLACE(MI_NIT, '-' , '' );
+    MI_NIT := REPLACE(MI_NIT, ' ' , '');
+    MI_NIT := SUBSTR(MI_NIT,1,9);
+
+    RETURN MI_NIT;
+  END FC_NITVALIDAR;
+
+FUNCTION FC_INSERTARDIASDELMES
+  /*
+    NAME              : FC_INSERTARDIADELMES 
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ
+    DATE MIGRADOR     : 09/05/2017
+    TIME              : 02:17 PM
+    SOURCE MODULE     : GENERAL
+    DESCRIPTION       : Esta función permite generar los días de un mes en las
+                        tablas DIA y DIA_BLOQUE                        
+    PARAMETERS        : UN_COMPANIA  => compañia a crear
+                        UN_ANIO      => año para el cual se va a crear
+                        UN_MES       => mes para el cual se va a crear
+
+    @NAME:  insertarDiasdelMes
+    @METHOD:  GET
+    */
+  (
+    UN_COMPANIA IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_ANIO     IN PCK_SUBTIPOS.TI_ANIO,
+    UN_MES      IN PCK_SUBTIPOS.TI_MES,
+    UN_CREATED_BY IN VARCHAR2
+  )
+RETURN PCK_SUBTIPOS.TI_LOGICO
+AS 
+  MI_STR VARCHAR2(32000 CHAR);
+  MI_RTA VARCHAR2(32000 CHAR);
+  MI_VALORES       VARCHAR2(3200 CHAR);
+  MI_CAMPOS        VARCHAR2(3200 CHAR);
+  EXISTE NUMBER; 
+  MI_DIAMAX NUMBER;
+BEGIN
+
+IF UN_MES  = 0 THEN
+      BEGIN
+        SELECT COUNT(DIA)
+           INTO EXISTE
+           FROM DIA 
+          WHERE COMPANIA = UN_COMPANIA 
+            AND ANO      = UN_ANIO 
+            AND MES      = UN_MES 
+            AND DIA      = 1;
+        BEGIN 
+        IF EXISTE = 0 THEN
+          MI_RTA:=PCK_DATOS.FC_ACME( UN_TABLA   => 'DIA'
+                                    ,UN_ACCION  => 'I'
+                                    ,UN_CAMPOS  => 'COMPANIA, ANO, MES, DIA, CREATED_BY, DATE_CREATED'
+                                    ,UN_VALORES => ''''|| UN_COMPANIA|| ''' ,'
+                                                       || UN_ANIO    || ','
+                                                       || UN_MES     || ','
+                                                       ||  1         || ',' ||
+                                                   ''''|| UN_CREATED_BY  || ''',' ||
+                                                   'SYSDATE'
+                                  ); 
+         END IF; 
+        EXCEPTION WHEN PCK_EXCEPCIONES.EXC_INSERTAR THEN 
+          RAISE PCK_EXCEPCIONES.EXC_GENERAL;
+        END;
+      EXCEPTION WHEN PCK_EXCEPCIONES.EXC_GENERAL THEN
+        PCK_ERR_MSG.RAISE_WITH_MSG(
+                    UN_EXC_COD    => SQLCODE
+                   ,UN_TABLAERROR => 'DIA'
+                   ,UN_ERROR_COD  => PCK_ERRORES.ERROR_GRAL_INS_DIA
+                   );
+      END;
+    END IF;
+    IF UN_MES <> 0 AND UN_MES <> 13  THEN
+       MI_DIAMAX:=TO_NUMBER(TO_CHAR(LAST_DAY(TO_DATE('01/'||UN_MES||'/' || CASE WHEN UN_ANIO=0 THEN 1 ELSE UN_ANIO END,'DD/MM/YYYY')), 'DD'));
+       --MI_DIAMAX:=TO_NUMBER(TO_CHAR(LAST_DAY('01/'||UN_MES||'/' || CASE WHEN UN_ANIO=0 THEN 1 ELSE UN_ANIO END), 'DD'));
+       --MI_DIAMAX:=30;
+
+           <<RECORREDIAS>> 
+           FOR MI_I IN 1 .. MI_DIAMAX 
+           LOOP
+            SELECT COUNT(DIA)
+             INTO EXISTE
+             FROM DIA 
+            WHERE COMPANIA = UN_COMPANIA 
+              AND ANO      = UN_ANIO 
+              AND MES      = UN_MES 
+              AND DIA      = MI_I;
+            IF EXISTE = 0 THEN
+
+             DECLARE 
+               MI_REEMPLAZOS PCK_SUBTIPOS.TI_CLAVEVALOR;
+             BEGIN 
+               BEGIN
+                 MI_CAMPOS := 'COMPANIA, ANO, MES, DIA, CREATED_BY, DATE_CREATED';
+                 MI_VALORES := ''''||UN_COMPANIA ||''' ,'
+                                   ||UN_ANIO     ||','
+                                   ||UN_MES      ||',' 
+                                   ||MI_I        || ',' ||
+                               ''''|| UN_CREATED_BY  || ''',SYSDATE'  ; 
+                 MI_RTA:=PCK_DATOS.FC_ACME( UN_TABLA   => 'DIA'
+                                           ,UN_ACCION  => 'I'
+                                           ,UN_CAMPOS  => MI_CAMPOS
+                                           ,UN_VALORES => MI_VALORES
+                                           );
+                --INSERT INTO DIA (COMPANIA, ANO, MES, DIA) VALUES ( MI_COMPANIA , MI_ANIO , MI_MES , MI_I );
+               EXCEPTION WHEN PCK_EXCEPCIONES.EXC_INSERTAR THEN 
+                MI_REEMPLAZOS(0).CLAVE := 'DIA';
+                MI_REEMPLAZOS(0).VALOR := MI_I;
+                RAISE PCK_EXCEPCIONES.EXC_GENERAL;
+               END;
+             EXCEPTION WHEN PCK_EXCEPCIONES.EXC_INSERTAR THEN 
+                PCK_ERR_MSG.RAISE_WITH_MSG(
+                  UN_EXC_COD    => SQLCODE
+                 ,UN_TABLAERROR => 'DIA'
+                 ,UN_ERROR_COD  => PCK_ERRORES.ERROR_GRAL_INS_DIA2
+                 ,UN_REEMPLAZOS => MI_REEMPLAZOS
+                 );
+             END;
+             END IF;
+           END LOOP RECORREDIAS;
+
+
+
+        FOR MI_I IN 1 .. MI_DIAMAX 
+        LOOP
+          <<DIASBLOQUEO>>
+          FOR RS IN(SELECT P.APLICACION, P.PROCESO, D.DIA
+                    FROM PROCESO_BLOQUEO P LEFT JOIN 
+                         (SELECT *
+                          FROM DIA_BLOQUEO
+                          WHERE COMPANIA   = UN_COMPANIA
+                            AND ANO        = UN_ANIO
+                            AND MES        = UN_MES
+                            AND DIA        = MI_I
+                          ) D ON D.APLICACION = P.APLICACION
+                             AND D.PROCESO    = P.PROCESO
+                    WHERE D.COMPANIA IS NULL
+                    )
+          LOOP
+            DECLARE 
+            MI_REEMPLAZOS PCK_SUBTIPOS.TI_CLAVEVALOR;
+            BEGIN 
+              BEGIN
+                MI_CAMPOS := 'COMPANIA, ANO, MES, DIA, APLICACION, PROCESO, ESTADO, CREATED_BY, DATE_CREATED';
+                MI_VALORES := ''''|| UN_COMPANIA   ||''' ,'
+                                  || UN_ANIO       ||','
+                                  || UN_MES        ||',' 
+                                  || MI_I          ||',' 
+                                  || RS.APLICACION ||',' 
+                                  || RS.PROCESO    ||',' 
+                                  || '''A'''       || ',' ||
+                             ''''|| UN_CREATED_BY  || ''',SYSDATE' ; 
+                MI_RTA:=PCK_DATOS.FC_ACME( UN_TABLA   => 'DIA_BLOQUEO'
+                                         , UN_ACCION  => 'I'
+                                         , UN_CAMPOS  => MI_CAMPOS
+                                         , UN_VALORES => MI_VALORES
+                                         );
+              EXCEPTION WHEN PCK_EXCEPCIONES.EXC_INSERTAR THEN 
+                  MI_REEMPLAZOS(0).CLAVE := 'DIA';
+                  MI_REEMPLAZOS(0).VALOR := MI_I;
+                  RAISE PCK_EXCEPCIONES.EXC_GENERAL;
+              END;
+            EXCEPTION WHEN PCK_EXCEPCIONES.EXC_INSERTAR THEN 
+              PCK_ERR_MSG.RAISE_WITH_MSG(
+                    UN_EXC_COD    => SQLCODE
+                   ,UN_TABLAERROR => 'DIA'
+                   ,UN_ERROR_COD  => PCK_ERRORES.ERROR_GRAL_INS_DIA2
+                   ,UN_REEMPLAZOS => MI_REEMPLAZOS
+                   );
+            END;            
+          END LOOP;
+        END LOOP DIASBLOQUEO;
+    END IF;
+    RETURN -1;
+END FC_INSERTARDIASDELMES;
+
+FUNCTION FC_INSERTARMESESDELANO
+  /*
+    NAME              : FC_INSERTARMESESDELANO 
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ
+    DATE MIGRADOR     : 09/05/2017
+    TIME              : 04:35 PM
+    SOURCE MODULE     : GENERAL
+    DESCRIPTION       : Esta función permite generar los mesde un año           
+    PARAMETERS        : UN_COMPANIA  => compañia a crear
+                        UN_ANIO      => año para el cual se va a crear                        
+    @NAME:  insertarMesesdelAno
+    @METHOD:  GET
+    */
+  (
+    UN_COMPANIA IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_ANIO     IN PCK_SUBTIPOS.TI_ANIO,
+    UN_CREATED_BY IN VARCHAR2
+  )
+RETURN PCK_SUBTIPOS.TI_LOGICO 
+AS 
+  MI_STR VARCHAR2(32000 CHAR);
+  MI_RTA VARCHAR2(32000 CHAR);
+  MI_VALORES       VARCHAR2(3200 CHAR);
+  MI_CAMPOS        VARCHAR2(3200 CHAR);
+  MI_EXISTE NUMBER; 
+BEGIN
+  FOR MI_I IN 0 .. 13 LOOP    
+    SELECT COUNT(NUMERO)
+      INTO MI_EXISTE
+      FROM MES 
+    WHERE COMPANIA = UN_COMPANIA 
+       AND ANO      = UN_ANIO 
+       AND NUMERO   = MI_I;          
+    IF MI_EXISTE IN (0) THEN
+      MI_CAMPOS  := 'COMPANIA, ANO, NUMERO, CREATED_BY, DATE_CREATED';
+      MI_VALORES := '''' || UN_COMPANIA || ''',' ||
+                            UN_ANIO   || ',' ||
+                            MI_I || ',' ||
+                    '''' || UN_CREATED_BY || ''',' ||
+                            'SYSDATE'; 
+      DECLARE 
+        MI_REEMPLAZOS   PCK_SUBTIPOS.TI_CLAVEVALOR;
+      BEGIN
+        BEGIN 
+          MI_RTA:= PCK_DATOS.FC_ACME(UN_TABLA   => 'MES',
+                                     UN_ACCION  => 'I', 
+                                     UN_CAMPOS  => MI_CAMPOS, 
+                                     UN_VALORES => MI_VALORES);
+        EXCEPTION WHEN PCK_EXCEPCIONES.EXC_INSERTAR THEN 
+          MI_REEMPLAZOS(0).CLAVE := 'MES';
+          MI_REEMPLAZOS(0).CLAVE := MI_I;
+          MI_REEMPLAZOS(1).CLAVE := 'ANIO';
+          MI_REEMPLAZOS(1).CLAVE := UN_ANIO;
+          RAISE PCK_EXCEPCIONES.EXC_GENERAL;
+        END;
+      EXCEPTION WHEN PCK_EXCEPCIONES.EXC_GENERAL THEN  
+        PCK_ERR_MSG.RAISE_WITH_MSG(
+             UN_EXC_COD    => SQLCODE,
+             UN_TABLAERROR => 'MES',
+             UN_ERROR_COD  => PCK_ERRORES.ERROR_GRAL_INSMESANIO,
+             UN_REEMPLAZOS => MI_REEMPLAZOS
+           );
+      END;
+    END IF;     
+  END LOOP;
+  RETURN -1;
+END FC_INSERTARMESESDELANO;
+
+FUNCTION FC_CAMBIARESTADOMES
+  /*
+    NAME              : FC_CAMBIARESTADOMES 
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ
+    DATE MIGRADOR     : 10/05/2017
+    TIME              : 09:35 AM
+    SOURCE MODULE     : GENERAL
+    DESCRIPTION       : Esta función permite generar los mesde un año           
+    PARAMETERS        : UN_COMPANIA  => compañia a crear
+                        UN_ANIO      => año para el cual se va a crear                        
+    @NAME:  cambiarEstadoMes
+    @METHOD:  GET
+    */
+  (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_ANO        IN PCK_SUBTIPOS.TI_ANIO,
+    UN_MES        IN PCK_SUBTIPOS.TI_MES,
+    UN_MODULO     IN PCK_SUBTIPOS.TI_MODULO,
+    UN_PROCESO    IN PCK_SUBTIPOS.TI_ENTERO,   
+    UN_ESTADO     IN VARCHAR2,
+    UN_MODIFIED_BY IN VARCHAR2
+  )
+RETURN PCK_SUBTIPOS.TI_LOGICO
+AS 
+  MI_CAMPOS                       PCK_SUBTIPOS.TI_CAMPOS;
+  MI_VALORES                      PCK_SUBTIPOS.TI_VALORES;
+  MI_CONDICION                    PCK_SUBTIPOS.TI_CONDICION;
+  MI_RTA                          PCK_SUBTIPOS.TI_RTA_ACME;
+  MI_REEMPLAZOS                   PCK_SUBTIPOS.TI_CLAVEVALOR;
+BEGIN
+
+  BEGIN
+    MI_CAMPOS := 'ESTADO        = ''' || UN_ESTADO      || ''',' ||
+                 'MODIFIED_BY   = ''' || UN_MODIFIED_BY || ''',' ||
+                 'DATE_MODIFIED = SYSDATE';
+
+    MI_CONDICION := 'COMPANIA        = ''' || UN_COMPANIA || '''
+                      AND ANO        = '   || UN_ANO      ||
+                    ' AND MES        = '   || UN_MES      ||
+                    ' AND APLICACION = '   || UN_MODULO   ||
+                    ' AND PROCESO    = '   || UN_PROCESO;
+
+    MI_RTA:= PCK_DATOS.FC_ACME(UN_TABLA     => 'DIA_BLOQUEO',
+                               UN_ACCION    => 'M', 
+                               UN_CAMPOS    => MI_CAMPOS, 
+                               UN_CONDICION => MI_CONDICION);
+  EXCEPTION
+  WHEN PCK_EXCEPCIONES.EXC_ACTUALIZAR THEN
+    MI_REEMPLAZOS(1).CLAVE := 'ANO';
+    MI_REEMPLAZOS(1).VALOR := UN_ANO ;
+    MI_REEMPLAZOS(2).CLAVE := 'MES';
+    MI_REEMPLAZOS(2).VALOR := UN_MES ;
+    PCK_ERR_MSG.RAISE_WITH_MSG(
+      UN_EXC_COD => SQLCODE
+    , UN_TABLAERROR => 'DIA_BLOQUEO'
+    , UN_ERROR_COD => PCK_ERRORES.ERROR_GRAL_CAMBIARESTADOMES
+    , UN_REEMPLAZOS => MI_REEMPLAZOS
+    );
+  END;
+
+  RETURN -1;
+END FC_CAMBIARESTADOMES;
+
+FUNCTION FC_CAMBIARESTADOANO
+  /*
+    NAME              : FC_CAMBIARESTADOMES 
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JOSE PASCUAL GOMEZ
+    DATE MIGRADOR     : 10/05/2017
+    TIME              : 10:45 AM
+    SOURCE MODULE     : GENERAL
+    DESCRIPTION       : Esta función permite cambiar el estado de un año por completo          
+    PARAMETERS        : UN_COMPANIA  => compañia para el cual se va a cambiar       
+                        UN_ANO       => año para el cual se va a cambiar                     
+    @NAME:  cambiarEstadoAno
+    @METHOD:  GET
+    */
+    (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_ANO        IN PCK_SUBTIPOS.TI_ANIO,
+    UN_MODULO     IN PCK_SUBTIPOS.TI_MODULO,
+    UN_PROCESO    IN PCK_SUBTIPOS.TI_ENTERO, 
+    UN_ESTADO     IN VARCHAR2,
+    UN_MODIFIED_BY IN VARCHAR2
+  )
+RETURN PCK_SUBTIPOS.TI_LOGICO
+AS 
+  MI_CAMPOS                       PCK_SUBTIPOS.TI_CAMPOS;
+  MI_VALORES                      PCK_SUBTIPOS.TI_VALORES;
+  MI_CONDICION                    PCK_SUBTIPOS.TI_CONDICION;
+  MI_RTA                          PCK_SUBTIPOS.TI_RTA_ACME;
+  MI_REEMPLAZOS                   PCK_SUBTIPOS.TI_CLAVEVALOR;
+BEGIN
+
+  BEGIN
+    MI_CAMPOS := 'ESTADO        = ''' || UN_ESTADO      || ''',' ||
+                 'MODIFIED_BY   = ''' || UN_MODIFIED_BY || ''',' ||
+                 'DATE_MODIFIED = SYSDATE';
+
+    MI_CONDICION := 'COMPANIA        = ''' || UN_COMPANIA || '''
+                      AND ANO        = '   || UN_ANO      ||
+                    ' AND APLICACION = '   || UN_MODULO   ||
+                    ' AND PROCESO    = '   || UN_PROCESO;
+
+    MI_RTA:= PCK_DATOS.FC_ACME(UN_TABLA     => 'DIA_BLOQUEO',
+                               UN_ACCION    => 'M', 
+                               UN_CAMPOS    => MI_CAMPOS, 
+                               UN_CONDICION => MI_CONDICION);
+  EXCEPTION
+  WHEN PCK_EXCEPCIONES.EXC_ACTUALIZAR THEN
+    MI_REEMPLAZOS(1).CLAVE := 'ANO';
+    MI_REEMPLAZOS(1).VALOR := UN_ANO ;
+    PCK_ERR_MSG.RAISE_WITH_MSG(
+      UN_EXC_COD => SQLCODE
+    , UN_TABLAERROR => 'DIA_BLOQUEO'
+    , UN_ERROR_COD => PCK_ERRORES.ERROR_GRAL_CAMBIARESTADOANO
+    , UN_REEMPLAZOS => MI_REEMPLAZOS
+    );
+  END;
+  RETURN -1;
+END FC_CAMBIARESTADOANO;
+
+FUNCTION FC_FIX
+  /*
+    NAME              : FC_CAMBIARESTADOMES 
+    AUTHORS           : STEFANINI SYSMAN  SAS
+    AUTHOR MIGRACION  : JONATHAN ENRIQUE GUERRERO TORRES
+    DATE MIGRADOR     : 26/12/2017
+    TIME              : 02:11 PM
+    SOURCE MODULE     : GENERAL
+    DESCRIPTION       : Esta funcion se encarga de usar un redondeo simulando el "FIX" de Acces .
+    PARAMETERS        : UN_VALOR   =>  valor a redondear 
+    @NAME:  fix
+    @METHOD:  GET
+    */
+ (
+
+    UN_VALOR    IN PCK_SUBTIPOS.TI_ENTERO_LARGO
+
+  )
+RETURN PCK_SUBTIPOS.TI_ENTERO_LARGO
+AS 
+
+  MI_RTA                          PCK_SUBTIPOS.TI_RTA_ACME;
+
+BEGIN
+  SELECT TRUNC(NVL(UN_VALOR,0))
+    INTO MI_RTA
+    FROM DUAL;
+
+  RETURN MI_RTA;
+END FC_FIX;
+
+
+FUNCTION FC_DIASHABILVIATICOS
+/*
+    NAME              : FC_DIASHABILVIATICOS => En Access DiasHabilViaticos()
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : ELKIN GEOVANNY AMAYA SILVA
+    DATE MIGRADOR     : 18/01/2018
+    TIME              : 12:50 PM
+    SOURCE MODULE     : SysmanLV2018.01.01.accdb
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    DESCRIPTION       : ESTA FUNCION RETORNA LA CANTIDAD DE DIAS HABILES ENTRE DOS FECHAS DE VIATICOS
+
+    @NAME:  retornarDiasHabilesViaticos
+    @METHOD:  GET                         
+  */
+  (
+  UN_COMPANIA     IN PCK_SUBTIPOS.TI_COMPANIA,
+  UN_FECHAINI     IN DATE, 
+  UN_FECHAFIN     IN DATE, 
+  UN_SABADOS      IN PCK_SUBTIPOS.TI_ENTERO_LARGO DEFAULT NULL,
+  UN_DOMINGOS     IN PCK_SUBTIPOS.TI_ENTERO_LARGO DEFAULT NULL,
+  UN_FESTIVOS     IN PCK_SUBTIPOS.TI_ENTERO_LARGO DEFAULT NULL
+  )
+RETURN NUMBER
+AS
+  MI_CANT       PCK_SUBTIPOS.TI_ENTERO:=0;
+  MI_VLRETORNO  PCK_SUBTIPOS.TI_ENTERO:=0;
+  MI_INTFES     PCK_SUBTIPOS.TI_ENTERO:=0;
+  MI_AUXFEC     DATE;
+BEGIN
+--' CALCULA LOS DIAS HABILES ENTRE DOS FECHAS
+  BEGIN
+    IF UN_SABADOS NOT IN (0)THEN
+      SELECT  COUNT(0) 
+      INTO    MI_CANT
+      FROM    FESTIVOS 
+      WHERE   COMPANIA = UN_COMPANIA
+        AND   TO_CHAR(ID_DE_FESTIVO,'YYYYMMDD') >= TO_CHAR(UN_FECHAINI, 'YYYYMMDD')
+        AND   TO_CHAR(ID_DE_FESTIVO,'YYYYMMDD') <= TO_CHAR(UN_FECHAFIN, 'YYYYMMDD')
+        AND   PCK_SYSMAN_UTL.FC_WEEKDAY(ID_DE_FESTIVO)<>1;
+    ELSE
+      SELECT  COUNT(0)
+      INTO    MI_CANT
+      FROM    FESTIVOS 
+      WHERE   COMPANIA = UN_COMPANIA 
+        AND   TO_CHAR(ID_DE_FESTIVO,'YYYYMMDD') >= TO_CHAR(UN_FECHAINI, 'YYYYMMDD')
+        AND   TO_CHAR(ID_DE_FESTIVO,'YYYYMMDD') <=  TO_CHAR(UN_FECHAFIN, 'YYYYMMDD')
+        AND   PCK_SYSMAN_UTL.FC_WEEKDAY(ID_DE_FESTIVO,1) NOT IN(1,7) ;
+
+    END IF;
+  END;
+
+  MI_VLRETORNO := UN_FECHAFIN - UN_FECHAINI + 1 - MI_CANT;
+--  FOR I = CLNG(UN_FECHAINI) TO CLNG(GL_FECHAFIN)
+  MI_CANT := UN_FECHAFIN - UN_FECHAINI ;
+  MI_INTFES := UN_FECHAFIN - UN_FECHAINI + 1;
+  MI_AUXFEC := UN_FECHAINI;
+  <<DIADELASEMANA>>  
+  FOR I IN 1 .. MI_CANT LOOP
+    MI_AUXFEC := MI_AUXFEC +1;
+
+    IF UN_SABADOS IN(-1) AND UN_DOMINGOS IN(0) AND UN_FESTIVOS IN(0) AND PCK_SYSMAN_UTL.FC_WEEKDAY(MI_AUXFEC) = 1 THEN
+      MI_VLRETORNO := MI_VLRETORNO - 1;
+
+    ELSIF UN_SABADOS IN(0) AND UN_DOMINGOS IN(0) AND UN_FESTIVOS IN(0)  AND (PCK_SYSMAN_UTL.FC_WEEKDAY(MI_AUXFEC) = 7 OR PCK_SYSMAN_UTL.FC_WEEKDAY(MI_AUXFEC) = 1) THEN
+    MI_VLRETORNO := MI_VLRETORNO - 1;
+
+    ELSIF UN_SABADOS IN(-1) AND UN_DOMINGOS IN(-1) AND UN_FESTIVOS IN(0)THEN
+     MI_VLRETORNO := MI_VLRETORNO ;
+    CONTINUE;
+
+    ELSIF UN_SABADOS IN(0) AND UN_DOMINGOS IN(-1) AND UN_FESTIVOS IN(0) AND PCK_SYSMAN_UTL.FC_WEEKDAY(MI_AUXFEC) = 7 THEN
+      MI_VLRETORNO := MI_VLRETORNO - 1;
+
+    ELSIF UN_SABADOS IN(0) AND UN_DOMINGOS IN(-1) AND UN_FESTIVOS IN(-1) AND PCK_SYSMAN_UTL.FC_WEEKDAY(MI_AUXFEC) = 7 THEN     
+     MI_INTFES := MI_INTFES -1 ;
+     MI_VLRETORNO := MI_INTFES;
+
+    ELSIF UN_SABADOS IN(0) AND UN_DOMINGOS IN(0) AND UN_FESTIVOS IN(-1) AND (PCK_SYSMAN_UTL.FC_WEEKDAY(MI_AUXFEC) = 1 OR PCK_SYSMAN_UTL.FC_WEEKDAY(MI_AUXFEC) = 7) THEN     
+     MI_INTFES := MI_INTFES -1 ;
+     MI_VLRETORNO := MI_INTFES; 
+
+    ELSIF UN_SABADOS IN(-1) AND UN_DOMINGOS IN(0) AND UN_FESTIVOS IN(-1) AND PCK_SYSMAN_UTL.FC_WEEKDAY(MI_AUXFEC) = 1 THEN     
+     MI_INTFES := MI_INTFES -1 ;
+     MI_VLRETORNO := MI_INTFES;  
+
+    ELSIF UN_SABADOS IN(-1) AND UN_DOMINGOS IN(-1) AND UN_FESTIVOS IN(-1) AND PCK_SYSMAN_UTL.FC_WEEKDAY(MI_AUXFEC) = 1 THEN     
+      MI_VLRETORNO := MI_INTFES;  
+     CONTINUE;
+
+    END IF;
+
+  END LOOP DIADELASEMANA;
+  RETURN MI_VLRETORNO;
+
+
+END FC_DIASHABILVIATICOS;
+
+
+FUNCTION FC_DIASPERNOCTANDO
+/*
+    NAME              : FC_CALCULARTOTALVIATICOS => En Access CalcularViaticos()
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : ELKIN GEOVANNY AMAYA SILVA
+    DATE MIGRADOR     : 19/01/2018
+    TIME              : 12:50 PM
+    SOURCE MODULE     : SysmanLV2018.01.01.accdb
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    DESCRIPTION       : Calcula los dias que pernocta y no pernocta dependiendo se se toman 
+                        habiles sabados,domingos o festivos, o cualquier combinacion de los tres
+    PARAMETERS        : 'UN_PERNOCTANDO --> si es -1 la funcion devuelve los dias pernoctando y si es 0 devuelve los dias sin pernoctar
+                        'UN_FECHAINICIO --> fecha inicial de rango elegido
+                        'UN_FECHAFIN    --> fecha final del rango elegido
+                        'UN_SABADO      --> -1 si se toman como habiles, 0 si no se toman
+                        'UN_DOMINGO     --> -1 si se toman como habiles, 0 si no se toman
+                        'UN_FESTIVO     --> -1 si se toman como habiles, 0 si no se toman                        
+
+
+
+
+    @NAME:  retornarDiasPernoctando
+    @METHOD:  GET                         
+  */
+  (
+  UN_COMPANIA        IN PCK_SUBTIPOS.TI_COMPANIA,
+  UN_PERNOCTANDO     IN PCK_SUBTIPOS.TI_LOGICO, 
+  UN_FECHAINICIO     IN DATE,
+  UN_FECHAFIN        IN DATE,
+  UN_SABADO          IN PCK_SUBTIPOS.TI_LOGICO,      
+  UN_DOMINGO         IN PCK_SUBTIPOS.TI_LOGICO,
+  UN_FESTIVO         IN PCK_SUBTIPOS.TI_LOGICO
+  )
+RETURN NUMBER
+
+AS
+  MI_TOTALDIAS        NUMBER;
+  MI_DIASHABILES      NUMBER;
+  MI_DIA              DATE;
+  MI_DIASIG           DATE;
+  MI_DIACTUALFESTIVO  NUMBER;
+  MI_DIASIGFESTIVO    NUMBER;
+  MI_DIASPER          NUMBER;
+  MI_DIASINPER        NUMBER;
+  MI_DIASPERNOCTANDO  NUMBER;
+BEGIN
+
+  MI_TOTALDIAS := UN_FECHAFIN  - UN_FECHAINICIO;   
+
+  MI_DIACTUALFESTIVO := 0;
+  MI_DIASIGFESTIVO := 0; 
+  MI_DIASPER := 0;
+  MI_DIASINPER := 0;
+
+
+  --CUANDO SE TOMAN SOLO LOS DIAS HABILES
+
+  IF UN_SABADO IN (0) AND UN_DOMINGO IN (0) AND UN_FESTIVO IN (0)   THEN                          
+
+  MI_DIASHABILES := PCK_SYSMAN_UTL.FC_DIASHABILVIATICOS(UN_COMPANIA => UN_COMPANIA,
+                                                        UN_FECHAINI => UN_FECHAINICIO, 
+                                                        UN_FECHAFIN => UN_FECHAFIN, 
+                                                        UN_SABADOS  => 0,
+                                                        UN_DOMINGOS => 0,
+                                                        UN_FESTIVOS => 0) ;
+
+    FOR I IN 0.. MI_TOTALDIAS  LOOP
+
+      MI_DIA := UN_FECHAINICIO + I;  
+      MI_DIASIG := UN_FECHAINICIO + (I+1);
+
+        <<FESTIVOS_ENTRE_FECHAS>>
+          FOR MI_RS IN (SELECT ID_DE_FESTIVO
+                        FROM FESTIVOS
+                        WHERE ID_DE_FESTIVO BETWEEN UN_FECHAINICIO AND UN_FECHAFIN) LOOP
+
+            IF MI_RS.ID_DE_FESTIVO =  MI_DIA THEN
+              MI_DIACTUALFESTIVO := 1; 
+            ELSE  
+              MI_DIACTUALFESTIVO := 0; 
+            END IF;
+
+            IF MI_RS.ID_DE_FESTIVO =  MI_DIASIG AND MI_DIACTUALFESTIVO NOT IN (1)AND PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO)<> 5 AND PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO)<> 7 THEN
+              MI_DIASINPER := MI_DIASINPER + 1;
+              MI_DIASIGFESTIVO := 1;
+
+            END IF;
+
+          END LOOP FESTIVOS_ENTRE_FECHAS;  
+
+      IF I = MI_TOTALDIAS AND MI_DIACTUALFESTIVO <> 1 AND PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO)<> 6 AND PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO)<> 7 THEN
+        MI_DIASINPER := MI_DIASINPER + 1 ;
+        MI_DIASPER := MI_DIASHABILES - MI_DIASINPER;
+        CONTINUE;
+
+      ELSIF I = MI_TOTALDIAS THEN
+        MI_DIASPER := MI_DIASHABILES - MI_DIASINPER;
+        CONTINUE;        
+      END IF;    
+
+      IF PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO)<> 5 AND MI_TOTALDIAS > I AND MI_DIASIGFESTIVO <> 1 AND MI_DIACTUALFESTIVO <> (1)THEN
+        MI_DIASINPER := MI_DIASINPER + 1 ;
+      END IF;
+    END LOOP;
+
+
+
+  --CUANDO SE TOMAN COMO HABILIES LOS SABADOS
+  ELSIF UN_SABADO NOT IN (0) AND UN_DOMINGO IN (0) AND UN_FESTIVO IN (0)   THEN   
+
+     MI_DIASHABILES := PCK_SYSMAN_UTL.FC_DIASHABILVIATICOS(UN_COMPANIA => UN_COMPANIA,
+                                                        UN_FECHAINI => UN_FECHAINICIO, 
+                                                        UN_FECHAFIN => UN_FECHAFIN, 
+                                                        UN_SABADOS  => -1,
+                                                        UN_DOMINGOS => 0,
+                                                        UN_FESTIVOS => 0) ; 
+
+
+     FOR I IN 0.. MI_TOTALDIAS  LOOP
+
+       MI_DIA := UN_FECHAINICIO + I;  
+       MI_DIASIG := UN_FECHAINICIO + (I+1);
+
+        <<FESTIVOS_ENTRE_FECHAS>>
+          FOR MI_RS IN (SELECT ID_DE_FESTIVO
+                        FROM FESTIVOS
+                        WHERE ID_DE_FESTIVO BETWEEN UN_FECHAINICIO AND UN_FECHAFIN) LOOP
+
+            IF MI_RS.ID_DE_FESTIVO =  MI_DIA THEN
+              MI_DIACTUALFESTIVO := 1;
+            ELSE  
+              MI_DIACTUALFESTIVO := 0;   
+            END IF;
+
+            IF MI_RS.ID_DE_FESTIVO =  MI_DIASIG AND MI_DIACTUALFESTIVO NOT IN (1)AND PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO)<> 5 AND PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO)<> 7 THEN
+              MI_DIASINPER := MI_DIASINPER + 1;
+              MI_DIASIGFESTIVO := 1;
+
+            END IF;        
+
+          END LOOP FESTIVOS_ENTRE_FECHAS;  
+
+        IF I = MI_TOTALDIAS AND PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO)<> 7 AND MI_DIACTUALFESTIVO <> 1 THEN
+          MI_DIASINPER := MI_DIASINPER + 1;
+          MI_DIASPER := MI_DIASHABILES - MI_DIASINPER;
+          CONTINUE;
+
+        ELSIF I = MI_TOTALDIAS THEN
+          MI_DIASPER := MI_DIASHABILES - MI_DIASINPER;
+          CONTINUE;          
+        END IF;
+
+        IF  PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO)<> 6 AND MI_TOTALDIAS > I AND MI_DIASIGFESTIVO <> 1 AND MI_DIACTUALFESTIVO <>1 THEN
+         MI_DIASINPER := MI_DIASINPER + 1;
+        END IF;
+
+     END LOOP;
+
+   --CUANDO SE TOMAN COMO HABILIES LOS DOMINGOS
+  ELSIF UN_SABADO IN (0) AND UN_DOMINGO NOT IN (0) AND UN_FESTIVO IN (0)   THEN   
+
+     MI_DIASHABILES := PCK_SYSMAN_UTL.FC_DIASHABILVIATICOS(UN_COMPANIA => UN_COMPANIA,
+                                                        UN_FECHAINI => UN_FECHAINICIO, 
+                                                        UN_FECHAFIN => UN_FECHAFIN, 
+                                                        UN_SABADOS  => 0,
+                                                        UN_DOMINGOS => -1,
+                                                        UN_FESTIVOS => 0);   
+
+
+        FOR I IN 0.. MI_TOTALDIAS  LOOP
+           MI_DIA := UN_FECHAINICIO + I;  
+           MI_DIASIG := UN_FECHAINICIO + (I+1);
+
+            <<FESTIVOS_ENTRE_FECHAS>>
+              FOR MI_RS IN (SELECT ID_DE_FESTIVO
+                            FROM FESTIVOS
+                            WHERE ID_DE_FESTIVO BETWEEN UN_FECHAINICIO AND UN_FECHAFIN) LOOP
+
+                IF MI_RS.ID_DE_FESTIVO =  MI_DIA THEN
+                  MI_DIACTUALFESTIVO := 1;
+                ELSE  
+                  MI_DIACTUALFESTIVO := 0;   
+                END IF;
+
+                IF MI_RS.ID_DE_FESTIVO =  MI_DIASIG AND MI_DIACTUALFESTIVO NOT IN (1)AND PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO)<> 5 THEN
+                 IF PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO)<> 7 THEN
+                  MI_DIASINPER := MI_DIASINPER + 1;
+                 END IF; 
+                  MI_DIASIGFESTIVO := 1;
+
+                END IF;        
+
+              END LOOP FESTIVOS_ENTRE_FECHAS;            
+
+           IF I = MI_TOTALDIAS AND PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO)<> 6 AND MI_DIACTUALFESTIVO <> 1 THEN
+              MI_DIASINPER := MI_DIASINPER + 1;
+              MI_DIASPER := MI_DIASHABILES - MI_DIASINPER;
+              CONTINUE;
+
+           ELSIF   I = MI_TOTALDIAS THEN
+              MI_DIASPER := MI_DIASHABILES - MI_DIASINPER;
+              CONTINUE;
+           END IF;
+
+           IF PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO) = 5 AND MI_TOTALDIAS > I AND MI_DIASIGFESTIVO <> 1 AND MI_DIACTUALFESTIVO <> 1 THEN
+            MI_DIASINPER := MI_DIASINPER + 1;      
+           END IF;
+
+           IF PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO) = 7 AND MI_TOTALDIAS > I AND MI_DIASIGFESTIVO = 1  THEN
+            MI_DIASINPER := MI_DIASINPER + 1;
+           END IF;
+
+      END LOOP;
+   --CUANDO SE TOMAN COMO HABILIES LOS FESTIVOS
+  ELSIF UN_SABADO IN (0) AND UN_DOMINGO IN (0) AND UN_FESTIVO NOT IN (0)   THEN   
+
+     MI_DIASHABILES := PCK_SYSMAN_UTL.FC_DIASHABILVIATICOS(UN_COMPANIA => UN_COMPANIA,
+                                                        UN_FECHAINI => UN_FECHAINICIO, 
+                                                        UN_FECHAFIN => UN_FECHAFIN, 
+                                                        UN_SABADOS  => 0,
+                                                        UN_DOMINGOS => 0,
+                                                        UN_FESTIVOS => -1);   
+
+
+        FOR I IN 0.. MI_TOTALDIAS  LOOP     
+          IF I = MI_TOTALDIAS AND  PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO) = 6 AND  PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO) = 7 THEN
+             MI_DIASINPER := MI_DIASINPER + 1;
+             MI_DIASPER := MI_DIASHABILES - MI_DIASINPER;
+             CONTINUE;
+
+          ELSIF I = MI_TOTALDIAS THEN
+             MI_DIASPER := MI_DIASHABILES - MI_DIASINPER;
+             CONTINUE;
+          END IF;          
+
+          IF PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO) = 5 AND MI_TOTALDIAS > I THEN
+             MI_DIASINPER := MI_DIASINPER + 1;
+          END IF;
+
+        END LOOP;
+
+ --CUANDO SE TOMAN COMO HABILES SABADOS Y DOMINGOS
+   ELSIF UN_SABADO NOT IN (0) AND UN_DOMINGO NOT IN (0) AND UN_FESTIVO IN (0)   THEN   
+
+     MI_DIASHABILES := PCK_SYSMAN_UTL.FC_DIASHABILVIATICOS(UN_COMPANIA => UN_COMPANIA,
+                                                        UN_FECHAINI => UN_FECHAINICIO, 
+                                                        UN_FECHAFIN => UN_FECHAFIN, 
+                                                        UN_SABADOS  => -1,
+                                                        UN_DOMINGOS => -1,
+                                                        UN_FESTIVOS => 0);  
+
+
+       FOR I IN 0.. MI_TOTALDIAS  LOOP  
+         MI_DIA := UN_FECHAINICIO + I;  
+         MI_DIASIG := UN_FECHAINICIO + (I+1);
+
+          <<FESTIVOS_ENTRE_FECHAS>>
+              FOR MI_RS IN (SELECT ID_DE_FESTIVO
+                            FROM FESTIVOS
+                            WHERE ID_DE_FESTIVO BETWEEN UN_FECHAINICIO AND UN_FECHAFIN) LOOP
+
+                IF MI_RS.ID_DE_FESTIVO =  MI_DIA THEN
+                  MI_DIACTUALFESTIVO := 1;          
+                ELSE  
+                  MI_DIACTUALFESTIVO := 0; 
+                END IF;
+
+
+                IF MI_RS.ID_DE_FESTIVO =  MI_DIASIG AND MI_DIACTUALFESTIVO <> 1 THEN                 
+                  MI_DIASINPER := MI_DIASINPER + 1;                 
+                  MI_DIASIGFESTIVO := 1;                
+                END IF;        
+
+              END LOOP FESTIVOS_ENTRE_FECHAS; 
+
+         IF I= MI_TOTALDIAS AND MI_DIACTUALFESTIVO <> 1   THEN
+            MI_DIASINPER := MI_DIASINPER +1 ;
+            MI_DIASPER := MI_DIASHABILES - MI_DIASINPER;
+            CONTINUE;
+        ELSIF I= MI_TOTALDIAS THEN
+             MI_DIASPER := MI_DIASHABILES - MI_DIASINPER;
+             CONTINUE;
+        END IF;
+       END LOOP;
+
+ --CUANDO SE TOMAN COMO HABILES SABADOS Y FESTIVOS
+  ELSIF UN_SABADO NOT IN (0) AND UN_DOMINGO IN (0) AND UN_FESTIVO NOT IN (0)   THEN   
+
+     MI_DIASHABILES := PCK_SYSMAN_UTL.FC_DIASHABILVIATICOS(UN_COMPANIA => UN_COMPANIA,
+                                                        UN_FECHAINI => UN_FECHAINICIO, 
+                                                        UN_FECHAFIN => UN_FECHAFIN, 
+                                                        UN_SABADOS  => -1,
+                                                        UN_DOMINGOS => 0,
+                                                        UN_FESTIVOS => -1);  
+
+
+       FOR I IN 0.. MI_TOTALDIAS  LOOP    
+          MI_DIA := UN_FECHAINICIO + I;  
+          MI_DIASIG := UN_FECHAINICIO + (I+1);
+
+         IF I = MI_TOTALDIAS AND PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO) <> 7 THEN
+            MI_DIASINPER := MI_DIASINPER + 1;
+            MI_DIASPER := MI_DIASHABILES - MI_DIASINPER;
+            CONTINUE;         
+         ELSIF   I = MI_TOTALDIAS THEN
+            MI_DIASPER := MI_DIASHABILES - MI_DIASINPER;
+            CONTINUE;
+         END IF;  
+
+         IF PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO) <> 6 AND MI_TOTALDIAS > I THEN
+            MI_DIASINPER := MI_DIASINPER + 1;
+         END IF;  
+       END LOOP;
+
+
+ --CUANDO SE TOMAN COMO HABILES DOMINGOS Y FESTIVOS
+  ELSIF UN_SABADO IN (0) AND UN_DOMINGO NOT IN (0) AND UN_FESTIVO NOT IN (0)   THEN   
+
+     MI_DIASHABILES := PCK_SYSMAN_UTL.FC_DIASHABILVIATICOS(UN_COMPANIA => UN_COMPANIA,
+                                                        UN_FECHAINI => UN_FECHAINICIO, 
+                                                        UN_FECHAFIN => UN_FECHAFIN, 
+                                                        UN_SABADOS  => 0,
+                                                        UN_DOMINGOS => -1,
+                                                        UN_FESTIVOS => -1);  
+
+
+       FOR I IN 0.. MI_TOTALDIAS  LOOP    
+         MI_DIA := UN_FECHAINICIO + I;  
+          IF I = MI_TOTALDIAS  AND PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO)<>6 THEN
+            MI_DIASINPER := MI_DIASINPER + 1;
+            MI_DIASPER := MI_DIASHABILES - MI_DIASINPER; 
+            CONTINUE;
+          ELSIF I = MI_TOTALDIAS THEN
+            MI_DIASPER := MI_DIASHABILES - MI_DIASINPER; 
+            CONTINUE;
+          END IF;
+
+          IF PCK_SYSMAN_UTL.FC_WEEKDAY(UN_FECHAINICIO)= 5 THEN
+            MI_DIASINPER := MI_DIASINPER + 1;
+          END IF;
+       END LOOP;
+
+
+
+ --CUANDO SE TOMAN COMO HABILES SABADOS, DOMINGOS Y FESTIVOS
+  ELSIF UN_SABADO NOT IN (0) AND UN_DOMINGO NOT IN (0) AND UN_FESTIVO NOT IN (0)   THEN   
+
+     MI_DIASHABILES := PCK_SYSMAN_UTL.FC_DIASHABILVIATICOS(UN_COMPANIA => UN_COMPANIA,
+                                                        UN_FECHAINI => UN_FECHAINICIO, 
+                                                        UN_FECHAFIN => UN_FECHAFIN, 
+                                                        UN_SABADOS  => -1,
+                                                        UN_DOMINGOS => -1,
+                                                        UN_FESTIVOS => -1);   
+
+
+      MI_DIASINPER :=  MI_DIASINPER + 1;
+      MI_DIASPER := MI_DIASHABILES - MI_DIASINPER;
+
+
+  END IF;                                                           
+
+  IF UN_PERNOCTANDO NOT IN (0) THEN  
+    MI_DIASPERNOCTANDO := MI_DIASPER;
+  ELSE
+    MI_DIASPERNOCTANDO := MI_DIASINPER;  
+  END IF;
+
+  RETURN MI_DIASPERNOCTANDO;
+
+END FC_DIASPERNOCTANDO;
+
+FUNCTION FC_RETORNARFECHAENLETRAS
+  (
+   /*
+    NAME              : RETORNARFECHALETRAS
+    AUTHORS           : STEFANINI SYSMAN
+    AUTHOR MIGRACION  : YESIKA PAOLA BECERRA CASTRO
+    DATE MIGRADOR     : 22/01/2018
+    TIME              : 09:52 AM
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : RETORNA EL FECHA INGRESADA EN LETRAS -> 1 de Agosto del 2014
+    @NAME:  retornarFechaLetras
+    @METHOD:  GET                          
+  */ 
+    UN_FECHA IN DATE 
+  )
+RETURN VARCHAR2
+  AS 
+  MI_FECHALETRAS VARCHAR2(50 CHAR);
+BEGIN 
+  MI_FECHALETRAS :=   PCK_SYSMAN_UTL.FC_DIA(UN_FECHA => UN_FECHA) || ' de ' || 
+                      PCK_SYSMAN_UTL.FC_NOMBRE_MES(UN_NUMERO_MES => PCK_SYSMAN_UTL.FC_MES(UN_FECHA => UN_FECHA))|| ' del '||
+                      PCK_SYSMAN_UTL.FC_ANIO(UN_FECHA => UN_FECHA);
+  RETURN  MI_FECHALETRAS;
+END   FC_RETORNARFECHAENLETRAS;
+
+FUNCTION FC_ISDATE
+(
+/*
+    NAME              : FC_ISDATE
+    AUTHORS           : STEFANINI SYSMAN
+    AUTHOR MIGRACION  : MIGUEL ANGEL ZANGUÑA HURTADO
+    DATE MIGRADOR     : 02/02/2018
+    TIME              : 12:32 PM
+    MODIFIER          :
+    DATE MODIFIED     :
+    TIME              :
+    DESCRIPTION       : RETORNA verdadero si el texto que se envia por parámetro es fecha
+    @NAME:  esFecha
+    @METHOD:  GET
+  */
+  UN_FECHA   VARCHAR2
+ ,UN_FORMATO   VARCHAR2
+
+) RETURN PCK_SUBTIPOS.TI_LOGICO
+AS
+MI_RTA     PCK_SUBTIPOS.TI_LOGICO DEFAULT -1;
+MI_FECHA   DATE;
+BEGIN
+    IF MI_FECHA IS NULL THEN
+      MI_RTA := 0;
+    ELSE
+
+      BEGIN
+          MI_FECHA := TO_DATE(UN_FECHA, ''|| UN_FORMATO ||'');
+      EXCEPTION WHEN OTHERS THEN
+          MI_RTA := 0;
+      END;
+    END IF;
+    RETURN MI_RTA;
+
+END FC_ISDATE;
+
+FUNCTION FC_ES_NUMERO
+  (
+  /*
+    NAME              : FC_ES_NUMERO
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : CRISTHIAN CAMILO RODRIGUEZ PINZON
+    DATE MIGRADOR     : 02/03/2018
+    TIME              : 08:13 AM
+    SOURCE MODULE     : 
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : Valida si una cadena es numerica
+  */
+    UN_STR IN CHAR
+  )
+  RETURN NUMBER
+AS
+  MI_RES VARCHAR2(100);
+BEGIN
+  MI_RES := TO_CHAR(TO_NUMBER(UN_STR));
+  RETURN(-1);
+EXCEPTION
+WHEN OTHERS THEN
+  RETURN(0);
+END FC_ES_NUMERO;
+
+FUNCTION FC_CONSECUTIVONIVEL
+/*
+    NAME              : FC_CONSECUTIVONIVEL  --> EN ACCESS consecutivoNivel()
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : ELKIN GEOVANNY AMAYA SILVA
+    DATE MIGRADOR     : 05/03/2018
+    TIME              : 12:15 PM
+    SOURCE MODULE     : SysmanDES2018.01.01
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : FUNCION QUE GENERA EL CONSECUTIVO PARA EL NIVEL DEL PLAN INDICATIVO
+
+    MODIFICATIONS     : 
+
+    @NAME: generarConsecutivoNivel
+
+    @METHOD:  GET
+  */
+  (
+
+    UN_COMPANIA      IN PCK_SUBTIPOS.TI_CONDICION,
+    UN_NIVELINI      IN PCK_SUBTIPOS.TI_ENTERO,
+    UN_PREDECESOR    IN BP_PLAN_INDICATIVO.PREDECESOR%TYPE
+  )
+RETURN VARCHAR2
+
+AS
+  MI_STRSQL     PCK_SUBTIPOS.TI_STRSQL;
+  MI_VLRETORNO  PCK_SUBTIPOS.TI_ENTERO_LARGO := 0;
+  MI_LARGO      PCK_SUBTIPOS.TI_ENTERO;
+BEGIN
+
+ MI_STRSQL := 'SELECT 
+                  MAX(BP_PLAN_INDICATIVO.ID) ID
+                FROM BP_PLAN_INDICATIVO
+                WHERE COMPANIA = '''||UN_COMPANIA||'''
+                AND PREDECESOR = '''||UN_PREDECESOR||'''
+                AND PREDECESOR = SUBSTR(ID,1, LENGTH('||UN_PREDECESOR||'))
+                GROUP BY COMPANIA ';
+
+    EXECUTE IMMEDIATE MI_STRSQL INTO MI_VLRETORNO;
+    MI_LARGO := LENGTH(MI_VLRETORNO);
+    RETURN  LPAD(NVL(MI_VLRETORNO,0) + 1 , MI_LARGO , 0);
+
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    MI_LARGO := UN_NIVELINI;
+    RETURN NVL(UN_PREDECESOR,0) || LPAD(1,MI_LARGO - LENGTH(NVL(UN_PREDECESOR,0)),0);
+
+END FC_CONSECUTIVONIVEL;
+
+FUNCTION FC_SPLIT_CL 
+  (
+  /*
+    NAME              : SPLIT_SYS
+    AUTHORS           : SYSMAN  
+    AUTHOR MIGRACION  : ANA YESICA SANA ROJAS
+    DATE MIGRADOR     : 06/06/2015
+    TIME              : 11:38 AM
+    MODIFIER          : LEYDI MILENA CORTES FORERO
+    DATE MODIFIED     : 07/04/2017
+    TIME              : 12:51 PM
+    DESCRIPTION       : Simula la funci¿PLIT devolviendo un tipo T_SPLIT, De clob, para casos donde se spueran mas de 500 caracteres
+    MODIFY            : Recibir parametro Clob
+    @NAME:  delimitarCadena
+    @METHOD:  GET                 
+  */ 
+  UN_LISTA       IN CLOB,
+  UN_DELIMITADOR IN VARCHAR2 :=','
+  )
+  RETURN T_SPLITCL 
+  AS
+  MI_I     INTEGER:=0;
+  MI_POS   INTEGER:=0; 
+  MI_LISTA CLOB:=UN_LISTA;
+  MI_VALOR T_SPLITCL;
+  BEGIN
+    MI_POS:= INSTR(MI_LISTA, UN_DELIMITADOR,1,1);
+    IF MI_POS=0 THEN
+      MI_VALOR(1):=MI_LISTA;
+    ELSE
+      WHILE MI_POS<>0 LOOP
+        MI_I:=MI_I+1;
+        MI_VALOR(MI_I):=SUBSTR(MI_LISTA,1,MI_POS-1);
+        MI_LISTA :=SUBSTR(MI_LISTA, MI_POS+LENGTH(UN_DELIMITADOR),LENGTH(MI_LISTA));
+        MI_POS:=INSTR(MI_LISTA, UN_DELIMITADOR,1,1);
+        IF LENGTH(MI_LISTA)> 0 AND MI_POS=0 THEN
+          MI_VALOR(MI_I+1):=MI_LISTA;      
+        END IF;
+      END LOOP;
+    END IF;
+    RETURN MI_VALOR;
+END FC_SPLIT_CL;
+
+
+FUNCTION FC_REVISAR_ALERTAS 
+(UN_COMPANIA   VARCHAR2,
+ UN_FECHAHORA  DATE
+) 
+RETURN CLOB AS 
+  /*
+    NAME              : FC_REVISAR_ALERTAS 
+    AUTHORS           : SYSMAN  HENRY PUERTO V
+    AUTHOR MIGRACION  : HENRY PUERTO V
+    DATE MIGRADOR     : 19/06/2018
+    TIME              : 11:38 AM
+    MODIFIER          : HENRY PUERTO V
+    DATE MODIFIED     : 19/06/2018
+    TIME              : 14:01 PM
+    DESCRIPTION       : REALIZA LAS CONSULTAS DE ALERTA Y RETORNA UN JSON CON LOS CORREOS A ENVIAR
+    MODIFY            : Recibir parametroS VARCHAR2 Y DATE 
+    @NAME:  FC_REVISAR_ALERTAS 
+    @METHOD:  GET                 
+  */ 
+
+MI_RETORNO  CLOB:='';
+MI_STRSQL   CLOB;
+MI_RS       SYS_REFCURSOR;
+MI_RSM      SYS_REFCURSOR;
+MI_RSC      SYS_REFCURSOR;
+MI_MENSAJE  CLOB;
+MI_CORREO  VARCHAR2(3200);
+MI_NOMBRES  VARCHAR2(32000);
+MI_CODIGO  VARCHAR2(32);
+MI_I       NUMBER(10):=0;
+MI_FROM    VARCHAR(250);
+BEGIN
+  BEGIN
+    SELECT CORREO_SALIDA
+    INTO MI_FROM
+    FROM CORREOS_SALIDA
+    WHERE CODIGO='ALERTAS';
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    BEGIN
+        SELECT CORREO_SALIDA
+        INTO   MI_FROM
+        FROM   CORREOS_SALIDA
+        WHERE  CODIGO='STANDARD';
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+       MI_FROM:='';
+    END;
+  END; 
+FOR MI_RS IN (
+  SELECT CODIGO,
+         MENSAJE,
+         MODULO,
+         CARGO,
+         TEXTO
+  FROM  ALERTAS
+  WHERE COMPANIA = UN_COMPANIA
+    AND MOVIMIENTO NOT IN (0)
+    AND IND_ACTIVACION NOT IN(0)
+    AND NVL(ULTIMA_FECHA,SYSDATE)>=NVL(ULTIMA_FECHA,SYSDATE)+DIAS+HORAS/24+MINUTOS/24/60
+  )
+LOOP
+      MI_CODIGO:=MI_RS.CODIGO;
+      MI_STRSQL:=MI_RS.MENSAJE;
+      MI_STRSQL:=REPLACE(MI_STRSQL,':COMPANIA',CHR(39)||UN_COMPANIA||CHR(39));
+
+      MI_STRSQL:=REPLACE(MI_STRSQL,':FECHA','TO_DATE('||CHR(39)||TO_CHAR(UN_FECHAHORA,'DD/MM/YYYY HH:MI:SS')||CHR(39)||','||CHR(39)||'DD/MM/YYYY HH:MI:SS'||CHR(39)||')');
+      BEGIN
+          OPEN MI_RSM FOR MI_STRSQL;
+          LOOP
+               FETCH MI_RSM 
+               INTO  MI_MENSAJE;
+               EXIT WHEN MI_RSM%NOTFOUND;
+                   MI_CORREO:='';
+                   FOR MI_RSC IN 
+                   (
+                      SELECT EMAIL_CORPORATIVO,NOMBRECOMPLETO
+                        FROM PERSONAL
+                       WHERE COMPANIA = UN_COMPANIA
+                         AND ID_DE_CARGO=MI_RS.CARGO
+                         AND EMAIL_CORPORATIVO IS NOT NULL
+                    )
+                    LOOP
+                         IF LENGTH(MI_CORREO)>0 THEN
+                           MI_CORREO:=MI_CORREO||',';
+                           MI_NOMBRES:=MI_NOMBRES||',<BR>';
+                         END IF;
+                         MI_CORREO:=MI_CORREO||'"'||MI_RSC.EMAIL_CORPORATIVO||'"';
+                         MI_NOMBRES:=MI_NOMBRES||MI_RSC.NOMBRECOMPLETO;
+                     END LOOP;
+                     MI_CORREO:='['||MI_CORREO||']';
+                     IF MI_I>0 THEN
+                         MI_RETORNO:=MI_RETORNO||','||CHR(13);
+                     END IF;
+                     MI_I:=MI_I+1;
+                     MI_RETORNO:=MI_RETORNO||'{"SUBJECT":"ALERTAS No '||TO_CHAR(MI_I)||' FECHA '||TO_CHAR(SYSDATE,'DD/MM/RRRR HH24:MI:SS')||'  '||TRIM(NVL(MI_RS.TEXTO,''))||'",'||CHR(13)||'"MESSAGE":"'||'PARA '||MI_NOMBRES||'<BR>'||MI_MENSAJE||'",'||CHR(13)||'"TO":'||MI_CORREO||',"FROM":"'||MI_FROM||'"}';
+           END LOOP;
+        EXCEPTION WHEN OTHERS THEN
+                   MI_CORREO:='';
+                   FOR MI_RSC IN 
+                   (
+                      SELECT EMAIL_CORPORATIVO,NOMBRECOMPLETO
+                        FROM PERSONAL
+                       WHERE COMPANIA = UN_COMPANIA
+                         AND ID_DE_CARGO=MI_RS.CARGO
+                         AND EMAIL_CORPORATIVO IS NOT NULL
+                    )
+                    LOOP
+                         IF LENGTH(MI_CORREO)>0 THEN
+                           MI_CORREO:=MI_CORREO||',';
+                           MI_NOMBRES:=MI_NOMBRES||',<BR>';
+                         END IF;
+                         MI_CORREO:=MI_CORREO||'"'||MI_RSC.EMAIL_CORPORATIVO||'"';
+                         MI_NOMBRES:=MI_NOMBRES||MI_RSC.NOMBRECOMPLETO;
+                     END LOOP;
+                     MI_CORREO:='['||MI_CORREO||']';
+                     IF MI_I>0 THEN
+                         MI_RETORNO:=MI_RETORNO||','||CHR(13);
+                     END IF;
+                     MI_RETORNO:=MI_RETORNO||'{"SUBJECT":"ALERTAS No '||TO_CHAR(MI_I)||' FECHA '||TO_CHAR(SYSDATE,'DD/MM/RRRR HH24:MI:SS')||'  '||'INCONSISTENCIA EN LA ALERTA '||MI_CODIGO||' POR FAVOR INFORME AL ADMINISTRADOR DEL SISTEMA.'||'",'||CHR(13)||'"MESSAGE":"'||'PARA '||MI_NOMBRES||'<BR>EXISTE UNA INCONSISTENCIA EN LA ALERTA '||MI_CODIGO||' POR FAVOR INFORME AL ADMINISTRADOR DEL SISTEMA.'||'",'||CHR(13)||'"TO":'||MI_CORREO||',"FROM":,"'||MI_FROM||'"}';
+       END;
+END LOOP;
+  BEGIN
+-- ACTUALIZA LA ULTIMA FECHA DE LA ALERTA
+      UPDATE ALERTAS
+      SET ULTIMA_FECHA=SYSDATE
+      WHERE MOVIMIENTO NOT IN (0)
+        AND IND_ACTIVACION NOT IN(0)
+        AND NVL(ULTIMA_FECHA,SYSDATE)>=NVL(ULTIMA_FECHA,SYSDATE)+DIAS+HORAS/24+MINUTOS/24/60;
+  EXCEPTION WHEN OTHERS THEN
+     NULL;
+  END;
+  MI_MENSAJE:=FC_INDICADORES_BASICOS(UN_COMPANIA,UN_FECHAHORA);
+RETURN '['||MI_RETORNO||']';
+END FC_REVISAR_ALERTAS;
+
+--27/06/2018_1440@jreina
+FUNCTION FC_DETECTARCAMPOS
+
+/*
+    NAME              : FC_DETECTARCAMPOS
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : JULIO CESAR REINA PANCHE
+    DATE MIGRADOR     : 22/06/2018
+    TIME              : 10:21 AM  
+    SOURCE MODULE     : 
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    MODIFICATIONS     : 
+    DESCRIPTION       : RETORNA LOS CAMPOS DE UN SELECT CON SU RESPECTIVO TIPO DE DATO 
+      @NAME:    detectarCampos 
+      @METHOD:  GET
+*/  
+(
+    UN_SQL         CLOB
+)
+RETURN
+VARCHAR2
+AS
+  MI_I            NUMBER:=0;
+  MI_SRC_CUR      SYS_REFCURSOR;
+  MI_CURID        NUMBER;
+  MI_DESCTAB      DBMS_SQL.DESC_TAB;
+  MI_COLCNT       NUMBER;
+  MI_PRUEBA       NUMBER;
+  MI_PRUEBA2      VARCHAR2(250);
+  MI_RETORNO      PCK_SUBTIPOS.TI_VALORES;
+BEGIN   
+
+    -- CAMBIA PARAMETROS DE ENTRADA
+    OPEN MI_SRC_CUR FOR UN_SQL;
+
+    MI_CURID := DBMS_SQL.TO_CURSOR_NUMBER(MI_SRC_CUR);
+    DBMS_SQL.DESCRIBE_COLUMNS(MI_CURID, MI_COLCNT, MI_DESCTAB);
+    -- DEFINE COLUMNS:
+    FOR MI_I IN 1 .. MI_COLCNT LOOP
+        IF MI_DESCTAB(MI_I).COL_TYPE = 2 THEN
+          MI_RETORNO := MI_RETORNO || MI_DESCTAB(MI_I).COL_NAME || ',.COL.,' || 'N' || ',.REG.,'; --NUMBER
+        ELSIF MI_DESCTAB(MI_I).COL_TYPE = 231 THEN
+          MI_RETORNO := MI_RETORNO || MI_DESCTAB(MI_I).COL_NAME || ',.COL.,' || 'D' || ',.REG.,'; --FECHA
+        ELSIF MI_DESCTAB(MI_I).COL_TYPE = 1 THEN
+          MI_RETORNO := MI_RETORNO || MI_DESCTAB(MI_I).COL_NAME || ',.COL.,' || 'S' || ',.REG.,'; --VARCHAR2
+        ELSE
+          MI_RETORNO := MI_RETORNO || MI_DESCTAB(MI_I).COL_NAME || ',.COL.,' || 'S' || ',.REG.,'; --VARCHAR2    
+        END IF;
+    END LOOP;
+  DBMS_SQL.CLOSE_CURSOR(MI_CURID);
+  RETURN MI_RETORNO;
+END FC_DETECTARCAMPOS;
+
+PROCEDURE INSERTARINCONSISTENCIAPAR
+(
+    UN_PAR STRING
+) AS
+MI_MSGERROR     PCK_SUBTIPOS.TI_CLAVEVALOR;
+BEGIN
+    MI_MSGERROR(1).CLAVE := 'PARAMETRO';
+    MI_MSGERROR(1).VALOR := UN_PAR;
+    PCK_ERR_MSG.RAISE_WITH_MSG(
+                                UN_EXC_COD =>-20000,
+                                UN_ERROR_COD=>PCK_ERRORES.ERR_INICIARPARAMETROSOI,
+                                UN_TABLAERROR =>'PR_INICIARPARAMETROSPLANOSOI',
+                                UN_REEMPLAZOS => MI_MSGERROR
+      ); 
+END INSERTARINCONSISTENCIAPAR;
+
+FUNCTION FC_INDICADORES_BASICOS 
+(UN_COMPANIA   VARCHAR2,
+ UN_FECHAHORA  DATE
+) 
+RETURN CLOB AS 
+  /*
+    NAME              : FC_INDICADORES_BASICOS 
+    AUTHORS           : SYSMAN  HENRY PUERTO V
+    AUTHOR MIGRACION  : HENRY PUERTO V
+    DATE MIGRADOR     : 04/OCT/2018
+    TIME              : 4:35 PM
+    MODIFIER          : HENRY PUERTO V
+    DESCRIPTION       : REALIZA LAS CONSULTAS DE INDICADORES BASICOS Y DEVUELVE UN MENSAJE
+    MODIFY            : Recibir parametroS VARCHAR2 Y DATE 
+    @NAME:  FC_FC_INDICADORES_BASICOS 
+    @METHOD:  GET                 
+  */ 
+
+MI_RETORNO  CLOB:='';
+MI_STRSQL   CLOB;
+MI_RS       SYS_REFCURSOR;
+MI_RSM      SYS_REFCURSOR;
+MI_RSC      SYS_REFCURSOR;
+MI_VALOR    NUMBER (20,4);
+MI_EXISTE   VARCHAR2(1);
+MI_CODIGO   VARCHAR2(30);
+BEGIN
+
+FOR MI_RS IN (
+  SELECT COMPANIA,
+         CODIGO,
+         MOVIMIENTO,
+         PERIODICIDAD,
+         TIPO,
+     CONSULTA_SQL
+  FROM  IG_INDICADORES_BASICOS
+  WHERE COMPANIA = UN_COMPANIA
+    AND MOVIMIENTO NOT IN (0)
+    AND NVL(FECHA_ACTUALIZACION,SYSDATE)>=NVL(FECHA_ACTUALIZACION,SYSDATE)+DIAS+HORAS/24+MINUTOS/24/60
+  )
+LOOP
+      MI_CODIGO:=MI_RS.CODIGO;
+      MI_STRSQL:=MI_RS.CONSULTA_SQL;
+      MI_STRSQL:='SELECT * FROM ('||MI_STRSQL||') WHERE ROWNUM<=1';
+      MI_STRSQL:=REPLACE(MI_STRSQL,':COMPANIA',CHR(39)||UN_COMPANIA||CHR(39));
+      MI_STRSQL:=REPLACE(MI_STRSQL,':FECHA','TO_DATE('||CHR(39)||TO_CHAR(UN_FECHAHORA,'DD/MM/YYYY HH:MI:SS')||CHR(39)||','||CHR(39)||'DD/MM/YYYY HH:MI:SS'||CHR(39)||')');
+      BEGIN
+          OPEN MI_RSM FOR MI_STRSQL;
+          LOOP
+               FETCH MI_RSM 
+               INTO  MI_VALOR;
+               EXIT WHEN MI_RSM%NOTFOUND;
+                   BEGIN
+             SELECT  DISTINCT 'X'
+             INTO  MI_EXISTE
+             FROM  IG_DETALLE_INDICADORES_BASICOS
+             WHERE COMPANIA=MI_RS.COMPANIA
+             AND ANO= TO_NUMBER(TO_CHAR(UN_FECHAHORA,'YYYY'))
+             AND MES= CASE WHEN MI_RS.PERIODICIDAD='M' THEN TO_NUMBER(TO_CHAR(UN_FECHAHORA,'MM')) ELSE 0 END
+                 AND DIA= CASE WHEN MI_RS.PERIODICIDAD='D' THEN TO_NUMBER(TO_CHAR(UN_FECHAHORA,'DD'))  ELSE 0 END;
+
+                  UPDATE IG_DETALLE_INDICADORES_BASICOS
+            SET    VALOR=MI_VALOR
+             WHERE COMPANIA=MI_RS.COMPANIA
+             AND ANO= TO_NUMBER(TO_CHAR(UN_FECHAHORA,'YYYY'))
+             AND MES= CASE WHEN MI_RS.PERIODICIDAD='M' THEN TO_NUMBER(TO_CHAR(UN_FECHAHORA,'MM'))  ELSE 0 END
+                 AND DIA= CASE WHEN MI_RS.PERIODICIDAD='D' THEN TO_NUMBER(TO_CHAR(UN_FECHAHORA,'DD'))  ELSE 0 END;
+       EXCEPTION WHEN NO_DATA_FOUND THEN
+                  INSERT INTO IG_DETALLE_INDICADORES_BASICOS
+                         (
+                  COMPANIA,
+                ANO,
+                MES,
+                    DIA,
+              VALOR
+             )
+                         VALUES (MI_RS.COMPANIA,
+                     TO_NUMBER(TO_CHAR(UN_FECHAHORA,'YYYY')),
+                     CASE WHEN MI_RS.PERIODICIDAD='M' THEN TO_NUMBER(TO_CHAR(UN_FECHAHORA,'MM')) ELSE 0 END,
+                         CASE WHEN MI_RS.PERIODICIDAD='D' THEN TO_NUMBER(TO_CHAR(UN_FECHAHORA,'DD')) ELSE 0 END,
+                 MI_VALOR
+             );
+              END;
+      END LOOP;
+        EXCEPTION WHEN OTHERS THEN
+            RETURN 'CONSULTA DE INDICADOR '||MI_RS.CODIGO||' INCORRECTA. DEBE TRAER UN VALOR NUMERICO. POR FAVOR INFORMAR AL ADMINISTRADOR DEL SISTEMA: '||SQLERRM;
+    END;
+ END LOOP;
+  BEGIN
+-- ACTUALIZA LA ULTIMA FECHA DE LA ALERTA
+      UPDATE IG_INDICADORES_BASICOS
+      SET    FECHA_ACTUALIZACION=SYSDATE
+      WHERE  MOVIMIENTO NOT IN (0)
+        AND NVL(FECHA_ACTUALIZACION,SYSDATE)>=NVL(FECHA_ACTUALIZACION,SYSDATE)+DIAS+HORAS/24+MINUTOS/24/60;
+  EXCEPTION WHEN OTHERS THEN
+     NULL;
+  END;
+
+RETURN '';
+END FC_INDICADORES_BASICOS;
+
+FUNCTION FC_FECHAFINALHABILDIAS30
+/*
+    NAME              : FC_FECHAFINALHABIL
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : ANDREA PINEDA
+    DATE MIGRADOR     : 04/02/2019
+    TIME              : 4:32 PM
+    SOURCE MODULE     : 
+    MODIFIER          :
+    DATE MODIFIED     :
+    TIME              :
+    DESCRIPTION       : RETORNA LA FECHA RESULTADO DE TOMAR LA FECHA QUE INGRESA POR PARAMETRO Y SUMAR LOS DIAS HABILES VALIDOS SIN CONTAR EL DIA 31 DEL MES COMO DIA HABIL                        
+    @NAME:  retornarFechaMasDiasHabiles
+    @METHOD:  GET
+  */
+  (
+    UN_COMPANIA IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_FECHA    IN DATE,
+    UN_DIAS     IN PCK_SUBTIPOS.TI_ENTERO
+  )
+RETURN DATE
+AS
+    MI_NRODIA     PCK_SUBTIPOS.TI_ENTERO;
+    MI_FECHAHABIL DATE;
+    MI_CONTADOR   NUMBER;
+    MI_I          PCK_SUBTIPOS.TI_ENTERO:= 0;
+    MI_EXISTE     VARCHAR2(1 CHAR);
+    MI_MES        NUMBER;
+    MI_ANIO       NUMBER;
+BEGIN
+    MI_FECHAHABIL := UN_FECHA;
+    IF UN_FECHA IS NULL OR UN_DIAS = 0 THEN    
+        RETURN NULL;
+    END IF;
+    WHILE MI_I <= UN_DIAS LOOP
+        MI_NRODIA := PCK_SYSMAN_UTL.FC_WEEKDAY(MI_FECHAHABIL);
+        IF MI_NRODIA <> 1 AND MI_NRODIA <> 7 THEN
+            BEGIN
+                SELECT  'X'
+                INTO    MI_EXISTE
+                FROM    FESTIVOS
+                WHERE   COMPANIA = UN_COMPANIA
+                  AND   TO_CHAR(ID_DE_FESTIVO,'YYYYMMDD') = TO_CHAR(MI_FECHAHABIL, 'YYYYMMDD');
+            EXCEPTION WHEN NO_DATA_FOUND THEN
+               IF NOT PCK_SYSMAN_UTL.FC_DIA(MI_FECHAHABIL) = 31 THEN
+                MI_I := MI_I + 1;
+               END IF;
+            END;
+        END IF;
+        IF MI_I < UN_DIAS THEN
+            MI_FECHAHABIL := MI_FECHAHABIL +1;
+        END IF;
+    END LOOP;
+
+    RETURN MI_FECHAHABIL;
+END FC_FECHAFINALHABILDIAS30;
+
+FUNCTION FC_DIASFEBREROYMESCOMERCIAL
+/*
+    NAME              : FC_DIASFEBREROYMESCOMERCIAL
+    AUTHORS           : SYSMAN  SAS
+    AUTHOR MIGRACION  : ANDREA CAROLINA PINEDA OVALLE
+    DATE MIGRADOR     : 07/03/2019
+    TIME              : 03:19 AM
+    SOURCE MODULE     : 
+    MODIFIER          : 
+    DATE MODIFIED     : 
+    TIME              : 
+    DESCRIPTION       : RETORNA EL NÚMERO DE DIAS COMERCIALES QUE EXISTEN ENTRE DOS FECHAS, TOMANDO TODOS LOS MESES DE 30 DÍAS EXCEPTO FEBRERO QUE SE TOMAN LOS DIAS QUE TENGA DICHO MES
+  */
+  (
+  UN_FECHAINI    IN DATE,
+    UN_FECHAFIN    IN DATE
+  )
+RETURN PCK_SUBTIPOS.TI_ENTERO
+AS
+    MI_FECHA      DATE;
+    MI_I          PCK_SUBTIPOS.TI_ENTERO:= 0;
+BEGIN
+    MI_FECHA := UN_FECHAINI;
+    IF UN_FECHAINI IS NULL OR UN_FECHAFIN IS NULL THEN    
+        RETURN NULL;
+    END IF;
+    WHILE MI_FECHA <= UN_FECHAFIN LOOP
+     IF NOT PCK_SYSMAN_UTL.FC_DIA(MI_FECHA) = 31 THEN
+    MI_I := MI_I + 1;
+     END IF;
+
+        MI_FECHA := MI_FECHA +1;
+    END LOOP;
+
+    RETURN MI_I;
+END FC_DIASFEBREROYMESCOMERCIAL;
+
+FUNCTION FC_NUMERO_A_FECHA
+  /*
+    NAME              : FC_NUMERO_A_FECHA 
+    AUTHORS           : SYSMAN LTDA
+    AUTHOR            : SEBASTIAN CARDENAS
+    DATE              : 01/10/2020
+    TIME              : 02:00 PM
+    DESCRIPTION       : 
+
+    @NAME:  evaluaNumeroFecha
+    @METHOD:  GET                          
+  */
+(
+UN_NUMERO IN NUMBER
+) 
+RETURN VARCHAR2 IS
+MI_RETORNO VARCHAR2(11 CHAR);
+
+BEGIN
+
+SELECT TO_CHAR(UN_NUMERO + TO_DATE('01011900') - 2,'DD/MM/YYYY') INTO MI_RETORNO FROM DUAL;
+
+RETURN MI_RETORNO;
+END FC_NUMERO_A_FECHA;
+
+
+FUNCTION FC_VALIDARPARAMETRO
+/*
+    NAME              : FC_VALIDARPARAMETRO   
+    AUTHORS           : STEFANINI SYSMAN  SAS
+    AUTHOR MIGRACION  : SANDRA MILENA DAZA LEGUIZAMON
+    DATE MIGRADOR     : 23/07/2021
+    TIME              : 10:00 AM
+    DESCRIPTION       : FUNCION QUE VALIDA CONFIGURACION DEL PARAMETRO 
+    PARAMETROS        : UN_COMPANIA   => COMPANIA DE SESION
+                        UN_PARAMETRO  => PARÁMETRO A CONSULTAR, VALIDAR Y EN CASO DE NO ESTAR NULL RETORNAR.
+                        UN_MODULO     => CODIGO DEL MODULO AL CUAL PERTENECE EL PARAMETRO 
+  */
+(
+    UN_COMPANIA   IN  PCK_SUBTIPOS.TI_COMPANIA,
+    UN_PARAMETRO  IN  PARAMETRO.VALOR%TYPE, 
+    UN_MODULO     IN  PCK_SUBTIPOS.TI_MODULO  
+)
+RETURN VARCHAR2 AS 
+    MI_PARAMETRO  PARAMETRO.VALOR%TYPE;
+    MI_REEMPLAZOS PCK_SUBTIPOS.TI_CLAVEVALOR;
+    MI_TABLA      PCK_SUBTIPOS.TI_TABLA;
+BEGIN
+    MI_PARAMETRO    :=  PCK_SYSMAN_UTL.FC_PAR(UN_COMPANIA  => UN_COMPANIA
+                                             ,UN_MODULO    => UN_MODULO
+                                             ,UN_FECHA_PAR => SYSDATE
+                                             ,UN_NOMBRE    => UN_PARAMETRO);
+    BEGIN
+        MI_TABLA := 'PARAMETRO';
+        IF MI_PARAMETRO IS NULL THEN
+            BEGIN
+                RAISE PCK_EXCEPCIONES.EXC_GENERAL;
+            EXCEPTION WHEN PCK_EXCEPCIONES.EXC_GENERAL THEN
+                MI_REEMPLAZOS(0).CLAVE := 'MENSAJE';
+                MI_REEMPLAZOS(0).VALOR :=  'El parámetro ' || UN_PARAMETRO || ' no se encuentra configurado, por favor verificar para retomar el proceso';
+                PCK_ERR_MSG.RAISE_WITH_MSG(UN_EXC_COD   => SQLCODE
+                                  ,UN_ERROR_COD => PCK_ERRORES.ERRR_PERSONALIZADO
+                                  ,UN_TABLAERROR => MI_TABLA
+                                  ,UN_REEMPLAZOS => MI_REEMPLAZOS);
+            END;
+        END IF;
+    END;    
+  RETURN MI_PARAMETRO;
+END FC_VALIDARPARAMETRO;
+
+
+FUNCTION FC_CONSULTARMODELOANO
+/*
+    @NAME:  FC_CONSULTARMODELOANO
+    @METHOD:  GET  
+*/    
+  (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_ANO        IN PCK_SUBTIPOS.TI_ANIO 
+  )
+RETURN NUMBER
+AS
+  MI_VLRETORNO  NUMBER(1,0) :=  0;
+BEGIN
+  SELECT MODELO
+  INTO   MI_VLRETORNO 
+  FROM   ANO
+  WHERE  COMPANIA = UN_COMPANIA
+    AND  NUMERO = UN_ANO;
+
+  RETURN NVL(MI_VLRETORNO,0);
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    RETURN NVL(MI_VLRETORNO,0) ;
+END FC_CONSULTARMODELOANO;
+
+FUNCTION FC_APLICACIONCUENTA
+/*
+    @NAME:  FC_APLICACIONCUENTA
+    @METHOD:  GET  
+*/    
+  (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_ANO        IN PCK_SUBTIPOS.TI_ANIO,
+    UN_CODIGO     IN CLASECLASIFICADOR.CODIGO%TYPE,
+    UN_CUENTA     IN PLAN_PRESUPUESTAL.CODIGO%TYPE
+
+  )
+RETURN NUMBER
+AS
+  MI_VLRETORNO  NUMBER(1,0) :=  0;
+  MI_NATURALEZA VARCHAR2(1) :=  '';
+BEGIN
+
+ /* IF UN_CODIGO =  '010' THEN
+    BEGIN
+       SELECT CLC.APLICACION
+       INTO MI_VLRETORNO
+       FROM CLASECLASIFICADOR CLC
+       WHERE CLC.COMPANIA   =  UN_COMPANIA
+          AND CLC.ANO        =  UN_ANO
+          AND CLC.CODIGO     =  UN_CODIGO ;
+       EXCEPTION WHEN NO_DATA_FOUND THEN
+        MI_VLRETORNO := NVL(MI_VLRETORNO,0) ;
+     END;
+     IF   MI_VLRETORNO =  2 THEN
+        BEGIN  
+           SELECT  REGALIAS
+           INTO MI_VLRETORNO
+           FROM PLAN_PRESUPUESTAL
+           WHERE COMPANIA = UN_COMPANIA
+             AND ANO =  UN_ANO
+             AND CODIGO =  UN_CUENTA;
+           EXCEPTION WHEN NO_DATA_FOUND THEN
+             RETURN NVL(MI_VLRETORNO,0) ;
+         END;
+         IF NOT NVL(MI_VLRETORNO,0)  = 0 THEN 
+            MI_VLRETORNO :=  2;
+         END IF;
+     END IF ;
+ ELSE
+    BEGIN
+       SELECT CLC.APLICACION
+       INTO MI_VLRETORNO
+       FROM CLASECLASIFICADOR CLC
+       WHERE CLC.COMPANIA   =  UN_COMPANIA
+          AND CLC.ANO        =  UN_ANO
+          AND CLC.CODIGO     =  UN_CODIGO ;
+       EXCEPTION WHEN NO_DATA_FOUND THEN
+        MI_VLRETORNO := NVL(MI_VLRETORNO,0) ;
+     END;
+  END IF; 
+  */
+  -- ESTA SECCION DE DECICIONES SE IMPLEMENTA PARA PODER SER USADA SIN CUENTA Y SI CON NATURALEZA, 
+  -- YA QUE A VECES NO SE TIENE LA CUENTA Y SE USA EL CAMPO UN_CUENTA POR SER TEXTO.
+  IF(UN_CUENTA = 'D') THEN
+    MI_NATURALEZA := 'D' ;
+  ELSIF (UN_CUENTA = 'C') THEN
+    MI_NATURALEZA := 'C' ;
+  ELSE
+   BEGIN
+      SELECT NATURALEZA 
+      INTO MI_NATURALEZA
+      FROM PLAN_PRESUPUESTAL 
+      WHERE COMPANIA  = UN_COMPANIA
+        AND ANO       =  UN_ANO
+        AND CODIGO    =  UN_CUENTA ;
+    
+       EXCEPTION WHEN NO_DATA_FOUND THEN
+              MI_NATURALEZA := 'D' ;
+         END;
+  END IF;
+    BEGIN 
+    SELECT TO_NUMBER(CASE WHEN MI_NATURALEZA = 'D' THEN APLICACION ELSE APLICACIONINGRESOS END)
+    INTO MI_VLRETORNO
+    FROM CLASECLASIFICADOR 
+    WHERE COMPANIA = UN_COMPANIA 
+      AND ANO = UN_ANO 
+      AND CODIGO = UN_CODIGO ;
+     EXCEPTION WHEN NO_DATA_FOUND THEN
+       MI_VLRETORNO := 0;
+     END; 
+  RETURN NVL(MI_VLRETORNO,0);
+END FC_APLICACIONCUENTA;
+
+
+FUNCTION FC_CUENTACLASIFICADOR
+/*
+    @NAME:  FC_CUENTACLASIFICADOR
+    @METHOD:  GET  
+*/    
+  (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_ANO        IN PCK_SUBTIPOS.TI_ANIO,
+    UN_CUENTA     IN PCK_SUBTIPOS.TI_CODIGOCONTA,
+    UN_CLASE      IN VARCHAR2
+  )
+RETURN VARCHAR2
+AS
+  MI_VLRETORNO  VARCHAR2(60) :=  '';
+BEGIN
+
+SELECT PL.TIPOCLASIFICADOR
+INTO MI_VLRETORNO
+FROM PLAN_PRESUPUESTAL PL
+LEFT JOIN CLASECLASIFICADOR CLC
+ ON  PL.COMPANIA  = CLC.COMPANIA
+ AND PL.ANO = CLC.ANO
+ AND PL.CLASECLASIFICADOR = CLC.CODIGO
+WHERE PL.COMPANIA         =  UN_COMPANIA
+  AND PL.ANO              =  UN_ANO
+  AND PL.CODIGO           =  UN_CUENTA
+  AND PL.CLASECLASIFICADOR =  UN_CLASE;
+
+  RETURN MI_VLRETORNO;
+  EXCEPTION WHEN NO_DATA_FOUND THEN
+    RETURN MI_VLRETORNO ;
+END FC_CUENTACLASIFICADOR;
+
+FUNCTION FC_VALOR_TIPOS 
+/*
+    @NAME:  FC_VALOR_TIPOS
+    @METHOD:  GET  
+*/ 
+  (
+    UN_CADENA IN VARCHAR2,
+    UN_CODIGO IN VARCHAR2
+  ) 
+RETURN VARCHAR2 
+AS
+  MI_STR      PCK_SUBTIPOS.TI_STRSQL;
+  MI_RTA      PCK_SUBTIPOS.TI_STRSQL;
+  BEGIN
+    MI_STR := '  SELECT ' || UN_CADENA || '  FROM TIPOS WHERE ID = ' || UN_CODIGO;
+    EXECUTE IMMEDIATE MI_STR  INTO MI_RTA;
+    RETURN MI_RTA;
+  EXCEPTION WHEN OTHERS THEN
+  RETURN '';
+END FC_VALOR_TIPOS;
+
+PROCEDURE PR_DISABLE_KEY_IN_DELETE  
+/*
+    NAME: PR_DISABLE_KEY_IN_DELETE
+    AUTHORS: PAOLA VEGA 
+    DATE_CREATOR: 04/07/2023
+    TIME: 04/07/2023 3:00 PM
+    DESCRIPTION: PROCEDIMIENTO PARA DESABILITAR LAS LLAVES FORANEAS 
+    @NAME:  PR_DISABLE_KEY_IN_DELETE   
+*/ 
+  (
+    UN_TABLE_NAME IN VARCHAR2
+  ) 
+  AS
+    MI_USER_DB   VARCHAR2(100 CHAR);
+    MI_SQL       VARCHAR2(100 CHAR);
+    MI_RTA       VARCHAR2(100 CHAR);
+BEGIN
+    BEGIN
+        SELECT
+            USER
+        INTO MI_USER_DB
+        FROM
+            DUAL;
+
+    END;
+    /*
+    FOR RS IN (
+        SELECT DISTINCT
+            A.CONSTRAINT_NAME LLAVE
+        FROM
+            ALL_CONSTRAINTS    A
+            JOIN ALL_CONS_COLUMNS   B ON A.OWNER = B.OWNER
+                                       AND A.CONSTRAINT_NAME = B.CONSTRAINT_NAME
+        WHERE
+            A.CONSTRAINT_TYPE = 'R'
+            AND A.R_OWNER = MI_USER_DB -- Propietario de la tabla referenciada 
+            AND B.TABLE_NAME = UN_TABLE_NAME
+    ) -- Nombre de la tabla en la que deseas consultar las foreign keys
+     LOOP BEGIN
+        MI_SQL := 'ALTER TABLE "'
+                  || UPPER(UN_TABLE_NAME)
+                  || '" DISABLE CONSTRAINT "'
+                  || UPPER(RS.LLAVE)
+                  || '" ';
+    EXECUTE IMMEDIATE MI_SQL;
+   
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE PCK_EXCEPCIONES.EXC_CONTABILIDAD;--CAMBIAR
+    END;
+    END LOOP SALIDA;*/
+END PR_DISABLE_KEY_IN_DELETE;
+
+PROCEDURE PR_ENABLE_KEY_IN_DELETE  
+/*
+    NAME:  PR_ENABLE_KEY_IN_DELETE 
+    AUTHORS: PAOLA VEGA 
+    DATE_CREATOR: 04/07/2023
+    TIME: 04/07/2023 3:00 PM
+    DESCRIPTION: PROCEDIMIENTO PARA HABILITAR LAS LLAVES FORANEAS 
+    @NAME:  PR_ENABLE_KEY_IN_DELETE
+*/ 
+  (
+    UN_TABLE_NAME IN VARCHAR2
+  ) 
+ AS
+    MI_USER_DB   VARCHAR2(100 CHAR);
+    MI_SQL       VARCHAR2(100 CHAR);
+    MI_RTA       VARCHAR2(100 CHAR);
+BEGIN
+    BEGIN
+        SELECT
+            USER
+        INTO MI_USER_DB
+        FROM
+            DUAL;
+
+    END;
+   /* FOR RS IN (
+        SELECT DISTINCT
+            A.CONSTRAINT_NAME LLAVE
+        FROM
+            ALL_CONSTRAINTS    A
+            JOIN ALL_CONS_COLUMNS   B ON A.OWNER = B.OWNER
+                                       AND A.CONSTRAINT_NAME = B.CONSTRAINT_NAME
+        WHERE
+            A.CONSTRAINT_TYPE = 'R'
+            AND A.R_OWNER = MI_USER_DB -- Propietario de la tabla referenciada 
+            AND B.TABLE_NAME = UN_TABLE_NAME
+    ) -- Nombre de la tabla en la que deseas consultar las foreign keys
+     LOOP BEGIN
+        MI_SQL := 'ALTER TABLE "'
+                  || UPPER(UN_TABLE_NAME)
+                  || '" ENABLE CONSTRAINT "'
+                  || UPPER(RS.LLAVE)
+                  || '" ';
+    EXECUTE IMMEDIATE MI_SQL;
+    --COMMIT;
+      
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE PCK_EXCEPCIONES.EXC_CONTABILIDAD;--CAMBIAR
+    END;
+    END LOOP SALIDA;
+    */
+END PR_ENABLE_KEY_IN_DELETE;
+
+FUNCTION FC_ROUND_100
+/*
+
+-- ========================================================================= 
+-- AUTHOR: CPEREZ                     
+-- CREATE DATE: 20/02/2024 11:42PM
+-- decreto 1990 del 2016 ticket 7740669 caso 2
+-- 1. el monto del ingreso base de cotizacion correspondiente a cada cotizante, deberá aproximarse al peso superior  más cercano 
+-- 2.el valor  de los aportes liquidados por  cada cotizante y el valor de los interes deberá aproximarse al  multiplo de 100 superior  más cercano
+-- funcion permite tomar  un valor con 16 decimales  y convertirlo al 100 mas cercano  
+-- ejemplo APORTEEMPLEADOSALUD da  500000 cerrados  lo deja asi, pero si da 500001 lo debe redondear a 500100   o cuando da 500000.1 lo debe redondear a  500100
+-- -(16+3)-1 los 16 son  la cantidad de caracteres del numeric lo dejo asi por si algun dia hay que cambiarlo  y el 3 es  toma con  el punto  y 2 caraceres menos  100. el -1 es obligatorio 
+
+declare @numero numeric(38,16) =  3250000
+SELECT dbo.FC_ROUND_100(@numero)
+retorno = 3250100.0000000000000000
+si no da esto no esta funcionando 
+
+-- ========================================================================= 
+
+*/
+(
+   UN_VALOR           IN  PCK_SUBTIPOS.TI_DOBLE,
+   UN_PARAMETRO       IN  PARAMETRO.VALOR%TYPE,
+   UN_GL_SUMARSS1990  IN  NUMBER,
+   UN_GL_RAPORTES1990 IN  NUMBER
+)
+RETURN NUMBER
+IS 
+   MI_VLRETORNO       NUMBER(38,16);
+   MI_CONTADECIMALES  NUMBER;
+   MI_VALORVAR        VARCHAR2(100);
+   MI_CONTAVALOR      NUMBER;
+BEGIN 
+    --Si el parametro es en su valor en SI  Quiere decir que realiza el nuevo proceso si no es por que va a calcular con el antiguo redondeo
+    IF UN_PARAMETRO <> 'SI' THEN 
+        MI_VLRETORNO := PCK_SYSMAN_UTL.FC_ROUND(UN_VALOR + UN_GL_SUMARSS1990,UN_GL_RAPORTES1990);
+        RETURN MI_VLRETORNO;
+    END IF;
+    
+    MI_CONTADECIMALES:= 16 ;
+    MI_VALORVAR      :=  TO_CHAR(UN_VALOR,'99999999999999999999.9999999999999999' );
+    MI_CONTAVALOR    :=  LENGTH(MI_VALORVAR) - (MI_CONTADECIMALES + 3 - 1);
+    MI_VALORVAR      :=  SUBSTR(MI_VALORVAR, MI_CONTAVALOR , MI_CONTADECIMALES + 3);
+    MI_VLRETORNO     :=  TO_NUMBER(MI_VALORVAR);
+    
+    IF UN_VALOR < 0 THEN
+        MI_VLRETORNO := -MI_VLRETORNO;
+    END IF;
+    
+    IF UN_VALOR < 0 THEN
+        MI_VLRETORNO := 100 + MI_VLRETORNO;
+    ELSE
+        MI_VLRETORNO := 100 - MI_VLRETORNO;
+    END IF;
+    
+    IF MI_VLRETORNO < 100 THEN
+        IF UN_VALOR < 0 THEN
+            MI_VLRETORNO := UN_VALOR - MI_VLRETORNO;
+        ELSE
+            MI_VLRETORNO := UN_VALOR + MI_VLRETORNO;
+        END IF;
+    ELSE
+        MI_VLRETORNO := UN_VALOR;
+    END IF;
+
+    RETURN MI_VLRETORNO;
+END;
+
+FUNCTION FC_RETORNAR_LISTA
+(
+   UN_LISTA         IN VARCHAR2,
+   UN_DELIMITADOR   IN  VARCHAR2,
+   UN_INDICE_1      IN  NUMBER,
+   UN_INDICE_2      IN  NUMBER,
+   UN_INDICE_3      IN  NUMBER, 
+   UN_INDICE_4      IN  NUMBER DEFAULT 0,
+   UN_INDICE_5      IN  NUMBER DEFAULT 0,
+   UN_INDICE_6      IN  NUMBER DEFAULT 0
+)
+RETURN VARCHAR2
+IS
+       MI_CAMPOS      VARCHAR2(3000);
+       MI_STR         VARCHAR2(3000);
+       MI_INDICE_2    NUMBER;
+       MI_INDICE_3    NUMBER;
+BEGIN
+        --'(.reg.2024.reg.,.reg.CRP.reg.,.reg.01.reg.,.reg.2024000007.reg.,.reg.500000.reg.)'
+        -- ANO   1,1,9
+        -- TIPO  1,3,8
+        -- CONS  1,5,7
+        -- COMP  1,7,15
+        -- VALR  1,9,?
+        
+        IF UN_INDICE_5 <> 0 THEN 
+            MI_INDICE_2 := (INSTR(''|| UN_LISTA ||'', ''||UN_DELIMITADOR||'', 1, UN_INDICE_6));
+            MI_INDICE_3 := (INSTR(''|| UN_LISTA ||'', ''||UN_DELIMITADOR||'', 1, ((UN_INDICE_6)+1))) - MI_INDICE_2;
+            IF (INSTR(''|| UN_LISTA ||'', ''||UN_DELIMITADOR||'', -1)) = MI_INDICE_2 THEN 
+                RETURN 'X'; --ULTIMO REGISTRO 
+            END IF;
+            MI_STR := 'select substr('''|| UN_LISTA ||''','||MI_INDICE_2||','||MI_INDICE_3||') from dual ';
+        ELSE 
+            IF UN_INDICE_4 <> 0 THEN 
+                MI_INDICE_2 := (INSTR(''|| UN_LISTA ||'', ',', -1)) + 6;
+                MI_INDICE_3 := ((INSTR(''|| UN_LISTA ||'', ''||UN_DELIMITADOR||'', -1)) - MI_INDICE_2);
+                MI_STR := 'SELECT  substr('''|| UN_LISTA ||''','||MI_INDICE_2||','||MI_INDICE_3||') from dual '; 
+            ELSE 
+                 MI_INDICE_2 := UN_INDICE_2;
+                 MI_INDICE_3 := UN_INDICE_3;
+                 MI_STR := 'SELECT  REPLACE(substr('''|| UN_LISTA ||''',instr('''|| UN_LISTA ||''','''||UN_DELIMITADOR||''','||UN_INDICE_1||','||MI_INDICE_2||'),'||MI_INDICE_3||'),'''||UN_DELIMITADOR||''','''') from dual '; 
+            END IF;
+        
+        END IF;
+        
+        
+        
+        EXECUTE IMMEDIATE MI_STR  INTO MI_CAMPOS;
+        --RETURN 'INICIAL '||MI_INDICE_2||' -- FINAL'||MI_INDICE_3; 
+        RETURN MI_CAMPOS;
+END;	
+
+
+FUNCTION FC_NITFORMATO
+  /*
+    NAME              : FC_NITFORMATO
+    AUTHORS           : CRISTIAN SUESCUN
+    DATE MIGRADOR     : 05/09/2024
+    TIME              : 12:45 AM
+    SOURCE MODULE     : GENERAL
+    TICKET            : 7751488
+    DESCRIPTION       : DA FORMATO AL NIT DE LA ENTIDAD QUE NO MANEJE EL MODULO DE CONTABILIDAD DE MANERA DIRECTA
+                        (27/03/2017) : En la consulta a la tabla COMPANIA se adiciono un filtro para que solo 
+                        muestre el registro con la primer coindidencia.
+    @NAME:  formatearNitEntidad
+    @METHOD:  GET  
+  */
+  (
+    UN_COMPANIA   IN PCK_SUBTIPOS.TI_COMPANIA,
+    UN_OPCION     IN PCK_SUBTIPOS.TI_ENTERO
+  )
+RETURN VARCHAR2 
+AS 
+  MI_NIT        PARAMETROS_DE_ENTRADA.NIT%TYPE;
+  MI_NITRETORNO PARAMETROS_DE_ENTRADA.NIT%TYPE;
+  MI_POS        PCK_SUBTIPOS.TI_ENTERO;
+  MI_CONTADOR   PCK_SUBTIPOS.TI_ENTERO_LARGO :=1;
+BEGIN
+  BEGIN
+  SELECT NITCOMPANIA
+  INTO   MI_NIT
+  FROM   COMPANIA
+  WHERE  CODIGO = UN_COMPANIA
+    AND ROWNUM   <= 1;
+      
+
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+      RETURN MI_NITRETORNO;
+  END;
+
+  MI_POS := INSTR(MI_NIT, '-');
+
+  IF UN_OPCION = 1 THEN
+    IF MI_POS > 0 THEN
+      MI_NITRETORNO := SUBSTR(MI_NIT, MI_POS+1, 1);
+    ELSE
+      MI_NITRETORNO := REPLACE(MI_NITRETORNO, '.', '');
+      MI_NITRETORNO := FC_DCH(MI_NITRETORNO);
+    END IF;
+  ELSIF UN_OPCION = 31 THEN
+    IF MI_POS > 0 THEN
+      MI_NITRETORNO := SUBSTR(MI_NIT, 1,MI_POS-1);
+    ELSE
+      MI_NITRETORNO := MI_NIT;
+    END IF;
+    MI_NITRETORNO := REPLACE(MI_NITRETORNO, '.', '');
+  ELSIF UN_OPCION = 311 THEN
+    IF MI_POS > 0 THEN
+      MI_NITRETORNO := SUBSTR(MI_NIT, 1,MI_POS-1);
+    ELSE
+      MI_NITRETORNO := MI_NIT;
+    END IF;    
+  ELSIF UN_OPCION = 312 THEN
+    IF MI_POS > 0 THEN
+      MI_NITRETORNO := SUBSTR(MI_NIT, 1,MI_POS-1);
+    ELSE
+      MI_NITRETORNO := MI_NIT;
+    END IF;
+    MI_NITRETORNO := REPLACE(MI_NITRETORNO, '.', '');
+    MI_NIT        :=MI_NITRETORNO;
+    MI_NITRETORNO := '';
+
+    WHILE MI_CONTADOR <= LENGTH(MI_NIT) LOOP
+      MI_NITRETORNO := MI_NITRETORNO || SUBSTR(MI_NIT, MI_CONTADOR,1) || ' ';  
+      MI_CONTADOR   := MI_CONTADOR + 1;
+    END LOOP;
+
+  ELSE
+    MI_NITRETORNO := ' ';
+  END IF;
+
+  RETURN MI_NITRETORNO;
+END FC_NITFORMATO;
+
+FUNCTION FC_QUITAR_REPETIDOS(
+UN_LISTA IN CLOB
+) 
+RETURN CLOB
+IS
+    MI_RESULTADO CLOB := EMPTY_CLOB();
+    MI_TEMP CLOB;
+    MI_INICIO NUMBER := 1;
+    MI_FINAL NUMBER;
+    MI_VALOR VARCHAR2(4000);
+BEGIN
+
+  LOOP
+        MI_FINAL := INSTR(UN_LISTA, ',', MI_INICIO);
+        IF MI_FINAL > 0 THEN
+            MI_VALOR := TRIM(SUBSTR(UN_LISTA, MI_INICIO, MI_FINAL - MI_INICIO));
+            INSERT INTO temp_valores (valor) VALUES (MI_VALOR);
+            MI_INICIO := MI_FINAL + LENGTH(',');
+        ELSE
+            MI_VALOR := TRIM(SUBSTR(UN_LISTA, MI_INICIO));
+            INSERT INTO temp_valores (valor) VALUES (MI_VALOR);
+            EXIT;
+        END IF;
+    END LOOP;
+    
+    -- Construir la cadena de resultado a partir de la tabla temporal
+    FOR RS IN (SELECT DISTINCT(valor) FROM temp_valores ORDER BY valor) LOOP
+        MI_RESULTADO := MI_RESULTADO || RS.valor || ',';
+    END LOOP;
+
+    -- Eliminar la última coma si existe
+    IF DBMS_LOB.GETLENGTH(MI_RESULTADO) > 0 THEN
+        MI_RESULTADO := DBMS_LOB.SUBSTR(MI_RESULTADO, DBMS_LOB.GETLENGTH(MI_RESULTADO) - 1, 1);
+    END IF;
+
+    EXECUTE IMMEDIATE 'TRUNCATE TABLE temp_valores';
+    RETURN MI_RESULTADO;
+END;
+FUNCTION FC_CLOB_EXPRESION(
+   UN_TEXTO IN CLOB
+) RETURN CLOB IS
+   MI_RESULTADO CLOB := EMPTY_CLOB();
+   MI_MAX CONSTANT PLS_INTEGER := 500;
+BEGIN
+   IF UN_TEXTO IS NOT NULL AND LENGTH(UN_TEXTO) >= MI_MAX THEN
+      FOR i IN 0 .. TRUNC((LENGTH(UN_TEXTO) - 1) / MI_MAX) LOOP
+         MI_RESULTADO := MI_RESULTADO || 'TO_CLOB(''' || REPLACE(DBMS_LOB.SUBSTR(UN_TEXTO, MI_MAX, i * MI_MAX + 1), '''', '''''') || ''') || ';
+      END LOOP;
+      MI_RESULTADO := RTRIM(MI_RESULTADO, ' || ');
+   ELSIF UN_TEXTO IS NOT NULL THEN
+      MI_RESULTADO := 'TO_CLOB(''' || REPLACE(UN_TEXTO, '''', '''''') || ''')';
+   ELSE
+      MI_RESULTADO := 'TO_CLOB('''')';
+   END IF;
+
+   RETURN MI_RESULTADO;
+END;
+
+FUNCTION FC_CONSULTARCONSULTA
+/*
+    --NAME:  FC_CONSULTARCONSULTA
+    --METHOD:  GET
+    --limita el numero de registros de las consultas antes de imprimir 
+    --y determina si se imprime en csv o simplmenete no se imprime 
+*/
+(
+    UN_NOMBRE   IN VARCHAR2,
+    UN_CONSULTA IN CLOB
+)
+RETURN NUMBER
+IS
+    MI_VLRETORNO NUMBER := 0;
+    MI_NROROWS   NUMBER := 0;
+    MI_NROLIMITE NUMBER;    -- R1 < 100 registros 
+    MI_LIMITETOTAL NUMBER := 100000; -- nisiquiera en CSV (valor por definir)
+BEGIN
+    BEGIN
+        EXECUTE IMMEDIATE 'SELECT COUNT(*) FROM (' || UN_CONSULTA || ')' INTO MI_NROROWS;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            MI_NROROWS := 0;
+        WHEN OTHERS THEN
+            MI_NROROWS := 0;
+    END;
+    
+    BEGIN
+      SELECT REGISTROS
+      INTO   MI_NROLIMITE
+      FROM   LIMITE_CONSULTAS
+      WHERE  UPPER(TRIM(INFORME)) = UPPER(TRIM(UN_NOMBRE));
+    EXCEPTION WHEN NO_DATA_FOUND THEN
+        IF MI_NROROWS > MI_LIMITETOTAL THEN
+            MI_VLRETORNO := 2; -- muestra un mensjae diciendo que son muchos registros 
+        END IF; 
+        RETURN NVL(MI_VLRETORNO, 0);
+    END;
+    
+    IF MI_NROROWS > MI_LIMITETOTAL THEN
+         MI_VLRETORNO := 2; -- muestra un mensjae diciendo que son muchos registros 
+    ELSE
+        IF MI_NROROWS > MI_NROLIMITE THEN 
+            MI_VLRETORNO := 1;  -- automaticamnente cambia a CSV 
+        ELSE 
+            MI_VLRETORNO := 0; -- tal cual no hay problema 
+        END IF;
+    END IF;
+
+    RETURN NVL(MI_VLRETORNO, 0);
+    
+END FC_CONSULTARCONSULTA;
+
+FUNCTION FC_EDAD_VAC
+/*
+    NAME              : FC_EDAD_VAC
+    AUTHORS           : SYSMAN  SAS, JM CC 2941 
+    DESCRIPTION       : Para que al momento de crear novedad de vacaciones, solo aplique 
+                        el calculo para dicha novedad y no para LIC, INC
+  */
+  (
+  UN_FECHAINI   IN DATE,
+  UN_FECHAFIN   IN DATE, 
+  UN_FORMATO    IN PCK_SUBTIPOS.TI_ENTERO,
+  UN_EDADPERSONA  IN PCK_SUBTIPOS.TI_ENTERO DEFAULT 0,
+  UN_PAGO31       IN PCK_SUBTIPOS.TI_ENTERO DEFAULT 0 --JM CC 3257 si se llama del segosci saber si se incluye o no para el 134
+  )
+RETURN VARCHAR2 
+  AS 
+    MI_ERROR_FUN    PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 47; 
+    MI_DIFANO       PCK_SUBTIPOS.TI_ENTERO;
+    MI_DIFMES       PCK_SUBTIPOS.TI_ENTERO;
+    MI_DIFDIA       PCK_SUBTIPOS.TI_ENTERO;
+    MI_FECHAINI     DATE;
+    MI_DFECHAINI    PCK_SUBTIPOS.TI_ENTERO;
+    MI_FECHAFIN     DATE;
+    MI_DFECHAFIN    PCK_SUBTIPOS.TI_ENTERO;
+    MI_DIFDIA1      BOOLEAN;
+    MI_VLRETORNO    VARCHAR2(100 CHAR);
+    MI_LASTDAY      DATE;
+    MI_DLASTDAY     PCK_SUBTIPOS.TI_ENTERO;
+    MI_PARAMETRO    PARAMETRO.VALOR%TYPE;
+    MI_COMPANIA     PCK_SUBTIPOS.TI_COMPANIA;
+    MI_31SABDOM     PCK_SUBTIPOS.TI_ENTERO;
+    MI_31FESTIVO     PCK_SUBTIPOS.TI_ENTERO;
+    MI_DFECHAFINAUX  PCK_SUBTIPOS.TI_ENTERO; 
+BEGIN
+
+   
+    BEGIN
+        SELECT LAST_DAY(TO_DATE(TO_CHAR(UN_FECHAINI,'DD/MM/YYYY'),'DD/MM/YYYY')) INTO MI_LASTDAY FROM DUAL;
+        SELECT TO_NUMBER(TO_CHAR(MI_LASTDAY, 'D', 'NLS_DATE_LANGUAGE=ENGLISH')) INTO MI_31SABDOM FROM DUAL;
+        SELECT  COUNT(0)  INTO MI_31FESTIVO FROM  FESTIVOS  WHERE   COMPANIA = MI_COMPANIA AND   TO_CHAR(ID_DE_FESTIVO,'YYYYMMDD') = TO_CHAR(MI_LASTDAY, 'YYYYMMDD');
+    END;
+     
+     MI_COMPANIA := PCK_ENTORNO.FC_GETCOMPANIA;
+     MI_PARAMETRO := PCK_SYSMAN_UTL.FC_PAR(MI_COMPANIA,'CONTAR SABADOS COMO DIA HABIL',6,SYSDATE);
+     IF (UPPER(MI_PARAMETRO) = 'SI') AND MI_31SABDOM = 7  THEN 
+        MI_31SABDOM := 0; 
+     END IF;
+     --MOD JM CC 2941 AHORA EL PARAMETRO ES 
+     MI_PARAMETRO := PCK_SYSMAN_UTL.FC_PAR(MI_COMPANIA,'PAGAR EL DIA 31 EN VACACIONES',6,SYSDATE);
+    
+  IF UN_FECHAFIN < UN_FECHAINI THEN 
+    MI_FECHAINI := UN_FECHAFIN;
+    MI_FECHAFIN := UN_FECHAINI;
+  ELSE
+    MI_FECHAINI := UN_FECHAINI;
+    MI_FECHAFIN := UN_FECHAFIN;
+  END IF; 
+  
+  MI_DFECHAINI    := PCK_SYSMAN_UTL.FC_DIA(MI_FECHAINI); 
+  MI_DFECHAFIN    := PCK_SYSMAN_UTL.FC_DIA(MI_FECHAFIN); 
+  MI_DFECHAFINAUX := MI_DFECHAFIN; 
+  MI_DLASTDAY     := PCK_SYSMAN_UTL.FC_DIA(MI_LASTDAY); 
+   
+  IF MI_DFECHAINI > 30 THEN 
+    MI_DFECHAINI := 30;
+  END  IF;
+  IF MI_DFECHAFIN > 30 THEN
+    MI_DFECHAFIN := 30;
+  END IF;
+
+  IF UN_EDADPERSONA = 0 THEN
+    MI_DIFDIA := MI_DFECHAFIN - MI_DFECHAINI + 1;
+  ELSE
+    MI_DIFDIA := MI_DFECHAFIN - MI_DFECHAINI;
+  END IF;
+  MI_DIFMES := PCK_SYSMAN_UTL.FC_MES(MI_FECHAFIN) - PCK_SYSMAN_UTL.FC_MES(MI_FECHAINI);
+  MI_DIFANO := PCK_SYSMAN_UTL.FC_VIGENCIA(MI_FECHAFIN) - PCK_SYSMAN_UTL.FC_VIGENCIA(MI_FECHAINI);
+  MI_DIFDIA1 := FALSE;
+  IF MI_DIFDIA < 0 THEN
+     MI_DIFDIA1 := TRUE;
+     
+     IF (UPPER(MI_PARAMETRO) = 'SI' AND MI_DLASTDAY = 31) AND UN_PAGO31 = 0 THEN --MOD JM CC 3257
+        MI_DIFDIA := 31 + MI_DIFDIA - CASE WHEN MI_31SABDOM = 1 OR MI_31SABDOM = 7 OR MI_31FESTIVO <> 0 THEN 1 ELSE 0 END; 
+      ELSE 
+        MI_DIFDIA := 30 + MI_DIFDIA; 
+      END IF;
+      
+     MI_DIFMES := PCK_SYSMAN_UTL.FC_IIF(MI_DIFMES > 0, MI_DIFMES - 1, MI_DIFMES - 2);
+
+     ELSE 
+     
+         IF (UPPER(MI_PARAMETRO) = 'SI' AND MI_DLASTDAY = 31 AND MI_DFECHAFINAUX = 31) AND UN_PAGO31 = 0 THEN --MOD JM CC 2879 --MOD JM CC 3257
+            MI_DIFDIA := MI_DIFDIA + CASE WHEN MI_31SABDOM = 1 OR MI_31SABDOM = 7 OR MI_31FESTIVO <> 0 THEN 0 ELSE 1 END;
+          END IF;
+          
+  END IF;
+  IF MI_DIFMES < 0 THEN
+     MI_DIFMES := PCK_SYSMAN_UTL.FC_IIF(MI_DIFDIA1, 13 + MI_DIFMES, 12 + MI_DIFMES);
+     MI_DIFANO := MI_DIFANO - 1;
+  END IF;
+  IF MI_DIFDIA >= 30 THEN
+     MI_DIFMES := MI_DIFMES + 1;
+     MI_DIFDIA := MI_DIFDIA - 30;
+  END IF;
+  IF MI_DIFMES >= 12 THEN
+     MI_DIFANO := MI_DIFANO + 1;
+     MI_DIFMES := MI_DIFMES - 12;
+  END IF;
+  IF UN_FORMATO = 1 THEN
+    MI_VLRETORNO := LPAD(MI_DIFANO, 2, '0000') || '-' || LPAD(MI_DIFMES, 2, '0') || '-' || LPAD(MI_DIFDIA, 2, '0');
+  ELSIF UN_FORMATO = 2 THEN
+    MI_VLRETORNO := LPAD(MI_DIFANO * 360 + MI_DIFMES * 30 + MI_DIFDIA, 8,'0');
+  ELSIF UN_FORMATO = 3 THEN
+    MI_VLRETORNO := MI_DIFANO * 360 + MI_DIFMES * 30 + MI_DIFDIA;
+  ELSE 
+      MI_VLRETORNO := MI_DIFANO;
+  END IF;
+  RETURN MI_VLRETORNO;
+
+  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Interrrupción en la función de calculo de edad teniendo en cuenta un rango de fechas' ;
+    PCK_DATOS.GL_ERROR_MSG := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'FC_EDAD','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END FC_EDAD_VAC;
+
+FUNCTION FC_EDAD_INC
+/*
+    NAME              : FC_EDAD_INC
+    AUTHORS           : SYSMAN  SAS, GROJAS CC:3792
+    DESCRIPTION       : Para que al momento de crear novedad de incapacidad, solo aplique el calculo para dicha novedad
+  */
+  (
+  UN_FECHAINI   IN DATE,
+  UN_FECHAFIN   IN DATE,
+  UN_FORMATO    IN PCK_SUBTIPOS.TI_ENTERO,
+  UN_EDADPERSONA  IN PCK_SUBTIPOS.TI_ENTERO DEFAULT 0
+  )
+RETURN VARCHAR2
+  AS
+    MI_ERROR_FUN    PCK_SUBTIPOS.TI_ERROR_FUN:=GL_ERROR_NUM + 47;
+    MI_DIFANO       PCK_SUBTIPOS.TI_ENTERO;
+    MI_DIFMES       PCK_SUBTIPOS.TI_ENTERO;
+    MI_DIFDIA       PCK_SUBTIPOS.TI_ENTERO;
+    MI_FECHAINI     DATE;
+    MI_DFECHAINI    PCK_SUBTIPOS.TI_ENTERO;
+    MI_FECHAFIN     DATE;
+    MI_DFECHAFIN    PCK_SUBTIPOS.TI_ENTERO;
+    MI_DIFDIA1      BOOLEAN;
+    MI_VLRETORNO    VARCHAR2(100 CHAR);
+    MI_LASTDAY      DATE;
+    MI_DLASTDAY     PCK_SUBTIPOS.TI_ENTERO;
+    MI_PARAMETRO    PARAMETRO.VALOR%TYPE;
+    MI_COMPANIA     PCK_SUBTIPOS.TI_COMPANIA;
+    MI_31SABDOM     PCK_SUBTIPOS.TI_ENTERO;
+    MI_31FESTIVO     PCK_SUBTIPOS.TI_ENTERO;
+    MI_DFECHAFINAUX  PCK_SUBTIPOS.TI_ENTERO; --MOD JM CC 2879
+	MI_PARD31VAC_FSF PARAMETRO.VALOR%TYPE; --CC_3452(11/02/2026 JCROJAS)
+BEGIN
+  --' RETORNA EL VALOR EN MESES DE TREINTA DIAS PARA CÃ¿LCULO DE NOMINA
+  --      ' PARAMETROS:
+  --      '             VFECHA1: TIPO VARIANT
+  --      '             VFECHA2: TIPO VARIANT
+  --      '             VFORMATO: 1 PARA RETORNO "AA-MM-MI_DIFDIA"
+  --      '                 2 EN DIAS EN FORMA ALFANUMERICA
+  --      '                 3 EN DIAS EN FORMA NUMERICA
+    BEGIN
+      -- TICKET 7741181 EFCM: Se adiciona to_char para evitar error al llamar la funcion desde un DSS,
+      --            ya que el parametro es DATE y puede venir con formato
+        SELECT LAST_DAY(TO_DATE(TO_CHAR(UN_FECHAINI,'DD/MM/YYYY'),'DD/MM/YYYY')) INTO MI_LASTDAY FROM DUAL;
+        -- TICKET 7741181 EFCM --
+        SELECT TO_NUMBER(TO_CHAR(MI_LASTDAY, 'D', 'NLS_DATE_LANGUAGE=ENGLISH')) INTO MI_31SABDOM FROM DUAL;
+        -- DETERMINAR SI EL 31 ES DOMINGO = 1 SABADO = 7; JM 7741460
+        SELECT  COUNT(0)  INTO MI_31FESTIVO FROM  FESTIVOS  WHERE   COMPANIA = MI_COMPANIA AND   TO_CHAR(ID_DE_FESTIVO,'YYYYMMDD') = TO_CHAR(MI_LASTDAY, 'YYYYMMDD');
+        -- DETERMINAR SI EL 31 ES FESTIVO JM 7741460
+    END;
+     MI_COMPANIA := PCK_ENTORNO.FC_GETCOMPANIA;
+     MI_PARAMETRO := PCK_SYSMAN_UTL.FC_PAR(MI_COMPANIA,'DIFERIR FECHAS CONTANDO MESES DE 31 Y 28 DIAS',6,SYSDATE);
+	 --CC_3452(11/02/2026 JCROJAS)
+     MI_PARD31VAC_FSF := NVL(PCK_SYSMAN_UTL.FC_PAR(MI_COMPANIA,'TOMAR DIA 31 EN VACACIONES AUNQUE SEA FIN DE SEMANA O FESTIVO',6,SYSDATE),'NO');
+  IF UN_FECHAFIN < UN_FECHAINI THEN
+    MI_FECHAINI := UN_FECHAFIN;
+    MI_FECHAFIN := UN_FECHAINI;
+  ELSE
+    MI_FECHAINI := UN_FECHAINI;
+    MI_FECHAFIN := UN_FECHAFIN;
+  END IF;
+  MI_DFECHAINI    := PCK_SYSMAN_UTL.FC_DIA(MI_FECHAINI);
+  MI_DFECHAFIN    := PCK_SYSMAN_UTL.FC_DIA(MI_FECHAFIN);
+  MI_DFECHAFINAUX := MI_DFECHAFIN; --MOD JM CC 2879
+  MI_DLASTDAY     := PCK_SYSMAN_UTL.FC_DIA(MI_LASTDAY);
+  IF MI_DFECHAINI > 30 THEN
+    MI_DFECHAINI := 30;
+  END  IF;
+  IF MI_DFECHAFIN > 30 THEN
+    MI_DFECHAFIN := 30;
+  END IF;
+  --POR FAVOR NO QUITAR LA SUMA DE 1 PUES SE UTILIZA PARA HALLAR LOS DIAS TRABAJADOS CUANDO SOLO TRABAJA UN DIA
+  IF UN_EDADPERSONA = 0 THEN
+    MI_DIFDIA := MI_DFECHAFIN - MI_DFECHAINI + 1;
+  ELSE
+    MI_DIFDIA := MI_DFECHAFIN - MI_DFECHAINI;
+  END IF;
+  MI_DIFMES := PCK_SYSMAN_UTL.FC_MES(MI_FECHAFIN) - PCK_SYSMAN_UTL.FC_MES(MI_FECHAINI);
+  MI_DIFANO := PCK_SYSMAN_UTL.FC_VIGENCIA(MI_FECHAFIN) - PCK_SYSMAN_UTL.FC_VIGENCIA(MI_FECHAINI);
+  MI_DIFDIA1 := FALSE;
+  IF MI_DIFDIA < 0 THEN
+     MI_DIFDIA1 := TRUE;
+     IF (UPPER(MI_PARAMETRO) = 'SI' AND MI_DLASTDAY = 31) THEN
+		--CC_3452(11/02/2026 JCROJAS): Se agrega validacion con la variable MI_PARD31VAC_FSF para que tenga en cuenta el dia 31, sin importar si es sabado, domingo o festivo.
+        MI_DIFDIA := 31 + MI_DIFDIA;
+        --SI EL 31 ES SABADO / DOMINGO O FESTIVO NO CONTAR 31 DIAS JM 7741460
+      ELSE
+        MI_DIFDIA := 30 + MI_DIFDIA;
+      END IF;
+     MI_DIFMES := PCK_SYSMAN_UTL.FC_IIF(MI_DIFMES > 0, MI_DIFMES - 1, MI_DIFMES - 2);
+     ELSE --JM INI MOD CC 2777
+         IF (UPPER(MI_PARAMETRO) = 'SI' AND MI_DLASTDAY = 31 AND MI_DFECHAFINAUX = 31) THEN --MOD JM CC 2879
+            MI_DIFDIA := MI_DIFDIA + CASE WHEN MI_31SABDOM = 1 OR MI_31SABDOM = 7 OR MI_31FESTIVO <> 0 THEN 0 ELSE 1 END;
+          END IF;--JM FIN  MOD CC 2777
+  END IF;
+  IF MI_DIFMES < 0 THEN
+     MI_DIFMES := PCK_SYSMAN_UTL.FC_IIF(MI_DIFDIA1, 13 + MI_DIFMES, 12 + MI_DIFMES);
+     MI_DIFANO := MI_DIFANO - 1;
+  END IF;
+  IF MI_DIFDIA >= 30 THEN
+     MI_DIFMES := MI_DIFMES + 1;
+     MI_DIFDIA := MI_DIFDIA - 30;
+  END IF;
+  IF MI_DIFMES >= 12 THEN
+     MI_DIFANO := MI_DIFANO + 1;
+     MI_DIFMES := MI_DIFMES - 12;
+  END IF;
+  IF UN_FORMATO = 1 THEN
+    MI_VLRETORNO := LPAD(MI_DIFANO, 2, '0000') || '-' || LPAD(MI_DIFMES, 2, '0') || '-' || LPAD(MI_DIFDIA, 2, '0');
+  ELSIF UN_FORMATO = 2 THEN
+    MI_VLRETORNO := LPAD(MI_DIFANO * 360 + MI_DIFMES * 30 + MI_DIFDIA, 8,'0');
+  ELSIF UN_FORMATO = 3 THEN
+    MI_VLRETORNO := MI_DIFANO * 360 + MI_DIFMES * 30 + MI_DIFDIA;
+  ELSE
+      MI_VLRETORNO := MI_DIFANO;
+  END IF;
+  RETURN MI_VLRETORNO;
+  EXCEPTION WHEN OTHERS THEN
+    PCK_DATOS.GL_ERROR_MSG := 'Interrrupción en la función de calculo de edad teniendo en cuenta un rango de fechas' ;
+    PCK_DATOS.GL_ERROR_MSG := PCK_SYSMAN_UTL.FC_EVALUAR_ERROR(MI_ERROR_FUN, PCK_DATOS.GL_ERROR_MSG,  'FC_EDAD_INC','',SQLERRM );
+    RAISE_APPLICATION_ERROR (-20000, PCK_DATOS.GL_ERROR_MSG || CHR(10) || PCK_DATOS.GL_ERROR_MSG );
+END FC_EDAD_INC;
+END PCK_SYSMAN_UTL;

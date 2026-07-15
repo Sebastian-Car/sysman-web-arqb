@@ -1,0 +1,498 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+                if("#{factoresRiesgoControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TT_FR1662}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{factoresRiesgoControlador.cargarLista}" />
+		<section class="radius">
+			<h:form id="FR1662">
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="lista" widgetVar="lista"
+					visible="#{factoresRiesgoControlador.accion==null}">
+					<p:confirmDialog global="true" showEffect="fade" id="confFR1662"
+						widgetVar="confFR1662"
+						rendered="#{factoresRiesgoControlador.permisos[1]}">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:dataTable id="TBFR1662" widgetVar="TBFR1662" var="reg"
+						value="#{factoresRiesgoControlador.listaInicial}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" paginator="true" lazy="true">
+						<f:facet name="{Exporters}"
+							rendered="#{factoresRiesgoControlador.permisos[4] }">
+							<h:commandLink
+								rendered="#{factoresRiesgoControlador.permisos[4] }"
+								title="#{idm.TI_VER_EXCEL}">
+								<p:graphicImage name="/images/general/excel.png" width="24" />
+								<p:dataExporter type="xls" target="TBFR1662" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+							<h:commandLink
+								rendered="#{factoresRiesgoControlador.permisos[4] }"
+								title="#{idm.TI_VER_PDF}">
+								<p:graphicImage name="/images/general/pdf.png" width="24" />
+								<p:dataExporter type="pdf" target="TBFR1662" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+						</f:facet>
+						<f:facet name="header">
+							<div style="position: relative; height: 50px">
+								<h:panelGroup class="acme"
+									rendered="#{factoresRiesgoControlador.permisos[0] }">
+									<p:commandLink
+										action="#{factoresRiesgoControlador.cargarRegistroNuevo}"
+										update=":FR1662_nuevo:nuevoPanel"
+										rendered="#{factoresRiesgoControlador.permisos[0]}"
+										onclick="try { PF('blockLista').show(); } catch (e) { }"
+										oncomplete="try{   PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+										title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+										id="btNuevo">
+										<center>
+											<p:graphicImage name="/images/menus/32/add.png" />
+											<div>#{idm.TI_NUEVO}</div>
+										</center>
+									</p:commandLink>
+								</h:panelGroup>
+								<div class="acme">
+									<h:outputLink value="#{request.contextPath}/menu.sysman"
+										title="#{idm.TI_VOLVER}" style="padding-top: 10px;">
+										<center>
+											<p:graphicImage name="/images/menus/32/close.png" />
+											<div>#{idm.TI_CERRAR}</div>
+										</center>
+									</h:outputLink>
+								</div>
+							</div>
+                            #{idm.TT_FR1662}
+                        </f:facet>
+						<p:column headerText="#{idm.TG_CODIGO7}"
+							filterBy="#{reg.campos['ID_RIESGO']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="30%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['ID_RIESGO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_NOMBRE3}"
+							filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="70%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column width="150" headerText="Acciones"
+							style="text-align: center" exportable="false">
+							<p:commandButton icon="ui-icon-search"
+								title="#{idm.TI_VER_REGISTRO}"
+								action="#{factoresRiesgoControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+								update=":FR1662_nuevo"
+								onclick="try{ PF('blockLista').show();     }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{factoresRiesgoControlador.permisos[3]}"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-document-b"
+								title="#{idm.TI_EDITAR_REGISTRO}"
+								action="#{factoresRiesgoControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+								update=":FR1662_nuevo"
+								onclick="try{ PF('blockLista').show();     }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{factoresRiesgoControlador.permisos[2] }"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-trash"
+								title="#{idm.TI_ELIMINAR_REGISTRO}"
+								onclick="PF('blockListaGuardar').show()"
+								action="#{factoresRiesgoControlador.eliminarReg(reg)}"
+								update=":FR1662:TBFR1662,:FR1662:alert"
+								rendered="#{factoresRiesgoControlador.permisos[1] }"
+								oncomplete=" PF('blockListaGuardar').hide();">
+								<p:confirm header="#{sessionBean.tituloMensajes}"
+									message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR1662">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+			<h:form id="FR1662_nuevo" style="margin-top: -20px;">
+				<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA"
+					my="left bottom" at="left bottom" for="BTBUSQUEDA"
+					hideEffect="fade"
+					rendered="#{factoresRiesgoControlador.accion!='i'}"
+					style="width: 500px">
+					<p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA" var="reg"
+						value="#{factoresRiesgoControlador.listaInicialF}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" selectionMode="single"
+						rowKey="#{reg.llave}" paginator="true" lazy="true">
+						<p:ajax event="rowSelect"
+							listener="#{factoresRiesgoControlador.seleccionarFilaBusqueda}"
+							onstart="PF('blockNuevo').show()"
+							oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();    "
+							update="@form" />
+						<p:column headerText="#{idm.TG_CODIGO7}"
+							filterBy="#{reg.campos['ID_RIESGO']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="30%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['ID_RIESGO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_NOMBRE3}"
+							filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="70%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+					</p:dataTable>
+				</p:overlayPanel>
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="nuevoPanel"
+					visible="#{factoresRiesgoControlador.accion!=null}"
+					widgetVar="nuevoPanel">
+					<div
+						style="position: relative; height: 50px; padding-bottom: 80px;">
+						<div class="acme"
+							style="display:#{factoresRiesgoControlador.accion=='v'?'none':'block'}">
+							<p:commandLink
+								action="#{factoresRiesgoControlador.agregarRegistroNuevo(false)}"
+								rendered="#{factoresRiesgoControlador.accion!='v'}"
+								update=":FR1662_nuevo,#{!factoresRiesgoControlador.permisos[2]?':FR1662':'' }"
+								onclick="if (!validarVacios(['CP51443'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+								title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+								oncomplete="asignarEventoContGrande(); validarCargaGrandes(); ">
+								<center>
+									<p:graphicImage name="/images/menus/32/save.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{factoresRiesgoControlador.accion=='v' or !factoresRiesgoControlador.permisos[0]?'none':'block'}">
+							<p:commandLink action="#{factoresRiesgoControlador.guardarNuevo}"
+								rendered="#{factoresRiesgoControlador.accion!='v' and factoresRiesgoControlador.permisos[0]}"
+								update=":FR1662_nuevo"
+								onclick="if (!validarVacios(['CP51443'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{factoresRiesgoControlador.accion!='i'  and factoresRiesgoControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+								oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+								title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}"
+								style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/savenew.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{factoresRiesgoControlador.accion=='i' or !factoresRiesgoControlador.permisos[0]?'none':'block'}">
+							<p:commandLink id="BTBUSQUEDA"
+								rendered="#{factoresRiesgoControlador.accion!='i' and factoresRiesgoControlador.permisos[0]}"
+								title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/search.png" />
+									<div style="height: 30px">#{idm.TI_BUSCAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme">
+							<p:commandLink update=":FR1662:TBFR1662"
+								onclick="try {
+		           PF('TBFR1662').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+								title="#{idm.TI_ATRAS}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/back.png" />
+									<div style="height: 30px">#{idm.TI_VOLVER}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<p:panel
+							rendered="#{factoresRiesgoControlador.accion!='i'  and factoresRiesgoControlador.rid==null }"
+							styleClass="acme"
+							style="min-width: 350px; width:30%; padding: 10px;">
+							<center style="margin: 2px;">
+								<p:commandButton icon="ui-icon-seek-first"
+									action="#{factoresRiesgoControlador.irPrimero()}"
+									title="#{idm.TI_PRIMER_REGISTRO}" update=":FR1662_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-prev"
+									action="#{factoresRiesgoControlador.irAnterior()}"
+									title="#{idm.TI_REGISTRO_ANTERIOR}" update=":FR1662_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:outputLabel
+									value="#{idm.TI_REGISTRO} #{factoresRiesgoControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{factoresRiesgoControlador.listaInicial.rowCount} " />
+								<p:commandButton icon="ui-icon-seek-next"
+									title="#{idm.TI_REGISTRO_SIGUIENTE}"
+									action="#{factoresRiesgoControlador.irSiguiente()}"
+									update=":FR1662_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-end"
+									title="#{idm.TI_ULTIMO_REGISTRO}"
+									action="#{factoresRiesgoControlador.irUltimo()}"
+									update=":FR1662_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+							</center>
+						</p:panel>
+						<p:panel styleClass="acme" style="width:21%; min-width:260px">
+							<h:panelGrid columns="3"
+								style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+								<h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}" />
+								<p:inputText id="CPCREADO" readonly="true" widgetVar="CPCREADO"
+									value="#{factoresRiesgoControlador.registro.campos['CREATED_BY']}"
+									placeholder="#{idm.TI_CREADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPCREADOF" widgetVar="CPCREADOF"
+									value="#{factoresRiesgoControlador.registro.campos['DATE_CREATED']}"
+									disabled="true" />
+								<h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+								<p:inputText id="CPMODIFICADO" readonly="true"
+									widgetVar="CPMODIFICADO"
+									value="#{factoresRiesgoControlador.registro.campos['MODIFIED_BY']}"
+									placeholder="#{idm.TI_MODIFICADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPMODIFICADOF" widgetVar="CPMODIFICADOF"
+									value="#{factoresRiesgoControlador.registro.campos['DATE_MODIFIED']}"
+									disabled="true" />
+							</h:panelGrid>
+						</p:panel>
+					</div>
+					<div id="PL3195" class="
+"
+						style="position: relative; height: 58px;">
+						<h:outputLabel id="LB42438" value="#{idm.TT_LB42438}"
+							style="position: absolute; width:428px; height: 29px; left: 91px;   top: 10px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<div id="PL3196" class="
+"
+						style="position: relative; height: 587px;">
+						<h:panelGroup id="SF189"
+							style="position: absolute; width:550px; height: 380px; left: 58px;   top: 111px; ">
+							<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}"
+								id="dlg189" widgetVar="dlg189" resizable="false" modal="true"
+								rendered="#{factoresRiesgoControlador.permisos[0]}"
+								onHide="restaurarCampos(['CP51462'])">
+								<h:panelGrid columns="2" cellpadding="2">
+									<h:outputLabel value="#{idm.TG_CONCEPTO4}:" id="LCP51462"
+										style="display:true;" class="cont-inst-element" />
+									<p:inputText id="CP51462" widgetVar="CP51462"
+										styleClass="inputTab"
+										value="#{factoresRiesgoControlador.registroSub.campos['ID_CONCEPTO']}"
+										label="LCP51462"
+										style="display:true; width: 95%; float: left;"
+										class="cont-inst-element" maxlength="10">
+									</p:inputText>
+									<h:outputLabel value="#{idm.TG_NOMBRE3}:" id="LCP51463"
+										style="display:true;" class="cont-inst-element" />
+									<p:inputText id="CP51463" widgetVar="CP51463"
+										styleClass="inputTab"
+										value="#{factoresRiesgoControlador.registroSub.campos['NOMBRE']}"
+										label="LCP51463"
+										style="display:true; width: 95%; float: left;"
+										class="cont-inst-element" maxlength="70">
+									</p:inputText>
+									<f:facet name="footer">
+										<center>
+											<p:commandButton value="#{idm.TI_GUARDAR}"
+												style="padding:10px;"
+												update=":FR1662_nuevo:alert,tablePL3201,dlg189,"
+												actionListener="#{factoresRiesgoControlador.agregarRegistroSubConceptosriesgo}"
+												oncomplete="PF('dlg189').hide();PF('blockNuevoGuardar').hide();"
+												onclick="    if (!validarVaciosModal(['CP51462'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockNuevoGuardar').show();" />
+											<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+												href="#" onclick="PF('dlg189').hide();" />
+										</center>
+									</f:facet>
+								</h:panelGrid>
+							</p:dialog>
+							<div id="PL3201" class="
+"
+								style="position: relative; height: 380px;">
+								<p:remoteCommand name="refreshTabPL3201" update="tablePL3201" />
+								<p:dataTable id="tablePL3201" var="reg"
+									value="#{factoresRiesgoControlador.listaConceptosriesgo}"
+									emptyMessage="#{idm.TI_EMPTY_MESSAGE}" scrollable="true"
+									scrollHeight="380" scrollWidth="550" rowIndexVar="rowNun"
+									editable="true" widgetVar="tablePL3201" tabindex="2">
+									<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+									<p:ajax event="rowEdit"
+										update=":FR1662_nuevo:alert,tablePL3201,"
+										onstart="PF('blockNuevoGuardar').show()"
+										oncomplete="refreshTabPL3201(); PF('blockNuevoGuardar').hide();  mostarEditor();"
+										listener="#{factoresRiesgoControlador.editarRegSubConceptosriesgo}" />
+									<p:ajax event="rowEditCancel" update="tablePL3201
+"
+										listener="#{factoresRiesgoControlador.cancelarEdicionConceptosriesgo}"
+										oncomplete=" mostarEditor();" />
+									<f:facet name="header">
+										<div style="position: relative; height: 50px">
+											<h:panelGroup class="acme" style="width: 50px;"
+												rendered="#{factoresRiesgoControlador.accion=='m' 
+}">
+												<h:outputLink value="javascript:void(0)"
+													onclick=" PF('dlg189').show();"
+													title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+													tabindex="2">
+													<center>
+														<p:graphicImage name="/images/menus/32/adds.png" />
+														<div style="font-size: 12px">#{idm.TI_NUEVO}</div>
+													</center>
+												</h:outputLink>
+											</h:panelGroup>
+										</div>    
+			#{idm.TT_SF189}
+                                            </f:facet>
+									<p:column headerText="#{idm.TG_CONCEPTO4}" width="30%"
+										rendered="true" style=";" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['ID_CONCEPTO']}" />
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="CP51462" styleClass="inputTab"
+													value="#{reg.campos['ID_CONCEPTO']}" style="width:100%"
+													maxlength="10">
+												</p:inputText>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TG_NOMBRE3}" width="70%"
+										rendered="true" style=";" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['NOMBRE']}" />
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="CP51463" styleClass="inputTab"
+													value="#{reg.campos['NOMBRE']}" style="width:100%"
+													maxlength="70">
+												</p:inputText>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column width="30"
+										rendered="#{factoresRiesgoControlador.accion=='m'}">
+										<p:rowEditor />
+									</p:column>
+									<p:column width="30"
+										rendered="#{factoresRiesgoControlador.accion=='m'}">
+										<p:commandButton icon="ui-icon-trash"
+											title="#{idm.TI_ELIMINAR_REGISTRO}"
+											action="#{factoresRiesgoControlador.eliminarRegSubConceptosriesgo(reg)}"
+											oncomplete="PF('blockNuevoGuardar').hide(); refreshTabPL3201();"
+											onclick="PF('blockNuevoGuardar').show();"
+											update=":FR1662_nuevo:alert,tablePL3201,"
+											style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;"
+											tabindex="2">
+											<p:confirm header="#{sessionBean.tituloMensajes}"
+												message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+										</p:commandButton>
+									</p:column>
+								</p:dataTable>
+							</div>
+						</h:panelGroup>
+						<p:inputText id="CP51444" widgetVar="CP51444"
+							styleClass="inputTab"
+							value="#{factoresRiesgoControlador.registro.campos['NOMBRE']}"
+							readonly="#{factoresRiesgoControlador.accion=='v'?true:false}"
+							tabindex="3" maxlength="50"
+							style="position: absolute; width:400px; height: 24px; text-decoration:none; left: 183px;   top: 59px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP51443" widgetVar="CP51443"
+							styleClass="inputTab"
+							value="#{factoresRiesgoControlador.registro.campos['ID_RIESGO']}"
+							readonly="#{factoresRiesgoControlador.accion=='v'?true:false}"
+							tabindex="1" maxlength="10"
+							style="position: absolute; width:120px; height: 24px; text-decoration:none; left: 183px;   top: 29px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<h:outputLabel id="LB42439" value="#{idm.TG_CODIGO8}"
+							style="position: absolute; width:122px; height: 24px; left: 58px;   top: 29px; text-align: Right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px;" />
+						<h:outputLabel id="LB42440" value="#{idm.TG_NOMBRE4}"
+							style="position: absolute; width:147px; height: 24px; left: 33px;   top: 59px; text-align: Right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px;" />
+					</div>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

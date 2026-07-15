@@ -1,0 +1,8 @@
+SELECT 
+  CODIGO,
+  NOMBRE 
+FROM SP_CONCEPTOS 
+WHERE COMPANIA      =s$compania$s
+ 
+AND CODIGO BETWEEN s$codigoInicial$s AND s$codigoFinal$s 
+ORDER BY CODIGO

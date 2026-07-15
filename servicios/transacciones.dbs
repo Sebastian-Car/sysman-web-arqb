@@ -1,0 +1,518 @@
+﻿<data name="transacciones" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTransaccionesPagporTipoContratoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT TRANSACCION.CONSECUTIVO, TRANSACCION.NUM_PROCESO, TRANSACCION.TIPOCONTRATO, TIPOCONTRATO_PR.DESCRIPCION, ES_ESTPREVIO.OBJETO_CONTRATO, TRANSACCION.ESTUDIOPREVIO FROM TRANSACCION INNER JOIN TIPOCONTRATO_PR ON TRANSACCION.COMPANIA = TIPOCONTRATO_PR.COMPANIA AND TRANSACCION.TIPOCONTRATO = TIPOCONTRATO_PR.TIPOCONTRATO INNER JOIN ES_ESTPREVIO ON TRANSACCION.ESTUDIOPREVIO = ES_ESTPREVIO.COD_ESTUDIO AND TRANSACCION.COMPANIA = ES_ESTPREVIO.COMPANIA WHERE TRANSACCION.COMPANIA = :COMPANIA AND TRANSACCION.TIPOCONTRATO = :TIPOCONTRATO) INI WHERE (CASE WHEN NUM_PROCESO IS NULL THEN ' ' ELSE UPPER(NUM_PROCESO) END) LIKE UPPER(CONCAT(CONCAT('%',:NUM_PROCESO), '%')) AND (CASE WHEN OBJETO_CONTRATO IS NULL THEN ' ' ELSE UPPER(TO_CHAR(OBJETO_CONTRATO)) END) LIKE UPPER(CONCAT(CONCAT('%',:OBJETO_CONTRATO), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO","NUM_PROCESO":"$NUM_PROCESO","TIPOCONTRATO":"$TIPOCONTRATO","DESCRIPCION":"$DESCRIPCION","OBJETO_CONTRATO":"$OBJETO_CONTRATO","ESTUDIOPREVIO":"$ESTUDIOPREVIO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="NUM_PROCESO" sqlType="STRING"/>
+		<param name="OBJETO_CONTRATO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="transacciones/portipocontrato/pag">
+		<call-query href="getTransaccionesPagporTipoContratoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="NUM_PROCESO" query-param="NUM_PROCESO"/>
+			<with-param name="OBJETO_CONTRATO" query-param="OBJETO_CONTRATO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesNumporTipoContratoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT TRANSACCION.CONSECUTIVO, TRANSACCION.NUM_PROCESO, TRANSACCION.TIPOCONTRATO, TIPOCONTRATO_PR.DESCRIPCION, ES_ESTPREVIO.OBJETO_CONTRATO, TRANSACCION.ESTUDIOPREVIO FROM TRANSACCION INNER JOIN TIPOCONTRATO_PR ON TRANSACCION.COMPANIA = TIPOCONTRATO_PR.COMPANIA AND TRANSACCION.TIPOCONTRATO = TIPOCONTRATO_PR.TIPOCONTRATO INNER JOIN ES_ESTPREVIO ON TRANSACCION.ESTUDIOPREVIO = ES_ESTPREVIO.COD_ESTUDIO AND TRANSACCION.COMPANIA = ES_ESTPREVIO.COMPANIA WHERE TRANSACCION.COMPANIA = :COMPANIA AND TRANSACCION.TIPOCONTRATO = :TIPOCONTRATO) INI WHERE (CASE WHEN NUM_PROCESO IS NULL THEN ' ' ELSE UPPER(NUM_PROCESO) END) LIKE UPPER(CONCAT(CONCAT('%',:NUM_PROCESO), '%')) AND (CASE WHEN OBJETO_CONTRATO IS NULL THEN ' ' ELSE UPPER(TO_CHAR(OBJETO_CONTRATO)) END) LIKE UPPER(CONCAT(CONCAT('%',:OBJETO_CONTRATO), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="NUM_PROCESO" sqlType="STRING"/>
+		<param name="OBJETO_CONTRATO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="transacciones/portipocontrato/num">
+		<call-query href="getTransaccionesNumporTipoContratoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="NUM_PROCESO" query-param="NUM_PROCESO"/>
+			<with-param name="OBJETO_CONTRATO" query-param="OBJETO_CONTRATO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesPagPorestadoytipocontratoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CONSECUTIVO, TO_CHAR(FECHA, 'DD/MM/YYYY') FECHA, ANO, ESTADO, OBSERVACION  FROM TRANSACCION WHERE COMPANIA = :COMPANIA AND ESTADO = :ESTADOPAR AND TIPOCONTRATO = :TIPOCONTRATO ORDER BY CONSECUTIVO) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO","FECHA":"$FECHA","ANO":"$ANO(type:integer)","ESTADO":"$ESTADO","OBSERVACION":"$OBSERVACION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESTADOPAR" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="transacciones/porestadoytipocontrato/pag">
+		<call-query href="getTransaccionesPagPorestadoytipocontratoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESTADOPAR" query-param="ESTADOPAR"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesNumPorestadoytipocontratoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CONSECUTIVO, TO_CHAR(FECHA, 'DD/MM/YYYY') FECHA, ANO, ESTADO, OBSERVACION  FROM TRANSACCION WHERE COMPANIA = :COMPANIA AND ESTADO = :ESTADOPAR AND TIPOCONTRATO = :TIPOCONTRATO ORDER BY CONSECUTIVO) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESTADOPAR" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="transacciones/porestadoytipocontrato/num">
+		<call-query href="getTransaccionesNumPorestadoytipocontratoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESTADOPAR" query-param="ESTADOPAR"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesPagTodosPorCompaniaYEstadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TRANSACCION.CONSECUTIVO, TO_CHAR(TRANSACCION.FECHA,'DD/MM/YYYY') FECHA, TRANSACCION.ANO, TRANSACCION.ESTADO  FROM TRANSACCION WHERE TRANSACCION.COMPANIA = :COMPANIA AND TRANSACCION.ESTADO = :ESTADO AND TRANSACCION.TIPOCONTRATO = :TIPOCONTRATO ORDER BY TRANSACCION.NUMERO) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER(:FECHA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO","FECHA":"$FECHA","ANO":"$ANO(type:integer)","ESTADO":"$ESTADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="transacciones/todosporcompaniayestado/pag">
+		<call-query href="getTransaccionesPagTodosPorCompaniaYEstadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesNumTodosPorCompaniaYEstadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TRANSACCION.CONSECUTIVO, TO_CHAR(TRANSACCION.FECHA,'DD/MM/YYYY') FECHA, TRANSACCION.ANO, TRANSACCION.ESTADO  FROM TRANSACCION WHERE TRANSACCION.COMPANIA = :COMPANIA AND TRANSACCION.ESTADO = :ESTADO AND TRANSACCION.TIPOCONTRATO = :TIPOCONTRATO ORDER BY TRANSACCION.NUMERO) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER(:FECHA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="transacciones/todosporcompaniayestado/num">
+		<call-query href="getTransaccionesNumTodosPorCompaniaYEstadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesPagTodosPorContratoiniQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TRANSACCION.CONSECUTIVO, TO_CHAR(TRANSACCION.FECHA,'DD/MM/YYYY') FECHA, TRANSACCION.ANO, TRANSACCION.ESTADO  FROM TRANSACCION WHERE TRANSACCION.COMPANIA = :COMPANIA AND TRANSACCION.ESTADO = :ESTADO AND TRANSACCION.TIPOCONTRATO = :TIPOCONTRATO AND TRANSACCION.CONSECUTIVO &gt;= :CONTRATOINICIAL ORDER BY TRANSACCION.NUMERO DESC) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER(:FECHA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO","FECHA":"$FECHA","ANO":"$ANO(type:integer)","ESTADO":"$ESTADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="CONTRATOINICIAL" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="transacciones/todosporcontratoini/pag">
+		<call-query href="getTransaccionesPagTodosPorContratoiniQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="CONTRATOINICIAL" query-param="CONTRATOINICIAL"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesNumTodosPorContratoiniQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TRANSACCION.CONSECUTIVO, TO_CHAR(TRANSACCION.FECHA,'DD/MM/YYYY') FECHA, TRANSACCION.ANO, TRANSACCION.ESTADO  FROM TRANSACCION WHERE TRANSACCION.COMPANIA = :COMPANIA AND TRANSACCION.ESTADO = :ESTADO AND TRANSACCION.TIPOCONTRATO = :TIPOCONTRATO AND TRANSACCION.CONSECUTIVO &gt;= :CONTRATOINICIAL ORDER BY TRANSACCION.NUMERO DESC) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER(:FECHA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="CONTRATOINICIAL" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="transacciones/todosporcontratoini/num">
+		<call-query href="getTransaccionesNumTodosPorContratoiniQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="CONTRATOINICIAL" query-param="CONTRATOINICIAL"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesPagPorCompaniaTipocontYEstadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CONSECUTIVO, TO_CHAR(FECHA, 'DD/MM/YYYY') FECHA, ANO, ESTADO, ESTUDIOPREVIO  FROM TRANSACCION WHERE COMPANIA = :COMPANIA AND TIPOCONTRATO = :TIPOCONTRATO AND ESTADO = :ESTADO ORDER BY NUMERO, CONSECUTIVO, FECHA) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO","FECHA":"$FECHA","ANO":"$ANO(type:integer)","ESTADO":"$ESTADO","ESTUDIOPREVIO":"$ESTUDIOPREVIO(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="transacciones/porcompaniatipocontyestado/pag">
+		<call-query href="getTransaccionesPagPorCompaniaTipocontYEstadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertTransacciones" keyColumns="COMPANIA,TIPOCONTRATO,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO TRANSACCION (COMPANIA, CONSECUTIVO, TIPOCONTRATO, FECHA, ANO, ESTUDIOPREVIO, ESTADO, OBSERVACION, NUM_PROCESO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CONSECUTIVO, :TIPOCONTRATO, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :ANO, :ESTUDIOPREVIO, :ESTADO, :OBSERVACION, :NUM_PROCESO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_TIPOCONTRATO":"$TIPOCONTRATO","KEY_CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param defaultValue="" name="ESTUDIOPREVIO" sqlType="STRING"/>
+		<param defaultValue="0" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACION" sqlType="STRING"/>
+		<param defaultValue="" name="NUM_PROCESO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="transacciones">
+		<call-query href="insertTransacciones">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="ESTUDIOPREVIO" query-param="ESTUDIOPREVIO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="NUM_PROCESO" query-param="NUM_PROCESO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteTransacciones" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM TRANSACCION WHERE TRANSACCION.COMPANIA= :KEY_COMPANIA AND TRANSACCION.TIPOCONTRATO= :KEY_TIPOCONTRATO AND TRANSACCION.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPOCONTRATO" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="transacciones">
+		<call-query href="deleteTransacciones">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPOCONTRATO" query-param="KEY_TIPOCONTRATO"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT TRANSACCION.COMPANIA, TRANSACCION.TIPOCONTRATO, LPAD(TRANSACCION.CONSECUTIVO,8,'0') CONSECUTIVO, TIPOCONTRATO_PR.DESCRIPCION NOM_TIPO, TO_CHAR(TRANSACCION.FECHA, 'DD/MM/YYYY') FECHA, TRANSACCION.ANO, ES_ESTPREVIO.NOMBRE_ESTUDIO, CASE TRANSACCION.ESTADO WHEN 'AC' THEN 'Abierta' WHEN 'CE' THEN 'Cerrado' WHEN 'CA' THEN 'Cancelada' END NOM_ESTADO, TRANSACCION.OBSERVACION, TRANSACCION.NUM_PROCESO FROM TRANSACCION INNER JOIN TIPOCONTRATO_PR ON TRANSACCION.COMPANIA = TIPOCONTRATO_PR.COMPANIA AND TRANSACCION.TIPOCONTRATO = TIPOCONTRATO_PR.TIPOCONTRATO LEFT JOIN ES_ESTPREVIO ON TRANSACCION.COMPANIA = ES_ESTPREVIO.COMPANIA AND TRANSACCION.ESTUDIOPREVIO = ES_ESTPREVIO.COD_ESTUDIO WHERE TRANSACCION.COMPANIA = :COMPANIA AND TRANSACCION.TIPOCONTRATO = :TIPOCONTRATO AND TRANSACCION.ANO = :ANOTX AND TRANSACCION.CONSECUTIVO = CASE WHEN :TRANSACCION IS NULL THEN TRANSACCION.CONSECUTIVO ELSE TO_NUMBER(:TRANSACCION) END ORDER BY CONSECUTIVO) INI WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END) LIKE UPPER(CONCAT(CONCAT('%',:CONSECUTIVO), '%')) AND (CASE WHEN NOM_TIPO IS NULL THEN ' ' ELSE UPPER(NOM_TIPO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOM_TIPO), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(:ANO, '%')) AND (CASE WHEN NOMBRE_ESTUDIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_ESTUDIO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_ESTUDIO), '%')) AND (CASE WHEN NOM_ESTADO IS NULL THEN ' ' ELSE UPPER(NOM_ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOM_ESTADO), '%')) AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END) LIKE UPPER(CONCAT(CONCAT('%',:OBSERVACION), '%')) AND (CASE WHEN NUM_PROCESO IS NULL THEN ' ' ELSE UPPER(NUM_PROCESO) END) LIKE UPPER(CONCAT(CONCAT('%',:NUM_PROCESO), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPOCONTRATO":"$TIPOCONTRATO","CONSECUTIVO":"$CONSECUTIVO","NOM_TIPO":"$NOM_TIPO","FECHA":"$FECHA","ANO":"$ANO(type:integer)","NOMBRE_ESTUDIO":"$NOMBRE_ESTUDIO","NOM_ESTADO":"$NOM_ESTADO","OBSERVACION":"$OBSERVACION","NUM_PROCESO":"$NUM_PROCESO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="ANOTX" sqlType="STRING"/>
+		<param name="TRANSACCION" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="NOM_TIPO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="NOMBRE_ESTUDIO" sqlType="STRING"/>
+		<param name="NOM_ESTADO" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="NUM_PROCESO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="transacciones">
+		<call-query href="getTransaccionesPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="ANOTX" query-param="ANOTX"/>
+			<with-param name="TRANSACCION" query-param="TRANSACCION"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="NOM_TIPO" query-param="NOM_TIPO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NOMBRE_ESTUDIO" query-param="NOMBRE_ESTUDIO"/>
+			<with-param name="NOM_ESTADO" query-param="NOM_ESTADO"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="NUM_PROCESO" query-param="NUM_PROCESO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT TRANSACCION.COMPANIA, TRANSACCION.TIPOCONTRATO, LPAD(TRANSACCION.CONSECUTIVO,8,'0') CONSECUTIVO, TIPOCONTRATO_PR.DESCRIPCION NOM_TIPO, TO_CHAR(TRANSACCION.FECHA, 'DD/MM/YYYY') FECHA, TRANSACCION.ANO, ES_ESTPREVIO.NOMBRE_ESTUDIO, CASE TRANSACCION.ESTADO WHEN 'AC' THEN 'Abierta' WHEN 'CE' THEN 'Cerrado' WHEN 'CA' THEN 'Cancelada' END NOM_ESTADO, TRANSACCION.OBSERVACION, TRANSACCION.NUM_PROCESO FROM TRANSACCION INNER JOIN TIPOCONTRATO_PR ON TRANSACCION.COMPANIA = TIPOCONTRATO_PR.COMPANIA AND TRANSACCION.TIPOCONTRATO = TIPOCONTRATO_PR.TIPOCONTRATO LEFT JOIN ES_ESTPREVIO ON TRANSACCION.COMPANIA = ES_ESTPREVIO.COMPANIA AND TRANSACCION.ESTUDIOPREVIO = ES_ESTPREVIO.COD_ESTUDIO WHERE TRANSACCION.COMPANIA = :COMPANIA AND TRANSACCION.TIPOCONTRATO = :TIPOCONTRATO AND TRANSACCION.ANO = :ANOTX AND TRANSACCION.CONSECUTIVO = CASE WHEN :TRANSACCION IS NULL THEN TRANSACCION.CONSECUTIVO ELSE TO_NUMBER(:TRANSACCION) END ORDER BY CONSECUTIVO) INI WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END) LIKE UPPER(CONCAT(CONCAT('%',:CONSECUTIVO), '%')) AND (CASE WHEN NOM_TIPO IS NULL THEN ' ' ELSE UPPER(NOM_TIPO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOM_TIPO), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(:ANO, '%')) AND (CASE WHEN NOMBRE_ESTUDIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_ESTUDIO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_ESTUDIO), '%')) AND (CASE WHEN NOM_ESTADO IS NULL THEN ' ' ELSE UPPER(NOM_ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOM_ESTADO), '%')) AND (CASE WHEN OBSERVACION IS NULL THEN ' ' ELSE UPPER(OBSERVACION) END) LIKE UPPER(CONCAT(CONCAT('%',:OBSERVACION), '%')) AND (CASE WHEN NUM_PROCESO IS NULL THEN ' ' ELSE UPPER(NUM_PROCESO) END) LIKE UPPER(CONCAT(CONCAT('%',:NUM_PROCESO), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="ANOTX" sqlType="STRING"/>
+		<param name="TRANSACCION" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="NOM_TIPO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="NOMBRE_ESTUDIO" sqlType="STRING"/>
+		<param name="NOM_ESTADO" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="NUM_PROCESO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="transacciones/numero">
+		<call-query href="getTransaccionesNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="ANOTX" query-param="ANOTX"/>
+			<with-param name="TRANSACCION" query-param="TRANSACCION"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="NOM_TIPO" query-param="NOM_TIPO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NOMBRE_ESTUDIO" query-param="NOMBRE_ESTUDIO"/>
+			<with-param name="NOM_ESTADO" query-param="NOM_ESTADO"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="NUM_PROCESO" query-param="NUM_PROCESO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT TRANSACCION.COMPANIA, TRANSACCION.CONSECUTIVO, TRANSACCION.TIPOCONTRATO, TIPOCONTRATO_PR.DESCRIPCION NOM_TIPO,(TO_CHAR(TRANSACCION.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, TRANSACCION.ANO, TRANSACCION.COMPANIA, TRANSACCION.ESTUDIOPREVIO, ES_ESTPREVIO.COD_ESTUDIO, ES_ESTPREVIO.NOMBRE_ESTUDIO, TRANSACCION.ESTADO, (CASE TRANSACCION.ESTADO WHEN 'AC' THEN 'Abierta' WHEN 'CE' THEN 'Cerrado' WHEN 'CA' THEN 'Cancelada' END) NOM_ESTADO, TRANSACCION.OBSERVACION, TRANSACCION.NUM_PROCESO, TRANSACCION.CREATED_BY, TRANSACCION.MODIFIED_BY,(TO_CHAR(TRANSACCION.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED,(TO_CHAR(TRANSACCION.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM TRANSACCION INNER JOIN TIPOCONTRATO_PR ON TRANSACCION.COMPANIA = TIPOCONTRATO_PR.COMPANIA AND TRANSACCION.TIPOCONTRATO = TIPOCONTRATO_PR.TIPOCONTRATO LEFT JOIN ES_ESTPREVIO ON TRANSACCION.COMPANIA = ES_ESTPREVIO.COMPANIA AND TRANSACCION.ESTUDIOPREVIO = ES_ESTPREVIO.COD_ESTUDIO WHERE TRANSACCION.COMPANIA= :KEY_COMPANIA AND TRANSACCION.TIPOCONTRATO= :KEY_TIPOCONTRATO AND TRANSACCION.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO","TIPOCONTRATO":"$TIPOCONTRATO","NOM_TIPO":"$NOM_TIPO","FECHA":"$FECHA","ANO":"$ANO(type:integer)","COMPANIA":"$COMPANIA","ESTUDIOPREVIO":"$ESTUDIOPREVIO(type:long)","COD_ESTUDIO":"$COD_ESTUDIO","NOMBRE_ESTUDIO":"$NOMBRE_ESTUDIO","ESTADO":"$ESTADO","NOM_ESTADO":"$NOM_ESTADO","OBSERVACION":"$OBSERVACION","NUM_PROCESO":"$NUM_PROCESO","CREATED_BY":"$CREATED_BY","MODIFIED_BY":"$MODIFIED_BY","DATE_CREATED":"$DATE_CREATED","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPOCONTRATO" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="transacciones/data">
+		<call-query href="getTransaccionesRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPOCONTRATO" query-param="KEY_TIPOCONTRATO"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateTransacciones" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE TRANSACCION SET COMPANIA=:COMPANIA, CONSECUTIVO=:CONSECUTIVO, TIPOCONTRATO=:TIPOCONTRATO, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), ANO=:ANO, ESTUDIOPREVIO=:ESTUDIOPREVIO, ESTADO=:ESTADO, OBSERVACION=:OBSERVACION, NUM_PROCESO=:NUM_PROCESO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE TRANSACCION.COMPANIA= :KEY_COMPANIA AND TRANSACCION.TIPOCONTRATO= :KEY_TIPOCONTRATO AND TRANSACCION.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="ESTUDIOPREVIO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="OBSERVACION" sqlType="STRING"/>
+		<param name="NUM_PROCESO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPOCONTRATO" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="transacciones">
+		<call-query href="updateTransacciones">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="ESTUDIOPREVIO" query-param="ESTUDIOPREVIO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="OBSERVACION" query-param="OBSERVACION"/>
+			<with-param name="NUM_PROCESO" query-param="NUM_PROCESO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPOCONTRATO" query-param="KEY_TIPOCONTRATO"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesNumPorCompaniaTipocontYEstadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CONSECUTIVO, TO_CHAR(FECHA, 'DD/MM/YYYY') FECHA, ANO, ESTADO, ESTUDIOPREVIO  FROM TRANSACCION WHERE COMPANIA = :COMPANIA AND TIPOCONTRATO = :TIPOCONTRATO AND ESTADO = :ESTADO ORDER BY NUMERO, CONSECUTIVO, FECHA) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="transacciones/porcompaniatipocontyestado/num">
+		<call-query href="getTransaccionesNumPorCompaniaTipocontYEstadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesPagMonitoretapasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TRANSACCION.COMPANIA, TRANSACCION.TIPOCONTRATO, TRANSACCION.CONSECUTIVO, TIPOCONTRATO_PR.DESCRIPCION NOM_TIPO, TRANSACCION.ANO, TRANSACCION.ESTADO, DECODE(TRANSACCION.ESTADO,'AC','Abierta','CE','Cerrado','CA','Cancelada') NOM_ESTADO, TRANSACCION.ESTUDIOPREVIO, TRANSACCION.OBSERVACION, D_TRANSACCION.CONSECUTIVODETALLE, D_TRANSACCION.IDETAPA,(TO_CHAR(D_TRANSACCION.FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHAINICIAL,(TO_CHAR(D_TRANSACCION.FECHAFINAL,'DD/MM/YYYY HH24:MI:SS')) FECHAFINAL, D_TRANSACCION.ESTADO ESTADOETAPA, DECODE(D_TRANSACCION.ESTADO,'A','Activo','C','Cerrado','S','Suspendido','P','Pendiente') NOMESTADOETAPA, ES_ESTPREVIO.OBJETO_CONTRATO, ES_ESTPREVIO.DEPENDENCIA, ES_ESTPREVIO.RESPONSABLE, DEPENDENCIA.NOMBRE NOM_DEPENDENCIA, TERCERO.NOMBRE NOM_RESPONSABLE, ETAPA_PR.DESCRIPCION NOM_ETAPA  FROM TRANSACCION INNER JOIN D_TRANSACCION ON TRANSACCION.COMPANIA = D_TRANSACCION.COMPANIA AND TRANSACCION.TIPOCONTRATO = D_TRANSACCION.TIPOCONTRATO AND TRANSACCION.CONSECUTIVO = D_TRANSACCION.TRANSACCION INNER JOIN TIPOCONTRATO_PR ON TRANSACCION.COMPANIA = TIPOCONTRATO_PR.COMPANIA AND TRANSACCION.TIPOCONTRATO = TIPOCONTRATO_PR.TIPOCONTRATO INNER JOIN ETAPA_PR ON D_TRANSACCION.COMPANIA = ETAPA_PR.COMPANIA AND D_TRANSACCION.TIPOCONTRATO = ETAPA_PR.TIPOCONTRATO AND D_TRANSACCION.IDETAPA = ETAPA_PR.IDETAPA INNER JOIN ES_ESTPREVIO ON TRANSACCION.COMPANIA = ES_ESTPREVIO.COMPANIA AND TRANSACCION.ESTUDIOPREVIO = ES_ESTPREVIO.COD_ESTUDIO LEFT JOIN DEPENDENCIA ON ES_ESTPREVIO.COMPANIA = DEPENDENCIA.COMPANIA AND ES_ESTPREVIO.DEPENDENCIA = DEPENDENCIA.CODIGO INNER JOIN RESPONSABLE ON ES_ESTPREVIO.COMPANIA = RESPONSABLE.COMPANIA AND ES_ESTPREVIO.RESPONSABLE = RESPONSABLE.CEDULA INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE TRANSACCION.COMPANIA = :COMPANIA ORDER BY TRANSACCION.TIPOCONTRATO, TRANSACCION.CONSECUTIVO, D_TRANSACCION.CONSECUTIVODETALLE) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN NOM_TIPO IS NULL THEN ' ' ELSE UPPER(NOM_TIPO) END)  LIKE UPPER( '%' || :NOM_TIPO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN NOM_ESTADO IS NULL THEN ' ' ELSE UPPER(NOM_ESTADO) END)  LIKE UPPER( '%' || :NOM_ESTADO || '%')  AND (CASE WHEN FECHAINICIAL IS NULL THEN ' ' ELSE UPPER(FECHAINICIAL) END)  LIKE UPPER( '%' || :FECHAINICIAL || '%')  AND (CASE WHEN FECHAFINAL IS NULL THEN ' ' ELSE UPPER(FECHAFINAL) END)  LIKE UPPER( '%' || :FECHAFINAL || '%')  AND (CASE WHEN NOMESTADOETAPA IS NULL THEN ' ' ELSE UPPER(NOMESTADOETAPA) END)  LIKE UPPER( '%' || :NOMESTADOETAPA || '%')  AND (CASE WHEN OBJETO_CONTRATO IS NULL THEN ' ' ELSE UPPER(OBJETO_CONTRATO) END)  LIKE UPPER( '%' || :OBJETO_CONTRATO || '%')  AND (CASE WHEN NOM_DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(NOM_DEPENDENCIA) END)  LIKE UPPER( '%' || :NOM_DEPENDENCIA || '%')  AND (CASE WHEN NOM_RESPONSABLE IS NULL THEN ' ' ELSE UPPER(NOM_RESPONSABLE) END)  LIKE UPPER( '%' || :NOM_RESPONSABLE || '%')  AND (CASE WHEN NOM_ETAPA IS NULL THEN ' ' ELSE UPPER(NOM_ETAPA) END)  LIKE UPPER( '%' || :NOM_ETAPA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPOCONTRATO":"$TIPOCONTRATO","CONSECUTIVO":"$CONSECUTIVO","NOM_TIPO":"$NOM_TIPO","ANO":"$ANO(type:integer)","ESTADO":"$ESTADO","NOM_ESTADO":"$NOM_ESTADO","ESTUDIOPREVIO":"$ESTUDIOPREVIO(type:long)","OBSERVACION":"$OBSERVACION","CONSECUTIVODETALLE":"$CONSECUTIVODETALLE(type:integer)","IDETAPA":"$IDETAPA(type:integer)","FECHAINICIAL":"$FECHAINICIAL","FECHAFINAL":"$FECHAFINAL","ESTADOETAPA":"$ESTADOETAPA","NOMESTADOETAPA":"$NOMESTADOETAPA","OBJETO_CONTRATO":"$OBJETO_CONTRATO","DEPENDENCIA":"$DEPENDENCIA","RESPONSABLE":"$RESPONSABLE","NOM_DEPENDENCIA":"$NOM_DEPENDENCIA","NOM_RESPONSABLE":"$NOM_RESPONSABLE","NOM_ETAPA":"$NOM_ETAPA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="NOM_TIPO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="NOM_ESTADO" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="NOMESTADOETAPA" sqlType="STRING"/>
+		<param name="OBJETO_CONTRATO" sqlType="STRING"/>
+		<param name="NOM_DEPENDENCIA" sqlType="STRING"/>
+		<param name="NOM_RESPONSABLE" sqlType="STRING"/>
+		<param name="NOM_ETAPA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="transacciones/monitoretapas/pag">
+		<call-query href="getTransaccionesPagMonitoretapasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="NOM_TIPO" query-param="NOM_TIPO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NOM_ESTADO" query-param="NOM_ESTADO"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="NOMESTADOETAPA" query-param="NOMESTADOETAPA"/>
+			<with-param name="OBJETO_CONTRATO" query-param="OBJETO_CONTRATO"/>
+			<with-param name="NOM_DEPENDENCIA" query-param="NOM_DEPENDENCIA"/>
+			<with-param name="NOM_RESPONSABLE" query-param="NOM_RESPONSABLE"/>
+			<with-param name="NOM_ETAPA" query-param="NOM_ETAPA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesNumMonitoretapasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TRANSACCION.COMPANIA, TRANSACCION.TIPOCONTRATO, TRANSACCION.CONSECUTIVO, TIPOCONTRATO_PR.DESCRIPCION NOM_TIPO, TRANSACCION.ANO, TRANSACCION.ESTADO, DECODE(TRANSACCION.ESTADO,'AC','Abierta','CE','Cerrado','CA','Cancelada') NOM_ESTADO, TRANSACCION.ESTUDIOPREVIO, TRANSACCION.OBSERVACION, D_TRANSACCION.CONSECUTIVODETALLE, D_TRANSACCION.IDETAPA,(TO_CHAR(D_TRANSACCION.FECHAINICIAL,'DD/MM/YYYY HH24:MI:SS')) FECHAINICIAL,(TO_CHAR(D_TRANSACCION.FECHAFINAL,'DD/MM/YYYY HH24:MI:SS')) FECHAFINAL, D_TRANSACCION.ESTADO ESTADOETAPA, DECODE(D_TRANSACCION.ESTADO,'A','Activo','C','Cerrado','S','Suspendido','P','Pendiente') NOMESTADOETAPA, ES_ESTPREVIO.OBJETO_CONTRATO, ES_ESTPREVIO.DEPENDENCIA, ES_ESTPREVIO.RESPONSABLE, DEPENDENCIA.NOMBRE NOM_DEPENDENCIA, TERCERO.NOMBRE NOM_RESPONSABLE, ETAPA_PR.DESCRIPCION NOM_ETAPA  FROM TRANSACCION INNER JOIN D_TRANSACCION ON TRANSACCION.COMPANIA = D_TRANSACCION.COMPANIA AND TRANSACCION.TIPOCONTRATO = D_TRANSACCION.TIPOCONTRATO AND TRANSACCION.CONSECUTIVO = D_TRANSACCION.TRANSACCION INNER JOIN TIPOCONTRATO_PR ON TRANSACCION.COMPANIA = TIPOCONTRATO_PR.COMPANIA AND TRANSACCION.TIPOCONTRATO = TIPOCONTRATO_PR.TIPOCONTRATO INNER JOIN ETAPA_PR ON D_TRANSACCION.COMPANIA = ETAPA_PR.COMPANIA AND D_TRANSACCION.TIPOCONTRATO = ETAPA_PR.TIPOCONTRATO AND D_TRANSACCION.IDETAPA = ETAPA_PR.IDETAPA INNER JOIN ES_ESTPREVIO ON TRANSACCION.COMPANIA = ES_ESTPREVIO.COMPANIA AND TRANSACCION.ESTUDIOPREVIO = ES_ESTPREVIO.COD_ESTUDIO LEFT JOIN DEPENDENCIA ON ES_ESTPREVIO.COMPANIA = DEPENDENCIA.COMPANIA AND ES_ESTPREVIO.DEPENDENCIA = DEPENDENCIA.CODIGO INNER JOIN RESPONSABLE ON ES_ESTPREVIO.COMPANIA = RESPONSABLE.COMPANIA AND ES_ESTPREVIO.RESPONSABLE = RESPONSABLE.CEDULA INNER JOIN TERCERO ON RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND RESPONSABLE.CEDULA = TERCERO.NIT AND RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL WHERE TRANSACCION.COMPANIA = :COMPANIA ORDER BY TRANSACCION.TIPOCONTRATO, TRANSACCION.CONSECUTIVO, D_TRANSACCION.CONSECUTIVODETALLE) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN NOM_TIPO IS NULL THEN ' ' ELSE UPPER(NOM_TIPO) END)  LIKE UPPER( '%' || :NOM_TIPO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN NOM_ESTADO IS NULL THEN ' ' ELSE UPPER(NOM_ESTADO) END)  LIKE UPPER( '%' || :NOM_ESTADO || '%')  AND (CASE WHEN FECHAINICIAL IS NULL THEN ' ' ELSE UPPER(FECHAINICIAL) END)  LIKE UPPER( '%' || :FECHAINICIAL || '%')  AND (CASE WHEN FECHAFINAL IS NULL THEN ' ' ELSE UPPER(FECHAFINAL) END)  LIKE UPPER( '%' || :FECHAFINAL || '%')  AND (CASE WHEN NOMESTADOETAPA IS NULL THEN ' ' ELSE UPPER(NOMESTADOETAPA) END)  LIKE UPPER( '%' || :NOMESTADOETAPA || '%')  AND (CASE WHEN OBJETO_CONTRATO IS NULL THEN ' ' ELSE UPPER(OBJETO_CONTRATO) END)  LIKE UPPER( '%' || :OBJETO_CONTRATO || '%')  AND (CASE WHEN NOM_DEPENDENCIA IS NULL THEN ' ' ELSE UPPER(NOM_DEPENDENCIA) END)  LIKE UPPER( '%' || :NOM_DEPENDENCIA || '%')  AND (CASE WHEN NOM_RESPONSABLE IS NULL THEN ' ' ELSE UPPER(NOM_RESPONSABLE) END)  LIKE UPPER( '%' || :NOM_RESPONSABLE || '%')  AND (CASE WHEN NOM_ETAPA IS NULL THEN ' ' ELSE UPPER(NOM_ETAPA) END)  LIKE UPPER( '%' || :NOM_ETAPA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="NOM_TIPO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="NOM_ESTADO" sqlType="STRING"/>
+		<param name="FECHAINICIAL" sqlType="STRING"/>
+		<param name="FECHAFINAL" sqlType="STRING"/>
+		<param name="NOMESTADOETAPA" sqlType="STRING"/>
+		<param name="OBJETO_CONTRATO" sqlType="STRING"/>
+		<param name="NOM_DEPENDENCIA" sqlType="STRING"/>
+		<param name="NOM_RESPONSABLE" sqlType="STRING"/>
+		<param name="NOM_ETAPA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="transacciones/monitoretapas/num">
+		<call-query href="getTransaccionesNumMonitoretapasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="NOM_TIPO" query-param="NOM_TIPO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="NOM_ESTADO" query-param="NOM_ESTADO"/>
+			<with-param name="FECHAINICIAL" query-param="FECHAINICIAL"/>
+			<with-param name="FECHAFINAL" query-param="FECHAFINAL"/>
+			<with-param name="NOMESTADOETAPA" query-param="NOMESTADOETAPA"/>
+			<with-param name="OBJETO_CONTRATO" query-param="OBJETO_CONTRATO"/>
+			<with-param name="NOM_DEPENDENCIA" query-param="NOM_DEPENDENCIA"/>
+			<with-param name="NOM_RESPONSABLE" query-param="NOM_RESPONSABLE"/>
+			<with-param name="NOM_ETAPA" query-param="NOM_ETAPA"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesPagEstudiosPreviosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TRANSACCION.CONSECUTIVO, TRANSACCION.TIPOCONTRATO, TIPOCONTRATO_PR.DESCRIPCION, ES_ESTPREVIO.OBJETO_CONTRATO, ES_ESTPREVIO.COD_ESTUDIO, ES_ESTPREVIO.NOMBRE_ESTUDIO, TRANSACCION.NUM_PROCESO  FROM TRANSACCION INNER JOIN TIPOCONTRATO_PR ON TRANSACCION.COMPANIA = TIPOCONTRATO_PR.COMPANIA AND TRANSACCION.TIPOCONTRATO = TIPOCONTRATO_PR.TIPOCONTRATO INNER JOIN ES_ESTPREVIO ON TRANSACCION.ESTUDIOPREVIO = ES_ESTPREVIO.COD_ESTUDIO AND TRANSACCION.COMPANIA = ES_ESTPREVIO.COMPANIA WHERE TRANSACCION.COMPANIA = :COMPANIA AND TRANSACCION.TIPOCONTRATO = :TIPOCONTRATO) WHERE (CASE WHEN COD_ESTUDIO IS NULL THEN ' ' ELSE UPPER(COD_ESTUDIO) END)  LIKE UPPER(:COD_ESTUDIO || '%')  AND (CASE WHEN NOMBRE_ESTUDIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_ESTUDIO) END)  LIKE UPPER( '%' || :NOMBRE_ESTUDIO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CONSECUTIVO":"$CONSECUTIVO","TIPOCONTRATO":"$TIPOCONTRATO","DESCRIPCION":"$DESCRIPCION","OBJETO_CONTRATO":"$OBJETO_CONTRATO","COD_ESTUDIO":"$COD_ESTUDIO","NOMBRE_ESTUDIO":"$NOMBRE_ESTUDIO","NUM_PROCESO":"$NUM_PROCESO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="NOMBRE_ESTUDIO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="transacciones/estudiosprevios/pag">
+		<call-query href="getTransaccionesPagEstudiosPreviosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="NOMBRE_ESTUDIO" query-param="NOMBRE_ESTUDIO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesNumEstudiosPreviosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TRANSACCION.CONSECUTIVO, TRANSACCION.TIPOCONTRATO, TIPOCONTRATO_PR.DESCRIPCION, ES_ESTPREVIO.OBJETO_CONTRATO, ES_ESTPREVIO.COD_ESTUDIO, ES_ESTPREVIO.NOMBRE_ESTUDIO, TRANSACCION.NUM_PROCESO  FROM TRANSACCION INNER JOIN TIPOCONTRATO_PR ON TRANSACCION.COMPANIA = TIPOCONTRATO_PR.COMPANIA AND TRANSACCION.TIPOCONTRATO = TIPOCONTRATO_PR.TIPOCONTRATO INNER JOIN ES_ESTPREVIO ON TRANSACCION.ESTUDIOPREVIO = ES_ESTPREVIO.COD_ESTUDIO AND TRANSACCION.COMPANIA = ES_ESTPREVIO.COMPANIA WHERE TRANSACCION.COMPANIA = :COMPANIA AND TRANSACCION.TIPOCONTRATO = :TIPOCONTRATO) WHERE (CASE WHEN COD_ESTUDIO IS NULL THEN ' ' ELSE UPPER(COD_ESTUDIO) END)  LIKE UPPER(:COD_ESTUDIO || '%')  AND (CASE WHEN NOMBRE_ESTUDIO IS NULL THEN ' ' ELSE UPPER(NOMBRE_ESTUDIO) END)  LIKE UPPER( '%' || :NOMBRE_ESTUDIO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="NOMBRE_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="transacciones/estudiosprevios/num">
+		<call-query href="getTransaccionesNumEstudiosPreviosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="NOMBRE_ESTUDIO" query-param="NOMBRE_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+
+</data>

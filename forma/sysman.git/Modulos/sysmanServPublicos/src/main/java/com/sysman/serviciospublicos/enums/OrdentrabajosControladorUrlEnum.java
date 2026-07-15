@@ -1,0 +1,89 @@
+/*
+ * OrdentrabajosControladorUrlEnum
+ *
+ * 1.0
+ *
+ * 09/09/2016
+ *
+ * Copyright Stefanini Sysman
+ */
+package com.sysman.serviciospublicos.enums;
+
+/**
+ * @author Processors-api
+ * 
+ * @version 1.0
+ * 
+ * Enumeracion que permite clasificar cada uno de los identificadores
+ * geenerados en el refactoring y asociados al codigo legacy obtenido
+ * con patrones de busqueda.
+ */
+public enum OrdentrabajosControladorUrlEnum {
+
+    URL15253("ORDENTRABAJOSCONTROLADORURL15253", "326003"),
+
+    URL31486("ORDENTRABAJOSCONTROLADORURL31486", "213182"),
+
+    URL60183("ORDENTRABAJOSCONTROLADORURL60183", "326004"),
+
+    URL34656("ORDENTRABAJOSCONTROLADORURL34656", "104028"),
+
+    URL61732("ORDENTRABAJOSCONTROLADORURL61732", "362009"),
+
+    URL29522("ORDENTRABAJOSCONTROLADORURL29522", "213184"),
+
+    URL32897("ORDENTRABAJOSCONTROLADORURL32897", "362005"),
+
+    URL25472("ORDENTRABAJOSCONTROLADORURL25472", "213186"),
+
+    URL66184("ORDENTRABAJOSCONTROLADORURL66184", "213185"),
+
+    URL26368("ORDENTRABAJOSCONTROLADORURL26368", "215038"),
+
+    URL24555("ORDENTRABAJOSCONTROLADORURL24555", "213187"),
+
+    URL28770("ORDENTRABAJOSCONTROLADORURL28770", "329001"),
+
+    URL22521("ORDENTRABAJOSCONTROLADORURL22521", "247001"),
+
+    URL23014("ORDENTRABAJOSCONTROLADORURL23014", "341003"),
+
+    URL23800("ORDENTRABAJOSCONTROLADORURL23800", "234013"),
+
+    URL30278("ORDENTRABAJOSCONTROLADORURL30278", "234001"),
+
+    URL24576("ORDENTRABAJOSCONTROLADORURL24576", "234015"),
+
+    URL22085("ORDENTRABAJOSCONTROLADORURL22085", "214083"),
+
+    URL19041("ORDENTRABAJOSCONTROLADORURL19041", "234017"),
+
+    URL30883("ORDENTRABAJOSCONTROLADORURL30883", "234019"),
+
+    URL65978("ORDENTRABAJOSCONTROLADORURL65978", "326007"),
+
+    URL55991("ORDENTRABAJOSCONTROLADORURL55991", "213195"),
+
+    URL34050("ORDENTRABAJOSCONTROLADORURL34050", "62002")
+
+    ;
+
+    private final String key;
+    private final String value;
+
+    private OrdentrabajosControladorUrlEnum(String key, String value)
+    {
+        this.key = key;
+        this.value = value;
+    }
+
+    public String getKey()
+    {
+        return key;
+    }
+
+    public String getValue()
+    {
+        return value;
+    }
+}

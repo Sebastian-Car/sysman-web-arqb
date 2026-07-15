@@ -1,0 +1,769 @@
+﻿<data name="polizas" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getPolizasTotalRegistrosPorClaseYOrdenDeCompraQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(*) REGISTROS  FROM POLIZAS WHERE COMPANIA = :COMPANIA AND CLASEORDEN = :CLASEORDEN AND ORDENDECOMPRA = :NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"REGISTROS":"$REGISTROS(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="polizas/totalregistrosporclaseyordendecompra">
+		<call-query href="getPolizasTotalRegistrosPorClaseYOrdenDeCompraQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasPagCodconsecobsporcomnumtipoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  POLIZAS.CODIGO, POLIZAS.CONSECUTIVO, TRIM(POLIZAS.OBSERVACIONES) AS OBSERVACIONES  FROM POLIZAS INNER JOIN ORDENDECOMPRA ON POLIZAS.COMPANIA = ORDENDECOMPRA.COMPANIA AND POLIZAS.CLASEORDEN = ORDENDECOMPRA.CLASEORDEN AND POLIZAS.ORDENDECOMPRA = ORDENDECOMPRA.NUMERO WHERE POLIZAS.COMPANIA = :COMPANIA AND NVL(ORDENDECOMPRA.NUMEROAFECTADO,0) = 0 AND ORDENDECOMPRA.NUMERO = :NUMERO AND POLIZAS.TIPO = :TIPO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER( '%' || :OBSERVACIONES || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","CONSECUTIVO":"$CONSECUTIVO","OBSERVACIONES":"$OBSERVACIONES"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="polizas/codconsecobsporcomnumtipo/pag">
+		<call-query href="getPolizasPagCodconsecobsporcomnumtipoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasNumCodconsecobsporcomnumtipoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  POLIZAS.CODIGO, POLIZAS.CONSECUTIVO, TRIM(POLIZAS.OBSERVACIONES) AS OBSERVACIONES  FROM POLIZAS INNER JOIN ORDENDECOMPRA ON POLIZAS.COMPANIA = ORDENDECOMPRA.COMPANIA AND POLIZAS.CLASEORDEN = ORDENDECOMPRA.CLASEORDEN AND POLIZAS.ORDENDECOMPRA = ORDENDECOMPRA.NUMERO WHERE POLIZAS.COMPANIA = :COMPANIA AND NVL(ORDENDECOMPRA.NUMEROAFECTADO,0) = 0 AND ORDENDECOMPRA.NUMERO = :NUMERO AND POLIZAS.TIPO = :TIPO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER( '%' || :OBSERVACIONES || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="polizas/codconsecobsporcomnumtipo/num">
+		<call-query href="getPolizasNumCodconsecobsporcomnumtipoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasObtenervaloraseguradoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NVL(POLIZAS.VALORASEGURADO,0) VALORASEGURADO  FROM POLIZAS INNER JOIN ORDENDECOMPRA ON POLIZAS.COMPANIA = ORDENDECOMPRA.COMPANIA AND POLIZAS.CLASEORDEN = ORDENDECOMPRA.CLASEORDEN AND POLIZAS.ORDENDECOMPRA = ORDENDECOMPRA.NUMERO WHERE POLIZAS.COMPANIA = :COMPANIA AND NVL(ORDENDECOMPRA.NUMEROAFECTADO,0) = 0 AND POLIZAS.CODIGO = :CODIGO AND ORDENDECOMPRA.NUMERO = :NUMERO AND POLIZAS.TIPO = :TIPO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VALORASEGURADO":"$VALORASEGURADO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="polizas/obtenervalorasegurado">
+		<call-query href="getPolizasObtenervaloraseguradoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasValoraseguradoconnroafectadoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  MAX(POLIZAS.VALORASEGURADO) VALORASEGURADO  FROM POLIZAS INNER JOIN ORDENDECOMPRA ON POLIZAS.COMPANIA = ORDENDECOMPRA.COMPANIA AND POLIZAS.CLASEORDEN = ORDENDECOMPRA.CLASEORDEN AND POLIZAS.ORDENDECOMPRA = ORDENDECOMPRA.NUMERO WHERE POLIZAS.COMPANIA = :COMPANIA AND ORDENDECOMPRA.NUMEROAFECTADO = :NUMERO AND POLIZAS.CODIGO = :CODIGO AND POLIZAS.TIPO = :TIPO ORDER BY POLIZAS.ORDENDECOMPRA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VALORASEGURADO":"$VALORASEGURADO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="polizas/valoraseguradoconnroafectado">
+		<call-query href="getPolizasValoraseguradoconnroafectadoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasPagListasubpolizasmodificacionesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  POLIZAS.COMPANIA, POLIZAS.CLASEORDEN, POLIZAS.ORDENDECOMPRA, POLIZAS.CODIGO, POLIZAS.CONSECUTIVO, POLIZAS.VLRANTERIOR, POLIZAS.VLRACTUAL, POLIZAS.OBSERVACIONES,(TO_CHAR(POLIZAS.FECHAEXPEDICION,'DD/MM/YYYY HH24:MI:SS')) FECHAEXPEDICION,(TO_CHAR(POLIZAS.VIGENCIADESDE,'DD/MM/YYYY HH24:MI:SS')) VIGENCIADESDE,(TO_CHAR(POLIZAS.VIGENCIAHASTA,'DD/MM/YYYY HH24:MI:SS')) VIGENCIAHASTA, POLIZAS.VALOR, POLIZAS.ESTADO, POLIZAS.TIPO,(TO_CHAR(POLIZAS.FECHAAPROBACIONCUMPLIMIENTO,'DD/MM/YYYY HH24:MI:SS')) FECHAAPROBACIONCUMPLIMIENTO,(TO_CHAR(POLIZAS.FECHAAPROBACIONRESPONSABILIDAD,'DD/MM/YYYY HH24:MI:SS')) FECHAAPROBACIONRESPONSABILIDAD, POLIZAS.ASEGURADORA, POLIZAS.VALORASEGURADO, ASEGURADORA.NOMBRE NOMBREASEGURADORA, TIPOPOLIZA.DESCRIPCION TIPODESC  FROM POLIZAS INNER JOIN ASEGURADORA ON POLIZAS.COMPANIA = ASEGURADORA.COMPANIA AND POLIZAS.ASEGURADORA = ASEGURADORA.NITASEGURADORA AND POLIZAS.SUCURSAL = ASEGURADORA.SUCURSAL INNER JOIN TIPOPOLIZA ON POLIZAS.TIPO = TIPOPOLIZA.CODIGO WHERE POLIZAS.COMPANIA = :COMPANIA AND POLIZAS.CLASEORDEN = :TIPOCONTRATO AND POLIZAS.ORDENDECOMPRA = :ORDEN ORDER BY POLIZAS.CONSECUTIVO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%')  AND (CASE WHEN VLRANTERIOR IS NULL THEN ' ' ELSE UPPER(VLRANTERIOR) END)  LIKE UPPER(:VLRANTERIOR || '%')  AND (CASE WHEN VLRACTUAL IS NULL THEN ' ' ELSE UPPER(VLRACTUAL) END)  LIKE UPPER(:VLRACTUAL || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER(:OBSERVACIONES || '%')  AND (CASE WHEN FECHAEXPEDICION IS NULL THEN ' ' ELSE UPPER(FECHAEXPEDICION) END)  LIKE UPPER(:FECHAEXPEDICION || '%')  AND (CASE WHEN VIGENCIADESDE IS NULL THEN ' ' ELSE UPPER(VIGENCIADESDE) END)  LIKE UPPER( '%' || :VIGENCIADESDE || '%')  AND (CASE WHEN VIGENCIAHASTA IS NULL THEN ' ' ELSE UPPER(VIGENCIAHASTA) END)  LIKE UPPER( '%' || :VIGENCIAHASTA || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%')  AND (CASE WHEN FECHAAPROBACIONCUMPLIMIENTO IS NULL THEN ' ' ELSE UPPER(FECHAAPROBACIONCUMPLIMIENTO) END)  LIKE UPPER( '%' || :FECHAAPROBACIONCUMPLIMIENTO || '%')  AND (CASE WHEN FECHAAPROBACIONRESPONSABILIDAD IS NULL THEN ' ' ELSE UPPER(FECHAAPROBACIONRESPONSABILIDAD) END)  LIKE UPPER(:FECHAAPROBACIONRESPONSABILIDAD || '%')  AND (CASE WHEN VALORASEGURADO IS NULL THEN ' ' ELSE UPPER(VALORASEGURADO) END)  LIKE UPPER( '%' || :VALORASEGURADO || '%')  AND (CASE WHEN NOMBREASEGURADORA IS NULL THEN ' ' ELSE UPPER(NOMBREASEGURADORA) END)  LIKE UPPER( '%' || :NOMBREASEGURADORA || '%')  AND (CASE WHEN TIPODESC IS NULL THEN ' ' ELSE UPPER(TIPODESC) END)  LIKE UPPER( '%' || :TIPODESC || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CLASEORDEN":"$CLASEORDEN","ORDENDECOMPRA":"$ORDENDECOMPRA","CODIGO":"$CODIGO","CONSECUTIVO":"$CONSECUTIVO","VLRANTERIOR":"$VLRANTERIOR","VLRACTUAL":"$VLRACTUAL","OBSERVACIONES":"$OBSERVACIONES","FECHAEXPEDICION":"$FECHAEXPEDICION","VIGENCIADESDE":"$VIGENCIADESDE","VIGENCIAHASTA":"$VIGENCIAHASTA","VALOR":"$VALOR","ESTADO":"$ESTADO","TIPO":"$TIPO","FECHAAPROBACIONCUMPLIMIENTO":"$FECHAAPROBACIONCUMPLIMIENTO","FECHAAPROBACIONRESPONSABILIDAD":"$FECHAAPROBACIONRESPONSABILIDAD","ASEGURADORA":"$ASEGURADORA","VALORASEGURADO":"$VALORASEGURADO","NOMBREASEGURADORA":"$NOMBREASEGURADORA","TIPODESC":"$TIPODESC"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="VLRANTERIOR" sqlType="STRING"/>
+		<param name="VLRACTUAL" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="FECHAEXPEDICION" sqlType="STRING"/>
+		<param name="VIGENCIADESDE" sqlType="STRING"/>
+		<param name="VIGENCIAHASTA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="FECHAAPROBACIONCUMPLIMIENTO" sqlType="STRING"/>
+		<param name="FECHAAPROBACIONRESPONSABILIDAD" sqlType="STRING"/>
+		<param name="VALORASEGURADO" sqlType="STRING"/>
+		<param name="NOMBREASEGURADORA" sqlType="STRING"/>
+		<param name="TIPODESC" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="polizas/listasubpolizasmodificaciones/pag">
+		<call-query href="getPolizasPagListasubpolizasmodificacionesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="ORDEN" query-param="ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="VLRANTERIOR" query-param="VLRANTERIOR"/>
+			<with-param name="VLRACTUAL" query-param="VLRACTUAL"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHAEXPEDICION" query-param="FECHAEXPEDICION"/>
+			<with-param name="VIGENCIADESDE" query-param="VIGENCIADESDE"/>
+			<with-param name="VIGENCIAHASTA" query-param="VIGENCIAHASTA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHAAPROBACIONCUMPLIMIENTO" query-param="FECHAAPROBACIONCUMPLIMIENTO"/>
+			<with-param name="FECHAAPROBACIONRESPONSABILIDAD" query-param="FECHAAPROBACIONRESPONSABILIDAD"/>
+			<with-param name="VALORASEGURADO" query-param="VALORASEGURADO"/>
+			<with-param name="NOMBREASEGURADORA" query-param="NOMBREASEGURADORA"/>
+			<with-param name="TIPODESC" query-param="TIPODESC"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasNumListasubpolizasmodificacionesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  POLIZAS.COMPANIA, POLIZAS.CLASEORDEN, POLIZAS.ORDENDECOMPRA, POLIZAS.CODIGO, POLIZAS.CONSECUTIVO, POLIZAS.VLRANTERIOR, POLIZAS.VLRACTUAL, POLIZAS.OBSERVACIONES,(TO_CHAR(POLIZAS.FECHAEXPEDICION,'DD/MM/YYYY HH24:MI:SS')) FECHAEXPEDICION,(TO_CHAR(POLIZAS.VIGENCIADESDE,'DD/MM/YYYY HH24:MI:SS')) VIGENCIADESDE,(TO_CHAR(POLIZAS.VIGENCIAHASTA,'DD/MM/YYYY HH24:MI:SS')) VIGENCIAHASTA, POLIZAS.VALOR, POLIZAS.ESTADO, POLIZAS.TIPO,(TO_CHAR(POLIZAS.FECHAAPROBACIONCUMPLIMIENTO,'DD/MM/YYYY HH24:MI:SS')) FECHAAPROBACIONCUMPLIMIENTO,(TO_CHAR(POLIZAS.FECHAAPROBACIONRESPONSABILIDAD,'DD/MM/YYYY HH24:MI:SS')) FECHAAPROBACIONRESPONSABILIDAD, POLIZAS.ASEGURADORA, POLIZAS.VALORASEGURADO, ASEGURADORA.NOMBRE NOMBREASEGURADORA, TIPOPOLIZA.DESCRIPCION TIPODESC  FROM POLIZAS INNER JOIN ASEGURADORA ON POLIZAS.COMPANIA = ASEGURADORA.COMPANIA AND POLIZAS.ASEGURADORA = ASEGURADORA.NITASEGURADORA AND POLIZAS.SUCURSAL = ASEGURADORA.SUCURSAL INNER JOIN TIPOPOLIZA ON POLIZAS.TIPO = TIPOPOLIZA.CODIGO WHERE POLIZAS.COMPANIA = :COMPANIA AND POLIZAS.CLASEORDEN = :TIPOCONTRATO AND POLIZAS.ORDENDECOMPRA = :ORDEN ORDER BY POLIZAS.CONSECUTIVO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%')  AND (CASE WHEN VLRANTERIOR IS NULL THEN ' ' ELSE UPPER(VLRANTERIOR) END)  LIKE UPPER(:VLRANTERIOR || '%')  AND (CASE WHEN VLRACTUAL IS NULL THEN ' ' ELSE UPPER(VLRACTUAL) END)  LIKE UPPER(:VLRACTUAL || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER(:OBSERVACIONES || '%')  AND (CASE WHEN FECHAEXPEDICION IS NULL THEN ' ' ELSE UPPER(FECHAEXPEDICION) END)  LIKE UPPER(:FECHAEXPEDICION || '%')  AND (CASE WHEN VIGENCIADESDE IS NULL THEN ' ' ELSE UPPER(VIGENCIADESDE) END)  LIKE UPPER( '%' || :VIGENCIADESDE || '%')  AND (CASE WHEN VIGENCIAHASTA IS NULL THEN ' ' ELSE UPPER(VIGENCIAHASTA) END)  LIKE UPPER( '%' || :VIGENCIAHASTA || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%')  AND (CASE WHEN FECHAAPROBACIONCUMPLIMIENTO IS NULL THEN ' ' ELSE UPPER(FECHAAPROBACIONCUMPLIMIENTO) END)  LIKE UPPER( '%' || :FECHAAPROBACIONCUMPLIMIENTO || '%')  AND (CASE WHEN FECHAAPROBACIONRESPONSABILIDAD IS NULL THEN ' ' ELSE UPPER(FECHAAPROBACIONRESPONSABILIDAD) END)  LIKE UPPER(:FECHAAPROBACIONRESPONSABILIDAD || '%')  AND (CASE WHEN VALORASEGURADO IS NULL THEN ' ' ELSE UPPER(VALORASEGURADO) END)  LIKE UPPER( '%' || :VALORASEGURADO || '%')  AND (CASE WHEN NOMBREASEGURADORA IS NULL THEN ' ' ELSE UPPER(NOMBREASEGURADORA) END)  LIKE UPPER( '%' || :NOMBREASEGURADORA || '%')  AND (CASE WHEN TIPODESC IS NULL THEN ' ' ELSE UPPER(TIPODESC) END)  LIKE UPPER( '%' || :TIPODESC || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCONTRATO" sqlType="STRING"/>
+		<param name="ORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="VLRANTERIOR" sqlType="STRING"/>
+		<param name="VLRACTUAL" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="FECHAEXPEDICION" sqlType="STRING"/>
+		<param name="VIGENCIADESDE" sqlType="STRING"/>
+		<param name="VIGENCIAHASTA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="FECHAAPROBACIONCUMPLIMIENTO" sqlType="STRING"/>
+		<param name="FECHAAPROBACIONRESPONSABILIDAD" sqlType="STRING"/>
+		<param name="VALORASEGURADO" sqlType="STRING"/>
+		<param name="NOMBREASEGURADORA" sqlType="STRING"/>
+		<param name="TIPODESC" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="polizas/listasubpolizasmodificaciones/num">
+		<call-query href="getPolizasNumListasubpolizasmodificacionesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCONTRATO" query-param="TIPOCONTRATO"/>
+			<with-param name="ORDEN" query-param="ORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="VLRANTERIOR" query-param="VLRANTERIOR"/>
+			<with-param name="VLRACTUAL" query-param="VLRACTUAL"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHAEXPEDICION" query-param="FECHAEXPEDICION"/>
+			<with-param name="VIGENCIADESDE" query-param="VIGENCIADESDE"/>
+			<with-param name="VIGENCIAHASTA" query-param="VIGENCIAHASTA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHAAPROBACIONCUMPLIMIENTO" query-param="FECHAAPROBACIONCUMPLIMIENTO"/>
+			<with-param name="FECHAAPROBACIONRESPONSABILIDAD" query-param="FECHAAPROBACIONRESPONSABILIDAD"/>
+			<with-param name="VALORASEGURADO" query-param="VALORASEGURADO"/>
+			<with-param name="NOMBREASEGURADORA" query-param="NOMBREASEGURADORA"/>
+			<with-param name="TIPODESC" query-param="TIPODESC"/>
+
+		</call-query>
+	</resource>
+	<query id="insertPolizasCrearsubpolizasm" keyColumns="COMPANIA,CLASEORDEN,ORDENDECOMPRA,CODIGO,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO POLIZAS (COMPANIA, CLASEORDEN, ORDENDECOMPRA, CODIGO, CONSECUTIVO, VLRANTERIOR, VLRACTUAL, OBSERVACIONES, FECHAEXPEDICION, VIGENCIADESDE, VIGENCIAHASTA, VALOR, ESTADO, TIPO, FECHAAPROBACIONCUMPLIMIENTO, FECHAAPROBACIONRESPONSABILIDAD, ASEGURADORA, SUCURSAL, VALORASEGURADO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CLASEORDEN, :ORDENDECOMPRA, :CODIGO, :CONSECUTIVO, :VLRANTERIOR, :VLRACTUAL, :OBSERVACIONES, TO_DATE(:FECHAEXPEDICION,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:VIGENCIADESDE,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:VIGENCIAHASTA,'DD/MM/YYYY HH24:MI:SS'), :VALOR, :ESTADO, :TIPO, TO_DATE(:FECHAAPROBACIONCUMPLIMIENTO,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHAAPROBACIONRESPONSABILIDAD,'DD/MM/YYYY HH24:MI:SS'), :ASEGURADORA, :SUCURSAL, :VALORASEGURADO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CLASEORDEN":"$CLASEORDEN","KEY_ORDENDECOMPRA":"$ORDENDECOMPRA","KEY_CODIGO":"$CODIGO","KEY_CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param defaultValue="0" name="VLRANTERIOR" sqlType="STRING"/>
+		<param defaultValue="0" name="VLRACTUAL" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACIONES" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAEXPEDICION" sqlType="STRING"/>
+		<param defaultValue="" name="VIGENCIADESDE" sqlType="STRING"/>
+		<param defaultValue="" name="VIGENCIAHASTA" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAAPROBACIONCUMPLIMIENTO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAAPROBACIONRESPONSABILIDAD" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="ASEGURADORA" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORASEGURADO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="polizas/crearsubpolizasm">
+		<call-query href="insertPolizasCrearsubpolizasm">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="ORDENDECOMPRA" query-param="ORDENDECOMPRA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="VLRANTERIOR" query-param="VLRANTERIOR"/>
+			<with-param name="VLRACTUAL" query-param="VLRACTUAL"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHAEXPEDICION" query-param="FECHAEXPEDICION"/>
+			<with-param name="VIGENCIADESDE" query-param="VIGENCIADESDE"/>
+			<with-param name="VIGENCIAHASTA" query-param="VIGENCIAHASTA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="FECHAAPROBACIONCUMPLIMIENTO" query-param="FECHAAPROBACIONCUMPLIMIENTO"/>
+			<with-param name="FECHAAPROBACIONRESPONSABILIDAD" query-param="FECHAAPROBACIONRESPONSABILIDAD"/>
+			<with-param name="ASEGURADORA" query-param="ASEGURADORA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="VALORASEGURADO" query-param="VALORASEGURADO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePolizasActualizarsubpolizasm" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE POLIZAS SET CODIGO=:CODIGO, CONSECUTIVO=:CONSECUTIVO, VLRANTERIOR=:VLRANTERIOR, VLRACTUAL=:VLRACTUAL, OBSERVACIONES=:OBSERVACIONES, FECHAEXPEDICION=TO_DATE(:FECHAEXPEDICION,'DD/MM/YYYY HH24:MI:SS'), VIGENCIADESDE=TO_DATE(:VIGENCIADESDE,'DD/MM/YYYY HH24:MI:SS'), VIGENCIAHASTA=TO_DATE(:VIGENCIAHASTA,'DD/MM/YYYY HH24:MI:SS'), VALOR=:VALOR, ESTADO=:ESTADO, TIPO=:TIPO, FECHAAPROBACIONCUMPLIMIENTO=TO_DATE(:FECHAAPROBACIONCUMPLIMIENTO,'DD/MM/YYYY HH24:MI:SS'), FECHAAPROBACIONRESPONSABILIDAD=TO_DATE(:FECHAAPROBACIONRESPONSABILIDAD,'DD/MM/YYYY HH24:MI:SS'), ASEGURADORA=:ASEGURADORA, VALORASEGURADO=:VALORASEGURADO, SUCURSAL=:SUCURSAL, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE POLIZAS.COMPANIA= :KEY_COMPANIA AND POLIZAS.CLASEORDEN= :KEY_CLASEORDEN AND POLIZAS.ORDENDECOMPRA= :KEY_ORDENDECOMPRA AND POLIZAS.CODIGO= :KEY_CODIGO AND POLIZAS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="VLRANTERIOR" sqlType="STRING"/>
+		<param name="VLRACTUAL" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="FECHAEXPEDICION" sqlType="STRING"/>
+		<param name="VIGENCIADESDE" sqlType="STRING"/>
+		<param name="VIGENCIAHASTA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="FECHAAPROBACIONCUMPLIMIENTO" sqlType="STRING"/>
+		<param name="FECHAAPROBACIONRESPONSABILIDAD" sqlType="STRING"/>
+		<param name="ASEGURADORA" sqlType="STRING"/>
+		<param name="VALORASEGURADO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASEORDEN" sqlType="STRING"/>
+		<param name="KEY_ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="polizas/actualizarsubpolizasm">
+		<call-query href="updatePolizasActualizarsubpolizasm">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="VLRANTERIOR" query-param="VLRANTERIOR"/>
+			<with-param name="VLRACTUAL" query-param="VLRACTUAL"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHAEXPEDICION" query-param="FECHAEXPEDICION"/>
+			<with-param name="VIGENCIADESDE" query-param="VIGENCIADESDE"/>
+			<with-param name="VIGENCIAHASTA" query-param="VIGENCIAHASTA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="FECHAAPROBACIONCUMPLIMIENTO" query-param="FECHAAPROBACIONCUMPLIMIENTO"/>
+			<with-param name="FECHAAPROBACIONRESPONSABILIDAD" query-param="FECHAAPROBACIONRESPONSABILIDAD"/>
+			<with-param name="ASEGURADORA" query-param="ASEGURADORA"/>
+			<with-param name="VALORASEGURADO" query-param="VALORASEGURADO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASEORDEN" query-param="KEY_CLASEORDEN"/>
+			<with-param name="KEY_ORDENDECOMPRA" query-param="KEY_ORDENDECOMPRA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertPolizas" keyColumns="COMPANIA,CLASEORDEN,ORDENDECOMPRA,CODIGO,CONSECUTIVO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO POLIZAS (COMPANIA, CLASEORDEN, ORDENDECOMPRA, CODIGO, CONSECUTIVO, OBSERVACIONES, FECHAEXPEDICION, VIGENCIADESDE, VIGENCIAHASTA, VALOR, ESTADO, TIPO, ASEGURADORA, VALORASEGURADO, PORC_POLIZA, SUCURSAL, FECHACOBERTURA, N_SALARIOS, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CLASEORDEN, :ORDENDECOMPRA, :CODIGO, :CONSECUTIVO, :OBSERVACIONES, TO_DATE(:FECHAEXPEDICION,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:VIGENCIADESDE,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:VIGENCIAHASTA,'DD/MM/YYYY HH24:MI:SS'), :VALOR, :ESTADO, :TIPO, :ASEGURADORA, :VALORASEGURADO, :PORC_POLIZA, :SUCURSAL, TO_DATE(:FECHACOBERTURA,'DD/MM/YYYY HH24:MI:SS'), :N_SALARIOS, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CLASEORDEN":"$CLASEORDEN","KEY_ORDENDECOMPRA":"$ORDENDECOMPRA","KEY_CODIGO":"$CODIGO","KEY_CONSECUTIVO":"$CONSECUTIVO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACIONES" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAEXPEDICION" sqlType="STRING"/>
+		<param defaultValue="" name="VIGENCIADESDE" sqlType="STRING"/>
+		<param defaultValue="" name="VIGENCIAHASTA" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="ASEGURADORA" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORASEGURADO" sqlType="STRING"/>
+		<param defaultValue="0" name="PORC_POLIZA" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="" name="FECHACOBERTURA" sqlType="STRING"/>
+		<param defaultValue="" name="N_SALARIOS" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="polizas">
+		<call-query href="insertPolizas">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="ORDENDECOMPRA" query-param="ORDENDECOMPRA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHAEXPEDICION" query-param="FECHAEXPEDICION"/>
+			<with-param name="VIGENCIADESDE" query-param="VIGENCIADESDE"/>
+			<with-param name="VIGENCIAHASTA" query-param="VIGENCIAHASTA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="ASEGURADORA" query-param="ASEGURADORA"/>
+			<with-param name="VALORASEGURADO" query-param="VALORASEGURADO"/>
+			<with-param name="PORC_POLIZA" query-param="PORC_POLIZA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="FECHACOBERTURA" query-param="FECHACOBERTURA"/>
+			<with-param name="N_SALARIOS" query-param="N_SALARIOS"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deletePolizas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM POLIZAS WHERE POLIZAS.COMPANIA= :KEY_COMPANIA AND POLIZAS.CLASEORDEN= :KEY_CLASEORDEN AND POLIZAS.ORDENDECOMPRA= :KEY_ORDENDECOMPRA AND POLIZAS.CODIGO= :KEY_CODIGO AND POLIZAS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASEORDEN" sqlType="STRING"/>
+		<param name="KEY_ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="polizas">
+		<call-query href="deletePolizas">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASEORDEN" query-param="KEY_CLASEORDEN"/>
+			<with-param name="KEY_ORDENDECOMPRA" query-param="KEY_ORDENDECOMPRA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  POLIZAS.COMPANIA, POLIZAS.CLASEORDEN, POLIZAS.ORDENDECOMPRA, POLIZAS.CODIGO, POLIZAS.CONSECUTIVO, POLIZAS.OBSERVACIONES,(TO_CHAR(POLIZAS.FECHAEXPEDICION,'DD/MM/YYYY HH24:MI:SS')) FECHAEXPEDICION,(TO_CHAR(POLIZAS.VIGENCIADESDE,'DD/MM/YYYY HH24:MI:SS')) VIGENCIADESDE,(TO_CHAR(POLIZAS.VIGENCIAHASTA,'DD/MM/YYYY HH24:MI:SS')) VIGENCIAHASTA, POLIZAS.VALOR, POLIZAS.ESTADO, POLIZAS.TIPO, TIPOPOLIZA.DESCRIPCION TIPODESC,(TO_CHAR(POLIZAS.FECHAAPROBACIONCUMPLIMIENTO,'DD/MM/YYYY HH24:MI:SS')) FECHAAPROBACIONCUMPLIMIENTO,(TO_CHAR(POLIZAS.FECHAAPROBACIONRESPONSABILIDAD,'DD/MM/YYYY HH24:MI:SS')) FECHAAPROBACIONRESPONSABILIDAD, POLIZAS.ASEGURADORA, ASEGURADORA.NOMBRE NOMBREASEGURADORA, POLIZAS.VALORASEGURADO,(CASE POLIZAS.INDIMPRESION WHEN 0 THEN 'false' ELSE 'true' END) INDIMPRESION, POLIZAS.PORC_POLIZA,(TO_CHAR(POLIZAS.FECHACOBERTURA,'DD/MM/YYYY HH24:MI:SS')) FECHACOBERTURA,POLIZAS.N_SALARIOS  FROM POLIZAS INNER JOIN ASEGURADORA ON POLIZAS.COMPANIA = ASEGURADORA.COMPANIA AND POLIZAS.ASEGURADORA = ASEGURADORA.NITASEGURADORA AND POLIZAS.SUCURSAL = ASEGURADORA.SUCURSAL INNER JOIN TIPOPOLIZA ON POLIZAS.TIPO = TIPOPOLIZA.CODIGO WHERE POLIZAS.COMPANIA = :COMPANIA AND POLIZAS.CLASEORDEN = :CLASEORDEN AND POLIZAS.ORDENDECOMPRA = :ORDENDECOMPRA ORDER BY POLIZAS.CONSECUTIVO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER( '%' || :OBSERVACIONES || '%')  AND (CASE WHEN FECHAEXPEDICION IS NULL THEN ' ' ELSE UPPER(FECHAEXPEDICION) END)  LIKE UPPER( '%' || :FECHAEXPEDICION || '%')  AND (CASE WHEN VIGENCIADESDE IS NULL THEN ' ' ELSE UPPER(VIGENCIADESDE) END)  LIKE UPPER( '%' || :VIGENCIADESDE || '%')  AND (CASE WHEN VIGENCIAHASTA IS NULL THEN ' ' ELSE UPPER(VIGENCIAHASTA) END)  LIKE UPPER( '%' || :VIGENCIAHASTA || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER( '%' || :TIPO || '%')  AND (CASE WHEN TIPODESC IS NULL THEN ' ' ELSE UPPER(TIPODESC) END)  LIKE UPPER( '%' || :TIPODESC || '%')  AND (CASE WHEN NOMBREASEGURADORA IS NULL THEN ' ' ELSE UPPER(NOMBREASEGURADORA) END)  LIKE UPPER( '%' || :NOMBREASEGURADORA || '%')  AND (CASE WHEN VALORASEGURADO IS NULL THEN ' ' ELSE UPPER(VALORASEGURADO) END)  LIKE UPPER( '%' || :VALORASEGURADO || '%')  AND (CASE WHEN INDIMPRESION IS NULL THEN ' ' ELSE UPPER(INDIMPRESION) END)  LIKE UPPER( '%' || :INDIMPRESION || '%')  AND (CASE WHEN PORC_POLIZA IS NULL THEN ' ' ELSE UPPER(PORC_POLIZA) END)  LIKE UPPER( '%' || :PORC_POLIZA || '%')  AND (CASE WHEN FECHACOBERTURA IS NULL THEN ' ' ELSE UPPER(FECHACOBERTURA) END)  LIKE UPPER( '%' || :FECHACOBERTURA || '%')  AND (CASE WHEN N_SALARIOS IS NULL THEN ' ' ELSE UPPER(N_SALARIOS) END)  LIKE UPPER( '%' || :N_SALARIOS || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CLASEORDEN":"$CLASEORDEN","ORDENDECOMPRA":"$ORDENDECOMPRA","CODIGO":"$CODIGO","CONSECUTIVO":"$CONSECUTIVO","OBSERVACIONES":"$OBSERVACIONES","FECHAEXPEDICION":"$FECHAEXPEDICION","VIGENCIADESDE":"$VIGENCIADESDE","VIGENCIAHASTA":"$VIGENCIAHASTA","VALOR":"$VALOR","ESTADO":"$ESTADO","TIPO":"$TIPO","TIPODESC":"$TIPODESC","FECHAAPROBACIONCUMPLIMIENTO":"$FECHAAPROBACIONCUMPLIMIENTO","FECHAAPROBACIONRESPONSABILIDAD":"$FECHAAPROBACIONRESPONSABILIDAD","ASEGURADORA":"$ASEGURADORA","NOMBREASEGURADORA":"$NOMBREASEGURADORA","VALORASEGURADO":"$VALORASEGURADO","INDIMPRESION":"$INDIMPRESION(type:boolean)","PORC_POLIZA":"$PORC_POLIZA","FECHACOBERTURA":"$FECHACOBERTURA","N_SALARIOS":"$N_SALARIOS"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="FECHAEXPEDICION" sqlType="STRING"/>
+		<param name="VIGENCIADESDE" sqlType="STRING"/>
+		<param name="VIGENCIAHASTA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="TIPODESC" sqlType="STRING"/>
+		<param name="NOMBREASEGURADORA" sqlType="STRING"/>
+		<param name="VALORASEGURADO" sqlType="STRING"/>
+		<param name="INDIMPRESION" sqlType="STRING"/>
+		<param name="PORC_POLIZA" sqlType="STRING"/>
+		<param name="FECHACOBERTURA" sqlType="STRING"/>
+		<param name="N_SALARIOS" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="polizas">
+		<call-query href="getPolizasPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="ORDENDECOMPRA" query-param="ORDENDECOMPRA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHAEXPEDICION" query-param="FECHAEXPEDICION"/>
+			<with-param name="VIGENCIADESDE" query-param="VIGENCIADESDE"/>
+			<with-param name="VIGENCIAHASTA" query-param="VIGENCIAHASTA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="TIPODESC" query-param="TIPODESC"/>
+			<with-param name="NOMBREASEGURADORA" query-param="NOMBREASEGURADORA"/>
+			<with-param name="VALORASEGURADO" query-param="VALORASEGURADO"/>
+			<with-param name="INDIMPRESION" query-param="INDIMPRESION"/>
+			<with-param name="PORC_POLIZA" query-param="PORC_POLIZA"/>
+			<with-param name="FECHACOBERTURA" query-param="FECHACOBERTURA"/>
+			<with-param name="N_SALARIOS" query-param="N_SALARIOS"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  POLIZAS.COMPANIA, POLIZAS.CLASEORDEN, POLIZAS.ORDENDECOMPRA, POLIZAS.CODIGO, POLIZAS.CONSECUTIVO, POLIZAS.OBSERVACIONES,(TO_CHAR(POLIZAS.FECHAEXPEDICION,'DD/MM/YYYY HH24:MI:SS')) FECHAEXPEDICION,(TO_CHAR(POLIZAS.VIGENCIADESDE,'DD/MM/YYYY HH24:MI:SS')) VIGENCIADESDE,(TO_CHAR(POLIZAS.VIGENCIAHASTA,'DD/MM/YYYY HH24:MI:SS')) VIGENCIAHASTA, POLIZAS.VALOR, POLIZAS.ESTADO, POLIZAS.TIPO, TIPOPOLIZA.DESCRIPCION TIPODESC,(TO_CHAR(POLIZAS.FECHAAPROBACIONCUMPLIMIENTO,'DD/MM/YYYY HH24:MI:SS')) FECHAAPROBACIONCUMPLIMIENTO,(TO_CHAR(POLIZAS.FECHAAPROBACIONRESPONSABILIDAD,'DD/MM/YYYY HH24:MI:SS')) FECHAAPROBACIONRESPONSABILIDAD, POLIZAS.ASEGURADORA, ASEGURADORA.NOMBRE NOMBREASEGURADORA, POLIZAS.VALORASEGURADO,(CASE POLIZAS.INDIMPRESION WHEN 0 THEN 'false' ELSE 'true' END) INDIMPRESION, POLIZAS.PORC_POLIZA,(TO_CHAR(POLIZAS.FECHACOBERTURA,'DD/MM/YYYY HH24:MI:SS')) FECHACOBERTURA,POLIZAS.N_SALARIOS  FROM POLIZAS INNER JOIN ASEGURADORA ON POLIZAS.COMPANIA = ASEGURADORA.COMPANIA AND POLIZAS.ASEGURADORA = ASEGURADORA.NITASEGURADORA AND POLIZAS.SUCURSAL = ASEGURADORA.SUCURSAL INNER JOIN TIPOPOLIZA ON POLIZAS.TIPO = TIPOPOLIZA.CODIGO WHERE POLIZAS.COMPANIA = :COMPANIA AND POLIZAS.CLASEORDEN = :CLASEORDEN AND POLIZAS.ORDENDECOMPRA = :ORDENDECOMPRA ORDER BY POLIZAS.CONSECUTIVO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER( '%' || :CONSECUTIVO || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER( '%' || :OBSERVACIONES || '%')  AND (CASE WHEN FECHAEXPEDICION IS NULL THEN ' ' ELSE UPPER(FECHAEXPEDICION) END)  LIKE UPPER( '%' || :FECHAEXPEDICION || '%')  AND (CASE WHEN VIGENCIADESDE IS NULL THEN ' ' ELSE UPPER(VIGENCIADESDE) END)  LIKE UPPER( '%' || :VIGENCIADESDE || '%')  AND (CASE WHEN VIGENCIAHASTA IS NULL THEN ' ' ELSE UPPER(VIGENCIAHASTA) END)  LIKE UPPER( '%' || :VIGENCIAHASTA || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER( '%' || :TIPO || '%')  AND (CASE WHEN TIPODESC IS NULL THEN ' ' ELSE UPPER(TIPODESC) END)  LIKE UPPER( '%' || :TIPODESC || '%')  AND (CASE WHEN NOMBREASEGURADORA IS NULL THEN ' ' ELSE UPPER(NOMBREASEGURADORA) END)  LIKE UPPER( '%' || :NOMBREASEGURADORA || '%')  AND (CASE WHEN VALORASEGURADO IS NULL THEN ' ' ELSE UPPER(VALORASEGURADO) END)  LIKE UPPER( '%' || :VALORASEGURADO || '%')  AND (CASE WHEN INDIMPRESION IS NULL THEN ' ' ELSE UPPER(INDIMPRESION) END)  LIKE UPPER( '%' || :INDIMPRESION || '%')  AND (CASE WHEN PORC_POLIZA IS NULL THEN ' ' ELSE UPPER(PORC_POLIZA) END)  LIKE UPPER( '%' || :PORC_POLIZA || '%')  AND (CASE WHEN FECHACOBERTURA IS NULL THEN ' ' ELSE UPPER(FECHACOBERTURA) END)  LIKE UPPER( '%' || :FECHACOBERTURA || '%')  AND (CASE WHEN N_SALARIOS IS NULL THEN ' ' ELSE UPPER(N_SALARIOS) END)  LIKE UPPER( '%' || :N_SALARIOS || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="FECHAEXPEDICION" sqlType="STRING"/>
+		<param name="VIGENCIADESDE" sqlType="STRING"/>
+		<param name="VIGENCIAHASTA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="TIPODESC" sqlType="STRING"/>
+		<param name="NOMBREASEGURADORA" sqlType="STRING"/>
+		<param name="VALORASEGURADO" sqlType="STRING"/>
+		<param name="INDIMPRESION" sqlType="STRING"/>
+		<param name="PORC_POLIZA" sqlType="STRING"/>
+		<param name="FECHACOBERTURA" sqlType="STRING"/>
+		<param name="N_SALARIOS" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="polizas/numero">
+		<call-query href="getPolizasNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="ORDENDECOMPRA" query-param="ORDENDECOMPRA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHAEXPEDICION" query-param="FECHAEXPEDICION"/>
+			<with-param name="VIGENCIADESDE" query-param="VIGENCIADESDE"/>
+			<with-param name="VIGENCIAHASTA" query-param="VIGENCIAHASTA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="TIPODESC" query-param="TIPODESC"/>
+			<with-param name="NOMBREASEGURADORA" query-param="NOMBREASEGURADORA"/>
+			<with-param name="VALORASEGURADO" query-param="VALORASEGURADO"/>
+			<with-param name="INDIMPRESION" query-param="INDIMPRESION"/>
+			<with-param name="PORC_POLIZA" query-param="PORC_POLIZA"/>
+			<with-param name="FECHACOBERTURA" query-param="FECHACOBERTURA"/>
+			<with-param name="N_SALARIOS" query-param="N_SALARIOS"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePolizas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE POLIZAS SET COMPANIA=:COMPANIA, CLASEORDEN=:CLASEORDEN, ORDENDECOMPRA=:ORDENDECOMPRA, CODIGO=:CODIGO, CONSECUTIVO=:CONSECUTIVO, OBSERVACIONES=:OBSERVACIONES, FECHAEXPEDICION=TO_DATE(:FECHAEXPEDICION,'DD/MM/YYYY HH24:MI:SS'), VIGENCIADESDE=TO_DATE(:VIGENCIADESDE,'DD/MM/YYYY HH24:MI:SS'), VIGENCIAHASTA=TO_DATE(:VIGENCIAHASTA,'DD/MM/YYYY HH24:MI:SS'), VALOR=:VALOR, ESTADO=:ESTADO, TIPO=:TIPO, FECHAAPROBACIONCUMPLIMIENTO=TO_DATE(:FECHAAPROBACIONCUMPLIMIENTO,'DD/MM/YYYY HH24:MI:SS'), FECHAAPROBACIONRESPONSABILIDAD=TO_DATE(:FECHAAPROBACIONRESPONSABILIDAD,'DD/MM/YYYY HH24:MI:SS'), ASEGURADORA=:ASEGURADORA, VALORASEGURADO=:VALORASEGURADO, INDIMPRESION=:INDIMPRESION, PORC_POLIZA=:PORC_POLIZA, FECHACOBERTURA=TO_DATE(:FECHACOBERTURA,'DD/MM/YYYY HH24:MI:SS'), N_SALARIOS=:N_SALARIOS, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE POLIZAS.COMPANIA= :KEY_COMPANIA AND POLIZAS.CLASEORDEN= :KEY_CLASEORDEN AND POLIZAS.ORDENDECOMPRA= :KEY_ORDENDECOMPRA AND POLIZAS.CODIGO= :KEY_CODIGO AND POLIZAS.CONSECUTIVO= :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="FECHAEXPEDICION" sqlType="STRING"/>
+		<param name="VIGENCIADESDE" sqlType="STRING"/>
+		<param name="VIGENCIAHASTA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="FECHAAPROBACIONCUMPLIMIENTO" sqlType="STRING"/>
+		<param name="FECHAAPROBACIONRESPONSABILIDAD" sqlType="STRING"/>
+		<param name="ASEGURADORA" sqlType="STRING"/>
+		<param name="VALORASEGURADO" sqlType="STRING"/>
+		<param name="INDIMPRESION" sqlType="STRING"/>
+		<param name="PORC_POLIZA" sqlType="STRING"/>
+		<param name="FECHACOBERTURA" sqlType="STRING"/>
+		<param name="N_SALARIOS" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASEORDEN" sqlType="STRING"/>
+		<param name="KEY_ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="polizas">
+		<call-query href="updatePolizas">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="ORDENDECOMPRA" query-param="ORDENDECOMPRA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHAEXPEDICION" query-param="FECHAEXPEDICION"/>
+			<with-param name="VIGENCIADESDE" query-param="VIGENCIADESDE"/>
+			<with-param name="VIGENCIAHASTA" query-param="VIGENCIAHASTA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="FECHAAPROBACIONCUMPLIMIENTO" query-param="FECHAAPROBACIONCUMPLIMIENTO"/>
+			<with-param name="FECHAAPROBACIONRESPONSABILIDAD" query-param="FECHAAPROBACIONRESPONSABILIDAD"/>
+			<with-param name="ASEGURADORA" query-param="ASEGURADORA"/>
+			<with-param name="VALORASEGURADO" query-param="VALORASEGURADO"/>
+			<with-param name="INDIMPRESION" query-param="INDIMPRESION"/>
+			<with-param name="PORC_POLIZA" query-param="PORC_POLIZA"/>
+			<with-param name="FECHACOBERTURA" query-param="FECHACOBERTURA"/>
+			<with-param name="N_SALARIOS" query-param="N_SALARIOS"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASEORDEN" query-param="KEY_CLASEORDEN"/>
+			<with-param name="KEY_ORDENDECOMPRA" query-param="KEY_ORDENDECOMPRA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="deletePolizasEliminarsubpolizasm" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM POLIZAS WHERE POLIZAS.COMPANIA   = :KEY_COMPANIA AND POLIZAS.CLASEORDEN   = :KEY_CLASEORDEN AND POLIZAS.ORDENDECOMPRA= :KEY_ORDENDECOMPRA AND POLIZAS.CODIGO       = :KEY_CODIGO AND POLIZAS.CONSECUTIVO  = :KEY_CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASEORDEN" sqlType="STRING"/>
+		<param name="KEY_ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="polizas/eliminarsubpolizasm">
+		<call-query href="deletePolizasEliminarsubpolizasm">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASEORDEN" query-param="KEY_CLASEORDEN"/>
+			<with-param name="KEY_ORDENDECOMPRA" query-param="KEY_ORDENDECOMPRA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_CONSECUTIVO" query-param="KEY_CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePolizasIndicadorImpreso" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE POLIZAS SET INDIMPRESION         =:INDIMPRESION,   DATE_MODIFIED          =TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'),   MODIFIED_BY            =:MODIFIED_BY WHERE POLIZAS.COMPANIA   = :COMPANIA AND POLIZAS.CLASEORDEN   = :CLASEORDEN AND POLIZAS.ORDENDECOMPRA= :ORDENDECOMPRA AND POLIZAS.CODIGO       = :CODIGO AND POLIZAS.CONSECUTIVO  = :CONSECUTIVO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="INDIMPRESION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="ORDENDECOMPRA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="polizas/indicadorimpreso">
+		<call-query href="updatePolizasIndicadorImpreso">
+			<with-param name="INDIMPRESION" query-param="INDIMPRESION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="ORDENDECOMPRA" query-param="ORDENDECOMPRA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasPagDatosBasicosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  POLIZAS.CODIGO, POLIZAS.CONSECUTIVO, POLIZAS.TIPO, POLIZAS.VALORASEGURADO, POLIZAS.VLRACTUAL, POLIZAS.ASEGURADORA, TRIM(POLIZAS.OBSERVACIONES) AS OBSERVACIONES,(TO_CHAR(POLIZAS.FECHAEXPEDICION,'DD/MM/YYYY HH24:MI:SS')) FECHAEXPEDICION,(TO_CHAR(POLIZAS.VIGENCIADESDE,'DD/MM/YYYY HH24:MI:SS')) VIGENCIADESDE,(TO_CHAR(POLIZAS.VIGENCIAHASTA,'DD/MM/YYYY HH24:MI:SS')) VIGENCIAHASTA, POLIZAS.VALOR, POLIZAS.ESTADO  FROM POLIZAS INNER JOIN ORDENDECOMPRA ON POLIZAS.COMPANIA = ORDENDECOMPRA.COMPANIA AND POLIZAS.CLASEORDEN = ORDENDECOMPRA.CLASEORDEN AND POLIZAS.ORDENDECOMPRA = ORDENDECOMPRA.NUMERO WHERE POLIZAS.COMPANIA = :COMPANIA AND POLIZAS.CLASEORDEN = :CLASEORDEN AND POLIZAS.ORDENDECOMPRA = :NUMERO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER( '%' || :TIPO || '%')  AND (CASE WHEN VALORASEGURADO IS NULL THEN ' ' ELSE UPPER(VALORASEGURADO) END)  LIKE UPPER(:VALORASEGURADO || '%')  AND (CASE WHEN ASEGURADORA IS NULL THEN ' ' ELSE UPPER(ASEGURADORA) END)  LIKE UPPER( '%' || :ASEGURADORA || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER( '%' || :OBSERVACIONES || '%')  AND (CASE WHEN FECHAEXPEDICION IS NULL THEN ' ' ELSE UPPER(FECHAEXPEDICION) END)  LIKE UPPER( '%' || :FECHAEXPEDICION || '%')  AND (CASE WHEN VIGENCIADESDE IS NULL THEN ' ' ELSE UPPER(VIGENCIADESDE) END)  LIKE UPPER( '%' || :VIGENCIADESDE || '%')  AND (CASE WHEN VIGENCIAHASTA IS NULL THEN ' ' ELSE UPPER(VIGENCIAHASTA) END)  LIKE UPPER( '%' || :VIGENCIAHASTA || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","CONSECUTIVO":"$CONSECUTIVO","TIPO":"$TIPO","VALORASEGURADO":"$VALORASEGURADO","VLRACTUAL":"$VLRACTUAL","ASEGURADORA":"$ASEGURADORA","OBSERVACIONES":"$OBSERVACIONES","FECHAEXPEDICION":"$FECHAEXPEDICION","VIGENCIADESDE":"$VIGENCIADESDE","VIGENCIAHASTA":"$VIGENCIAHASTA","VALOR":"$VALOR","ESTADO":"$ESTADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="VALORASEGURADO" sqlType="STRING"/>
+		<param name="ASEGURADORA" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="FECHAEXPEDICION" sqlType="STRING"/>
+		<param name="VIGENCIADESDE" sqlType="STRING"/>
+		<param name="VIGENCIAHASTA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="polizas/datosbasicos/pag">
+		<call-query href="getPolizasPagDatosBasicosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="VALORASEGURADO" query-param="VALORASEGURADO"/>
+			<with-param name="ASEGURADORA" query-param="ASEGURADORA"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHAEXPEDICION" query-param="FECHAEXPEDICION"/>
+			<with-param name="VIGENCIADESDE" query-param="VIGENCIADESDE"/>
+			<with-param name="VIGENCIAHASTA" query-param="VIGENCIAHASTA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasNumDatosBasicosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  POLIZAS.CODIGO, POLIZAS.CONSECUTIVO, POLIZAS.TIPO, POLIZAS.VALORASEGURADO, POLIZAS.VLRACTUAL, POLIZAS.ASEGURADORA, TRIM(POLIZAS.OBSERVACIONES) AS OBSERVACIONES,(TO_CHAR(POLIZAS.FECHAEXPEDICION,'DD/MM/YYYY HH24:MI:SS')) FECHAEXPEDICION,(TO_CHAR(POLIZAS.VIGENCIADESDE,'DD/MM/YYYY HH24:MI:SS')) VIGENCIADESDE,(TO_CHAR(POLIZAS.VIGENCIAHASTA,'DD/MM/YYYY HH24:MI:SS')) VIGENCIAHASTA, POLIZAS.VALOR, POLIZAS.ESTADO  FROM POLIZAS INNER JOIN ORDENDECOMPRA ON POLIZAS.COMPANIA = ORDENDECOMPRA.COMPANIA AND POLIZAS.CLASEORDEN = ORDENDECOMPRA.CLASEORDEN AND POLIZAS.ORDENDECOMPRA = ORDENDECOMPRA.NUMERO WHERE POLIZAS.COMPANIA = :COMPANIA AND POLIZAS.CLASEORDEN = :CLASEORDEN AND POLIZAS.ORDENDECOMPRA = :NUMERO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER( '%' || :TIPO || '%')  AND (CASE WHEN VALORASEGURADO IS NULL THEN ' ' ELSE UPPER(VALORASEGURADO) END)  LIKE UPPER(:VALORASEGURADO || '%')  AND (CASE WHEN ASEGURADORA IS NULL THEN ' ' ELSE UPPER(ASEGURADORA) END)  LIKE UPPER( '%' || :ASEGURADORA || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER( '%' || :OBSERVACIONES || '%')  AND (CASE WHEN FECHAEXPEDICION IS NULL THEN ' ' ELSE UPPER(FECHAEXPEDICION) END)  LIKE UPPER( '%' || :FECHAEXPEDICION || '%')  AND (CASE WHEN VIGENCIADESDE IS NULL THEN ' ' ELSE UPPER(VIGENCIADESDE) END)  LIKE UPPER( '%' || :VIGENCIADESDE || '%')  AND (CASE WHEN VIGENCIAHASTA IS NULL THEN ' ' ELSE UPPER(VIGENCIAHASTA) END)  LIKE UPPER( '%' || :VIGENCIAHASTA || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="VALORASEGURADO" sqlType="STRING"/>
+		<param name="ASEGURADORA" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="FECHAEXPEDICION" sqlType="STRING"/>
+		<param name="VIGENCIADESDE" sqlType="STRING"/>
+		<param name="VIGENCIAHASTA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="polizas/datosbasicos/num">
+		<call-query href="getPolizasNumDatosBasicosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="VALORASEGURADO" query-param="VALORASEGURADO"/>
+			<with-param name="ASEGURADORA" query-param="ASEGURADORA"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHAEXPEDICION" query-param="FECHAEXPEDICION"/>
+			<with-param name="VIGENCIADESDE" query-param="VIGENCIADESDE"/>
+			<with-param name="VIGENCIAHASTA" query-param="VIGENCIAHASTA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasPagDatosBasicosValoresActualesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  POLIZAS.CODIGO, POLIZAS.CONSECUTIVO, POLIZAS.TIPO, POLIZAS.VALORASEGURADO VLRANTERIOR, POLIZAS.VLRACTUAL, POLIZAS.ASEGURADORA, TRIM(POLIZAS.OBSERVACIONES) AS OBSERVACIONES,(TO_CHAR(POLIZAS.FECHAEXPEDICION,'DD/MM/YYYY HH24:MI:SS')) FECHAEXPEDICION,(TO_CHAR(POLIZAS.VIGENCIADESDE,'DD/MM/YYYY HH24:MI:SS')) VIGENCIADESDE,(TO_CHAR(POLIZAS.VIGENCIAHASTA,'DD/MM/YYYY HH24:MI:SS')) VIGENCIAHASTA, POLIZAS.VALOR, POLIZAS.ESTADO  FROM POLIZAS INNER JOIN ORDENDECOMPRA ON POLIZAS.COMPANIA = ORDENDECOMPRA.COMPANIA AND POLIZAS.CLASEORDEN = ORDENDECOMPRA.CLASEORDEN AND POLIZAS.ORDENDECOMPRA = ORDENDECOMPRA.NUMERO WHERE POLIZAS.COMPANIA = :COMPANIA AND POLIZAS.CLASEORDEN = :CLASEORDEN AND POLIZAS.ORDENDECOMPRA = :NUMERO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER( '%' || :TIPO || '%')  AND (CASE WHEN VLRANTERIOR IS NULL THEN ' ' ELSE UPPER(VLRANTERIOR) END)  LIKE UPPER(:VLRANTERIOR || '%')  AND (CASE WHEN VLRACTUAL IS NULL THEN ' ' ELSE UPPER(VLRACTUAL) END)  LIKE UPPER(:VLRACTUAL || '%')  AND (CASE WHEN ASEGURADORA IS NULL THEN ' ' ELSE UPPER(ASEGURADORA) END)  LIKE UPPER( '%' || :ASEGURADORA || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER( '%' || :OBSERVACIONES || '%')  AND (CASE WHEN FECHAEXPEDICION IS NULL THEN ' ' ELSE UPPER(FECHAEXPEDICION) END)  LIKE UPPER( '%' || :FECHAEXPEDICION || '%')  AND (CASE WHEN VIGENCIADESDE IS NULL THEN ' ' ELSE UPPER(VIGENCIADESDE) END)  LIKE UPPER( '%' || :VIGENCIADESDE || '%')  AND (CASE WHEN VIGENCIAHASTA IS NULL THEN ' ' ELSE UPPER(VIGENCIAHASTA) END)  LIKE UPPER( '%' || :VIGENCIAHASTA || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","CONSECUTIVO":"$CONSECUTIVO","TIPO":"$TIPO","VLRANTERIOR":"$VLRANTERIOR","VLRACTUAL":"$VLRACTUAL","ASEGURADORA":"$ASEGURADORA","OBSERVACIONES":"$OBSERVACIONES","FECHAEXPEDICION":"$FECHAEXPEDICION","VIGENCIADESDE":"$VIGENCIADESDE","VIGENCIAHASTA":"$VIGENCIAHASTA","VALOR":"$VALOR","ESTADO":"$ESTADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="VLRANTERIOR" sqlType="STRING"/>
+		<param name="VLRACTUAL" sqlType="STRING"/>
+		<param name="ASEGURADORA" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="FECHAEXPEDICION" sqlType="STRING"/>
+		<param name="VIGENCIADESDE" sqlType="STRING"/>
+		<param name="VIGENCIAHASTA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="polizas/datosbasicosvaloresactuales/pag">
+		<call-query href="getPolizasPagDatosBasicosValoresActualesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="VLRANTERIOR" query-param="VLRANTERIOR"/>
+			<with-param name="VLRACTUAL" query-param="VLRACTUAL"/>
+			<with-param name="ASEGURADORA" query-param="ASEGURADORA"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHAEXPEDICION" query-param="FECHAEXPEDICION"/>
+			<with-param name="VIGENCIADESDE" query-param="VIGENCIADESDE"/>
+			<with-param name="VIGENCIAHASTA" query-param="VIGENCIAHASTA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasNumDatosBasicosValoresActualesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  POLIZAS.CODIGO, POLIZAS.CONSECUTIVO, POLIZAS.TIPO, POLIZAS.VALORASEGURADO VLRANTERIOR, POLIZAS.VLRACTUAL, POLIZAS.ASEGURADORA, TRIM(POLIZAS.OBSERVACIONES) AS OBSERVACIONES,(TO_CHAR(POLIZAS.FECHAEXPEDICION,'DD/MM/YYYY HH24:MI:SS')) FECHAEXPEDICION,(TO_CHAR(POLIZAS.VIGENCIADESDE,'DD/MM/YYYY HH24:MI:SS')) VIGENCIADESDE,(TO_CHAR(POLIZAS.VIGENCIAHASTA,'DD/MM/YYYY HH24:MI:SS')) VIGENCIAHASTA, POLIZAS.VALOR, POLIZAS.ESTADO  FROM POLIZAS INNER JOIN ORDENDECOMPRA ON POLIZAS.COMPANIA = ORDENDECOMPRA.COMPANIA AND POLIZAS.CLASEORDEN = ORDENDECOMPRA.CLASEORDEN AND POLIZAS.ORDENDECOMPRA = ORDENDECOMPRA.NUMERO WHERE POLIZAS.COMPANIA = :COMPANIA AND POLIZAS.CLASEORDEN = :CLASEORDEN AND POLIZAS.ORDENDECOMPRA = :NUMERO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN TIPO IS NULL THEN ' ' ELSE UPPER(TIPO) END)  LIKE UPPER( '%' || :TIPO || '%')  AND (CASE WHEN VLRANTERIOR IS NULL THEN ' ' ELSE UPPER(VLRANTERIOR) END)  LIKE UPPER(:VLRANTERIOR || '%')  AND (CASE WHEN VLRACTUAL IS NULL THEN ' ' ELSE UPPER(VLRACTUAL) END)  LIKE UPPER(:VLRACTUAL || '%')  AND (CASE WHEN ASEGURADORA IS NULL THEN ' ' ELSE UPPER(ASEGURADORA) END)  LIKE UPPER( '%' || :ASEGURADORA || '%')  AND (CASE WHEN OBSERVACIONES IS NULL THEN ' ' ELSE UPPER(OBSERVACIONES) END)  LIKE UPPER( '%' || :OBSERVACIONES || '%')  AND (CASE WHEN FECHAEXPEDICION IS NULL THEN ' ' ELSE UPPER(FECHAEXPEDICION) END)  LIKE UPPER( '%' || :FECHAEXPEDICION || '%')  AND (CASE WHEN VIGENCIADESDE IS NULL THEN ' ' ELSE UPPER(VIGENCIADESDE) END)  LIKE UPPER( '%' || :VIGENCIADESDE || '%')  AND (CASE WHEN VIGENCIAHASTA IS NULL THEN ' ' ELSE UPPER(VIGENCIAHASTA) END)  LIKE UPPER( '%' || :VIGENCIAHASTA || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%')  AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END)  LIKE UPPER( '%' || :ESTADO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="VLRANTERIOR" sqlType="STRING"/>
+		<param name="VLRACTUAL" sqlType="STRING"/>
+		<param name="ASEGURADORA" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="FECHAEXPEDICION" sqlType="STRING"/>
+		<param name="VIGENCIADESDE" sqlType="STRING"/>
+		<param name="VIGENCIAHASTA" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="polizas/datosbasicosvaloresactuales/num">
+		<call-query href="getPolizasNumDatosBasicosValoresActualesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="VLRANTERIOR" query-param="VLRANTERIOR"/>
+			<with-param name="VLRACTUAL" query-param="VLRACTUAL"/>
+			<with-param name="ASEGURADORA" query-param="ASEGURADORA"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="FECHAEXPEDICION" query-param="FECHAEXPEDICION"/>
+			<with-param name="VIGENCIADESDE" query-param="VIGENCIADESDE"/>
+			<with-param name="VIGENCIAHASTA" query-param="VIGENCIAHASTA"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+
+		</call-query>
+	</resource>
+
+</data>

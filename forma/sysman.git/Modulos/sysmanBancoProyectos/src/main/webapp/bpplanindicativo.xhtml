@@ -1,0 +1,663 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+                if("#{bpplanindicativosControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TG_PLAN_INDICATIVO}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{bpplanindicativosControlador.cargarLista}" />
+		<section class="radius">
+			<h:form id="FR178">
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="lista" widgetVar="lista"
+					visible="#{bpplanindicativosControlador.accion==null}">
+					<p:confirmDialog global="true" showEffect="fade" id="confFR178"
+						widgetVar="confFR178"
+						rendered="#{bpplanindicativosControlador.permisos[1]}">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:dataTable id="TBFR178" widgetVar="TBFR178" var="reg"
+						value="#{bpplanindicativosControlador.listaInicial}"
+						editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" paginator="true" lazy="true">
+						<f:facet name="{Exporters}"
+							rendered="#{bpplanindicativosControlador.permisos[4] }">
+							<h:commandLink
+								rendered="#{bpplanindicativosControlador.permisos[4] }"
+								title="#{idm.TI_VER_EXCEL}">
+								<p:graphicImage name="/images/general/excel.png" width="24" />
+								<p:dataExporter type="xls" target="TBFR178" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+							<h:commandLink
+								rendered="#{bpplanindicativosControlador.permisos[4] }"
+								title="#{idm.TI_VER_PDF}">
+								<p:graphicImage name="/images/general/pdf.png" width="24" />
+								<p:dataExporter type="pdf" target="TBFR178" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+						</f:facet>
+						<f:facet name="header">
+							<div style="position: relative; height: 50px">
+								<h:panelGroup class="acme"
+									rendered="#{bpplanindicativosControlador.permisos[0] }">
+									<p:commandLink
+										action="#{bpplanindicativosControlador.cargarRegistroNuevo}"
+										update=":FR178_nuevo:nuevoPanel"
+										rendered="#{bpplanindicativosControlador.permisos[0]}"
+										onclick="try { PF('blockLista').show(); PF('TBCB662').nuevo=true;} catch (e) { }"
+										oncomplete="try{ asignarEventoContGrande();
+validarCargaGrandes();
+  PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+										title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+										id="btNuevo">
+										<center>
+											<p:graphicImage name="/images/menus/32/add.png" />
+											<div>#{idm.TI_NUEVO}</div>
+										</center>
+									</p:commandLink>
+								</h:panelGroup>
+								<div class="acme"> 
+                                       <p:commandLink
+										    action="#{bpplanindicativosControlador.oprimirCargarPlantilla}"
+										    title="Importar masivamente depreciación acumulada a placas sin registro de depreciación o con depreciación en cero."
+										    process="@this"
+										    update=":FR178:TBFR178"
+										    style="padding-top: 10px;"
+								            id="btCargar">
+								            <center>
+								                <p:graphicImage name="/images/menus/32/upload.png" />
+								                <div>#{idm.TI_CARGAR}</div>
+								            </center>
+										    <p:ajax event="dialogReturn"
+										        listener="#{bpplanindicativosControlador.retornarFormularioCargarPlantilla}"
+										        update=":FR178:TBFR178" />
+										</p:commandLink>
+                                    </div>
+								  <h:panelGroup class="acme">
+							        <p:commandLink
+							            action="#{bpplanindicativosControlador.cargarProgramar}"
+							            update="@none"
+							            title="Programar"
+							            style="padding-top: 10px;"
+							            id="btProgramar">
+							            <center>
+							                <p:graphicImage name="/images/menus/32/program.png" />
+							                <div>#{idm.TI_PROGRAMAR}</div>
+							            </center>
+							        </p:commandLink>
+							    </h:panelGroup>
+								<div class="acme">
+									<h:outputLink value="#{request.contextPath}/menu.sysman"
+										title="#{idm.TI_VOLVER}" style="padding-top: 10px;">
+										<center>
+											<p:graphicImage name="/images/menus/32/close.png" />
+											<div>#{idm.TI_CERRAR}</div>
+										</center>
+									</h:outputLink>
+								</div>
+							</div>
+                            #{idm.TG_PLAN_INDICATIVO}
+                        </f:facet>
+						<p:column headerText="#{idm.TG_CODIGO7}"
+							filterBy="#{reg.campos['ID']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="30%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['ID']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_DESCRIPCION7}"
+							filterBy="#{reg.campos['DESCRIPCION']}"
+							filterMatchMode="contains" style="text-align:center; "
+							width="55%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['DESCRIPCION']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_FR178_2}"
+							filterBy="#{reg.campos['TIPO_META']}" filterMatchMode="contains"
+							style="text-align:center; " width="15%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['TIPO_META']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column width="150" headerText="Acciones"
+							style="text-align: center" exportable="false">
+							<p:commandButton icon="ui-icon-search"
+								title="#{idm.TI_VER_REGISTRO}"
+								action="#{bpplanindicativosControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+								update=":FR178_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB662').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{bpplanindicativosControlador.permisos[3]}"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-document-b"
+								title="#{idm.TI_EDITAR_REGISTRO}"
+								action="#{bpplanindicativosControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+								update=":FR178_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB662').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{bpplanindicativosControlador.permisos[2] }"
+								oncomplete="try{asignarEventoContGrande();
+validarCargaGrandes();
+ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-trash"
+								title="#{idm.TI_ELIMINAR_REGISTRO}"
+								onclick="PF('blockListaGuardar').show()"
+								action="#{bpplanindicativosControlador.eliminarReg(reg)}"
+								update=":FR178:TBFR178,:FR178:alert"
+								rendered="#{bpplanindicativosControlador.permisos[1] }"
+								oncomplete=" PF('blockListaGuardar').hide();">
+								<p:confirm header="#{sessionBean.tituloMensajes}"
+									message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR178">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+			<h:form id="FR178_nuevo" style="margin-top: -20px;">
+				<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA"
+					my="left bottom" at="left bottom" for="BTBUSQUEDA"
+					hideEffect="fade"
+					rendered="#{bpplanindicativosControlador.accion!='i'}"
+					style="width: 500px">
+					<p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA" var="reg"
+						value="#{bpplanindicativosControlador.listaInicialF}"
+						editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" selectionMode="single"
+						rowKey="#{reg.llave}" paginator="true" lazy="true">
+						<p:ajax event="rowSelect"
+							listener="#{bpplanindicativosControlador.seleccionarFilaBusqueda}"
+							onstart="PF('blockNuevo').show()"
+							oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();    "
+							update="@form" />
+						<p:column headerText="#{idm.TG_CODIGO7}"
+							filterBy="#{reg.campos['ID']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="30%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['ID']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_DESCRIPCION7}"
+							filterBy="#{reg.campos['DESCRIPCION']}"
+							filterMatchMode="contains" style="text-align:center; "
+							width="55%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['DESCRIPCION']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_FR178_2}"
+							filterBy="#{reg.campos['TIPO_META']}" filterMatchMode="contains"
+							style="text-align:center; " width="15%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['TIPO_META']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+					</p:dataTable>
+				</p:overlayPanel>
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="nuevoPanel"
+					visible="#{bpplanindicativosControlador.accion!=null}"
+					widgetVar="nuevoPanel">
+					<div
+						style="position: relative; height: 50px; padding-bottom: 80px;">
+						<div class="acme"
+							style="display:#{bpplanindicativosControlador.accion=='v'?'none':'block'}">
+							<p:commandLink
+								action="#{bpplanindicativosControlador.agregarRegistroNuevo(false)}"
+								rendered="#{bpplanindicativosControlador.accion!='v'}"
+								update=":FR178_nuevo,#{!bpplanindicativosControlador.permisos[2]?':FR178':'' }"
+								onclick="if (!validarVacios(['CB657','CB658','CP6634','CP6636','CP6642','CP6643'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+								title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+								oncomplete="asignarEventoContGrande(); validarCargaGrandes(); ">
+								<center>
+									<p:graphicImage name="/images/menus/32/save.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{bpplanindicativosControlador.accion=='v' or !bpplanindicativosControlador.permisos[0]?'none':'block'}">
+							<p:commandLink
+								action="#{bpplanindicativosControlador.guardarNuevo}"
+								rendered="#{bpplanindicativosControlador.accion!='v' and bpplanindicativosControlador.permisos[0]}"
+								update=":FR178_nuevo"
+								onclick="if (!validarVacios(['CB657','CB658','CP6634','CP6636','CP6642','CP6643'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{bpplanindicativosControlador.accion!='i'  and bpplanindicativosControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+								oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+								title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}"
+								style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/savenew.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{bpplanindicativosControlador.accion=='i' or !bpplanindicativosControlador.permisos[0]?'none':'block'}">
+							<p:commandLink id="BTBUSQUEDA"
+								rendered="#{bpplanindicativosControlador.accion!='i' and bpplanindicativosControlador.permisos[0]}"
+								title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/search.png" />
+									<div style="height: 30px">#{idm.TI_BUSCAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme">
+							<p:commandLink update=":FR178:TBFR178"
+								onclick="try {
+		           PF('TBFR178').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+								title="#{idm.TI_ATRAS}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/back.png" />
+									<div style="height: 30px">#{idm.TI_VOLVER}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<p:panel
+							rendered="#{bpplanindicativosControlador.accion!='i'  and bpplanindicativosControlador.rid==null }"
+							styleClass="acme"
+							style="min-width: 350px; width:30%; padding: 10px;">
+							<center style="margin: 2px;">
+								<p:commandButton icon="ui-icon-seek-first"
+									action="#{bpplanindicativosControlador.irPrimero()}"
+									title="#{idm.TI_PRIMER_REGISTRO}" update=":FR178_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-prev"
+									action="#{bpplanindicativosControlador.irAnterior()}"
+									title="#{idm.TI_REGISTRO_ANTERIOR}" update=":FR178_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:outputLabel
+									value="#{idm.TI_REGISTRO} #{bpplanindicativosControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{bpplanindicativosControlador.listaInicial.rowCount} " />
+								<p:commandButton icon="ui-icon-seek-next"
+									title="#{idm.TI_REGISTRO_SIGUIENTE}"
+									action="#{bpplanindicativosControlador.irSiguiente()}"
+									update=":FR178_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-end"
+									title="#{idm.TI_ULTIMO_REGISTRO}"
+									action="#{bpplanindicativosControlador.irUltimo()}"
+									update=":FR178_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+							</center>
+						</p:panel>
+						<p:panel styleClass="acme" style="width:21%;">
+							<h:panelGrid columns="3"
+								style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+								<h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}" />
+								<p:inputText id="CPCREADO" readonly="true" widgetVar="CPCREADO"
+									value="#{bpplanindicativosControlador.registro.campos['CREATED_BY']}"
+									placeholder="#{idm.TI_CREADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPCREADOF" widgetVar="CPCREADOF"
+									value="#{bpplanindicativosControlador.registro.campos['DATE_CREATED']}"
+									disabled="true" />
+								<h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+								<p:inputText id="CPMODIFICADO" readonly="true"
+									widgetVar="CPMODIFICADO"
+									value="#{bpplanindicativosControlador.registro.campos['MODIFIED_BY']}"
+									placeholder="#{idm.TI_MODIFICADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPMODIFICADOF" widgetVar="CPMODIFICADOF"
+									value="#{bpplanindicativosControlador.registro.campos['DATE_MODIFIED']}"
+									disabled="true" />
+							</h:panelGrid>
+						</p:panel>
+					</div>
+					<div id="PL384" class="
+"
+						style="position: relative; height: 48px;">
+						<h:outputLabel id="LB5023" value="#{idm.TT_LB5023}"
+							style="position: absolute; width:506px; height: 25px; left: 182px;   top: 10px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<div id="PL385" class="
+"
+						style="position: relative; height: 577px;">
+						<p:commandButton id="BT646" widgetVar="BT646"
+							title="#{idm.AL_BT646}"
+							rendered="#{bpplanindicativosControlador.activado}" tabindex="2"
+							value="#{idm.TT_BT646}"
+							actionListener="#{bpplanindicativosControlador.oprimirabrirProgramacion}"
+							style="position: absolute; width:170px; height: 20px; left: 425px;   top: 48px; text-align: center; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:true;  color:#0033CC; border:#000000  solid  1px;">
+						</p:commandButton>
+						<p:selectOneMenu filter="true" editable="false" effect="fade"
+							id="CB657" widgetVar="CB657"
+							value="#{bpplanindicativosControlador.registro.campos['VIGENCIA_INICIAL']}"
+							disabled="true" tabindex="3"
+							style="position: absolute; width:92px; height: 20px; left: 237px;   top: 74px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+							<f:selectItem />
+							<f:selectItems
+								value="#{bpplanindicativosControlador.listaVigenciaInicial}"
+								var="regc" itemLabel="#{regc.campos['NUMERO']}"
+								itemValue="#{regc.campos['NUMERO']}" />
+						</p:selectOneMenu>
+						<p:selectOneMenu filter="true" editable="false" effect="fade"
+							id="CB658" widgetVar="CB658"
+							value="#{bpplanindicativosControlador.registro.campos['VIGENCIA_FINAL']}"
+							disabled="#{bpplanindicativosControlador.accion=='v'?true:false}"
+							tabindex="4"
+							style="position: absolute; width:92px; height: 20px; left: 425px;   top: 74px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+							<p:ajax
+								listener="#{bpplanindicativosControlador.cambiarVigenciaFinal}"
+								update="@this,alert" />
+							<f:selectItem />
+							<f:selectItems
+								value="#{bpplanindicativosControlador.listaVigenciaFinal}"
+								var="regc" itemLabel="#{regc.campos['NUMERO']}"
+								itemValue="#{regc.campos['NUMERO']}" />
+						</p:selectOneMenu>
+						<p:selectOneMenu filter="true" editable="false" effect="fade"
+							id="CB659" widgetVar="CB659"
+							value="#{bpplanindicativosControlador.registro.campos['TIPO_META_PLAN']}"
+							disabled="#{bpplanindicativosControlador.bloqueadoTipoMeta or  bpplanindicativosControlador.accion=='v'?true:false}"
+							tabindex="8"
+							style="position: absolute; width:183px; height: 20px; left: 237px;   top: 177px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+							<f:selectItem />
+							<f:selectItem itemValue="001" itemLabel="#{idm.OD_CB659_0}" />
+							<f:selectItem itemValue="002" itemLabel="#{idm.OD_CB659_1}" />
+						</p:selectOneMenu>
+						<p:selectOneMenu filter="true" editable="false" effect="fade"
+							id="CB660" widgetVar="CB660"
+							value="#{bpplanindicativosControlador.registro.campos['TIPO_META_INDICADOR']}"
+							disabled="#{bpplanindicativosControlador.bloqueadoMetaIndicador or  bpplanindicativosControlador.accion=='v'?true:false}"
+							tabindex="9"
+							style="position: absolute; width:183px; height: 20px; left: 237px;   top: 204px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+							<f:selectItem />
+							<f:selectItem itemValue="MI" itemLabel="#{idm.OD_CB660_0}" />
+							<f:selectItem itemValue="MM" itemLabel="#{idm.OD_CB660_1}" />
+							<f:selectItem itemValue="MR" itemLabel="#{idm.OD_CB660_2}" />
+							<f:selectItem itemValue="MG" itemLabel="#{idm.OD_CB660_3}" />
+						</p:selectOneMenu>
+						<p:selectOneMenu filter="true" editable="false" effect="fade"
+							id="CB661" widgetVar="CB661"
+							value="#{bpplanindicativosControlador.registro.campos['UNIDAD_MEDIDA']}"
+							disabled="#{bpplanindicativosControlador.bloqueadoUnidadMedida or  bpplanindicativosControlador.accion=='v'?true:false}"
+							tabindex="12"
+							style="position: absolute; width:183px; height: 22px; left: 237px;   top: 230px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+							<f:selectItem />
+							<f:selectItems
+								value="#{bpplanindicativosControlador.listaUnidadMedida}"
+								var="regc" itemLabel="#{regc.campos['NOMBRE']}"
+								itemValue="#{regc.campos['UNIDAD']}" />
+						</p:selectOneMenu>
+						<p:inputText id="CB662" widgetVar="CB662"
+							onfocus="if(!false){PF('BTCB662').jq.focus();}"
+							onclick="if(!false){PF('PLCB662').show();}"
+							value="#{bpplanindicativosControlador.registro.campos['DEPENDENCIA']}"
+							disabled="#{bpplanindicativosControlador.bloqueadoDependencia}"
+							tabindex="-1"
+							style="cursor:pointer; position: absolute; width:158px; height: 20px; left: 237px;   top: 359px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+						<p:commandButton id="BTCB662" onblur="PF('CB662').jq.blur();"
+							onfocus="PF('CB662').jq.addClass('ui-state-focus');"
+							widgetVar="BTCB662"
+							disabled="#{bpplanindicativosControlador.bloqueadoDependencia}"
+							type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+							style="position: absolute; width:25px; height:  20px; left: 393px;   top: 359px; display:block; "
+							tabindex="17" />
+						<p:overlayPanel widgetVar="PLCB662" id="PLCB662"
+							onShow="if(PF('TBCB662').nuevo){ PF('TBCB662').filter(); PF('TBCB662').nuevo=false;}"
+							onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB662').jq.focus();}"
+							my="center buttom" at="center buttom" for="BTCB662"
+							hideEffect="fade"
+							rendered="#{bpplanindicativosControlador.accion!='v'}"
+							style="width: 400px">
+							<p:dataTable id="TBCB662" widgetVar="TBCB662" var="reg"
+								value="#{bpplanindicativosControlador.listaDependencia}"
+								editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+								currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+								rows="11" rowIndexVar="rowIndex" selectionMode="single"
+								rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+								<p:ajax event="rowSelect"
+									listener="#{bpplanindicativosControlador.seleccionarFilaDependencia}"
+									update=":FR178_nuevo:CB662,@([id$=LB6117])"
+									oncomplete="PF('PLCB662').hide(); " />
+								<p:column headerText="#{idm.TG_CODIGO7}"
+									style="text-align:center; " width="30%"
+									filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['CODIGO']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_NOMBRE3}"
+									style="text-align:center; " width="70%"
+									filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NOMBRE']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+							</p:dataTable>
+						</p:overlayPanel>
+						<p:selectOneMenu filter="true" editable="false" effect="fade"
+							id="CB663" widgetVar="CB663"
+							value="#{bpplanindicativosControlador.registro.campos['SECTOR']}"
+							disabled="#{bpplanindicativosControlador.accion=='v'?true:false}"
+							tabindex="20"
+							style="position: absolute; width:183px; height: 20px; left: 237px;   top: 486px; text-align: left; font-weight: normal; font-style: normal; font-family: MS Sans Serif; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+							<f:selectItem />
+							<f:selectItems
+								value="#{bpplanindicativosControlador.listaSector}" var="regc"
+								itemLabel="#{regc.campos['DESCRIPCION']}"
+								itemValue="#{regc.campos['CODIGO']}" />
+						</p:selectOneMenu>
+						<h:outputLabel id="LB5024" value="#{idm.TG_CODIGO8}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 48px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB5025" value="#{idm.TT_LB5025}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 74px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB5026" value="#{idm.TG_AL_ANIO}"
+							style="position: absolute; width:87px; height: 20px; left: 333px;   top: 74px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB5027" value="#{idm.TT_LB5027}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 99px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#404040  none  1px ;" />
+						<h:outputLabel id="LB5028" value="#{idm.TT_LB5028}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 150px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB5029" value="#{idm.TT_LB5029}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 177px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB5030" value="#{idm.TT_LB5030}"
+							style="position: absolute; width:92px; height: 20px; left: 615px;   top: 150px; text-align: left; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB5031" value="#{idm.TT_LB5031}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 204px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB5032" value="#{idm.TG_UNIDAD3}"
+							style="position: absolute; width:183px; height: 22px; left: 48px;   top: 230px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB5033" value="#{idm.TT_LB5033}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 257px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#404040  none  1px ;" />
+						<h:outputLabel id="LB5034" value="#{idm.TT_LB5034}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 283px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#404040  none  1px ;" />
+						<p:inputTextarea autoResize="false" id="CP6645" widgetVar="CP6645"
+							value="#{bpplanindicativosControlador.registro.campos['DESCRIPCION_TEXTO_BP']}"
+							placeholder="#{idm.AC_CP6645}"
+							readonly="#{bpplanindicativosControlador.accion=='v'?true:false}"
+							tabindex="19" styleClass="inputTab" maxlength="4000"
+							style="resize: none; position: absolute; width:562px; height: 46px; left: 237px;   top: 435px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputTextarea>
+						<h:outputLabel id="LB5036" value="#{idm.TT_LB5036}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 333px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB5037" value="#{idm.TG_DEPENDENCIA5}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 359px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB5038" value="#{idm.TT_LB5038}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 384px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#404040  none  1px ;" />
+						<h:outputLabel id="LB5039" value="#{idm.TT_LB5039}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 435px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#404040  none  1px ;" />
+						<h:outputLabel id="LB5040" value="#{idm.TG_SECTOR4}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 486px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB5041" value="#{idm.TT_LB5041}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 512px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:none; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB5042" value="#{idm.TT_LB5042}"
+							style="position: absolute; width:87px; height: 20px; left: 713px;   top: 177px; text-align: left; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB5043" value="#{idm.TT_LB5043}"
+							style="position: absolute; width:92px; height: 20px; left: 615px;   top: 177px; text-align: left; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB6117"
+							value="#{bpplanindicativosControlador.nombreDependencia}"
+							title="#{idm.AL_LB6117}"
+							style="position: absolute; width:378px; height: 20px; left: 423px;   top: 359px; text-align: left; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;" />
+						<p:inputText id="CP6634" widgetVar="CP6634" styleClass="inputTab"
+							title="#{idm.AL_CP6634}"
+							value="#{bpplanindicativosControlador.registro.campos['ID']}"
+							placeholder="#{idm.AC_CP6634}"
+							readonly="#{bpplanindicativosControlador.accion=='v'?true:false}"
+							tabindex="1" maxlength="60"
+							style="position: absolute; width:183px; height: 20px; text-decoration:none; left: 237px;   top: 48px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+							<p:ajax event="change"
+								listener="#{bpplanindicativosControlador.cambiarId}"
+								update="@([id$=CB662]),@([id$=CB659]),@([id$=CB660]),@([id$=CB661]),alert,@this" />
+						</p:inputText>
+						<p:inputText id="CP6635" widgetVar="CP6635" styleClass="inputTab"
+							title="#{idm.TG_PREDECESOR}"
+							value="#{bpplanindicativosControlador.registro.campos['PREDECESOR']}"
+							placeholder="#{idm.TG_PREDECESOR}" readonly="true" tabindex="5"
+							maxlength="60"
+							style="position: absolute; width:183px; height: 20px; text-decoration:none; left: 522px;   top: 74px; text-align: left; font-weight: normal; font-style: normal; font-family: MS Sans Serif; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputTextarea autoResize="false" id="CP6636" widgetVar="CP6636"
+							value="#{bpplanindicativosControlador.registro.campos['DESCRIPCION']}"
+							placeholder="#{idm.TG_DESCRIPCION7}"
+							readonly="#{bpplanindicativosControlador.accion=='v'?true:false}"
+							tabindex="6" styleClass="inputTab" maxlength="300"
+							style="resize: none; position: absolute; width:562px; height: 46px; left: 237px;   top: 99px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputTextarea>
+						<p:inputText id="CP6637" widgetVar="CP6637" styleClass="inputTab"
+							value="#{bpplanindicativosControlador.registro.campos['PONDERACION']}"
+							placeholder="#{idm.TG_PONDERACION2}" readonly="true" tabindex="7"
+							maxlength="22"
+							style="position: absolute; width:183px; height: 20px; text-decoration:none; left: 237px;   top: 150px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<pe:inputNumber id="CP6638" widgetVar="CP6638"
+							styleClass="inputTab numericoDerecha"
+							value="#{bpplanindicativosControlador.registro.campos['AVANCE']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="10" maxValue="100" minValue="-999.99"
+							converter="convertidorDouble"
+							style="position: absolute; width:92px; height: 20px; text-decoration:none; left: 615px;   top: 204px; text-align: right; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP6639" widgetVar="CP6639"
+							styleClass="inputTab numericoDerecha"
+							value="#{bpplanindicativosControlador.registro.campos['AVANCE_FINANCIERO']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="11" maxValue="100" minValue="-999.99"
+							converter="convertidorDouble"
+							style="position: absolute; width:87px; height: 20px; text-decoration:none; left: 713px;   top: 204px; text-align: right; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<p:inputText id="CP6640" widgetVar="CP6640" styleClass="inputTab"
+							value="#{bpplanindicativosControlador.registro.campos['DESCRIPCION_INDICADOR_MEDIDA']}"
+							placeholder="#{idm.AC_CP6640}"
+							readonly="#{bpplanindicativosControlador.accion=='v'?true:false}"
+							tabindex="13" maxlength="255"
+							style="position: absolute; width:562px; height: 20px; text-decoration:none; left: 237px;   top: 257px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP6641" widgetVar="CP6641" styleClass="inputTab"
+							value="#{bpplanindicativosControlador.registro.campos['NOMBRE_INDICADOR']}"
+							placeholder="#{idm.AC_CP6641}"
+							readonly="#{bpplanindicativosControlador.accion=='v'?true:false}"
+							tabindex="14" maxlength="255"
+							style="position: absolute; width:562px; height: 20px; text-decoration:none; left: 237px;   top: 283px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<pe:inputNumber id="CP6642" widgetVar="CP6642"
+							styleClass="inputTab"
+							value="#{bpplanindicativosControlador.registro.campos['META']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="#{bpplanindicativosControlador.accion=='v'?true:false}"
+							tabindex="15" maxValue="9999999999999.99"
+							minValue="-9999999999999.99" converter="convertidorDouble"
+							style="position: absolute; width:92px; height: 20px; text-decoration:none; left: 237px;   top: 308px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<pe:inputNumber id="CP6643" widgetVar="CP6643"
+							styleClass="inputTab"
+							value="#{bpplanindicativosControlador.registro.campos['LB']}"
+							decimalPlaces="2" thousandSeparator="," decimalSeparator="."
+							readonly="#{bpplanindicativosControlador.accion=='v'?true:false}"
+							tabindex="16" maxValue="9999999999999.99"
+							minValue="-9999999999999.99" converter="convertidorDouble"
+							style="position: absolute; width:92px; height: 20px; text-decoration:none; left: 237px;   top: 333px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<p:inputTextarea autoResize="false" id="CP6644" widgetVar="CP6644"
+							value="#{bpplanindicativosControlador.registro.campos['DESCRIPCION_INDICADOR']}"
+							placeholder="#{idm.AC_CP6644}"
+							readonly="#{bpplanindicativosControlador.accion=='v'?true:false}"
+							tabindex="18" styleClass="inputTab" maxlength="200"
+							style="resize: none; position: absolute; width:562px; height: 46px; left: 237px;   top: 384px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputTextarea>
+						<p:selectBooleanCheckbox id="CK142" widgetVar="CK142"
+							value="#{bpplanindicativosControlador.registro.campos['ES_INDICADOR']}"
+							disabled="true" tabindex="21"
+							style="position: absolute;  left: 237px;   top: 512px; display:none; ">
+						</p:selectBooleanCheckbox>
+						<h:outputLabel id="LB5035" value="#{idm.TT_LB5035}"
+							style="position: absolute; width:183px; height: 20px; left: 48px;   top: 308px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#404040  none  1px ;" />
+					</div>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

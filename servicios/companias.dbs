@@ -1,0 +1,682 @@
+﻿<data name="companias" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getCompaniasPagDiferenteDeCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO NIT, NOMBRE NOMBRECOMP  FROM COMPANIA WHERE CODIGO NOT IN :CODIGO ORDER BY CODIGO) WHERE (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END)  LIKE UPPER(:NIT || '%')  AND (CASE WHEN NOMBRECOMP IS NULL THEN ' ' ELSE UPPER(NOMBRECOMP) END)  LIKE UPPER( '%' || :NOMBRECOMP || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NIT":"$NIT","NOMBRECOMP":"$NOMBRECOMP"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRECOMP" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="companias/diferentedecodigo/pag">
+		<call-query href="getCompaniasPagDiferenteDeCodigoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRECOMP" query-param="NOMBRECOMP"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasNumDiferenteDeCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO NIT, NOMBRE NOMBRECOMP  FROM COMPANIA WHERE CODIGO NOT IN :CODIGO ORDER BY CODIGO) WHERE (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END)  LIKE UPPER(:NIT || '%')  AND (CASE WHEN NOMBRECOMP IS NULL THEN ' ' ELSE UPPER(NOMBRECOMP) END)  LIKE UPPER( '%' || :NOMBRECOMP || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRECOMP" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/diferentedecodigo/num">
+		<call-query href="getCompaniasNumDiferenteDeCodigoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRECOMP" query-param="NOMBRECOMP"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasTodosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CODIGO,NOMBRE,URL_TRATAMIENTO FROM COMPANIA ORDER BY CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","URL_TRATAMIENTO":"$URL_TRATAMIENTO"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="companias/todos">
+		<call-query href="getCompaniasTodosQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getCompaniasPagTodasConsolidadasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT CODIGO, NOMBRE  FROM COMPANIA WHERE COMPANIA.CONSOLIDADA NOT IN (0) ORDER BY COMPANIA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="companias/todasconsolidadas/pag">
+		<call-query href="getCompaniasPagTodasConsolidadasQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasNumTodasConsolidadasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT CODIGO, NOMBRE  FROM COMPANIA WHERE COMPANIA.CONSOLIDADA NOT IN (0) ORDER BY COMPANIA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/todasconsolidadas/num">
+		<call-query href="getCompaniasNumTodasConsolidadasQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasCantidadCompaniasNiifQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(1) CANT  FROM COMPANIA WHERE CODIGO = :COMPANIANIIF</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CANT":"$CANT(type:integer)"}]}}		</result>
+		<param name="COMPANIANIIF" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/cantidadcompaniasniif">
+		<call-query href="getCompaniasCantidadCompaniasNiifQuery">
+			<with-param name="COMPANIANIIF" query-param="COMPANIANIIF"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasTodosPorPaisDepartamentoCiudadCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NVL(COMPANIA.NOMBRE,' ') NOMBRE, COMPANIA.NITCOMPANIA, NVL(CIUDAD.NOMBRE,' ') CIUDAD, NVL(COMPANIA.DIRECCION,' ') DIRECCION, NVL(COMPANIA.TELEFONO,' ') TELEFONO  FROM COMPANIA LEFT JOIN CIUDAD ON COMPANIA.PAIS = CIUDAD.PAIS AND COMPANIA.DEPARTAMENTO = CIUDAD.DEPARTAMENTO AND COMPANIA.CIUDAD = CIUDAD.CODIGO WHERE COMPANIA.CODIGO=:COMPANIASEL</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE":"$NOMBRE","NITCOMPANIA":"$NITCOMPANIA","CIUDAD":"$CIUDAD","DIRECCION":"$DIRECCION","TELEFONO":"$TELEFONO"}]}}		</result>
+		<param name="COMPANIASEL" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/todosporpaisdepartamentociudadcodigo">
+		<call-query href="getCompaniasTodosPorPaisDepartamentoCiudadCodigoQuery">
+			<with-param name="COMPANIASEL" query-param="COMPANIASEL"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasNitPorCompanianiifQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NITCOMPANIA NIT, NOMBRE  FROM COMPANIA WHERE CODIGO = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NIT":"$NIT","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/nitporcompanianiif">
+		<call-query href="getCompaniasNitPorCompanianiifQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasTodasPorNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA.CODIGO, COMPANIA.NOMBRE  FROM COMPANIA WHERE COMPANIA.CODIGO = :COMPANIA ORDER BY COMPANIA.NOMBRE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/todaspornombre">
+		<call-query href="getCompaniasTodasPorNombreQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertCompanias" keyColumns="CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO COMPANIA (CODIGO, NITCOMPANIA, NOMBRE, SIGLACOMPANIA, DIRECCION, PAIS, DEPARTAMENTO, CIUDAD, TELEFONO, FAX, RETENEDOR_FTE, RETENEDOR_IVA, RETENEDOR_ICA, RETENEDOR_TBRE, PAGINAWEB, MISION, VISION, CONTACTO, CONSOLIDADA, MONEDA, RUTA_STICKER, RUTA_IMAGEN, RUTA_CNSC, COD_DANE_EE, CODIGOSCHIP, CODIGO_CONTADURIA, GENERA_CUNE, TIPOENTIDAD, REGIMEN, URL_TRATAMIENTO, DATE_CREATED, CREATED_BY) VALUES (:CODIGO, :NITCOMPANIA, :NOMBRE, :SIGLACOMPANIA, :DIRECCION, :PAIS, :DEPARTAMENTO, :CIUDAD, :TELEFONO, :FAX, :RETENEDOR_FTE, :RETENEDOR_IVA, :RETENEDOR_ICA, :RETENEDOR_TBRE, :PAGINAWEB, :MISION, :VISION, :CONTACTO, :CONSOLIDADA, :MONEDA, :RUTA_STICKER, :RUTA_IMAGEN, :RUTA_CNSC, :COD_DANE_EE, :CODIGOSCHIP, :CODIGO_CONTADURIA, :GENERA_CUNE, :TIPOENTIDAD, :REGIMEN, :URL_TRATAMIENTO,TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="" name="NITCOMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SIGLACOMPANIA" sqlType="STRING"/>
+		<param defaultValue="" name="DIRECCION" sqlType="STRING"/>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+		<param defaultValue="" name="TELEFONO" sqlType="STRING"/>
+		<param defaultValue="" name="FAX" sqlType="STRING"/>
+		<param defaultValue="0" name="RETENEDOR_FTE" sqlType="STRING"/>
+		<param defaultValue="0" name="RETENEDOR_IVA" sqlType="STRING"/>
+		<param defaultValue="0" name="RETENEDOR_ICA" sqlType="STRING"/>
+		<param defaultValue="0" name="RETENEDOR_TBRE" sqlType="STRING"/>
+		<param defaultValue="" name="PAGINAWEB" sqlType="STRING"/>
+		<param defaultValue="" name="MISION" sqlType="STRING"/>
+		<param defaultValue="" name="VISION" sqlType="STRING"/>
+		<param defaultValue="" name="CONTACTO" sqlType="STRING"/>
+		<param defaultValue="0" name="CONSOLIDADA" sqlType="STRING"/>
+		<param defaultValue="COP" name="MONEDA" sqlType="STRING"/>
+		<param defaultValue="" name="RUTA_STICKER" sqlType="STRING"/>
+		<param defaultValue="" name="RUTA_IMAGEN" sqlType="STRING"/>
+		<param defaultValue="" name="RUTA_CNSC" sqlType="STRING"/>
+		<param defaultValue="" name="COD_DANE_EE" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOSCHIP" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGO_CONTADURIA" sqlType="STRING"/>
+		<param defaultValue="0" name="GENERA_CUNE" sqlType="STRING"/>
+		<param defaultValue="" name="TIPOENTIDAD" sqlType="STRING"/>
+		<param defaultValue="" name="REGIMEN" sqlType="STRING"/>
+		<param defaultValue="" name="URL_TRATAMIENTO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="companias">
+		<call-query href="insertCompanias">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NITCOMPANIA" query-param="NITCOMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SIGLACOMPANIA" query-param="SIGLACOMPANIA"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+			<with-param name="TELEFONO" query-param="TELEFONO"/>
+			<with-param name="FAX" query-param="FAX"/>
+			<with-param name="RETENEDOR_FTE" query-param="RETENEDOR_FTE"/>
+			<with-param name="RETENEDOR_IVA" query-param="RETENEDOR_IVA"/>
+			<with-param name="RETENEDOR_ICA" query-param="RETENEDOR_ICA"/>
+			<with-param name="RETENEDOR_TBRE" query-param="RETENEDOR_TBRE"/>
+			<with-param name="PAGINAWEB" query-param="PAGINAWEB"/>
+			<with-param name="MISION" query-param="MISION"/>
+			<with-param name="VISION" query-param="VISION"/>
+			<with-param name="CONTACTO" query-param="CONTACTO"/>
+			<with-param name="CONSOLIDADA" query-param="CONSOLIDADA"/>
+			<with-param name="MONEDA" query-param="MONEDA"/>
+			<with-param name="RUTA_STICKER" query-param="RUTA_STICKER"/>
+			<with-param name="RUTA_IMAGEN" query-param="RUTA_IMAGEN"/>
+			<with-param name="RUTA_CNSC" query-param="RUTA_CNSC"/>
+			<with-param name="COD_DANE_EE" query-param="COD_DANE_EE"/>
+			<with-param name="CODIGOSCHIP" query-param="CODIGOSCHIP"/>
+			<with-param name="CODIGO_CONTADURIA" query-param="CODIGO_CONTADURIA"/>
+			<with-param name="GENERA_CUNE" query-param="GENERA_CUNE"/>
+			<with-param name="TIPOENTIDAD" query-param="TIPOENTIDAD"/>
+			<with-param name="REGIMEN" query-param="REGIMEN"/>
+			<with-param name="URL_TRATAMIENTO" query-param="URL_TRATAMIENTO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCompanias" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM COMPANIA WHERE COMPANIA.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="companias">
+		<call-query href="deleteCompanias">
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA.CODIGO, COMPANIA.NITCOMPANIA, COMPANIA.NOMBRE, CI.NOMBRE NOMBRECIUDAD  FROM COMPANIA INNER JOIN CIUDAD CI ON COMPANIA.CIUDAD = CI.CODIGO AND COMPANIA.PAIS = CI.PAIS AND COMPANIA.DEPARTAMENTO = CI.DEPARTAMENTO ORDER BY COMPANIA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN NITCOMPANIA IS NULL THEN ' ' ELSE UPPER(NITCOMPANIA) END)  LIKE UPPER(:NITCOMPANIA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NOMBRECIUDAD IS NULL THEN ' ' ELSE UPPER(NOMBRECIUDAD) END)  LIKE UPPER( '%' || :NOMBRECIUDAD || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NITCOMPANIA":"$NITCOMPANIA","NOMBRE":"$NOMBRE","NOMBRECIUDAD":"$NOMBRECIUDAD"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NITCOMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBRECIUDAD" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="companias">
+		<call-query href="getCompaniasPaginaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NITCOMPANIA" query-param="NITCOMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBRECIUDAD" query-param="NOMBRECIUDAD"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA.CODIGO, COMPANIA.NITCOMPANIA, COMPANIA.NOMBRE, CI.NOMBRE NOMBRECIUDAD  FROM COMPANIA INNER JOIN CIUDAD CI ON COMPANIA.CIUDAD = CI.CODIGO AND COMPANIA.PAIS = CI.PAIS AND COMPANIA.DEPARTAMENTO = CI.DEPARTAMENTO ORDER BY COMPANIA.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN NITCOMPANIA IS NULL THEN ' ' ELSE UPPER(NITCOMPANIA) END)  LIKE UPPER( '%' || :NITCOMPANIA || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NOMBRECIUDAD IS NULL THEN ' ' ELSE UPPER(NOMBRECIUDAD) END)  LIKE UPPER( '%' || :NOMBRECIUDAD || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NITCOMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NOMBRECIUDAD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/numero">
+		<call-query href="getCompaniasNumeroQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NITCOMPANIA" query-param="NITCOMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NOMBRECIUDAD" query-param="NOMBRECIUDAD"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DISTINCT COMPANIA.CODIGO, COMPANIA.NITCOMPANIA, COMPANIA.NOMBRE, COMPANIA.SIGLACOMPANIA, COMPANIA.DIRECCION, COMPANIA.PAIS, COMPANIA.DEPARTAMENTO CODIGODEPTO, COMPANIA.CIUDAD CODCIUDAD, CI.NOMBRE NOMBRECIUDAD, COMPANIA.TELEFONO, COMPANIA.FAX,(CASE COMPANIA.RETENEDOR_FTE WHEN 0 THEN 'false' ELSE 'true' END) RETENEDOR_FTE,(CASE COMPANIA.RETENEDOR_IVA WHEN 0 THEN 'false' ELSE 'true' END) RETENEDOR_IVA,(CASE COMPANIA.RETENEDOR_ICA WHEN 0 THEN 'false' ELSE 'true' END) RETENEDOR_ICA,(CASE COMPANIA.RETENEDOR_TBRE WHEN 0 THEN 'false' ELSE 'true' END) RETENEDOR_TBRE, COMPANIA.PAGINAWEB, COMPANIA.MISION, COMPANIA.VISION, COMPANIA.CONTACTO,(CASE COMPANIA.CONSOLIDADA WHEN 0 THEN 'false' ELSE 'true' END) CONSOLIDADA, COMPANIA.MONEDA CODMONEDA, COMPANIA.RUTA_STICKER, COMPANIA.RUTA_IMAGEN, COMPANIA.CREATED_BY,(TO_CHAR(COMPANIA.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, COMPANIA.MODIFIED_BY,(TO_CHAR(COMPANIA.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, COMPANIA.RUTA_CNSC, COMPANIA.COD_DANE_EE, CODIGOSCHIP, CODIGO_CONTADURIA, CODENTIDADES_SCHIP.NOMBRE NOMBRESCHIP,(CASE COMPANIA.GENERA_CUNE WHEN 0 THEN 'false' ELSE 'true' END) GENERA_CUNE, COMPANIA.TIPOENTIDAD, (SELECT NOMBRE NOMBREENTIDAD FROM TIPOS WHERE CATEGORIA = '21' AND CODIGO = COMPANIA.TIPOENTIDAD ) NOMBREENTIDAD, REGIMEN, URL_TRATAMIENTO FROM COMPANIA INNER JOIN CIUDAD CI ON COMPANIA.CIUDAD = CI.CODIGO AND COMPANIA.PAIS = CI.PAIS AND COMPANIA.DEPARTAMENTO = CI.DEPARTAMENTO LEFT JOIN CODENTIDADES_SCHIP ON COMPANIA.CODIGOSCHIP = CODENTIDADES_SCHIP.CODIGO WHERE COMPANIA.CODIGO= :KEY_CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NITCOMPANIA":"$NITCOMPANIA","NOMBRE":"$NOMBRE","SIGLACOMPANIA":"$SIGLACOMPANIA","DIRECCION":"$DIRECCION","PAIS":"$PAIS","CODIGODEPTO":"$CODIGODEPTO","CODCIUDAD":"$CODCIUDAD","NOMBRECIUDAD":"$NOMBRECIUDAD","TELEFONO":"$TELEFONO","FAX":"$FAX","RETENEDOR_FTE":"$RETENEDOR_FTE(type:boolean)","RETENEDOR_IVA":"$RETENEDOR_IVA(type:boolean)","RETENEDOR_ICA":"$RETENEDOR_ICA(type:boolean)","RETENEDOR_TBRE":"$RETENEDOR_TBRE(type:boolean)","PAGINAWEB":"$PAGINAWEB","MISION":"$MISION","VISION":"$VISION","CONTACTO":"$CONTACTO","CONSOLIDADA":"$CONSOLIDADA(type:boolean)","CODMONEDA":"$CODMONEDA","RUTA_STICKER":"$RUTA_STICKER","RUTA_IMAGEN":"$RUTA_IMAGEN","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","RUTA_CNSC":"$RUTA_CNSC","COD_DANE_EE":"$COD_DANE_EE","CODIGOSCHIP":"$CODIGOSCHIP","CODIGO_CONTADURIA":"$CODIGO_CONTADURIA","NOMBRESCHIP":"$NOMBRESCHIP","GENERA_CUNE":"$GENERA_CUNE(type:boolean)","TIPOENTIDAD":"$TIPOENTIDAD(type:integer)","NOMBREENTIDAD":"$NOMBREENTIDAD","REGIMEN":"$REGIMEN","URL_TRATAMIENTO":"$URL_TRATAMIENTO"}]}}		</result>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/data">
+		<call-query href="getCompaniasRegistroQuery">
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCompanias" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE COMPANIA SET CODIGO=:CODIGO, NITCOMPANIA=:NITCOMPANIA, NOMBRE=:NOMBRE, SIGLACOMPANIA=:SIGLACOMPANIA, DIRECCION=:DIRECCION, PAIS=:PAIS, DEPARTAMENTO=:DEPARTAMENTO, CIUDAD=:CIUDAD, TELEFONO=:TELEFONO, FAX=:FAX, RETENEDOR_FTE=:RETENEDOR_FTE, RETENEDOR_IVA=:RETENEDOR_IVA, RETENEDOR_ICA=:RETENEDOR_ICA, RETENEDOR_TBRE=:RETENEDOR_TBRE, PAGINAWEB=:PAGINAWEB, MISION=:MISION, VISION=:VISION, CONTACTO=:CONTACTO, CONSOLIDADA=:CONSOLIDADA, MONEDA=:MONEDA, RUTA_STICKER=:RUTA_STICKER, RUTA_IMAGEN=:RUTA_IMAGEN, RUTA_CNSC=:RUTA_CNSC, COD_DANE_EE=:COD_DANE_EE, CODIGOSCHIP=:CODIGOSCHIP, CODIGO_CONTADURIA=:CODIGO_CONTADURIA, GENERA_CUNE=:GENERA_CUNE, TIPOENTIDAD=:TIPOENTIDAD, REGIMEN=:REGIMEN, URL_TRATAMIENTO=:URL_TRATAMIENTO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE COMPANIA.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NITCOMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SIGLACOMPANIA" sqlType="STRING"/>
+		<param name="DIRECCION" sqlType="STRING"/>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+		<param name="TELEFONO" sqlType="STRING"/>
+		<param name="FAX" sqlType="STRING"/>
+		<param name="RETENEDOR_FTE" sqlType="STRING"/>
+		<param name="RETENEDOR_IVA" sqlType="STRING"/>
+		<param name="RETENEDOR_ICA" sqlType="STRING"/>
+		<param name="RETENEDOR_TBRE" sqlType="STRING"/>
+		<param name="PAGINAWEB" sqlType="STRING"/>
+		<param name="MISION" sqlType="STRING"/>
+		<param name="VISION" sqlType="STRING"/>
+		<param name="CONTACTO" sqlType="STRING"/>
+		<param name="CONSOLIDADA" sqlType="STRING"/>
+		<param name="MONEDA" sqlType="STRING"/>
+		<param name="RUTA_STICKER" sqlType="STRING"/>
+		<param name="RUTA_IMAGEN" sqlType="STRING"/>
+		<param name="RUTA_CNSC" sqlType="STRING"/>
+		<param name="COD_DANE_EE" sqlType="STRING"/>
+		<param name="CODIGOSCHIP" sqlType="STRING"/>
+		<param name="CODIGO_CONTADURIA" sqlType="STRING"/>
+		<param name="GENERA_CUNE" sqlType="STRING"/>
+		<param name="TIPOENTIDAD" sqlType="STRING"/>
+		<param name="REGIMEN" sqlType="STRING"/>
+		<param name="URL_TRATAMIENTO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="companias">
+		<call-query href="updateCompanias">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NITCOMPANIA" query-param="NITCOMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SIGLACOMPANIA" query-param="SIGLACOMPANIA"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+			<with-param name="TELEFONO" query-param="TELEFONO"/>
+			<with-param name="FAX" query-param="FAX"/>
+			<with-param name="RETENEDOR_FTE" query-param="RETENEDOR_FTE"/>
+			<with-param name="RETENEDOR_IVA" query-param="RETENEDOR_IVA"/>
+			<with-param name="RETENEDOR_ICA" query-param="RETENEDOR_ICA"/>
+			<with-param name="RETENEDOR_TBRE" query-param="RETENEDOR_TBRE"/>
+			<with-param name="PAGINAWEB" query-param="PAGINAWEB"/>
+			<with-param name="MISION" query-param="MISION"/>
+			<with-param name="VISION" query-param="VISION"/>
+			<with-param name="CONTACTO" query-param="CONTACTO"/>
+			<with-param name="CONSOLIDADA" query-param="CONSOLIDADA"/>
+			<with-param name="MONEDA" query-param="MONEDA"/>
+			<with-param name="RUTA_STICKER" query-param="RUTA_STICKER"/>
+			<with-param name="RUTA_IMAGEN" query-param="RUTA_IMAGEN"/>
+			<with-param name="RUTA_CNSC" query-param="RUTA_CNSC"/>
+			<with-param name="COD_DANE_EE" query-param="COD_DANE_EE"/>
+			<with-param name="CODIGOSCHIP" query-param="CODIGOSCHIP"/>
+			<with-param name="CODIGO_CONTADURIA" query-param="CODIGO_CONTADURIA"/>
+			<with-param name="GENERA_CUNE" query-param="GENERA_CUNE"/>
+			<with-param name="TIPOENTIDAD" query-param="TIPOENTIDAD"/>
+			<with-param name="REGIMEN" query-param="REGIMEN"/>
+			<with-param name="URL_TRATAMIENTO" query-param="URL_TRATAMIENTO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasNombreporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  UPPER(COMPANIA.NOMBRE) AS NOMBRE  FROM COMPANIA WHERE COMPANIA.CODIGO = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/nombreporcompania">
+		<call-query href="getCompaniasNombreporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasDataAutenticacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  C.CODIGO,C.NOMBRE,RUTA_IMAGEN,RUTA_VIGILADO_POR,SIGLACOMPANIA, P.NOMBRE NOMBRE_PAIS, D.NOMBRE NOMBRE_DEPARTAMENTO, CU.NOMBRE NOMBRE_CIUDAD,MONEDA,C.PAIS,C.DEPARTAMENTO, C.CIUDAD,C.NITCOMPANIA,C.DIRECCION,C.TELEFONO,(CASE RETENEDOR_FTE WHEN 0 THEN 'false' ELSE 'true' END) RETENEDOR_FTE,(CASE RETENEDOR_IVA WHEN 0 THEN 'false' ELSE 'true' END) RETENEDOR_IVA,(CASE RETENEDOR_ICA WHEN 0 THEN 'false' ELSE 'true' END) RETENEDOR_ICA,(CASE RETENEDOR_TBRE WHEN 0 THEN 'false' ELSE 'true' END) RETENEDOR_TBRE,(CASE CONSOLIDADA WHEN 0 THEN 'false' ELSE 'true' END) CONSOLIDADA, C.FAX, C.CODIGODANE, C.MISION, C.VISION, C.DIRECCIONEMAIL, C.PAGINAWEB, C.TIPOENTIDAD, C.CODIGOSCHIP, C.FIRMAFACTURA, C.CODIGO_WEB, C.CONTACTO, C.RUTA_STICKER, C.NUIR, C.CODIGO_CONTADURIA  FROM COMPANIA C INNER JOIN PAISES P ON(C.PAIS=P.PAIS) INNER JOIN DEPARTAMENTO D ON (C.PAIS=D.PAIS AND C.DEPARTAMENTO=D.CODIGO) INNER JOIN CIUDAD CU ON (C.PAIS=CU.PAIS AND C.DEPARTAMENTO=CU.DEPARTAMENTO AND C.CIUDAD=CU.CODIGO) WHERE C.CODIGO=:CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","RUTA_IMAGEN":"$RUTA_IMAGEN","RUTA_VIGILADO_POR":"$RUTA_VIGILADO_POR","SIGLACOMPANIA":"$SIGLACOMPANIA","NOMBRE_PAIS":"$NOMBRE_PAIS","NOMBRE_DEPARTAMENTO":"$NOMBRE_DEPARTAMENTO","NOMBRE_CIUDAD":"$NOMBRE_CIUDAD","MONEDA":"$MONEDA","PAIS":"$PAIS","DEPARTAMENTO":"$DEPARTAMENTO","CIUDAD":"$CIUDAD","NITCOMPANIA":"$NITCOMPANIA","DIRECCION":"$DIRECCION","TELEFONO":"$TELEFONO","RETENEDOR_FTE":"$RETENEDOR_FTE(type:boolean)","RETENEDOR_IVA":"$RETENEDOR_IVA(type:boolean)","RETENEDOR_ICA":"$RETENEDOR_ICA(type:boolean)","RETENEDOR_TBRE":"$RETENEDOR_TBRE(type:boolean)","CONSOLIDADA":"$CONSOLIDADA(type:boolean)","FAX":"$FAX","CODIGODANE":"$CODIGODANE","MISION":"$MISION","VISION":"$VISION","DIRECCIONEMAIL":"$DIRECCIONEMAIL","PAGINAWEB":"$PAGINAWEB","TIPOENTIDAD":"$TIPOENTIDAD(type:integer)","CODIGOSCHIP":"$CODIGOSCHIP","FIRMAFACTURA":"$FIRMAFACTURA","CODIGO_WEB":"$CODIGO_WEB","CONTACTO":"$CONTACTO","RUTA_STICKER":"$RUTA_STICKER","NUIR":"$NUIR","CODIGO_CONTADURIA":"$CODIGO_CONTADURIA"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/dataautenticacion">
+		<call-query href="getCompaniasDataAutenticacionQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasConsultarTelefonoCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NVL(TELEFONO,'NA') TELEFONO  FROM COMPANIA WHERE CODIGO = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TELEFONO":"$TELEFONO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/consultartelefonocompania">
+		<call-query href="getCompaniasConsultarTelefonoCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasRutaFirmaFacturaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  FIRMAFACTURA  FROM COMPANIA WHERE CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FIRMAFACTURA":"$FIRMAFACTURA"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/rutafirmafactura">
+		<call-query href="getCompaniasRutaFirmaFacturaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasTipoEntidadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO ,TIPOENTIDAD  FROM COMPANIA WHERE CODIGO = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","TIPOENTIDAD":"$TIPOENTIDAD(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/tipoentidad">
+		<call-query href="getCompaniasTipoEntidadQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasPagParametrosEntradaNoNuloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA.CODIGO, COMPANIA.NITCOMPANIA, COMPANIA.NOMBRE, COMPANIA.TELEFONO, COMPANIA.FAX, COMPANIA.DIRECCION, COMPANIA.PAIS, COMPANIA.DEPARTAMENTO, COMPANIA.CIUDAD  FROM COMPANIA LEFT JOIN PARAMETROS_DE_ENTRADA ON COMPANIA.CODIGO = PARAMETROS_DE_ENTRADA.COMPANIA WHERE PARAMETROS_DE_ENTRADA.COMPANIA IS NOT NULL) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NITCOMPANIA":"$NITCOMPANIA","NOMBRE":"$NOMBRE","TELEFONO":"$TELEFONO","FAX":"$FAX","DIRECCION":"$DIRECCION","PAIS":"$PAIS","DEPARTAMENTO":"$DEPARTAMENTO","CIUDAD":"$CIUDAD"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="companias/parametrosentradanonulo/pag">
+		<call-query href="getCompaniasPagParametrosEntradaNoNuloQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasNumParametrosEntradaNoNuloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA.CODIGO, COMPANIA.NITCOMPANIA, COMPANIA.NOMBRE, COMPANIA.TELEFONO, COMPANIA.FAX, COMPANIA.DIRECCION, COMPANIA.PAIS, COMPANIA.DEPARTAMENTO, COMPANIA.CIUDAD  FROM COMPANIA LEFT JOIN PARAMETROS_DE_ENTRADA ON COMPANIA.CODIGO = PARAMETROS_DE_ENTRADA.COMPANIA WHERE PARAMETROS_DE_ENTRADA.COMPANIA IS NOT NULL) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/parametrosentradanonulo/num">
+		<call-query href="getCompaniasNumParametrosEntradaNoNuloQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasPagParametrosEntradaNuloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA.CODIGO, COMPANIA.NITCOMPANIA, COMPANIA.NOMBRE, COMPANIA.TELEFONO, COMPANIA.FAX, COMPANIA.DIRECCION, COMPANIA.PAIS, COMPANIA.DEPARTAMENTO, COMPANIA.CIUDAD  FROM COMPANIA LEFT JOIN PARAMETROS_DE_ENTRADA ON COMPANIA.CODIGO = PARAMETROS_DE_ENTRADA.COMPANIA WHERE PARAMETROS_DE_ENTRADA.COMPANIA IS NULL) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NITCOMPANIA":"$NITCOMPANIA","NOMBRE":"$NOMBRE","TELEFONO":"$TELEFONO","FAX":"$FAX","DIRECCION":"$DIRECCION","PAIS":"$PAIS","DEPARTAMENTO":"$DEPARTAMENTO","CIUDAD":"$CIUDAD"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="companias/parametrosentradanulo/pag">
+		<call-query href="getCompaniasPagParametrosEntradaNuloQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasNumParametrosEntradaNuloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA.CODIGO, COMPANIA.NITCOMPANIA, COMPANIA.NOMBRE, COMPANIA.TELEFONO, COMPANIA.FAX, COMPANIA.DIRECCION, COMPANIA.PAIS, COMPANIA.DEPARTAMENTO, COMPANIA.CIUDAD  FROM COMPANIA LEFT JOIN PARAMETROS_DE_ENTRADA ON COMPANIA.CODIGO = PARAMETROS_DE_ENTRADA.COMPANIA WHERE PARAMETROS_DE_ENTRADA.COMPANIA IS NULL) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/parametrosentradanulo/num">
+		<call-query href="getCompaniasNumParametrosEntradaNuloQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasCodigoYNomUnionParametrosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO , NOMBRE  FROM COMPANIA LEFT JOIN PARAMETROS_DE_ENTRADA ON COMPANIA.CODIGO = PARAMETROS_DE_ENTRADA.COMPANIA AND COMPANIA.NITCOMPANIA = PARAMETROS_DE_ENTRADA.NIT</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="companias/codigoynomunionparametros">
+		<call-query href="getCompaniasCodigoYNomUnionParametrosQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getCompaniasRutaimagenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  RUTA_IMAGEN  FROM COMPANIA WHERE CODIGO = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RUTA_IMAGEN":"$RUTA_IMAGEN"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/rutaimagen">
+		<call-query href="getCompaniasRutaimagenQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasPagCodigoNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="companias/codigonombre/pag">
+		<call-query href="getCompaniasPagCodigoNombreQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasNumCodigoNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/codigonombre/num">
+		<call-query href="getCompaniasNumCodigoNombreQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasPagListadoGeneralQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO , NOMBRE  FROM COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="companias/listadogeneral/pag">
+		<call-query href="getCompaniasPagListadoGeneralQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasNumListadoGeneralQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO , NOMBRE  FROM COMPANIA ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/listadogeneral/num">
+		<call-query href="getCompaniasNumListadoGeneralQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasPagTipoentidadcodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO ,TIPOENTIDAD  FROM COMPANIA WHERE CODIGO = :COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN TIPOENTIDAD IS NULL THEN ' ' ELSE UPPER(TIPOENTIDAD) END)  LIKE UPPER(:TIPOENTIDAD || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","TIPOENTIDAD":"$TIPOENTIDAD(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="TIPOENTIDAD" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="companias/tipoentidadcodigo/pag">
+		<call-query href="getCompaniasPagTipoentidadcodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TIPOENTIDAD" query-param="TIPOENTIDAD"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasNumTipoentidadcodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO ,TIPOENTIDAD  FROM COMPANIA WHERE CODIGO = :COMPANIA) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN TIPOENTIDAD IS NULL THEN ' ' ELSE UPPER(TIPOENTIDAD) END)  LIKE UPPER(:TIPOENTIDAD || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="TIPOENTIDAD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/tipoentidadcodigo/num">
+		<call-query href="getCompaniasNumTipoentidadcodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TIPOENTIDAD" query-param="TIPOENTIDAD"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasNombreDepartamentoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA.DEPARTAMENTO , DEPARTAMENTO.NOMBRE  FROM COMPANIA INNER JOIN DEPARTAMENTO ON COMPANIA.PAIS = DEPARTAMENTO.PAIS AND COMPANIA.DEPARTAMENTO = DEPARTAMENTO.CODIGO WHERE COMPANIA.CODIGO = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DEPARTAMENTO":"$DEPARTAMENTO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/nombredepartamento">
+		<call-query href="getCompaniasNombreDepartamentoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasCodentidadauditoriaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CONCAT(CONCAT(CODIGO,'_'),REPLACE(SIGLACOMPANIA,' ','_')) COD_ENTIDAD FROM COMPANIA WHERE CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COD_ENTIDAD":"$COD_ENTIDAD"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/codentidadauditoria">
+		<call-query href="getCompaniasCodentidadauditoriaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasRegimenporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT C.REGIMEN, R.NOMBRE FROM COMPANIA C INNER JOIN TIPOREGIMEN R ON C.REGIMEN = R.CODIGO WHERE C.CODIGO LIKE :COMPANIA AND ROWNUM =1</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"REGIMEN":"$REGIMEN","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/regimenporcompania">
+		<call-query href="getCompaniasRegimenporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+		<query id="getCompaniasCompaniasporusuarioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DISTINCT COMPANIA.CODIGO, COMPANIA.NOMBRE, COMPANIA.URL_TRATAMIENTO FROM COMPANIA INNER JOIN GRUPO_COMPANIA ON COMPANIA.CODIGO = GRUPO_COMPANIA.COMPANIA INNER JOIN USUARIO_D ON GRUPO_COMPANIA.GRUPO = USUARIO_D.GRUPO WHERE USUARIO_D.USUARIO = :USUARIO ORDER BY COMPANIA.CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","URL_TRATAMIENTO":"$URL_TRATAMIENTO"}]}}		</result>
+		<param name="USUARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/companiasporusuario">
+		<call-query href="getCompaniasCompaniasporusuarioQuery">
+			<with-param name="USUARIO" query-param="USUARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasPagCompaniaconsolidaalmQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA.CODIGO, COMPANIA.NOMBRE FROM CONSOLIDADA INNER JOIN COMPANIA ON COMPANIA.CODIGO = CONSOLIDADA.NITCOMPANIA WHERE CONSOLIDADA.COMPANIACON = :COMPANIA AND CONSOLIDADA.APLICA_ALM = -1) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="companias/companiaconsolidaalm/pag">
+		<call-query href="getCompaniasPagCompaniaconsolidaalmQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCompaniasNumCompaniaconsolidaalmQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA.CODIGO, COMPANIA.NOMBRE FROM CONSOLIDADA INNER JOIN COMPANIA ON COMPANIA.CODIGO = CONSOLIDADA.NITCOMPANIA WHERE CONSOLIDADA.COMPANIACON = :COMPANIA AND CONSOLIDADA.APLICA_ALM = -1) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="companias/companiaconsolidaalm/num">
+		<call-query href="getCompaniasNumCompaniaconsolidaalmQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+
+</data>

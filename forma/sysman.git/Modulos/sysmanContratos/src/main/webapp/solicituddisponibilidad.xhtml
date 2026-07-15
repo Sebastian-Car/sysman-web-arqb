@@ -1,0 +1,678 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+                if("#{solicitudDisponibilidadControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TG_SOLICITUD_DE_DISPONIBILIDAD_PRESUPUESTAL}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{solicitudDisponibilidadControlador.cargarLista}" />
+		<section class="radius">
+			<h:form id="FR280">
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="lista" widgetVar="lista"
+					visible="#{solicitudDisponibilidadControlador.accion==null}">
+					<p:confirmDialog global="true" showEffect="fade" id="confFR280"
+						widgetVar="confFR280"
+						rendered="#{solicitudDisponibilidadControlador.permisos[1]}">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:dataTable id="TBFR280" widgetVar="TBFR280" var="reg"
+						value="#{solicitudDisponibilidadControlador.listaInicial}"
+						editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" paginator="true" lazy="true">
+						<f:facet name="{Exporters}"
+							rendered="#{solicitudDisponibilidadControlador.permisos[4] }">
+							<h:commandLink
+								rendered="#{solicitudDisponibilidadControlador.permisos[4] }"
+								title="#{idm.TI_VER_EXCEL}">
+								<p:graphicImage name="/images/general/excel.png" width="24" />
+								<p:dataExporter type="xls" target="TBFR280" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+							<h:commandLink
+								rendered="#{solicitudDisponibilidadControlador.permisos[4] }"
+								title="#{idm.TI_VER_PDF}">
+								<p:graphicImage name="/images/general/pdf.png" width="24" />
+								<p:dataExporter type="pdf" target="TBFR280" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+						</f:facet>
+						<f:facet name="header">
+							<div style="position: relative; height: 50px">
+								<h:panelGroup class="acme"
+									rendered="#{solicitudDisponibilidadControlador.permisos[0] }">
+									<p:commandLink
+										action="#{solicitudDisponibilidadControlador.cargarRegistroNuevo}"
+										update=":FR280_nuevo:nuevoPanel"
+										rendered="#{solicitudDisponibilidadControlador.permisos[0]}"
+										onclick="try { PF('blockLista').show(); PF('TBCB1048').nuevo=true;PF('TBCB1050').nuevo=true;PF('TBCB1051').nuevo=true;PF('TBCB1053').nuevo=true;} catch (e) { }"
+										oncomplete="try{ asignarEventoContGrande();
+validarCargaGrandes();
+  PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+										title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+										id="btNuevo">
+										<center>
+											<p:graphicImage name="/images/menus/32/add.png" />
+											<div>#{idm.TI_NUEVO}</div>
+										</center>
+									</p:commandLink>
+								</h:panelGroup>
+								<div class="acme">
+									<h:outputLink value="#{request.contextPath}/menu.sysman"
+										title="#{idm.TI_VOLVER}" style="padding-top: 10px;">
+										<center>
+											<p:graphicImage name="/images/menus/32/close.png" />
+											<div>#{idm.TI_CERRAR}</div>
+										</center>
+									</h:outputLink>
+								</div>
+							</div>
+                            #{idm.TG_SOLICITUD_DE_DISPONIBILIDAD_PRESUPUESTAL}
+                        </f:facet>
+						<p:column headerText="#{idm.TG_FR280_0}"
+							filterBy="#{reg.campos['NUMERO']}" filterMatchMode="startsWith"
+							style="text-align:center; " filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NUMERO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_DEPENDENCIA4}"
+							filterBy="#{reg.campos['DEPENDENCIA']}"
+							filterMatchMode="contains" style="text-align:center; "
+							filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['DEPENDENCIA']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_OBJETO2}"
+							filterBy="#{reg.campos['OBJETO']}" filterMatchMode="contains"
+							style="text-align:center; " filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['OBJETO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_VALOR4}"
+							filterBy="#{reg.campos['VALOR']}" filterMatchMode="startsWith"
+							style="text-align:center; " filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['VALOR']}"
+								style="float:left;  text-align:left;"
+								converter="convertidorDoubleContinuo" />
+						</p:column>
+						<p:column width="150" headerText="Acciones"
+							style="text-align: center" exportable="false">
+							<p:commandButton icon="ui-icon-search"
+								title="#{idm.TI_VER_REGISTRO}"
+								action="#{solicitudDisponibilidadControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+								update=":FR280_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB1048').nuevo=true;PF('TBCB1050').nuevo=true;PF('TBCB1051').nuevo=true;PF('TBCB1053').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{solicitudDisponibilidadControlador.permisos[3]}"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-document-b"
+								title="#{idm.TI_EDITAR_REGISTRO}"
+								action="#{solicitudDisponibilidadControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+								update=":FR280_nuevo"
+								onclick="try{ PF('blockLista').show();  PF('TBCB1048').nuevo=true;PF('TBCB1050').nuevo=true;PF('TBCB1051').nuevo=true;PF('TBCB1053').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{solicitudDisponibilidadControlador.permisos[2] }"
+								oncomplete="try{asignarEventoContGrande();
+validarCargaGrandes();
+ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-trash"
+								title="#{idm.TI_ELIMINAR_REGISTRO}"
+								onclick="PF('blockListaGuardar').show()"
+								action="#{solicitudDisponibilidadControlador.eliminarReg(reg)}"
+								update=":FR280:TBFR280,:FR280:alert"
+								rendered="#{solicitudDisponibilidadControlador.permisos[1] }"
+								oncomplete=" PF('blockListaGuardar').hide();">
+								<p:confirm header="#{sessionBean.tituloMensajes}"
+									message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR280">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+			<h:form id="FR280_nuevo" style="margin-top: -20px;">
+				<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA"
+					my="left bottom" at="left bottom" for="BTBUSQUEDA"
+					hideEffect="fade"
+					rendered="#{solicitudDisponibilidadControlador.accion!='i'}"
+					style="width: 500px">
+					<p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA" var="reg"
+						value="#{solicitudDisponibilidadControlador.listaInicialF}"
+						editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" selectionMode="single"
+						rowKey="#{reg.llave}" paginator="true" lazy="true">
+						<p:ajax event="rowSelect"
+							listener="#{solicitudDisponibilidadControlador.seleccionarFilaBusqueda}"
+							onstart="PF('blockNuevo').show()"
+							oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();    "
+							update="@form" />
+						<p:column headerText="#{idm.TG_DEPENDENCIA4}"
+							filterBy="#{reg.campos['DEPENDENCIA']}"
+							filterMatchMode="contains" style="text-align:center; "
+							filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['DEPENDENCIA']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_OBJETO2}"
+							filterBy="#{reg.campos['OBJETO']}" filterMatchMode="contains"
+							style="text-align:center; " filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['OBJETO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_VALOR4}"
+							filterBy="#{reg.campos['VALOR']}" filterMatchMode="startsWith"
+							style="text-align:center; " filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['VALOR']}"
+								style="float:left;  text-align:left;"
+								converter="convertidorDoubleContinuo" />
+						</p:column>
+					</p:dataTable>
+				</p:overlayPanel>
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="nuevoPanel"
+					visible="#{solicitudDisponibilidadControlador.accion!=null}"
+					widgetVar="nuevoPanel">
+					<div
+						style="position: relative; height: 50px; padding-bottom: 80px;">
+						<div class="acme"
+							style="display:#{solicitudDisponibilidadControlador.accion=='v'?'none':'block'}">
+							<p:commandLink
+								action="#{solicitudDisponibilidadControlador.agregarRegistroNuevo(false)}"
+								rendered="#{solicitudDisponibilidadControlador.accion!='v'}"
+								update=":FR280_nuevo,#{!solicitudDisponibilidadControlador.permisos[2]?':FR280':'' }"
+								onclick="if (!validarVacios(['CB1048','CB1049','CB1051','CP8762','CP8763'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+								title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+								oncomplete="asignarEventoContGrande(); validarCargaGrandes(); ">
+								<center>
+									<p:graphicImage name="/images/menus/32/save.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{solicitudDisponibilidadControlador.accion=='v' or !solicitudDisponibilidadControlador.permisos[0]?'none':'block'}">
+							<p:commandLink
+								action="#{solicitudDisponibilidadControlador.guardarNuevo}"
+								rendered="#{solicitudDisponibilidadControlador.accion!='v' and solicitudDisponibilidadControlador.permisos[0]}"
+								update=":FR280_nuevo"
+								onclick="if (!validarVacios(['CB1048','CB1049','CB1051','CP8762','CP8763'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{solicitudDisponibilidadControlador.accion!='i'  and solicitudDisponibilidadControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+								oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+								title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}"
+								style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/savenew.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{solicitudDisponibilidadControlador.accion=='i' or !solicitudDisponibilidadControlador.permisos[0]?'none':'block'}">
+							<p:commandLink id="BTBUSQUEDA"
+								rendered="#{solicitudDisponibilidadControlador.accion!='i' and solicitudDisponibilidadControlador.permisos[0]}"
+								title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/search.png" />
+									<div style="height: 30px">#{idm.TI_BUSCAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme">
+							<p:commandLink update=":FR280:TBFR280"
+								onclick="try {
+		           PF('TBFR280').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+								title="#{idm.TI_ATRAS}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/back.png" />
+									<div style="height: 30px">#{idm.TI_VOLVER}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<p:panel
+							rendered="#{solicitudDisponibilidadControlador.accion!='i'  and solicitudDisponibilidadControlador.rid==null }"
+							styleClass="acme"
+							style="min-width: 350px; width:30%; padding: 10px;">
+							<center style="margin: 2px;">
+								<p:commandButton icon="ui-icon-seek-first"
+									action="#{solicitudDisponibilidadControlador.irPrimero()}"
+									title="#{idm.TI_PRIMER_REGISTRO}" update=":FR280_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-prev"
+									action="#{solicitudDisponibilidadControlador.irAnterior()}"
+									title="#{idm.TI_REGISTRO_ANTERIOR}" update=":FR280_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:outputLabel
+									value="#{idm.TI_REGISTRO} #{solicitudDisponibilidadControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{solicitudDisponibilidadControlador.listaInicial.rowCount} " />
+								<p:commandButton icon="ui-icon-seek-next"
+									title="#{idm.TI_REGISTRO_SIGUIENTE}"
+									action="#{solicitudDisponibilidadControlador.irSiguiente()}"
+									update=":FR280_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-end"
+									title="#{idm.TI_ULTIMO_REGISTRO}"
+									action="#{solicitudDisponibilidadControlador.irUltimo()}"
+									update=":FR280_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+							</center>
+						</p:panel>
+						<p:panel styleClass="acme" style="width:21%;">
+							<h:panelGrid columns="3"
+								style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+								<h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}" />
+								<p:inputText id="CPCREADO" readonly="true" widgetVar="CPCREADO"
+									value="#{solicitudDisponibilidadControlador.registro.campos['CREATED_BY']}"
+									placeholder="#{idm.TI_CREADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPCREADOF" widgetVar="CPCREADOF"
+									value="#{solicitudDisponibilidadControlador.registro.campos['DATE_CREATED']}"
+									disabled="true" />
+								<h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+								<p:inputText id="CPMODIFICADO" readonly="true"
+									widgetVar="CPMODIFICADO"
+									value="#{solicitudDisponibilidadControlador.registro.campos['MODIFIED_BY']}"
+									placeholder="#{idm.TI_MODIFICADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPMODIFICADOF" widgetVar="CPMODIFICADOF"
+									value="#{solicitudDisponibilidadControlador.registro.campos['DATE_MODIFIED']}"
+									disabled="true" />
+							</h:panelGrid>
+						</p:panel>
+					</div>
+					<div id="PL608" class="
+"
+						style="position: relative; height: 31px;">
+						<h:outputLabel id="LB7346"
+							value="#{idm.TG_SOLICITUD_DE_DISPONIBILIDAD_PRESUPUESTAL}"
+							style="position: absolute; width:387px; height: 25px; left: 216px;   top: 5px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<div id="PL609" class="
+"
+						style="position: relative; height: 447px;">
+						<p:selectBooleanCheckbox id="CK199" widgetVar="CK199"
+							value="#{solicitudDisponibilidadControlador.especial}"
+							tabindex="11"
+							style="position: absolute;  left: 241px;   top: 355px; display:block; ">
+						</p:selectBooleanCheckbox>
+						<p:inputTextarea autoResize="false" id="CP8764" widgetVar="CP8764"
+							value="#{solicitudDisponibilidadControlador.registro.campos['CUENTASPRESUPUESTALES']}"
+							placeholder="#{idm.AC_CP8764}"
+							readonly="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							tabindex="6" styleClass="inputTab" maxlength="4000"
+							style="resize: none; position: absolute; width:481px; height: 46px; left: 241px;   top: 202px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputTextarea>
+						<p:inputText id="CB1048" widgetVar="CB1048"
+							onfocus="if(!false){PF('BTCB1048').jq.focus();}"
+							onclick="if(!false){PF('PLCB1048').show();}"
+							value="#{solicitudDisponibilidadControlador.registro.campos['IMPUTACIONPRESUPUESTAL']}"
+							disabled="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							tabindex="-1"
+							style="cursor:pointer; position: absolute; width:139px; height: 20px; left: 241px;   top: 177px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+						<p:commandButton id="BTCB1048" onblur="PF('CB1048').jq.blur();"
+							onfocus="PF('CB1048').jq.addClass('ui-state-focus');"
+							widgetVar="BTCB1048"
+							disabled="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+							style="position: absolute; width:25px; height:  20px; left: 378px;   top: 177px; display:block; "
+							tabindex="5" />
+						<p:overlayPanel widgetVar="PLCB1048" id="PLCB1048"
+							onShow="if(PF('TBCB1048').nuevo){ PF('TBCB1048').filter(); PF('TBCB1048').nuevo=false;}"
+							onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB1048').jq.focus();}"
+							my="left" at="left" for="BTCB1048" hideEffect="fade"
+							rendered="#{solicitudDisponibilidadControlador.accion!='v'}"
+							style="width: 500px">
+							<p:dataTable id="TBCB1048" widgetVar="TBCB1048" var="reg"
+								value="#{solicitudDisponibilidadControlador.listaCuentaInicial}"
+								editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+								currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+								rows="11" rowIndexVar="rowIndex" selectionMode="single"
+								rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+								<p:ajax event="rowSelect"
+									listener="#{solicitudDisponibilidadControlador.seleccionarFilaCuentaInicial}"
+									update=":FR280_nuevo:CB1048,FR280_nuevo:CP8764"
+									oncomplete="PF('PLCB1048').hide(); " />
+								<p:column headerText="#{idm.TG_CODIGO7}"
+									style="text-align:center; " width="144"
+									filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['CODIGO']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_NOMBRE3}"
+									style="text-align:center; " width="337"
+									filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NOMBRE']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+							</p:dataTable>
+						</p:overlayPanel>
+						<p:selectOneMenu filter="true" editable="false" effect="fade"
+							id="CB1049" widgetVar="CB1049"
+							value="#{solicitudDisponibilidadControlador.registro.campos['ANO']}"
+							disabled="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							tabindex="4"
+							style="position: absolute; width:164px; height: 20px; left: 241px;   top: 151px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+							<p:ajax
+								listener="#{solicitudDisponibilidadControlador.cambiarVigencia}"
+								update="CB1048,TBCB1048,BTCB1048,CP8764" />
+							<f:selectItem />
+							<f:selectItems
+								value="#{solicitudDisponibilidadControlador.listaVigencia}"
+								var="regc" itemLabel="#{regc.campos['NUMERO']}"
+								itemValue="#{regc.campos['NUMERO']}" />
+						</p:selectOneMenu>
+						<p:inputText id="CB1050" widgetVar="CB1050"
+							onfocus="if(!false){PF('BTCB1050').jq.focus();}"
+							onclick="if(!false){PF('PLCB1050').show();}"
+							value="#{solicitudDisponibilidadControlador.registro.campos['TERCERO']}"
+							disabled="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							tabindex="-1"
+							style="cursor:pointer; position: absolute; width:139px; height: 20px; left: 241px;   top: 279px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+						<p:commandButton id="BTCB1050" onblur="PF('CB1050').jq.blur();"
+							onfocus="PF('CB1050').jq.addClass('ui-state-focus');"
+							widgetVar="BTCB1050"
+							disabled="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+							style="position: absolute; width:25px; height:  20px; left: 378px;   top: 279px; display:block; "
+							tabindex="8" />
+						<p:overlayPanel widgetVar="PLCB1050" id="PLCB1050"
+							onShow="if(PF('TBCB1050').nuevo){ PF('TBCB1050').filter(); PF('TBCB1050').nuevo=false;}"
+							onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB1050').jq.focus();}"
+							my="left" at="left" for="BTCB1050" hideEffect="fade"
+							rendered="#{solicitudDisponibilidadControlador.accion!='v'}"
+							style="width: 500px">
+							<p:dataTable id="TBCB1050" widgetVar="TBCB1050" var="reg"
+								value="#{solicitudDisponibilidadControlador.listaTercero}"
+								editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+								currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+								rows="11" rowIndexVar="rowIndex" selectionMode="single"
+								rowKey="#{reg.campos['NIT']}" paginator="true" lazy="true">
+								<p:ajax event="rowSelect"
+									listener="#{solicitudDisponibilidadControlador.seleccionarFilaTercero}"
+									update=":FR280_nuevo:CB1050,FR280_nuevo:LB7363"
+									oncomplete="PF('PLCB1050').hide(); " />
+								<p:column headerText="#{idm.TG_NIT2}"
+									style="text-align:center; " width="100"
+									filterBy="#{reg.campos['NIT']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NIT']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_NOMBRE3}"
+									style="text-align:center; " width="250"
+									filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NOMBRE']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+							</p:dataTable>
+						</p:overlayPanel>
+						<p:inputText id="CB1051" widgetVar="CB1051"
+							onfocus="if(!false){PF('BTCB1051').jq.focus();}"
+							onclick="if(!false){PF('PLCB1051').show();}"
+							value="#{solicitudDisponibilidadControlador.registro.campos['DEPENDENCIA']}"
+							disabled="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							tabindex="-1"
+							style="cursor:pointer; position: absolute; width:139px; height: 20px; left: 241px;   top: 253px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+						<p:commandButton id="BTCB1051" onblur="PF('CB1051').jq.blur();"
+							onfocus="PF('CB1051').jq.addClass('ui-state-focus');"
+							widgetVar="BTCB1051"
+							disabled="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+							style="position: absolute; width:25px; height:  20px; left: 378px;   top: 253px; display:block; "
+							tabindex="7" />
+						<p:overlayPanel widgetVar="PLCB1051" id="PLCB1051"
+							onShow="if(PF('TBCB1051').nuevo){ PF('TBCB1051').filter(); PF('TBCB1051').nuevo=false;}"
+							onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB1051').jq.focus();}"
+							my="left" at="left" for="BTCB1051" hideEffect="fade"
+							rendered="#{solicitudDisponibilidadControlador.accion!='v'}"
+							style="width: 500px">
+							<p:dataTable id="TBCB1051" widgetVar="TBCB1051" var="reg"
+								value="#{solicitudDisponibilidadControlador.listaDependencia}"
+								editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+								currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+								rows="11" rowIndexVar="rowIndex" selectionMode="single"
+								rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+								<p:ajax event="rowSelect"
+									listener="#{solicitudDisponibilidadControlador.seleccionarFilaDependencia}"
+									update=":FR280_nuevo:CB1051,FR280_nuevo:LB7362"
+									oncomplete="PF('PLCB1051').hide(); " />
+								<p:column headerText="#{idm.TG_CODIGO7}"
+									style="text-align:center; " width="100"
+									filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['CODIGO']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_NOMBRE3}"
+									style="text-align:center; " width="250"
+									filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NOMBRE']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+							</p:dataTable>
+						</p:overlayPanel>
+						<p:inputText id="CB1053" widgetVar="CB1053"
+							onfocus="if(!false){PF('BTCB1053').jq.focus();}"
+							onclick="if(!false){PF('PLCB1053').show();}"
+							value="#{solicitudDisponibilidadControlador.registro.campos['CLASEORDEN']}"
+							disabled="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							tabindex="-1"
+							style="cursor:pointer; position: absolute; width:139px; height: 20px; left: 241px;   top: 304px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />
+						<p:commandButton id="BTCB1053" onblur="PF('CB1053').jq.blur();"
+							onfocus="PF('CB1053').jq.addClass('ui-state-focus');"
+							widgetVar="BTCB1053"
+							disabled="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+							style="position: absolute; width:25px; height:  20px; left: 378px;   top: 304px; display:block; "
+							tabindex="9" />
+						<p:overlayPanel widgetVar="PLCB1053" id="PLCB1053"
+							onShow="if(PF('TBCB1053').nuevo){ PF('TBCB1053').filter(); PF('TBCB1053').nuevo=false;}"
+							onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB1053').jq.focus();}"
+							my="left" at="left" for="BTCB1053" hideEffect="fade"
+							rendered="#{solicitudDisponibilidadControlador.accion!='v'}"
+							style="width: 500px">
+							<p:dataTable id="TBCB1053" widgetVar="TBCB1053" var="reg"
+								value="#{solicitudDisponibilidadControlador.listaClaseOrden}"
+								editable="true" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+								currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+								rows="11" rowIndexVar="rowIndex" selectionMode="single"
+								rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+								<p:ajax event="rowSelect"
+									listener="#{solicitudDisponibilidadControlador.seleccionarFilaClaseOrden}"
+									update=":FR280_nuevo:CB1053,FR280_nuevo:CB1054,FR280_nuevo:LB7364"
+									oncomplete="PF('PLCB1053').hide(); " />
+								<p:column headerText="#{idm.TG_CODIGO7}"
+									style="text-align:center; " width="80"
+									filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['CODIGO']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_NOMBRE3}"
+									style="text-align:center; " width="250"
+									filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NOMBRE']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+							</p:dataTable>
+						</p:overlayPanel>
+						<p:selectOneMenu filter="true" editable="false" effect="fade"
+							id="CB1054" widgetVar="CB1054"
+							value="#{solicitudDisponibilidadControlador.registro.campos['NUMEROCONTRATO']}"
+							disabled="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							tabindex="10"
+							style="position: absolute; width:164px; height: 20px; left: 241px;   top: 330px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+							<f:selectItem />
+							<f:selectItems
+								value="#{solicitudDisponibilidadControlador.listaNumContrato}"
+								var="regc" itemLabel="#{regc.campos['NUMERO']}"
+								itemValue="#{regc.campos['NUMERO']}" />
+						</p:selectOneMenu>
+						<h:outputLabel id="LB7347" value="#{idm.TT_LB7347}"
+							style="position: absolute; width:187px; height: 20px; left: 48px;   top: 24px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB7348" value="#{idm.TG_FECHA5}"
+							style="position: absolute; width:187px; height: 20px; left: 48px;   top: 50px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB7349" value="#{idm.TG_OBJETO3}"
+							style="position: absolute; width:187px; height: 20px; left: 48px;   top: 75px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB7350" value="#{idm.TG_VALOR5}"
+							style="position: absolute; width:187px; height: 20px; left: 48px;   top: 126px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB7352" value="#{idm.TT_LB7352}"
+							style="position: absolute; width:187px; height: 20px; left: 48px;   top: 202px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB7354" value="#{idm.TT_LB7354}"
+							style="position: absolute; width:187px; height: 20px; left: 48px;   top: 177px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB7355" value="#{idm.TG_VIGENCIA4}"
+							style="position: absolute; width:187px; height: 20px; left: 48px;   top: 151px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB7356" value="#{idm.TG_TERCERO3}"
+							style="position: absolute; width:187px; height: 20px; left: 48px;   top: 279px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB7357" value="#{idm.TG_DEPENDENCIA5}"
+							style="position: absolute; width:187px; height: 20px; left: 48px;   top: 253px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB7358" value="#{idm.TG_ESPECIAL2}"
+							style="position: absolute; width:187px; height: 20px; left: 48px;   top: 355px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB7360" value="#{idm.TT_LB7360}"
+							style="position: absolute; width:187px; height: 20px; left: 48px;   top: 304px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB7361" value="#{idm.TG_CONTRATO2}"
+							style="position: absolute; width:187px; height: 20px; left: 48px;   top: 330px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB7362"
+							value="#{solicitudDisponibilidadControlador.nombreDependencia}"
+							style="position: absolute; width:385px; height: 20px; left: 409px;   top: 253px; text-align: left; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB7363"
+							value="#{solicitudDisponibilidadControlador.nombreTercero}"
+							style="position: absolute; width:385px; height: 20px; left: 409px;   top: 279px; text-align: left; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<h:outputLabel id="LB7364"
+							value="#{solicitudDisponibilidadControlador.nombreClase}"
+							style="position: absolute; width:385px; height: 20px; left: 409px;   top: 304px; text-align: left; font-weight: normal; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+						<pe:inputNumber id="CP8760" widgetVar="CP8760"
+							styleClass="inputTab"
+							value="#{solicitudDisponibilidadControlador.registro.campos['NUMERO']}"
+							decimalPlaces="0" thousandSeparator="," decimalSeparator="."
+							readonly="true" tabindex="0" maxValue="99999999999"
+							minValue="-99999999999" converter="convertidorDouble"
+							style="position: absolute; width:164px; height: 20px; text-decoration:none; left: 241px;   top: 24px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<p:calendar locale="es" navigator="true" mask="true"
+							pattern="dd/MM/yyyy" id="CP8761" widgetVar="CP8761"
+							value="#{solicitudDisponibilidadControlador.registro.campos['FECHA']}"
+							placeholder="#{idm.AC_CP8761}"
+							readonly="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							disabled="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							tabindex="1"
+							style="position: absolute; width:164px; height: 20px; left: 241px;   top: 50px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;">
+							<p:ajax event="dateSelect"
+								listener="#{solicitudDisponibilidadControlador.cambiarFecha}"
+								update="CB1049" />
+							<p:ajax event="change"
+								listener="#{solicitudDisponibilidadControlador.cambiarFecha}"
+								update="CB1049" />
+						</p:calendar>
+						<p:inputTextarea autoResize="false" id="CP8762" widgetVar="CP8762"
+							value="#{solicitudDisponibilidadControlador.registro.campos['OBJETO']}"
+							placeholder="#{idm.TG_OBJETO2}"
+							readonly="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							tabindex="2" styleClass="inputTab" maxlength="4000"
+							style="resize: none; position: absolute; width:481px; height: 46px; left: 241px;   top: 75px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputTextarea>
+						<pe:inputNumber id="CP8763" widgetVar="CP8763"
+							styleClass="inputTab"
+							value="#{solicitudDisponibilidadControlador.registro.campos['VALOR']}"
+							decimalPlaces="0" thousandSeparator="," decimalSeparator="."
+							readonly="#{solicitudDisponibilidadControlador.accion=='v'?true:false}"
+							tabindex="3" maxValue="99999999999" minValue="-99999999999"
+							converter="convertidorDouble"
+							style="position: absolute; width:164px; height: 20px; text-decoration:none; left: 241px;   top: 126px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<p:commandButton id="BT533" widgetVar="BT533"
+							title="#{idm.TG_PRESENTAR_EN_PDF2}" icon="ui-iconPdf"
+							rendered="#{solicitudDisponibilidadControlador.accion!='i'?true:false}"
+							ajax="false" tabindex="12" value=""
+							actionListener="#{solicitudDisponibilidadControlador.oprimircmdPantalla}"
+							style="position: absolute; width:50px; height: 50px; left: 675px;   top: 384px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#000000  solid  0px;">
+							<p:fileDownload
+								value="#{solicitudDisponibilidadControlador.archivoDescarga}" />
+						</p:commandButton>
+					</div>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

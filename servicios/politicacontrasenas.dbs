@@ -1,0 +1,146 @@
+﻿<data name="politicacontrasenas" transports="http https local">
+	<config enableOData="false" id="sysmanirisst">
+		<property name="carbon_datasource_name">SYSMANIRISST</property>
+	</config>
+	<query id="getPoliticacontrasenasConsultarPoliticasQuery"  useConfig="sysmanirisst">
+		<sql>SELECT CANTIDAD_SIMBOLOS, CANTIDAD_LETRAS, CANTIDAD_NUMEROS, DIAS_NOTIFICACION FROM POLITICA_CONTRASENAS</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CANTIDAD_SIMBOLOS":"$CANTIDAD_SIMBOLOS(type:integer)","CANTIDAD_LETRAS":"$CANTIDAD_LETRAS(type:integer)","CANTIDAD_NUMEROS":"$CANTIDAD_NUMEROS(type:integer)","DIAS_NOTIFICACION":"$DIAS_NOTIFICACION(type:integer)"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="politicacontrasenas/consultarpoliticas">
+		<call-query href="getPoliticacontrasenasConsultarPoliticasQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getPoliticacontrasenasTiempoExpiracionQuery"  useConfig="sysmanirisst">
+		<sql>SELECT TIEMPO_EXPIRACION FROM POLITICA_CONTRASENAS</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TIEMPO_EXPIRACION":"$TIEMPO_EXPIRACION(type:integer)"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="politicacontrasenas/tiempoexpiracion">
+		<call-query href="getPoliticacontrasenasTiempoExpiracionQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="insertPoliticacontrasenas" keyColumns="CODIGO" returnGeneratedKeys="true" useConfig="sysmanirisst">
+		<sql>INSERT INTO POLITICA_CONTRASENAS (CODIGO, TIEMPO_EXPIRACION, CANTIDAD_SIMBOLOS, CANTIDAD_LETRAS, CANTIDAD_NUMEROS, DIAS_NOTIFICACION, FECHA_ACTCONTRASENA, DATE_CREATED, CREATED_BY) VALUES (:CODIGO, :TIEMPO_EXPIRACION, :CANTIDAD_SIMBOLOS, :CANTIDAD_LETRAS, :CANTIDAD_NUMEROS, :DIAS_NOTIFICACION, TO_DATE(:FECHA_ACTCONTRASENA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_CODIGO":"$CODIGO(type:integer)"}]}}		</result>
+		<param defaultValue="0" name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="365" name="TIEMPO_EXPIRACION" sqlType="STRING"/>
+		<param defaultValue="0" name="CANTIDAD_SIMBOLOS" sqlType="STRING"/>
+		<param defaultValue="0" name="CANTIDAD_LETRAS" sqlType="STRING"/>
+		<param defaultValue="0" name="CANTIDAD_NUMEROS" sqlType="STRING"/>
+		<param defaultValue="0" name="DIAS_NOTIFICACION" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_ACTCONTRASENA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="politicacontrasenas">
+		<call-query href="insertPoliticacontrasenas">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TIEMPO_EXPIRACION" query-param="TIEMPO_EXPIRACION"/>
+			<with-param name="CANTIDAD_SIMBOLOS" query-param="CANTIDAD_SIMBOLOS"/>
+			<with-param name="CANTIDAD_LETRAS" query-param="CANTIDAD_LETRAS"/>
+			<with-param name="CANTIDAD_NUMEROS" query-param="CANTIDAD_NUMEROS"/>
+			<with-param name="DIAS_NOTIFICACION" query-param="DIAS_NOTIFICACION"/>
+			<with-param name="FECHA_ACTCONTRASENA" query-param="FECHA_ACTCONTRASENA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deletePoliticacontrasenas" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>DELETE FROM POLITICA_CONTRASENAS WHERE POLITICA_CONTRASENAS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_CODIGO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="politicacontrasenas">
+		<call-query href="deletePoliticacontrasenas">
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPoliticacontrasenasPaginaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, TIEMPO_EXPIRACION, CANTIDAD_SIMBOLOS, CANTIDAD_LETRAS, CANTIDAD_NUMEROS, DIAS_NOTIFICACION,(TO_CHAR(FECHA_ACTCONTRASENA,'DD/MM/YYYY HH24:MI:SS')) FECHA_ACTCONTRASENA FROM POLITICA_CONTRASENAS) INI WHERE (CASE WHEN TIEMPO_EXPIRACION IS NULL THEN ' ' ELSE UPPER(TIEMPO_EXPIRACION) END) LIKE UPPER(CONCAT(CONCAT('%',:TIEMPO_EXPIRACION), '%')) AND (CASE WHEN CANTIDAD_SIMBOLOS IS NULL THEN ' ' ELSE UPPER(CANTIDAD_SIMBOLOS) END) LIKE UPPER(CONCAT(CONCAT('%',:CANTIDAD_SIMBOLOS), '%')) AND (CASE WHEN CANTIDAD_LETRAS IS NULL THEN ' ' ELSE UPPER(CANTIDAD_LETRAS) END) LIKE UPPER(CONCAT(CONCAT('%',:CANTIDAD_LETRAS), '%')) AND (CASE WHEN CANTIDAD_NUMEROS IS NULL THEN ' ' ELSE UPPER(CANTIDAD_NUMEROS) END) LIKE UPPER(CONCAT(CONCAT('%',:CANTIDAD_NUMEROS), '%')) AND (CASE WHEN DIAS_NOTIFICACION IS NULL THEN ' ' ELSE UPPER(DIAS_NOTIFICACION) END) LIKE UPPER(CONCAT(CONCAT('%',:DIAS_NOTIFICACION), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO(type:integer)","TIEMPO_EXPIRACION":"$TIEMPO_EXPIRACION(type:integer)","CANTIDAD_SIMBOLOS":"$CANTIDAD_SIMBOLOS(type:integer)","CANTIDAD_LETRAS":"$CANTIDAD_LETRAS(type:integer)","CANTIDAD_NUMEROS":"$CANTIDAD_NUMEROS(type:integer)","DIAS_NOTIFICACION":"$DIAS_NOTIFICACION(type:integer)","FECHA_ACTCONTRASENA":"$FECHA_ACTCONTRASENA"}]}}		</result>
+		<param name="TIEMPO_EXPIRACION" sqlType="STRING"/>
+		<param name="CANTIDAD_SIMBOLOS" sqlType="STRING"/>
+		<param name="CANTIDAD_LETRAS" sqlType="STRING"/>
+		<param name="CANTIDAD_NUMEROS" sqlType="STRING"/>
+		<param name="DIAS_NOTIFICACION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="politicacontrasenas">
+		<call-query href="getPoliticacontrasenasPaginaQuery">
+			<with-param name="TIEMPO_EXPIRACION" query-param="TIEMPO_EXPIRACION"/>
+			<with-param name="CANTIDAD_SIMBOLOS" query-param="CANTIDAD_SIMBOLOS"/>
+			<with-param name="CANTIDAD_LETRAS" query-param="CANTIDAD_LETRAS"/>
+			<with-param name="CANTIDAD_NUMEROS" query-param="CANTIDAD_NUMEROS"/>
+			<with-param name="DIAS_NOTIFICACION" query-param="DIAS_NOTIFICACION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPoliticacontrasenasNumeroQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, TIEMPO_EXPIRACION, CANTIDAD_SIMBOLOS, CANTIDAD_LETRAS, CANTIDAD_NUMEROS, DIAS_NOTIFICACION,(TO_CHAR(FECHA_ACTCONTRASENA,'DD/MM/YYYY HH24:MI:SS')) FECHA_ACTCONTRASENA FROM POLITICA_CONTRASENAS) INI WHERE (CASE WHEN TIEMPO_EXPIRACION IS NULL THEN ' ' ELSE UPPER(TIEMPO_EXPIRACION) END) LIKE UPPER(CONCAT(CONCAT('%',:TIEMPO_EXPIRACION), '%')) AND (CASE WHEN CANTIDAD_SIMBOLOS IS NULL THEN ' ' ELSE UPPER(CANTIDAD_SIMBOLOS) END) LIKE UPPER(CONCAT(CONCAT('%',:CANTIDAD_SIMBOLOS), '%')) AND (CASE WHEN CANTIDAD_LETRAS IS NULL THEN ' ' ELSE UPPER(CANTIDAD_LETRAS) END) LIKE UPPER(CONCAT(CONCAT('%',:CANTIDAD_LETRAS), '%')) AND (CASE WHEN CANTIDAD_NUMEROS IS NULL THEN ' ' ELSE UPPER(CANTIDAD_NUMEROS) END) LIKE UPPER(CONCAT(CONCAT('%',:CANTIDAD_NUMEROS), '%')) AND (CASE WHEN DIAS_NOTIFICACION IS NULL THEN ' ' ELSE UPPER(DIAS_NOTIFICACION) END) LIKE UPPER(CONCAT(CONCAT('%',:DIAS_NOTIFICACION), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="TIEMPO_EXPIRACION" sqlType="STRING"/>
+		<param name="CANTIDAD_SIMBOLOS" sqlType="STRING"/>
+		<param name="CANTIDAD_LETRAS" sqlType="STRING"/>
+		<param name="CANTIDAD_NUMEROS" sqlType="STRING"/>
+		<param name="DIAS_NOTIFICACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="politicacontrasenas/numero">
+		<call-query href="getPoliticacontrasenasNumeroQuery">
+			<with-param name="TIEMPO_EXPIRACION" query-param="TIEMPO_EXPIRACION"/>
+			<with-param name="CANTIDAD_SIMBOLOS" query-param="CANTIDAD_SIMBOLOS"/>
+			<with-param name="CANTIDAD_LETRAS" query-param="CANTIDAD_LETRAS"/>
+			<with-param name="CANTIDAD_NUMEROS" query-param="CANTIDAD_NUMEROS"/>
+			<with-param name="DIAS_NOTIFICACION" query-param="DIAS_NOTIFICACION"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePoliticacontrasenas" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>UPDATE POLITICA_CONTRASENAS SET CODIGO=:CODIGO, TIEMPO_EXPIRACION=:TIEMPO_EXPIRACION, CANTIDAD_SIMBOLOS=:CANTIDAD_SIMBOLOS, CANTIDAD_LETRAS=:CANTIDAD_LETRAS, CANTIDAD_NUMEROS=:CANTIDAD_NUMEROS, DIAS_NOTIFICACION=:DIAS_NOTIFICACION, FECHA_ACTCONTRASENA=TO_DATE(:FECHA_ACTCONTRASENA,'DD/MM/YYYY HH24:MI:SS'), DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE POLITICA_CONTRASENAS.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="TIEMPO_EXPIRACION" sqlType="STRING"/>
+		<param name="CANTIDAD_SIMBOLOS" sqlType="STRING"/>
+		<param name="CANTIDAD_LETRAS" sqlType="STRING"/>
+		<param name="CANTIDAD_NUMEROS" sqlType="STRING"/>
+		<param name="DIAS_NOTIFICACION" sqlType="STRING"/>
+		<param name="FECHA_ACTCONTRASENA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="politicacontrasenas">
+		<call-query href="updatePoliticacontrasenas">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TIEMPO_EXPIRACION" query-param="TIEMPO_EXPIRACION"/>
+			<with-param name="CANTIDAD_SIMBOLOS" query-param="CANTIDAD_SIMBOLOS"/>
+			<with-param name="CANTIDAD_LETRAS" query-param="CANTIDAD_LETRAS"/>
+			<with-param name="CANTIDAD_NUMEROS" query-param="CANTIDAD_NUMEROS"/>
+			<with-param name="DIAS_NOTIFICACION" query-param="DIAS_NOTIFICACION"/>
+			<with-param name="FECHA_ACTCONTRASENA" query-param="FECHA_ACTCONTRASENA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

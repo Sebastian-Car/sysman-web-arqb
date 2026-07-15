@@ -1,0 +1,15 @@
+SELECT Inventario.CODIGOELEMENTO, 
+Inventario.NOMBRELARGO, 
+Inventario.EXISTENCIA, 
+Inventario.UNIDAD, 
+Inventario.VLRUNITARIOPROM, 
+Inventario.VALORTOTAL, 
+SIG.CODIGOELEMENTO AS CODPADRE, 
+SIG.NOMBRELARGO AS PADRE
+FROM Inventario INNER JOIN inventario SIG ON Inventario.COMPANIA = SIG.COMPANIA
+WHERE Inventario.CODIGOELEMENTO>='s$elementoDesde$s' And Inventario.CODIGOELEMENTO<='s$elementoHasta$s' 
+AND Inventario.EXISTENCIA<>0
+AND Inventario.COMPANIA=s$compania$s 
+AND Inventario.TIENEMOVIMIENTO<>0 
+AND SIG.CODIGOELEMENTO=substr(INVENTARIO.CODIGOELEMENTO,1,s$digitosinventario$s)
+ORDER BY Inventario.CODIGOELEMENTO

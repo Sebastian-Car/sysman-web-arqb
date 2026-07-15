@@ -1,0 +1,160 @@
+﻿<data name="lugaresparqueo" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getLugaresparqueoTodosPorCiaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, SUCURSAL, RESPONSABLE, DIRECCION, TELEFONO, NOMBRE, SUCURSAL_CODIGO, CODIGO  FROM LUGAR_PARQUEO WHERE COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","SUCURSAL":"$SUCURSAL","RESPONSABLE":"$RESPONSABLE","DIRECCION":"$DIRECCION","TELEFONO":"$TELEFONO","NOMBRE":"$NOMBRE","SUCURSAL_CODIGO":"$SUCURSAL_CODIGO","CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="lugaresparqueo/todosporcia">
+		<call-query href="getLugaresparqueoTodosPorCiaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="insertLugaresparqueo" keyColumns="COMPANIA,CODIGO,SUCURSAL_CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO LUGAR_PARQUEO (COMPANIA, SUCURSAL, RESPONSABLE, DIRECCION, TELEFONO, NOMBRE, SUCURSAL_CODIGO, CODIGO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :SUCURSAL, :RESPONSABLE, :DIRECCION, :TELEFONO, :NOMBRE, :SUCURSAL_CODIGO, :CODIGO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGO":"$CODIGO","KEY_SUCURSAL_CODIGO":"$SUCURSAL_CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="RESPONSABLE" sqlType="STRING"/>
+		<param defaultValue="" name="DIRECCION" sqlType="STRING"/>
+		<param defaultValue="" name="TELEFONO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SUCURSAL_CODIGO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="lugaresparqueo">
+		<call-query href="insertLugaresparqueo">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="TELEFONO" query-param="TELEFONO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SUCURSAL_CODIGO" query-param="SUCURSAL_CODIGO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteLugaresparqueo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM LUGAR_PARQUEO WHERE LUGAR_PARQUEO.COMPANIA= :KEY_COMPANIA AND LUGAR_PARQUEO.CODIGO= :KEY_CODIGO AND LUGAR_PARQUEO.SUCURSAL_CODIGO= :KEY_SUCURSAL_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="lugaresparqueo">
+		<call-query href="deleteLugaresparqueo">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_SUCURSAL_CODIGO" query-param="KEY_SUCURSAL_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getLugaresparqueoPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, SUCURSAL, RESPONSABLE, DIRECCION, TELEFONO, NOMBRE, SUCURSAL_CODIGO, CODIGO  FROM LUGAR_PARQUEO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END)  LIKE UPPER(:SUCURSAL || '%')  AND (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN DIRECCION IS NULL THEN ' ' ELSE UPPER(DIRECCION) END)  LIKE UPPER( '%' || :DIRECCION || '%')  AND (CASE WHEN TELEFONO IS NULL THEN ' ' ELSE UPPER(TELEFONO) END)  LIKE UPPER(:TELEFONO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SUCURSAL_CODIGO IS NULL THEN ' ' ELSE UPPER(SUCURSAL_CODIGO) END)  LIKE UPPER(:SUCURSAL_CODIGO || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","SUCURSAL":"$SUCURSAL","RESPONSABLE":"$RESPONSABLE","DIRECCION":"$DIRECCION","TELEFONO":"$TELEFONO","NOMBRE":"$NOMBRE","SUCURSAL_CODIGO":"$SUCURSAL_CODIGO","CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="DIRECCION" sqlType="STRING"/>
+		<param name="TELEFONO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SUCURSAL_CODIGO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="lugaresparqueo">
+		<call-query href="getLugaresparqueoPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="TELEFONO" query-param="TELEFONO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SUCURSAL_CODIGO" query-param="SUCURSAL_CODIGO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getLugaresparqueoNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, SUCURSAL, RESPONSABLE, DIRECCION, TELEFONO, NOMBRE, SUCURSAL_CODIGO, CODIGO  FROM LUGAR_PARQUEO WHERE COMPANIA = :COMPANIA) WHERE (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END)  LIKE UPPER(:SUCURSAL || '%')  AND (CASE WHEN RESPONSABLE IS NULL THEN ' ' ELSE UPPER(RESPONSABLE) END)  LIKE UPPER(:RESPONSABLE || '%')  AND (CASE WHEN DIRECCION IS NULL THEN ' ' ELSE UPPER(DIRECCION) END)  LIKE UPPER( '%' || :DIRECCION || '%')  AND (CASE WHEN TELEFONO IS NULL THEN ' ' ELSE UPPER(TELEFONO) END)  LIKE UPPER(:TELEFONO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN SUCURSAL_CODIGO IS NULL THEN ' ' ELSE UPPER(SUCURSAL_CODIGO) END)  LIKE UPPER(:SUCURSAL_CODIGO || '%')  AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="DIRECCION" sqlType="STRING"/>
+		<param name="TELEFONO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SUCURSAL_CODIGO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="lugaresparqueo/numero">
+		<call-query href="getLugaresparqueoNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="TELEFONO" query-param="TELEFONO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SUCURSAL_CODIGO" query-param="SUCURSAL_CODIGO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateLugaresparqueo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE LUGAR_PARQUEO SET SUCURSAL=:SUCURSAL, RESPONSABLE=:RESPONSABLE, DIRECCION=:DIRECCION, TELEFONO=:TELEFONO, NOMBRE=:NOMBRE, SUCURSAL_CODIGO=:SUCURSAL_CODIGO, CODIGO=:CODIGO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE LUGAR_PARQUEO.COMPANIA= :KEY_COMPANIA AND LUGAR_PARQUEO.CODIGO= :KEY_CODIGO AND LUGAR_PARQUEO.SUCURSAL_CODIGO= :KEY_SUCURSAL_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="RESPONSABLE" sqlType="STRING"/>
+		<param name="DIRECCION" sqlType="STRING"/>
+		<param name="TELEFONO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SUCURSAL_CODIGO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="lugaresparqueo">
+		<call-query href="updateLugaresparqueo">
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="RESPONSABLE" query-param="RESPONSABLE"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="TELEFONO" query-param="TELEFONO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SUCURSAL_CODIGO" query-param="SUCURSAL_CODIGO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+			<with-param name="KEY_SUCURSAL_CODIGO" query-param="KEY_SUCURSAL_CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,31 @@
+package com.sysman.workflow.enums;
+
+public enum FrmReporteDeCorrespondenciaControladorUrlEnum {
+
+	URL001("FRMREPORTEDECORRESPNDENCIACONTROLADORURL","62105"),
+	URL002("FRMREPORTEDECORRESPNDENCIACONTROLADORURL","62107"),
+	URL003("FRMREPORTEDECORRESPNDENCIACONTROLADORURL","988014"),
+	URL004("FRMREPORTEDECORRESPNDENCIACONTROLADORURL","988016"),
+	URL005("FRMREPORTEDECORRESPNDENCIACONTROLADORURL","1042035"),
+	URL006("FRMREPORTEDECORRESPNDENCIACONTROLADORURL","1042033"),
+	URL988018("FRMREPORTEDECORRESPNDENCIACONTROLADORURL","988018"),
+	URL988020("FRMREPORTEDECORRESPNDENCIACONTROLADORURL","988020");
+
+
+
+	private final String key;
+	private final String value;
+
+	private FrmReporteDeCorrespondenciaControladorUrlEnum(String key, String value) {
+		this.key = key;
+		this.value = value;
+	}
+
+	public String getKey() {
+		return key;
+	}
+
+	public String getValue() {
+		return value;
+	}
+}

@@ -1,0 +1,123 @@
+﻿<data name="documentos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getDocumentosPorclaseynumeroordenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(*) TOTAL  FROM DOCUMENTOS INNER JOIN DOCUMENTOS_CONTRATOS ON DOCUMENTOS.DOCUMENTO = DOCUMENTOS_CONTRATOS.CODIGO WHERE DOCUMENTOS.COMPANIA = :COMPANIA AND DOCUMENTOS.CLASEORDEN = :CLASEORDEN AND DOCUMENTOS.NUMERO = :NUMERO_ORDEN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="documentos/porclaseynumeroorden">
+		<call-query href="getDocumentosPorclaseynumeroordenQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="insertDocumentos" keyColumns="COMPANIA,CLASEORDEN,NUMERO,DOCUMENTO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO DOCUMENTOS (COMPANIA, DOCUMENTO, CLASEORDEN, NUMERO, ENTREGADO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :DOCUMENTO, :CLASEORDEN, :NUMERO, :ENTREGADO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CLASEORDEN":"$CLASEORDEN","KEY_NUMERO":"$NUMERO","KEY_DOCUMENTO":"$DOCUMENTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DOCUMENTO" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param defaultValue="0" name="NUMERO" sqlType="STRING"/>
+		<param defaultValue="0" name="ENTREGADO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="documentos">
+		<call-query href="insertDocumentos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DOCUMENTO" query-param="DOCUMENTO"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ENTREGADO" query-param="ENTREGADO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="getDocumentosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DOCUMENTOS.DOCUMENTO, DOCUMENTOS.COMPANIA, DOCUMENTOS.CLASEORDEN, DOCUMENTOS.NUMERO, DOCUMENTOS_CONTRATOS.NOMBRE,(CASE DOCUMENTOS.ENTREGADO WHEN 0 THEN 'false' ELSE 'true' END) ENTREGADO FROM DOCUMENTOS INNER JOIN DOCUMENTOS_CONTRATOS ON DOCUMENTOS.DOCUMENTO = DOCUMENTOS_CONTRATOS.CODIGO WHERE DOCUMENTOS.COMPANIA = :COMPANIA AND DOCUMENTOS.CLASEORDEN = :CLASEORDEN AND DOCUMENTOS.NUMERO = :NUMERO_ORDEN) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER(:NOMBRE || '%')  AND (CASE WHEN ENTREGADO IS NULL THEN ' ' ELSE UPPER(ENTREGADO) END)  LIKE UPPER(:ENTREGADO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DOCUMENTO":"$DOCUMENTO","COMPANIA":"$COMPANIA","CLASEORDEN":"$CLASEORDEN","NUMERO":"$NUMERO(type:long)","NOMBRE":"$NOMBRE","ENTREGADO":"$ENTREGADO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="ENTREGADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="documentos">
+		<call-query href="getDocumentosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="ENTREGADO" query-param="ENTREGADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getDocumentosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DOCUMENTOS.DOCUMENTO, DOCUMENTOS.COMPANIA, DOCUMENTOS.CLASEORDEN, DOCUMENTOS.NUMERO, DOCUMENTOS_CONTRATOS.NOMBRE,(CASE DOCUMENTOS.ENTREGADO WHEN 0 THEN 'false' ELSE 'true' END) ENTREGADO FROM DOCUMENTOS INNER JOIN DOCUMENTOS_CONTRATOS ON DOCUMENTOS.DOCUMENTO = DOCUMENTOS_CONTRATOS.CODIGO WHERE DOCUMENTOS.COMPANIA = :COMPANIA AND DOCUMENTOS.CLASEORDEN = :CLASEORDEN AND DOCUMENTOS.NUMERO = :NUMERO_ORDEN) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER(:NOMBRE || '%')  AND (CASE WHEN ENTREGADO IS NULL THEN ' ' ELSE UPPER(ENTREGADO) END)  LIKE UPPER( '%' || :ENTREGADO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="ENTREGADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="documentos/numero">
+		<call-query href="getDocumentosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="ENTREGADO" query-param="ENTREGADO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateDocumentos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE DOCUMENTOS SET DOCUMENTO=:DOCUMENTO, CLASEORDEN=:CLASEORDEN, NUMERO=:NUMERO, ENTREGADO=:ENTREGADO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE DOCUMENTOS.COMPANIA= :KEY_COMPANIA AND DOCUMENTOS.CLASEORDEN= :KEY_CLASEORDEN AND DOCUMENTOS.NUMERO= :KEY_NUMERO AND DOCUMENTOS.DOCUMENTO= :KEY_DOCUMENTO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="DOCUMENTO" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="ENTREGADO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CLASEORDEN" sqlType="STRING"/>
+		<param name="KEY_NUMERO" sqlType="STRING"/>
+		<param name="KEY_DOCUMENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="documentos">
+		<call-query href="updateDocumentos">
+			<with-param name="DOCUMENTO" query-param="DOCUMENTO"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="ENTREGADO" query-param="ENTREGADO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CLASEORDEN" query-param="KEY_CLASEORDEN"/>
+			<with-param name="KEY_NUMERO" query-param="KEY_NUMERO"/>
+			<with-param name="KEY_DOCUMENTO" query-param="KEY_DOCUMENTO"/>
+
+		</call-query>
+	</resource>
+
+</data>

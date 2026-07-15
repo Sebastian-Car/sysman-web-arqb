@@ -1,0 +1,1175 @@
+<data name="cargos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="updateCargosNivelesYCategorias" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CARGOS SET COMPANIA          =:COMPANIA,   ID_DE_CARGO         =:ID_DE_CARGO,   ESCALAFON           =:ESCALAFON,   NOMBRE_DEL_CARGO    =:NOMBRE_DEL_CARGO,    MODIFIED_BY         =:MODIFIED_BY,   DATE_MODIFIED       =TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE CARGOS.COMPANIA = :COMPANIA AND CARGOS.ID_DE_CARGO= :ID_DE_CARGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cargos/nivelesycategorias">
+		<call-query href="updateCargosNivelesYCategorias">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosTodosPorCompaniaYEscalafonQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DISTINCT CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO FROM CARGOS WHERE CARGOS.COMPANIA = :COMPANIA AND CARGOS.ESCALAFON = :ESCALAFON AND CARGOS.ESTADOCARGO IN ('1')</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/todosporcompaniayescalafon">
+		<call-query href="getCargosTodosPorCompaniaYEscalafonQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagCodigoYNombrePorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO  FROM CARGOS WHERE CARGOS.COMPANIA = :COMPANIA ORDER BY CARGOS.NOMBRE_DEL_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/codigoynombreporcompania/pag">
+		<call-query href="getCargosPagCodigoYNombrePorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumCodigoYNombrePorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO  FROM CARGOS WHERE CARGOS.COMPANIA = :COMPANIA ORDER BY CARGOS.NOMBRE_DEL_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/codigoynombreporcompania/num">
+		<call-query href="getCargosNumCodigoYNombrePorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertCargosEscalafon" keyColumns="COMPANIA,ID_DE_CARGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CARGOS (COMPANIA, ID_DE_CARGO, ESCALAFON, NOMBRE_DEL_CARGO, PLAZAS, ENCARRERA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ID_DE_CARGO, :ESCALAFON, :NOMBRE_DEL_CARGO, :PLAZAS, :ENCARRERA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_DE_CARGO":"$ID_DE_CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param defaultValue="0" name="PLAZAS" sqlType="STRING"/>
+		<param defaultValue="0" name="ENCARRERA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="cargos/escalafon">
+		<call-query href="insertCargosEscalafon">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="PLAZAS" query-param="PLAZAS"/>
+			<with-param name="ENCARRERA" query-param="ENCARRERA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagCargosPorEscalafonInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO, ESCALAFON.NOMBRE  FROM CARGOS LEFT JOIN ESCALAFON ON CARGOS.COMPANIA = ESCALAFON.COMPANIA AND CARGOS.ESCALAFON = ESCALAFON.CODIGO WHERE CARGOS.COMPANIA = :COMPANIA ORDER BY CARGOS.ID_DE_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargosporescalafoninicial/pag">
+		<call-query href="getCargosPagCargosPorEscalafonInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumCargosPorEscalafonInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO, ESCALAFON.NOMBRE  FROM CARGOS LEFT JOIN ESCALAFON ON CARGOS.COMPANIA = ESCALAFON.COMPANIA AND CARGOS.ESCALAFON = ESCALAFON.CODIGO WHERE CARGOS.COMPANIA = :COMPANIA ORDER BY CARGOS.ID_DE_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargosporescalafoninicial/num">
+		<call-query href="getCargosNumCargosPorEscalafonInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagCargosPorEscalafonFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO, ESCALAFON.NOMBRE  FROM CARGOS LEFT JOIN ESCALAFON ON CARGOS.COMPANIA = ESCALAFON.COMPANIA AND CARGOS.ESCALAFON = ESCALAFON.CODIGO WHERE CARGOS.COMPANIA = :COMPANIA AND CARGOS.ID_DE_CARGO &gt;= :CARGOINICIAL ORDER BY CARGOS.ID_DE_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CARGOINICIAL" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargosporescalafonfinal/pag">
+		<call-query href="getCargosPagCargosPorEscalafonFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CARGOINICIAL" query-param="CARGOINICIAL"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumCargosPorEscalafonFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO, ESCALAFON.NOMBRE  FROM CARGOS LEFT JOIN ESCALAFON ON CARGOS.COMPANIA = ESCALAFON.COMPANIA AND CARGOS.ESCALAFON = ESCALAFON.CODIGO WHERE CARGOS.COMPANIA = :COMPANIA AND CARGOS.ID_DE_CARGO &gt;= :CARGOINICIAL ORDER BY CARGOS.ID_DE_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CARGOINICIAL" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargosporescalafonfinal/num">
+		<call-query href="getCargosNumCargosPorEscalafonFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CARGOINICIAL" query-param="CARGOINICIAL"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertCargos" keyColumns="COMPANIA,ID_DE_CARGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CARGOS (COMPANIA, ID_DE_CARGO, ESCALAFON, NOMBRE_DEL_CARGO, PLAZAS, GRADO, FUNCIONES, ENCARRERA, TIPO, ESTADOCARGO, RESOLUCIONCARGO, FECHARESOLUCION, RESOLUCIONFUNCION, CODIGOCARGO, VALOR_HORA, FACTOR_RIESGO, CGR_TIPO_VINCULACION, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ID_DE_CARGO, :ESCALAFON, :NOMBRE_DEL_CARGO, :PLAZAS, :GRADO, :FUNCIONES, :ENCARRERA, :TIPO, :ESTADOCARGO, :RESOLUCIONCARGO, TO_DATE(:FECHARESOLUCION,'DD/MM/YYYY HH24:MI:SS'), :RESOLUCIONFUNCION, :CODIGOCARGO, :VALOR_HORA, :FACTOR_RIESGO, :CGR_TIPO_VINCULACION, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_DE_CARGO":"$ID_DE_CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param defaultValue="0" name="PLAZAS" sqlType="STRING"/>
+		<param defaultValue="" name="GRADO" sqlType="STRING"/>
+		<param defaultValue="" name="FUNCIONES" sqlType="STRING"/>
+		<param defaultValue="0" name="ENCARRERA" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO" sqlType="STRING"/>
+		<param defaultValue="0" name="ESTADOCARGO" sqlType="STRING"/>
+		<param defaultValue="" name="RESOLUCIONCARGO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHARESOLUCION" sqlType="STRING"/>
+		<param defaultValue="" name="RESOLUCIONFUNCION" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOCARGO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_HORA" sqlType="STRING"/>
+		<param defaultValue="" name="FACTOR_RIESGO" sqlType="STRING"/>
+		<param defaultValue="" name="CGR_TIPO_VINCULACION" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="cargos">
+		<call-query href="insertCargos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="PLAZAS" query-param="PLAZAS"/>
+			<with-param name="GRADO" query-param="GRADO"/>
+			<with-param name="FUNCIONES" query-param="FUNCIONES"/>
+			<with-param name="ENCARRERA" query-param="ENCARRERA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="ESTADOCARGO" query-param="ESTADOCARGO"/>
+			<with-param name="RESOLUCIONCARGO" query-param="RESOLUCIONCARGO"/>
+			<with-param name="FECHARESOLUCION" query-param="FECHARESOLUCION"/>
+			<with-param name="RESOLUCIONFUNCION" query-param="RESOLUCIONFUNCION"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="VALOR_HORA" query-param="VALOR_HORA"/>
+			<with-param name="FACTOR_RIESGO" query-param="FACTOR_RIESGO"/>
+			<with-param name="CGR_TIPO_VINCULACION" query-param="CGR_TIPO_VINCULACION"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCargos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CARGOS WHERE CARGOS.COMPANIA= :KEY_COMPANIA AND CARGOS.ID_DE_CARGO= :KEY_ID_DE_CARGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_DE_CARGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="cargos">
+		<call-query href="deleteCargos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_DE_CARGO" query-param="KEY_ID_DE_CARGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CARGOS.COMPANIA, CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO, ESCALAFON.NOMBRE ESCALAFON_LB,(CASE CARGOS.ENCARRERA WHEN 0 THEN 'false' ELSE 'true' END) ENCARRERA, CARGOS.FACTOR_RIESGO, CARGOS.GRADO  FROM CARGOS INNER JOIN ESCALAFON ON CARGOS.COMPANIA = ESCALAFON.COMPANIA AND CARGOS.ESCALAFON = ESCALAFON.CODIGO WHERE CARGOS.COMPANIA = :COMPANIA ORDER BY CARGOS.ID_DE_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%')  AND (CASE WHEN ESCALAFON_LB IS NULL THEN ' ' ELSE UPPER(ESCALAFON_LB) END)  LIKE UPPER( '%' || :ESCALAFON_LB || '%')  AND (CASE WHEN ENCARRERA IS NULL THEN ' ' ELSE UPPER(ENCARRERA) END)  LIKE UPPER(:ENCARRERA || '%')  AND (CASE WHEN FACTOR_RIESGO IS NULL THEN ' ' ELSE UPPER(FACTOR_RIESGO) END)  LIKE UPPER(:FACTOR_RIESGO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO","ESCALAFON_LB":"$ESCALAFON_LB","ENCARRERA":"$ENCARRERA(type:boolean)","FACTOR_RIESGO":"$FACTOR_RIESGO","GRADO":"$GRADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="ESCALAFON_LB" sqlType="STRING"/>
+		<param name="ENCARRERA" sqlType="STRING"/>
+		<param name="FACTOR_RIESGO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos">
+		<call-query href="getCargosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="ESCALAFON_LB" query-param="ESCALAFON_LB"/>
+			<with-param name="ENCARRERA" query-param="ENCARRERA"/>
+			<with-param name="FACTOR_RIESGO" query-param="FACTOR_RIESGO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CARGOS.COMPANIA, CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO, ESCALAFON.NOMBRE ESCALAFON_LB,(CASE CARGOS.ENCARRERA WHEN 0 THEN 'false' ELSE 'true' END) ENCARRERA, CARGOS.FACTOR_RIESGO, CARGOS.GRADO  FROM CARGOS INNER JOIN ESCALAFON ON CARGOS.COMPANIA = ESCALAFON.COMPANIA AND CARGOS.ESCALAFON = ESCALAFON.CODIGO WHERE CARGOS.COMPANIA = :COMPANIA ORDER BY CARGOS.ID_DE_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%')  AND (CASE WHEN ESCALAFON_LB IS NULL THEN ' ' ELSE UPPER(ESCALAFON_LB) END)  LIKE UPPER( '%' || :ESCALAFON_LB || '%')  AND (CASE WHEN ENCARRERA IS NULL THEN ' ' ELSE UPPER(ENCARRERA) END)  LIKE UPPER(:ENCARRERA || '%')  AND (CASE WHEN FACTOR_RIESGO IS NULL THEN ' ' ELSE UPPER(FACTOR_RIESGO) END)  LIKE UPPER(:FACTOR_RIESGO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="ESCALAFON_LB" sqlType="STRING"/>
+		<param name="ENCARRERA" sqlType="STRING"/>
+		<param name="FACTOR_RIESGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/numero">
+		<call-query href="getCargosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="ESCALAFON_LB" query-param="ESCALAFON_LB"/>
+			<with-param name="ENCARRERA" query-param="ENCARRERA"/>
+			<with-param name="FACTOR_RIESGO" query-param="FACTOR_RIESGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COMPANIA, ID_DE_CARGO, ESCALAFON, NOMBRE_DEL_CARGO, PLAZAS, FUNCIONES,(CASE ENCARRERA WHEN 0 THEN 'false' ELSE 'true' END) ENCARRERA, TIPO, ESTADOCARGO, RESOLUCIONCARGO,(TO_CHAR(FECHARESOLUCION,'DD/MM/YYYY HH24:MI:SS')) FECHARESOLUCION, RESOLUCIONFUNCION, CODIGOCARGO, VALOR_HORA, GRADO, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, ( CARGOS.PLAZAS - ( SELECT COUNT(0) FROM PERSONAL WHERE PERSONAL.COMPANIA = CARGOS.COMPANIA AND PERSONAL.ID_DE_CARGO = CARGOS.ID_DE_CARGO AND PERSONAL.ESTADO_ACTUAL = 1 ) ) VACANTES, FACTOR_RIESGO, CGR_TIPO_VINCULACION FROM CARGOS WHERE CARGOS.COMPANIA= :KEY_COMPANIA AND CARGOS.ID_DE_CARGO= :KEY_ID_DE_CARGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_DE_CARGO":"$ID_DE_CARGO","ESCALAFON":"$ESCALAFON","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO","PLAZAS":"$PLAZAS","FUNCIONES":"$FUNCIONES","ENCARRERA":"$ENCARRERA(type:boolean)","TIPO":"$TIPO","ESTADOCARGO":"$ESTADOCARGO(type:integer)","RESOLUCIONCARGO":"$RESOLUCIONCARGO","FECHARESOLUCION":"$FECHARESOLUCION","RESOLUCIONFUNCION":"$RESOLUCIONFUNCION","CODIGOCARGO":"$CODIGOCARGO","VALOR_HORA":"$VALOR_HORA","GRADO":"$GRADO","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","VACANTES":"$VACANTES(type:integer)","FACTOR_RIESGO":"$FACTOR_RIESGO","CGR_TIPO_VINCULACION":"$CGR_TIPO_VINCULACION"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_DE_CARGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/data">
+		<call-query href="getCargosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_DE_CARGO" query-param="KEY_ID_DE_CARGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCargos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CARGOS SET COMPANIA=:COMPANIA, ID_DE_CARGO=:ID_DE_CARGO, ESCALAFON=:ESCALAFON, NOMBRE_DEL_CARGO=:NOMBRE_DEL_CARGO, PLAZAS=:PLAZAS, FUNCIONES=:FUNCIONES, ENCARRERA=:ENCARRERA, TIPO=:TIPO, ESTADOCARGO=:ESTADOCARGO, RESOLUCIONCARGO=:RESOLUCIONCARGO, FECHARESOLUCION=TO_DATE(:FECHARESOLUCION,'DD/MM/YYYY HH24:MI:SS'), RESOLUCIONFUNCION=:RESOLUCIONFUNCION, CODIGOCARGO=:CODIGOCARGO, VALOR_HORA=:VALOR_HORA, GRADO=:GRADO, FACTOR_RIESGO=:FACTOR_RIESGO, CGR_TIPO_VINCULACION=:CGR_TIPO_VINCULACION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CARGOS.COMPANIA= :KEY_COMPANIA AND CARGOS.ID_DE_CARGO= :KEY_ID_DE_CARGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="PLAZAS" sqlType="STRING"/>
+		<param name="FUNCIONES" sqlType="STRING"/>
+		<param name="ENCARRERA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="ESTADOCARGO" sqlType="STRING"/>
+		<param name="RESOLUCIONCARGO" sqlType="STRING"/>
+		<param name="FECHARESOLUCION" sqlType="STRING"/>
+		<param name="RESOLUCIONFUNCION" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="VALOR_HORA" sqlType="STRING"/>
+		<param name="GRADO" sqlType="STRING"/>
+		<param name="FACTOR_RIESGO" sqlType="STRING"/>
+		<param name="CGR_TIPO_VINCULACION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ID_DE_CARGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cargos">
+		<call-query href="updateCargos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="PLAZAS" query-param="PLAZAS"/>
+			<with-param name="FUNCIONES" query-param="FUNCIONES"/>
+			<with-param name="ENCARRERA" query-param="ENCARRERA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="ESTADOCARGO" query-param="ESTADOCARGO"/>
+			<with-param name="RESOLUCIONCARGO" query-param="RESOLUCIONCARGO"/>
+			<with-param name="FECHARESOLUCION" query-param="FECHARESOLUCION"/>
+			<with-param name="RESOLUCIONFUNCION" query-param="RESOLUCIONFUNCION"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="VALOR_HORA" query-param="VALOR_HORA"/>
+			<with-param name="GRADO" query-param="GRADO"/>
+			<with-param name="FACTOR_RIESGO" query-param="FACTOR_RIESGO"/>
+			<with-param name="CGR_TIPO_VINCULACION" query-param="CGR_TIPO_VINCULACION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ID_DE_CARGO" query-param="KEY_ID_DE_CARGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNombreCargoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ID_DE_CARGO, NOMBRE_DEL_CARGO  FROM CARGOS WHERE ID_DE_CARGO = :CARGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO"}]}}		</result>
+		<param name="CARGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/nombrecargo">
+		<call-query href="getCargosNombreCargoQuery">
+			<with-param name="CARGO" query-param="CARGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagCargoporescalafonQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO, CARGOS.ESCALAFON  FROM CARGOS WHERE CARGOS.ESCALAFON= :ESCALAFON AND CARGOS.COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%')  AND (CASE WHEN ESCALAFON IS NULL THEN ' ' ELSE UPPER(ESCALAFON) END)  LIKE UPPER(:ESCALAFON || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO","ESCALAFON":"$ESCALAFON"}]}}		</result>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargoporescalafon/pag">
+		<call-query href="getCargosPagCargoporescalafonQuery">
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumCargoporescalafonQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO, CARGOS.ESCALAFON  FROM CARGOS WHERE CARGOS.ESCALAFON= :ESCALAFON AND CARGOS.COMPANIA = :COMPANIA) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%')  AND (CASE WHEN ESCALAFON IS NULL THEN ' ' ELSE UPPER(ESCALAFON) END)  LIKE UPPER(:ESCALAFON || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargoporescalafon/num">
+		<call-query href="getCargosNumCargoporescalafonQuery">
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagTodosLosCargosDeSeleccionpersQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_DE_CARGO CODIGOCARGO, NOMBRE_DEL_CARGO NOMBRE_CARGO, GRADO, DATE_CREATED AS FECHA_CREACION, DENOMINACION  FROM CARGOS WHERE COMPANIA=:COMPANIA ORDER BY GRADO) WHERE (CASE WHEN CODIGOCARGO IS NULL THEN ' ' ELSE UPPER(CODIGOCARGO) END)  LIKE UPPER(:CODIGOCARGO || '%')  AND (CASE WHEN NOMBRE_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_CARGO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGOCARGO":"$CODIGOCARGO","NOMBRE_CARGO":"$NOMBRE_CARGO","GRADO":"$GRADO","FECHA_CREACION":"$FECHA_CREACION","DENOMINACION":"$DENOMINACION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="NOMBRE_CARGO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/todosloscargosdeseleccionpers/pag">
+		<call-query href="getCargosPagTodosLosCargosDeSeleccionpersQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="NOMBRE_CARGO" query-param="NOMBRE_CARGO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumTodosLosCargosDeSeleccionpersQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_DE_CARGO CODIGOCARGO, NOMBRE_DEL_CARGO NOMBRE_CARGO, GRADO, DATE_CREATED AS FECHA_CREACION, DENOMINACION  FROM CARGOS WHERE COMPANIA=:COMPANIA ORDER BY GRADO) WHERE (CASE WHEN CODIGOCARGO IS NULL THEN ' ' ELSE UPPER(CODIGOCARGO) END)  LIKE UPPER(:CODIGOCARGO || '%')  AND (CASE WHEN NOMBRE_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_CARGO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="NOMBRE_CARGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/todosloscargosdeseleccionpers/num">
+		<call-query href="getCargosNumTodosLosCargosDeSeleccionpersQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="NOMBRE_CARGO" query-param="NOMBRE_CARGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_DE_CARGO , NOMBRE_DEL_CARGO  FROM CARGOS WHERE COMPANIA = :COMPANIA ORDER BY ID_DE_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/todosporcompania/pag">
+		<call-query href="getCargosPagTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_DE_CARGO , NOMBRE_DEL_CARGO  FROM CARGOS WHERE COMPANIA = :COMPANIA ORDER BY ID_DE_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/todosporcompania/num">
+		<call-query href="getCargosNumTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagGradoDelCargoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO , CARGOS.NOMBRE_DEL_CARGO, CARGOS.GRADO, CARGOS.CODIGOCARGO  FROM CARGOS WHERE CARGOS.COMPANIA = :COMPANIA ORDER BY ID_DE_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO","GRADO":"$GRADO","CODIGOCARGO":"$CODIGOCARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/gradodelcargo/pag">
+		<call-query href="getCargosPagGradoDelCargoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumGradoDelCargoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO , CARGOS.NOMBRE_DEL_CARGO, CARGOS.GRADO, CARGOS.CODIGOCARGO  FROM CARGOS WHERE CARGOS.COMPANIA = :COMPANIA ORDER BY ID_DE_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/gradodelcargo/num">
+		<call-query href="getCargosNumGradoDelCargoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagCargosDeJefeDeUnidadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO , CARGOS.NOMBRE_DEL_CARGO, PERSONAL.ESCALAFON , ESCALAFON.NOMBRE NOMBREESCALAFON, PERSONAL.ID_DE_CATEGORIA, CATEGORIA.NOMBRE_CATEGORIA NOMBRECATEGORIA  FROM CARGOS INNER JOIN PERSONAL ON CARGOS.COMPANIA = PERSONAL.COMPANIA AND CARGOS.ID_DE_CARGO = PERSONAL.ID_DE_CARGO INNER JOIN DEPENDENCIA_RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = PERSONAL.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = PERSONAL.NUMERO_DCTO AND DEPENDENCIA_RESPONSABLE.SUCURSAL = PERSONAL.SUCURSAL INNER JOIN ESCALAFON ON PERSONAL.COMPANIA = ESCALAFON.COMPANIA AND PERSONAL.ESCALAFON = ESCALAFON.CODIGO INNER JOIN CATEGORIA ON PERSONAL.COMPANIA =CATEGORIA.COMPANIA AND PERSONAL.ESCALAFON =CATEGORIA.ESCALAFON AND PERSONAL.ID_DE_CATEGORIA = CATEGORIA.ID_DE_CATEGORIA AND PERSONAL.ANO = CATEGORIA.ANO WHERE CARGOS.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN(0)) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO","ESCALAFON":"$ESCALAFON","NOMBREESCALAFON":"$NOMBREESCALAFON","ID_DE_CATEGORIA":"$ID_DE_CATEGORIA","NOMBRECATEGORIA":"$NOMBRECATEGORIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargosdejefedeunidad/pag">
+		<call-query href="getCargosPagCargosDeJefeDeUnidadQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumCargosDeJefeDeUnidadQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO , CARGOS.NOMBRE_DEL_CARGO, PERSONAL.ESCALAFON , ESCALAFON.NOMBRE NOMBREESCALAFON, PERSONAL.ID_DE_CATEGORIA, CATEGORIA.NOMBRE_CATEGORIA NOMBRECATEGORIA  FROM CARGOS INNER JOIN PERSONAL ON CARGOS.COMPANIA = PERSONAL.COMPANIA AND CARGOS.ID_DE_CARGO = PERSONAL.ID_DE_CARGO INNER JOIN DEPENDENCIA_RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = PERSONAL.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = PERSONAL.NUMERO_DCTO AND DEPENDENCIA_RESPONSABLE.SUCURSAL = PERSONAL.SUCURSAL INNER JOIN ESCALAFON ON PERSONAL.COMPANIA = ESCALAFON.COMPANIA AND PERSONAL.ESCALAFON = ESCALAFON.CODIGO INNER JOIN CATEGORIA ON PERSONAL.COMPANIA =CATEGORIA.COMPANIA AND PERSONAL.ESCALAFON =CATEGORIA.ESCALAFON AND PERSONAL.ID_DE_CATEGORIA = CATEGORIA.ID_DE_CATEGORIA AND PERSONAL.ANO = CATEGORIA.ANO WHERE CARGOS.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA AND DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN(0)) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargosdejefedeunidad/num">
+		<call-query href="getCargosNumCargosDeJefeDeUnidadQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagTodosDeDependenciaResponsableQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO , CARGOS.NOMBRE_DEL_CARGO, PERSONAL.ESCALAFON , ESCALAFON.NOMBRE NOMBREESCALAFON, PERSONAL.ID_DE_CATEGORIA, CATEGORIA.NOMBRE_CATEGORIA NOMBRECATEGORIA  FROM CARGOS INNER JOIN PERSONAL ON CARGOS.COMPANIA = PERSONAL.COMPANIA AND CARGOS.ID_DE_CARGO = PERSONAL.ID_DE_CARGO INNER JOIN DEPENDENCIA_RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = PERSONAL.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = PERSONAL.NUMERO_DCTO AND DEPENDENCIA_RESPONSABLE.SUCURSAL = PERSONAL.SUCURSAL INNER JOIN ESCALAFON ON PERSONAL.COMPANIA = ESCALAFON.COMPANIA AND PERSONAL.ESCALAFON = ESCALAFON.CODIGO INNER JOIN CATEGORIA ON PERSONAL.COMPANIA =CATEGORIA.COMPANIA AND PERSONAL.ESCALAFON =CATEGORIA.ESCALAFON AND PERSONAL.ID_DE_CATEGORIA = CATEGORIA.ID_DE_CATEGORIA AND PERSONAL.ANO = CATEGORIA.ANO WHERE CARGOS.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO","ESCALAFON":"$ESCALAFON","NOMBREESCALAFON":"$NOMBREESCALAFON","ID_DE_CATEGORIA":"$ID_DE_CATEGORIA","NOMBRECATEGORIA":"$NOMBRECATEGORIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/todosdedependenciaresponsable/pag">
+		<call-query href="getCargosPagTodosDeDependenciaResponsableQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumTodosDeDependenciaResponsableQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO , CARGOS.NOMBRE_DEL_CARGO, PERSONAL.ESCALAFON , ESCALAFON.NOMBRE NOMBREESCALAFON, PERSONAL.ID_DE_CATEGORIA, CATEGORIA.NOMBRE_CATEGORIA NOMBRECATEGORIA  FROM CARGOS INNER JOIN PERSONAL ON CARGOS.COMPANIA = PERSONAL.COMPANIA AND CARGOS.ID_DE_CARGO = PERSONAL.ID_DE_CARGO INNER JOIN DEPENDENCIA_RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = PERSONAL.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = PERSONAL.NUMERO_DCTO AND DEPENDENCIA_RESPONSABLE.SUCURSAL = PERSONAL.SUCURSAL INNER JOIN ESCALAFON ON PERSONAL.COMPANIA = ESCALAFON.COMPANIA AND PERSONAL.ESCALAFON = ESCALAFON.CODIGO INNER JOIN CATEGORIA ON PERSONAL.COMPANIA =CATEGORIA.COMPANIA AND PERSONAL.ESCALAFON =CATEGORIA.ESCALAFON AND PERSONAL.ID_DE_CATEGORIA = CATEGORIA.ID_DE_CATEGORIA AND PERSONAL.ANO = CATEGORIA.ANO WHERE CARGOS.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/todosdedependenciaresponsable/num">
+		<call-query href="getCargosNumTodosDeDependenciaResponsableQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertCargosSinFactorRiesgos" keyColumns="COMPANIA,ID_DE_CARGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CARGOS (COMPANIA, ID_DE_CARGO, ESCALAFON, NOMBRE_DEL_CARGO, PLAZAS, FUNCIONES, ENCARRERA, TIPO, ESTADOCARGO, RESOLUCIONCARGO, FECHARESOLUCION, GRADO, RESOLUCIONFUNCION, CODIGOCARGO, VALOR_HORA, CGR_TIPO_VINCULACION, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ID_DE_CARGO, :ESCALAFON, :NOMBRE_DEL_CARGO, :PLAZAS, :FUNCIONES, :ENCARRERA, :TIPO, :ESTADOCARGO, :RESOLUCIONCARGO, TO_DATE(:FECHARESOLUCION,'DD/MM/YYYY HH24:MI:SS'), :GRADO, :RESOLUCIONFUNCION, :CODIGOCARGO, :VALOR_HORA, :CGR_TIPO_VINCULACION, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ID_DE_CARGO":"$ID_DE_CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param defaultValue="0" name="PLAZAS" sqlType="STRING"/>
+		<param defaultValue="" name="FUNCIONES" sqlType="STRING"/>
+		<param defaultValue="0" name="ENCARRERA" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO" sqlType="STRING"/>
+		<param defaultValue="0" name="ESTADOCARGO" sqlType="STRING"/>
+		<param defaultValue="" name="RESOLUCIONCARGO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHARESOLUCION" sqlType="STRING"/>
+		<param defaultValue="" name="GRADO" sqlType="STRING"/>
+		<param defaultValue="" name="RESOLUCIONFUNCION" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOCARGO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR_HORA" sqlType="STRING"/>
+		<param defaultValue="" name="CGR_TIPO_VINCULACION" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="cargos/sinfactorriesgos">
+		<call-query href="insertCargosSinFactorRiesgos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="PLAZAS" query-param="PLAZAS"/>
+			<with-param name="FUNCIONES" query-param="FUNCIONES"/>
+			<with-param name="ENCARRERA" query-param="ENCARRERA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="ESTADOCARGO" query-param="ESTADOCARGO"/>
+			<with-param name="RESOLUCIONCARGO" query-param="RESOLUCIONCARGO"/>
+			<with-param name="FECHARESOLUCION" query-param="FECHARESOLUCION"/>
+			<with-param name="GRADO" query-param="GRADO"/>
+			<with-param name="RESOLUCIONFUNCION" query-param="RESOLUCIONFUNCION"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="VALOR_HORA" query-param="VALOR_HORA"/>
+			<with-param name="CGR_TIPO_VINCULACION" query-param="CGR_TIPO_VINCULACION"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagDistinctidnombreescalafoncategoriaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT CARGOS.ID_DE_CARGO , CARGOS.NOMBRE_DEL_CARGO, PERSONAL.ESCALAFON , ESCALAFON.NOMBRE NOMBREESCALAFON, PERSONAL.ID_DE_CATEGORIA, CATEGORIA.NOMBRE_CATEGORIA NOMBRECATEGORIA  FROM CARGOS INNER JOIN PERSONAL ON CARGOS.COMPANIA = PERSONAL.COMPANIA AND CARGOS.ID_DE_CARGO = PERSONAL.ID_DE_CARGO INNER JOIN DEPENDENCIA_RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = PERSONAL.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = PERSONAL.NUMERO_DCTO AND DEPENDENCIA_RESPONSABLE.SUCURSAL = PERSONAL.SUCURSAL INNER JOIN ESCALAFON ON PERSONAL.COMPANIA = ESCALAFON.COMPANIA AND PERSONAL.ESCALAFON = ESCALAFON.CODIGO INNER JOIN CATEGORIA ON PERSONAL.COMPANIA = CATEGORIA.COMPANIA AND PERSONAL.ESCALAFON = CATEGORIA.ESCALAFON AND PERSONAL.ID_DE_CATEGORIA = CATEGORIA.ID_DE_CATEGORIA AND PERSONAL.ANO = CATEGORIA.ANO WHERE CARGOS.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%')  AND (CASE WHEN ESCALAFON IS NULL THEN ' ' ELSE UPPER(ESCALAFON) END)  LIKE UPPER(:ESCALAFON || '%')  AND (CASE WHEN NOMBREESCALAFON IS NULL THEN ' ' ELSE UPPER(NOMBREESCALAFON) END)  LIKE UPPER( '%' || :NOMBREESCALAFON || '%')  AND (CASE WHEN ID_DE_CATEGORIA IS NULL THEN ' ' ELSE UPPER(ID_DE_CATEGORIA) END)  LIKE UPPER(:ID_DE_CATEGORIA || '%')  AND (CASE WHEN NOMBRECATEGORIA IS NULL THEN ' ' ELSE UPPER(NOMBRECATEGORIA) END)  LIKE UPPER( '%' || :NOMBRECATEGORIA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO","ESCALAFON":"$ESCALAFON","NOMBREESCALAFON":"$NOMBREESCALAFON","ID_DE_CATEGORIA":"$ID_DE_CATEGORIA","NOMBRECATEGORIA":"$NOMBRECATEGORIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="NOMBREESCALAFON" sqlType="STRING"/>
+		<param name="ID_DE_CATEGORIA" sqlType="STRING"/>
+		<param name="NOMBRECATEGORIA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/distinctidnombreescalafoncategoria/pag">
+		<call-query href="getCargosPagDistinctidnombreescalafoncategoriaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="NOMBREESCALAFON" query-param="NOMBREESCALAFON"/>
+			<with-param name="ID_DE_CATEGORIA" query-param="ID_DE_CATEGORIA"/>
+			<with-param name="NOMBRECATEGORIA" query-param="NOMBRECATEGORIA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumDistinctidnombreescalafoncategoriaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT CARGOS.ID_DE_CARGO , CARGOS.NOMBRE_DEL_CARGO, PERSONAL.ESCALAFON , ESCALAFON.NOMBRE NOMBREESCALAFON, PERSONAL.ID_DE_CATEGORIA, CATEGORIA.NOMBRE_CATEGORIA NOMBRECATEGORIA  FROM CARGOS INNER JOIN PERSONAL ON CARGOS.COMPANIA = PERSONAL.COMPANIA AND CARGOS.ID_DE_CARGO = PERSONAL.ID_DE_CARGO INNER JOIN DEPENDENCIA_RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = PERSONAL.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = PERSONAL.NUMERO_DCTO AND DEPENDENCIA_RESPONSABLE.SUCURSAL = PERSONAL.SUCURSAL INNER JOIN ESCALAFON ON PERSONAL.COMPANIA = ESCALAFON.COMPANIA AND PERSONAL.ESCALAFON = ESCALAFON.CODIGO INNER JOIN CATEGORIA ON PERSONAL.COMPANIA = CATEGORIA.COMPANIA AND PERSONAL.ESCALAFON = CATEGORIA.ESCALAFON AND PERSONAL.ID_DE_CATEGORIA = CATEGORIA.ID_DE_CATEGORIA AND PERSONAL.ANO = CATEGORIA.ANO WHERE CARGOS.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.DEPENDENCIA = :DEPENDENCIA) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%')  AND (CASE WHEN ESCALAFON IS NULL THEN ' ' ELSE UPPER(ESCALAFON) END)  LIKE UPPER(:ESCALAFON || '%')  AND (CASE WHEN NOMBREESCALAFON IS NULL THEN ' ' ELSE UPPER(NOMBREESCALAFON) END)  LIKE UPPER( '%' || :NOMBREESCALAFON || '%')  AND (CASE WHEN ID_DE_CATEGORIA IS NULL THEN ' ' ELSE UPPER(ID_DE_CATEGORIA) END)  LIKE UPPER(:ID_DE_CATEGORIA || '%')  AND (CASE WHEN NOMBRECATEGORIA IS NULL THEN ' ' ELSE UPPER(NOMBRECATEGORIA) END)  LIKE UPPER( '%' || :NOMBRECATEGORIA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="NOMBREESCALAFON" sqlType="STRING"/>
+		<param name="ID_DE_CATEGORIA" sqlType="STRING"/>
+		<param name="NOMBRECATEGORIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/distinctidnombreescalafoncategoria/num">
+		<call-query href="getCargosNumDistinctidnombreescalafoncategoriaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="NOMBREESCALAFON" query-param="NOMBREESCALAFON"/>
+			<with-param name="ID_DE_CATEGORIA" query-param="ID_DE_CATEGORIA"/>
+			<with-param name="NOMBRECATEGORIA" query-param="NOMBRECATEGORIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagCargosjefeinmediatoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ID_DE_CARGO COD, NOMBRE, ID_DE_CARGO, NOMBRE_DEL_CARGO, ESCALAFON, NOMBREESCALAFON, ID_DE_CATEGORIA, NOMBRECATEGORIA  FROM ( SELECT DISTINCT TERCERO.NOMBRE, CARGOS.ID_DE_CARGO , CARGOS.NOMBRE_DEL_CARGO, PERSONAL.ESCALAFON , ESCALAFON.NOMBRE NOMBREESCALAFON, PERSONAL.ID_DE_CATEGORIA, CATEGORIA.NOMBRE_CATEGORIA NOMBRECATEGORIA FROM CARGOS INNER JOIN PERSONAL ON CARGOS.COMPANIA = PERSONAL.COMPANIA AND CARGOS.ID_DE_CARGO = PERSONAL.ID_DE_CARGO INNER JOIN DEPENDENCIA_RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = PERSONAL.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = PERSONAL.NUMERO_DCTO AND DEPENDENCIA_RESPONSABLE.SUCURSAL = PERSONAL.SUCURSAL INNER JOIN TERCERO ON DEPENDENCIA_RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = TERCERO.NIT AND DEPENDENCIA_RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL INNER JOIN ESCALAFON ON PERSONAL.COMPANIA = ESCALAFON.COMPANIA AND PERSONAL.ESCALAFON = ESCALAFON.CODIGO INNER JOIN CATEGORIA ON PERSONAL.COMPANIA = CATEGORIA.COMPANIA AND PERSONAL.ESCALAFON = CATEGORIA.ESCALAFON AND PERSONAL.ID_DE_CATEGORIA = CATEGORIA.ID_DE_CATEGORIA AND PERSONAL.ANO = CATEGORIA.ANO WHERE CARGOS.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN(0) )) WHERE (CASE WHEN COD IS NULL THEN ' ' ELSE UPPER(COD) END)  LIKE UPPER(:COD || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%')  AND (CASE WHEN ESCALAFON IS NULL THEN ' ' ELSE UPPER(ESCALAFON) END)  LIKE UPPER(:ESCALAFON || '%')  AND (CASE WHEN NOMBREESCALAFON IS NULL THEN ' ' ELSE UPPER(NOMBREESCALAFON) END)  LIKE UPPER( '%' || :NOMBREESCALAFON || '%')  AND (CASE WHEN ID_DE_CATEGORIA IS NULL THEN ' ' ELSE UPPER(ID_DE_CATEGORIA) END)  LIKE UPPER(:ID_DE_CATEGORIA || '%')  AND (CASE WHEN NOMBRECATEGORIA IS NULL THEN ' ' ELSE UPPER(NOMBRECATEGORIA) END)  LIKE UPPER( '%' || :NOMBRECATEGORIA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COD":"$COD","NOMBRE":"$NOMBRE","ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO","ESCALAFON":"$ESCALAFON","NOMBREESCALAFON":"$NOMBREESCALAFON","ID_DE_CATEGORIA":"$ID_DE_CATEGORIA","NOMBRECATEGORIA":"$NOMBRECATEGORIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="NOMBREESCALAFON" sqlType="STRING"/>
+		<param name="ID_DE_CATEGORIA" sqlType="STRING"/>
+		<param name="NOMBRECATEGORIA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargosjefeinmediato/pag">
+		<call-query href="getCargosPagCargosjefeinmediatoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD" query-param="COD"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="NOMBREESCALAFON" query-param="NOMBREESCALAFON"/>
+			<with-param name="ID_DE_CATEGORIA" query-param="ID_DE_CATEGORIA"/>
+			<with-param name="NOMBRECATEGORIA" query-param="NOMBRECATEGORIA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumCargosjefeinmediatoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ID_DE_CARGO COD, NOMBRE, ID_DE_CARGO, NOMBRE_DEL_CARGO, ESCALAFON, NOMBREESCALAFON, ID_DE_CATEGORIA, NOMBRECATEGORIA  FROM ( SELECT DISTINCT TERCERO.NOMBRE, CARGOS.ID_DE_CARGO , CARGOS.NOMBRE_DEL_CARGO, PERSONAL.ESCALAFON , ESCALAFON.NOMBRE NOMBREESCALAFON, PERSONAL.ID_DE_CATEGORIA, CATEGORIA.NOMBRE_CATEGORIA NOMBRECATEGORIA FROM CARGOS INNER JOIN PERSONAL ON CARGOS.COMPANIA = PERSONAL.COMPANIA AND CARGOS.ID_DE_CARGO = PERSONAL.ID_DE_CARGO INNER JOIN DEPENDENCIA_RESPONSABLE ON DEPENDENCIA_RESPONSABLE.COMPANIA = PERSONAL.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = PERSONAL.NUMERO_DCTO AND DEPENDENCIA_RESPONSABLE.SUCURSAL = PERSONAL.SUCURSAL INNER JOIN TERCERO ON DEPENDENCIA_RESPONSABLE.COMPANIA = TERCERO.COMPANIA AND DEPENDENCIA_RESPONSABLE.RESPONSABLE = TERCERO.NIT AND DEPENDENCIA_RESPONSABLE.SUCURSAL = TERCERO.SUCURSAL INNER JOIN ESCALAFON ON PERSONAL.COMPANIA = ESCALAFON.COMPANIA AND PERSONAL.ESCALAFON = ESCALAFON.CODIGO INNER JOIN CATEGORIA ON PERSONAL.COMPANIA = CATEGORIA.COMPANIA AND PERSONAL.ESCALAFON = CATEGORIA.ESCALAFON AND PERSONAL.ID_DE_CATEGORIA = CATEGORIA.ID_DE_CATEGORIA AND PERSONAL.ANO = CATEGORIA.ANO WHERE CARGOS.COMPANIA = :COMPANIA AND DEPENDENCIA_RESPONSABLE.JEFEUNIDAD NOT IN(0) )) WHERE (CASE WHEN COD IS NULL THEN ' ' ELSE UPPER(COD) END)  LIKE UPPER(:COD || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%')  AND (CASE WHEN ESCALAFON IS NULL THEN ' ' ELSE UPPER(ESCALAFON) END)  LIKE UPPER(:ESCALAFON || '%')  AND (CASE WHEN NOMBREESCALAFON IS NULL THEN ' ' ELSE UPPER(NOMBREESCALAFON) END)  LIKE UPPER( '%' || :NOMBREESCALAFON || '%')  AND (CASE WHEN ID_DE_CATEGORIA IS NULL THEN ' ' ELSE UPPER(ID_DE_CATEGORIA) END)  LIKE UPPER(:ID_DE_CATEGORIA || '%')  AND (CASE WHEN NOMBRECATEGORIA IS NULL THEN ' ' ELSE UPPER(NOMBRECATEGORIA) END)  LIKE UPPER( '%' || :NOMBRECATEGORIA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="NOMBREESCALAFON" sqlType="STRING"/>
+		<param name="ID_DE_CATEGORIA" sqlType="STRING"/>
+		<param name="NOMBRECATEGORIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargosjefeinmediato/num">
+		<call-query href="getCargosNumCargosjefeinmediatoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD" query-param="COD"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="NOMBREESCALAFON" query-param="NOMBREESCALAFON"/>
+			<with-param name="ID_DE_CATEGORIA" query-param="ID_DE_CATEGORIA"/>
+			<with-param name="NOMBRECATEGORIA" query-param="NOMBRECATEGORIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagIdNomOprCiaEscQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO  FROM CARGOS WHERE CARGOS.COMPANIA = :COMPANIA AND CARGOS.ESCALAFON = :ESCALAFON ORDER BY CARGOS.NOMBRE_DEL_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/idnomoprciaesc/pag">
+		<call-query href="getCargosPagIdNomOprCiaEscQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumIdNomOprCiaEscQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO  FROM CARGOS WHERE CARGOS.COMPANIA = :COMPANIA AND CARGOS.ESCALAFON = :ESCALAFON ORDER BY CARGOS.NOMBRE_DEL_CARGO) WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END)  LIKE UPPER(:ID_DE_CARGO || '%')  AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_DEL_CARGO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/idnomoprciaesc/num">
+		<call-query href="getCargosNumIdNomOprCiaEscQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosCargoRetiroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO  FROM CARGOS INNER JOIN PERSONAL ON PERSONAL.COMPANIA = CARGOS.COMPANIA AND PERSONAL.ID_DE_CARGO = CARGOS.ID_DE_CARGO LEFT JOIN NAT_DATOS_PERSONALES ON NAT_DATOS_PERSONALES.COMPANIA = PERSONAL.COMPANIA AND NAT_DATOS_PERSONALES.CODIGO = PERSONAL.ID_DE_EMPLEADO WHERE PERSONAL.COMPANIA = :COMPANIA AND PERSONAL.NUMERO_DCTO = :NUMERO_DCTO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargoretiro">
+		<call-query href="getCargosCargoRetiroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagCargosYCategoriasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO CODIGOCARGO, CARGOS.NOMBRE_DEL_CARGO NOMBRE_CARGO, CATEGORIA.ANO , CARGOS.GRADO, CARGOS.ESCALAFON, CATEGORIA.ID_DE_CATEGORIA, CATEGORIA.SALARIO_BASE, CARGOS.PLAZAS  FROM CARGOS LEFT JOIN CATEGORIA ON CATEGORIA.COMPANIA = CARGOS.COMPANIA AND CATEGORIA.ESCALAFON = CARGOS.ESCALAFON AND CATEGORIA.GRADO = CARGOS.GRADO WHERE CARGOS.COMPANIA =:COMPANIA AND CARGOS.ESTADOCARGO IN ('1') ORDER BY CARGOS.ID_DE_CARGO, CATEGORIA.ANO) WHERE (CASE WHEN CODIGOCARGO IS NULL THEN ' ' ELSE UPPER(CODIGOCARGO) END)  LIKE UPPER(:CODIGOCARGO || '%')  AND (CASE WHEN NOMBRE_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_CARGO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN PLAZAS IS NULL THEN ' ' ELSE UPPER(PLAZAS) END)  LIKE UPPER( '%' || :PLAZAS || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGOCARGO":"$CODIGOCARGO","NOMBRE_CARGO":"$NOMBRE_CARGO","ANO":"$ANO(type:integer)","GRADO":"$GRADO","ESCALAFON":"$ESCALAFON","ID_DE_CATEGORIA":"$ID_DE_CATEGORIA","SALARIO_BASE":"$SALARIO_BASE","PLAZAS":"$PLAZAS"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="NOMBRE_CARGO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PLAZAS" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargosycategorias/pag">
+		<call-query href="getCargosPagCargosYCategoriasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="NOMBRE_CARGO" query-param="NOMBRE_CARGO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PLAZAS" query-param="PLAZAS"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumCargosYCategoriasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO CODIGOCARGO, CARGOS.NOMBRE_DEL_CARGO NOMBRE_CARGO, CATEGORIA.ANO , CARGOS.GRADO, CARGOS.ESCALAFON, CATEGORIA.ID_DE_CATEGORIA, CATEGORIA.SALARIO_BASE, CARGOS.PLAZAS  FROM CARGOS LEFT JOIN CATEGORIA ON CATEGORIA.COMPANIA = CARGOS.COMPANIA AND CATEGORIA.ESCALAFON = CARGOS.ESCALAFON AND CATEGORIA.GRADO = CARGOS.GRADO WHERE CARGOS.COMPANIA =:COMPANIA AND CARGOS.ESTADOCARGO IN ('1') ORDER BY CARGOS.ID_DE_CARGO, CATEGORIA.ANO) WHERE (CASE WHEN CODIGOCARGO IS NULL THEN ' ' ELSE UPPER(CODIGOCARGO) END)  LIKE UPPER(:CODIGOCARGO || '%')  AND (CASE WHEN NOMBRE_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_CARGO) END)  LIKE UPPER( '%' || :NOMBRE_CARGO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN PLAZAS IS NULL THEN ' ' ELSE UPPER(PLAZAS) END)  LIKE UPPER( '%' || :PLAZAS || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="NOMBRE_CARGO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PLAZAS" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargosycategorias/num">
+		<call-query href="getCargosNumCargosYCategoriasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="NOMBRE_CARGO" query-param="NOMBRE_CARGO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PLAZAS" query-param="PLAZAS"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagCargosnombreanoescalafonsalariobaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CATEGORIA.ID_DE_CATEGORIA CODIGOCARGO, CATEGORIA.NOMBRE_CATEGORIA, CATEGORIA.ANO, CATEGORIA.ESCALAFON, CATEGORIA.SALARIO_BASE, CATEGORIA.GRADO, CARGOS.PLAZAS  FROM CATEGORIA INNER JOIN CARGOS ON CATEGORIA.COMPANIA = CARGOS.COMPANIA AND CATEGORIA.ID_DE_CATEGORIA = SUBSTR(CARGOS.ID_DE_CARGO,-3) AND CATEGORIA.ESCALAFON = CARGOS.ESCALAFON WHERE CATEGORIA.COMPANIA =:COMPANIA AND CARGOS.ESTADOCARGO IN ('1') AND CARGOS.PLAZAS &gt; '0' ORDER BY CARGOS.ID_DE_CARGO, CATEGORIA.ANO) WHERE (CASE WHEN CODIGOCARGO IS NULL THEN ' ' ELSE UPPER(CODIGOCARGO) END)  LIKE UPPER(:CODIGOCARGO || '%')  AND (CASE WHEN NOMBRE_CATEGORIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_CATEGORIA) END)  LIKE UPPER( '%' || :NOMBRE_CATEGORIA || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGOCARGO":"$CODIGOCARGO","NOMBRE_CATEGORIA":"$NOMBRE_CATEGORIA","ANO":"$ANO(type:integer)","ESCALAFON":"$ESCALAFON","SALARIO_BASE":"$SALARIO_BASE","GRADO":"$GRADO","PLAZAS":"$PLAZAS"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="NOMBRE_CATEGORIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargosnombreanoescalafonsalariobase/pag">
+		<call-query href="getCargosPagCargosnombreanoescalafonsalariobaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="NOMBRE_CATEGORIA" query-param="NOMBRE_CATEGORIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumCargosnombreanoescalafonsalariobaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CATEGORIA.ID_DE_CATEGORIA CODIGOCARGO, CATEGORIA.NOMBRE_CATEGORIA, CATEGORIA.ANO, CATEGORIA.ESCALAFON, CATEGORIA.SALARIO_BASE, CATEGORIA.GRADO, CARGOS.PLAZAS  FROM CATEGORIA INNER JOIN CARGOS ON CATEGORIA.COMPANIA = CARGOS.COMPANIA AND CATEGORIA.ID_DE_CATEGORIA = SUBSTR(CARGOS.ID_DE_CARGO,-3) AND CATEGORIA.ESCALAFON = CARGOS.ESCALAFON WHERE CATEGORIA.COMPANIA =:COMPANIA AND CARGOS.ESTADOCARGO IN ('1') AND CARGOS.PLAZAS &gt; '0' ORDER BY CARGOS.ID_DE_CARGO, CATEGORIA.ANO) WHERE (CASE WHEN CODIGOCARGO IS NULL THEN ' ' ELSE UPPER(CODIGOCARGO) END)  LIKE UPPER(:CODIGOCARGO || '%')  AND (CASE WHEN NOMBRE_CATEGORIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_CATEGORIA) END)  LIKE UPPER( '%' || :NOMBRE_CATEGORIA || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="NOMBRE_CATEGORIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargosnombreanoescalafonsalariobase/num">
+		<call-query href="getCargosNumCargosnombreanoescalafonsalariobaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="NOMBRE_CATEGORIA" query-param="NOMBRE_CATEGORIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagEstadocargoplazastiporequisitoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO CODIGOCARGO, CATEGORIA.NOMBRE_CATEGORIA, CATEGORIA.ANO, CATEGORIA.ESCALAFON, CATEGORIA.SALARIO_BASE, CATEGORIA.GRADO, CARGOS.PLAZAS, EV_MANUAL.NUMERO_MANUAL, EV_MANUAL.DEPENDENCIA  FROM CATEGORIA INNER JOIN CARGOS ON CATEGORIA.COMPANIA = CARGOS.COMPANIA AND CATEGORIA.ID_DE_CATEGORIA = SUBSTR(CARGOS.ID_DE_CARGO,-3) AND CATEGORIA.ESCALAFON = CARGOS.ESCALAFON INNER JOIN EV_MANUAL ON CATEGORIA.COMPANIA = EV_MANUAL.COMPANIA AND CATEGORIA.ESCALAFON = EV_MANUAL.ESCALAFON LEFT JOIN EV_MANUAL EV1 ON CARGOS.COMPANIA = EV1.COMPANIA AND CARGOS.ESCALAFON = EV1.ESCALAFON AND CARGOS.ID_DE_CARGO = EV1.CARGO WHERE CATEGORIA.COMPANIA =:COMPANIA AND CARGOS.ESTADOCARGO IN ('1') AND CARGOS.PLAZAS &gt; '0' AND CATEGORIA.ANO = :ANO AND EV_MANUAL.DEPENDENCIA = :DEPENDENCIA ORDER BY CARGOS.ID_DE_CARGO, CATEGORIA.ANO) WHERE (CASE WHEN CODIGOCARGO IS NULL THEN ' ' ELSE UPPER(CODIGOCARGO) END)  LIKE UPPER(:CODIGOCARGO || '%')  AND (CASE WHEN NOMBRE_CATEGORIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_CATEGORIA) END)  LIKE UPPER( '%' || :NOMBRE_CATEGORIA || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGOCARGO":"$CODIGOCARGO","NOMBRE_CATEGORIA":"$NOMBRE_CATEGORIA","ANO":"$ANO(type:integer)","ESCALAFON":"$ESCALAFON","SALARIO_BASE":"$SALARIO_BASE","GRADO":"$GRADO","PLAZAS":"$PLAZAS","NUMERO_MANUAL":"$NUMERO_MANUAL","DEPENDENCIA":"$DEPENDENCIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="NOMBRE_CATEGORIA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/estadocargoplazastiporequisito/pag">
+		<call-query href="getCargosPagEstadocargoplazastiporequisitoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="NOMBRE_CATEGORIA" query-param="NOMBRE_CATEGORIA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumEstadocargoplazastiporequisitoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO CODIGOCARGO, CATEGORIA.NOMBRE_CATEGORIA, CATEGORIA.ANO, CATEGORIA.ESCALAFON, CATEGORIA.SALARIO_BASE, CATEGORIA.GRADO, CARGOS.PLAZAS, EV_MANUAL.NUMERO_MANUAL, EV_MANUAL.DEPENDENCIA  FROM CATEGORIA INNER JOIN CARGOS ON CATEGORIA.COMPANIA = CARGOS.COMPANIA AND CATEGORIA.ID_DE_CATEGORIA = SUBSTR(CARGOS.ID_DE_CARGO,-3) AND CATEGORIA.ESCALAFON = CARGOS.ESCALAFON INNER JOIN EV_MANUAL ON CATEGORIA.COMPANIA = EV_MANUAL.COMPANIA AND CATEGORIA.ESCALAFON = EV_MANUAL.ESCALAFON LEFT JOIN EV_MANUAL EV1 ON CARGOS.COMPANIA = EV1.COMPANIA AND CARGOS.ESCALAFON = EV1.ESCALAFON AND CARGOS.ID_DE_CARGO = EV1.CARGO WHERE CATEGORIA.COMPANIA =:COMPANIA AND CARGOS.ESTADOCARGO IN ('1') AND CARGOS.PLAZAS &gt; '0' AND CATEGORIA.ANO = :ANO AND EV_MANUAL.DEPENDENCIA = :DEPENDENCIA ORDER BY CARGOS.ID_DE_CARGO, CATEGORIA.ANO) WHERE (CASE WHEN CODIGOCARGO IS NULL THEN ' ' ELSE UPPER(CODIGOCARGO) END)  LIKE UPPER(:CODIGOCARGO || '%')  AND (CASE WHEN NOMBRE_CATEGORIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_CATEGORIA) END)  LIKE UPPER( '%' || :NOMBRE_CATEGORIA || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="DEPENDENCIA" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="NOMBRE_CATEGORIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/estadocargoplazastiporequisito/num">
+		<call-query href="getCargosNumEstadocargoplazastiporequisitoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="DEPENDENCIA" query-param="DEPENDENCIA"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="NOMBRE_CATEGORIA" query-param="NOMBRE_CATEGORIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagCodigocargocategoriaanoescalafonsalarioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CATEGORIA.ID_DE_CATEGORIA CODIGOCARGO, CATEGORIA.NOMBRE_CATEGORIA, CATEGORIA.ANO, CATEGORIA.ESCALAFON, CATEGORIA.SALARIO_BASE, CATEGORIA.GRADO, CARGOS.PLAZAS, EV_REQUISITOS.TIPO_REQUISITO, EV_REQUISITOS.ALTERNATIVA, EV_REQUISITOS.DESCRIPCION, EV_MANUAL.NUMERO_MANUAL  FROM CATEGORIA INNER JOIN CARGOS ON CATEGORIA.COMPANIA = CARGOS.COMPANIA AND CATEGORIA.ID_DE_CATEGORIA = SUBSTR(CARGOS.ID_DE_CARGO,-3) AND CATEGORIA.ESCALAFON = CARGOS.ESCALAFON INNER JOIN EV_MANUAL ON CATEGORIA.COMPANIA = EV_MANUAL.COMPANIA AND CATEGORIA.ESCALAFON = EV_MANUAL.ESCALAFON LEFT JOIN EV_MANUAL EV1 ON CARGOS.COMPANIA = EV1.COMPANIA AND CARGOS.ESCALAFON = EV1.ESCALAFON AND CARGOS.ID_DE_CARGO = EV1.CARGO INNER JOIN EV_REQUISITOS ON EV_MANUAL.COMPANIA = EV_REQUISITOS.COMPANIA AND EV_MANUAL.NUMERO_MANUAL = EV_REQUISITOS.NUMERO_MANUAL AND EV_MANUAL.VERSION = EV_REQUISITOS.VERSION WHERE CATEGORIA.COMPANIA =:COMPANIA AND CARGOS.ESTADOCARGO IN ('1') AND CARGOS.PLAZAS &gt; '0' AND EV_REQUISITOS.TIPO_REQUISITO IN ('00001','00002') AND CATEGORIA.ANO = :ANO ORDER BY CARGOS.ID_DE_CARGO, CATEGORIA.ANO) WHERE (CASE WHEN CODIGOCARGO IS NULL THEN ' ' ELSE UPPER(CODIGOCARGO) END)  LIKE UPPER(:CODIGOCARGO || '%')  AND (CASE WHEN NOMBRE_CATEGORIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_CATEGORIA) END)  LIKE UPPER( '%' || :NOMBRE_CATEGORIA || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN TIPO_REQUISITO IS NULL THEN ' ' ELSE UPPER(TIPO_REQUISITO) END)  LIKE UPPER(:TIPO_REQUISITO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGOCARGO":"$CODIGOCARGO","NOMBRE_CATEGORIA":"$NOMBRE_CATEGORIA","ANO":"$ANO(type:integer)","ESCALAFON":"$ESCALAFON","SALARIO_BASE":"$SALARIO_BASE","GRADO":"$GRADO","PLAZAS":"$PLAZAS","TIPO_REQUISITO":"$TIPO_REQUISITO","ALTERNATIVA":"$ALTERNATIVA(type:integer)","DESCRIPCION":"$DESCRIPCION","NUMERO_MANUAL":"$NUMERO_MANUAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="NOMBRE_CATEGORIA" sqlType="STRING"/>
+		<param name="TIPO_REQUISITO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/codigocargocategoriaanoescalafonsalario/pag">
+		<call-query href="getCargosPagCodigocargocategoriaanoescalafonsalarioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="NOMBRE_CATEGORIA" query-param="NOMBRE_CATEGORIA"/>
+			<with-param name="TIPO_REQUISITO" query-param="TIPO_REQUISITO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumCodigocargocategoriaanoescalafonsalarioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CATEGORIA.ID_DE_CATEGORIA CODIGOCARGO, CATEGORIA.NOMBRE_CATEGORIA, CATEGORIA.ANO, CATEGORIA.ESCALAFON, CATEGORIA.SALARIO_BASE, CATEGORIA.GRADO, CARGOS.PLAZAS, EV_REQUISITOS.TIPO_REQUISITO, EV_REQUISITOS.ALTERNATIVA, EV_REQUISITOS.DESCRIPCION, EV_MANUAL.NUMERO_MANUAL  FROM CATEGORIA INNER JOIN CARGOS ON CATEGORIA.COMPANIA = CARGOS.COMPANIA AND CATEGORIA.ID_DE_CATEGORIA = SUBSTR(CARGOS.ID_DE_CARGO,-3) AND CATEGORIA.ESCALAFON = CARGOS.ESCALAFON INNER JOIN EV_MANUAL ON CATEGORIA.COMPANIA = EV_MANUAL.COMPANIA AND CATEGORIA.ESCALAFON = EV_MANUAL.ESCALAFON LEFT JOIN EV_MANUAL EV1 ON CARGOS.COMPANIA = EV1.COMPANIA AND CARGOS.ESCALAFON = EV1.ESCALAFON AND CARGOS.ID_DE_CARGO = EV1.CARGO INNER JOIN EV_REQUISITOS ON EV_MANUAL.COMPANIA = EV_REQUISITOS.COMPANIA AND EV_MANUAL.NUMERO_MANUAL = EV_REQUISITOS.NUMERO_MANUAL AND EV_MANUAL.VERSION = EV_REQUISITOS.VERSION WHERE CATEGORIA.COMPANIA =:COMPANIA AND CARGOS.ESTADOCARGO IN ('1') AND CARGOS.PLAZAS &gt; '0' AND EV_REQUISITOS.TIPO_REQUISITO IN ('00001','00002') AND CATEGORIA.ANO = :ANO ORDER BY CARGOS.ID_DE_CARGO, CATEGORIA.ANO) WHERE (CASE WHEN CODIGOCARGO IS NULL THEN ' ' ELSE UPPER(CODIGOCARGO) END)  LIKE UPPER(:CODIGOCARGO || '%')  AND (CASE WHEN NOMBRE_CATEGORIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_CATEGORIA) END)  LIKE UPPER( '%' || :NOMBRE_CATEGORIA || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN TIPO_REQUISITO IS NULL THEN ' ' ELSE UPPER(TIPO_REQUISITO) END)  LIKE UPPER(:TIPO_REQUISITO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="NOMBRE_CATEGORIA" sqlType="STRING"/>
+		<param name="TIPO_REQUISITO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/codigocargocategoriaanoescalafonsalario/num">
+		<call-query href="getCargosNumCodigocargocategoriaanoescalafonsalarioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="NOMBRE_CATEGORIA" query-param="NOMBRE_CATEGORIA"/>
+			<with-param name="TIPO_REQUISITO" query-param="TIPO_REQUISITO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagCodigonombreanogradoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO CODIGOCARGO, CARGOS.NOMBRE_DEL_CARGO NOMBRE_CATEGORIA, CATEGORIA.ANO , CARGOS.GRADO, CARGOS.ESCALAFON, CATEGORIA.ID_DE_CATEGORIA, CATEGORIA.SALARIO_BASE, CARGOS.PLAZAS  FROM CARGOS LEFT JOIN CATEGORIA ON CATEGORIA.COMPANIA = CARGOS.COMPANIA AND CATEGORIA.ESCALAFON = CARGOS.ESCALAFON AND CATEGORIA.GRADO = CARGOS.GRADO WHERE CARGOS.COMPANIA =:COMPANIA AND CARGOS.ESTADOCARGO IN ('1') AND CATEGORIA.ANO = :ANO ORDER BY CARGOS.ID_DE_CARGO, CATEGORIA.ANO) WHERE (CASE WHEN CODIGOCARGO IS NULL THEN ' ' ELSE UPPER(CODIGOCARGO) END)  LIKE UPPER(:CODIGOCARGO || '%')  AND (CASE WHEN NOMBRE_CATEGORIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_CATEGORIA) END)  LIKE UPPER( '%' || :NOMBRE_CATEGORIA || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN ID_DE_CATEGORIA IS NULL THEN ' ' ELSE UPPER(ID_DE_CATEGORIA) END)  LIKE UPPER(:ID_DE_CATEGORIA || '%')  AND (CASE WHEN PLAZAS IS NULL THEN ' ' ELSE UPPER(PLAZAS) END)  LIKE UPPER(:PLAZAS || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGOCARGO":"$CODIGOCARGO","NOMBRE_CATEGORIA":"$NOMBRE_CATEGORIA","ANO":"$ANO(type:integer)","GRADO":"$GRADO","ESCALAFON":"$ESCALAFON","ID_DE_CATEGORIA":"$ID_DE_CATEGORIA","SALARIO_BASE":"$SALARIO_BASE","PLAZAS":"$PLAZAS"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="NOMBRE_CATEGORIA" sqlType="STRING"/>
+		<param name="ID_DE_CATEGORIA" sqlType="STRING"/>
+		<param name="PLAZAS" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/codigonombreanogrado/pag">
+		<call-query href="getCargosPagCodigonombreanogradoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="NOMBRE_CATEGORIA" query-param="NOMBRE_CATEGORIA"/>
+			<with-param name="ID_DE_CATEGORIA" query-param="ID_DE_CATEGORIA"/>
+			<with-param name="PLAZAS" query-param="PLAZAS"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumCodigonombreanogradoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CARGOS.ID_DE_CARGO CODIGOCARGO, CARGOS.NOMBRE_DEL_CARGO NOMBRE_CATEGORIA, CATEGORIA.ANO , CARGOS.GRADO, CARGOS.ESCALAFON, CATEGORIA.ID_DE_CATEGORIA, CATEGORIA.SALARIO_BASE, CARGOS.PLAZAS  FROM CARGOS LEFT JOIN CATEGORIA ON CATEGORIA.COMPANIA = CARGOS.COMPANIA AND CATEGORIA.ESCALAFON = CARGOS.ESCALAFON AND CATEGORIA.GRADO = CARGOS.GRADO WHERE CARGOS.COMPANIA =:COMPANIA AND CARGOS.ESTADOCARGO IN ('1') AND CATEGORIA.ANO = :ANO ORDER BY CARGOS.ID_DE_CARGO, CATEGORIA.ANO) WHERE (CASE WHEN CODIGOCARGO IS NULL THEN ' ' ELSE UPPER(CODIGOCARGO) END)  LIKE UPPER(:CODIGOCARGO || '%')  AND (CASE WHEN NOMBRE_CATEGORIA IS NULL THEN ' ' ELSE UPPER(NOMBRE_CATEGORIA) END)  LIKE UPPER( '%' || :NOMBRE_CATEGORIA || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN ID_DE_CATEGORIA IS NULL THEN ' ' ELSE UPPER(ID_DE_CATEGORIA) END)  LIKE UPPER(:ID_DE_CATEGORIA || '%')  AND (CASE WHEN PLAZAS IS NULL THEN ' ' ELSE UPPER(PLAZAS) END)  LIKE UPPER(:PLAZAS || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="NOMBRE_CATEGORIA" sqlType="STRING"/>
+		<param name="ID_DE_CATEGORIA" sqlType="STRING"/>
+		<param name="PLAZAS" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/codigonombreanogrado/num">
+		<call-query href="getCargosNumCodigonombreanogradoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="NOMBRE_CATEGORIA" query-param="NOMBRE_CATEGORIA"/>
+			<with-param name="ID_DE_CATEGORIA" query-param="ID_DE_CATEGORIA"/>
+			<with-param name="PLAZAS" query-param="PLAZAS"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNombrecargoconvocatoriaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CARGOS.NOMBRE_DEL_CARGO NOMBRE_DEL_CARGO  FROM CARGOS INNER JOIN NAT_APERTURA ON CARGOS.COMPANIA = NAT_APERTURA.COMPANIA AND CARGOS.ID_DE_CARGO = NAT_APERTURA.CODIGOCARGO AND CARGOS.GRADO = NAT_APERTURA.GRADOCARGO WHERE NAT_APERTURA.COMPANIA = :COMPANIA AND NAT_APERTURA.NRO_CONVOCATORIA = :NRO_CONVOCATORIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NRO_CONVOCATORIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/nombrecargoconvocatoria">
+		<call-query href="getCargosNombrecargoconvocatoriaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NRO_CONVOCATORIA" query-param="NRO_CONVOCATORIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosTodosporcompQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO  FROM CARGOS WHERE CARGOS.COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/todosporcomp">
+		<call-query href="getCargosTodosporcompQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagEncargoscomisionidipronQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DISTINCT CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO, CARGOS.CODIGOCARGO, CARGOS.GRADO, CARGOS.RESOLUCIONCARGO, TO_CHAR(CARGOS.FECHARESOLUCION,'DD/MM/YYYY') FECHARESOLUCION FROM CARGOS WHERE CARGOS.COMPANIA = :COMPANIA) INI WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:ID_DE_CARGO), '%')) AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_DEL_CARGO), '%')) AND (CASE WHEN CODIGOCARGO IS NULL THEN ' ' ELSE UPPER(CODIGOCARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGOCARGO), '%')) AND (CASE WHEN GRADO IS NULL THEN ' ' ELSE UPPER(GRADO) END) LIKE UPPER(CONCAT(CONCAT('%',:GRADO), '%')) AND (CASE WHEN RESOLUCIONCARGO IS NULL THEN ' ' ELSE UPPER(RESOLUCIONCARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:RESOLUCIONCARGO), '%')) AND (CASE WHEN FECHARESOLUCION IS NULL THEN ' ' ELSE UPPER(FECHARESOLUCION) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHARESOLUCION), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO","CODIGOCARGO":"$CODIGOCARGO","GRADO":"$GRADO","RESOLUCIONCARGO":"$RESOLUCIONCARGO","FECHARESOLUCION":"$FECHARESOLUCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="GRADO" sqlType="STRING"/>
+		<param name="RESOLUCIONCARGO" sqlType="STRING"/>
+		<param name="FECHARESOLUCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/encargoscomisionidipron/pag">
+		<call-query href="getCargosPagEncargoscomisionidipronQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="GRADO" query-param="GRADO"/>
+			<with-param name="RESOLUCIONCARGO" query-param="RESOLUCIONCARGO"/>
+			<with-param name="FECHARESOLUCION" query-param="FECHARESOLUCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumEncargoscomisionidipronQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DISTINCT CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO, CARGOS.CODIGOCARGO, CARGOS.GRADO, CARGOS.RESOLUCIONCARGO, TO_CHAR(CARGOS.FECHARESOLUCION,'DD/MM/YYYY') FECHARESOLUCION FROM CARGOS WHERE CARGOS.COMPANIA = :COMPANIA) INI WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:ID_DE_CARGO), '%')) AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_DEL_CARGO), '%')) AND (CASE WHEN CODIGOCARGO IS NULL THEN ' ' ELSE UPPER(CODIGOCARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGOCARGO), '%')) AND (CASE WHEN GRADO IS NULL THEN ' ' ELSE UPPER(GRADO) END) LIKE UPPER(CONCAT(CONCAT('%',:GRADO), '%')) AND (CASE WHEN RESOLUCIONCARGO IS NULL THEN ' ' ELSE UPPER(RESOLUCIONCARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:RESOLUCIONCARGO), '%')) AND (CASE WHEN FECHARESOLUCION IS NULL THEN ' ' ELSE UPPER(FECHARESOLUCION) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHARESOLUCION), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="CODIGOCARGO" sqlType="STRING"/>
+		<param name="GRADO" sqlType="STRING"/>
+		<param name="RESOLUCIONCARGO" sqlType="STRING"/>
+		<param name="FECHARESOLUCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/encargoscomisionidipron/num">
+		<call-query href="getCargosNumEncargoscomisionidipronQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="CODIGOCARGO" query-param="CODIGOCARGO"/>
+			<with-param name="GRADO" query-param="GRADO"/>
+			<with-param name="RESOLUCIONCARGO" query-param="RESOLUCIONCARGO"/>
+			<with-param name="FECHARESOLUCION" query-param="FECHARESOLUCION"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosPagCargostemporalesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO, CARGOS.RESOLUCIONCARGO, TO_CHAR(CARGOS.FECHARESOLUCION,'DD/MM/YYYY') AS FECHARESOLUCION FROM CARGOS WHERE CARGOS.COMPANIA = :COMPANIA AND CARGOS.ESCALAFON = :ESCALAFON) INI WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:ID_DE_CARGO), '%')) AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_DEL_CARGO), '%')) AND (CASE WHEN RESOLUCIONCARGO IS NULL THEN ' ' ELSE UPPER(RESOLUCIONCARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:RESOLUCIONCARGO), '%')) AND (CASE WHEN FECHARESOLUCION IS NULL THEN ' ' ELSE UPPER(FECHARESOLUCION) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHARESOLUCION), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID_DE_CARGO":"$ID_DE_CARGO","NOMBRE_DEL_CARGO":"$NOMBRE_DEL_CARGO","RESOLUCIONCARGO":"$RESOLUCIONCARGO","FECHARESOLUCION":"$FECHARESOLUCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="RESOLUCIONCARGO" sqlType="STRING"/>
+		<param name="FECHARESOLUCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargostemporales/pag">
+		<call-query href="getCargosPagCargostemporalesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="RESOLUCIONCARGO" query-param="RESOLUCIONCARGO"/>
+			<with-param name="FECHARESOLUCION" query-param="FECHARESOLUCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCargosNumCargostemporalesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CARGOS.ID_DE_CARGO, CARGOS.NOMBRE_DEL_CARGO, CARGOS.RESOLUCIONCARGO, TO_CHAR(CARGOS.FECHARESOLUCION,'DD/MM/YYYY') AS FECHARESOLUCION FROM CARGOS WHERE CARGOS.COMPANIA = :COMPANIA AND CARGOS.ESCALAFON = :ESCALAFON) INI WHERE (CASE WHEN ID_DE_CARGO IS NULL THEN ' ' ELSE UPPER(ID_DE_CARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:ID_DE_CARGO), '%')) AND (CASE WHEN NOMBRE_DEL_CARGO IS NULL THEN ' ' ELSE UPPER(NOMBRE_DEL_CARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE_DEL_CARGO), '%')) AND (CASE WHEN RESOLUCIONCARGO IS NULL THEN ' ' ELSE UPPER(RESOLUCIONCARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:RESOLUCIONCARGO), '%')) AND (CASE WHEN FECHARESOLUCION IS NULL THEN ' ' ELSE UPPER(FECHARESOLUCION) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHARESOLUCION), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ESCALAFON" sqlType="STRING"/>
+		<param name="ID_DE_CARGO" sqlType="STRING"/>
+		<param name="NOMBRE_DEL_CARGO" sqlType="STRING"/>
+		<param name="RESOLUCIONCARGO" sqlType="STRING"/>
+		<param name="FECHARESOLUCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cargos/cargostemporales/num">
+		<call-query href="getCargosNumCargostemporalesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ESCALAFON" query-param="ESCALAFON"/>
+			<with-param name="ID_DE_CARGO" query-param="ID_DE_CARGO"/>
+			<with-param name="NOMBRE_DEL_CARGO" query-param="NOMBRE_DEL_CARGO"/>
+			<with-param name="RESOLUCIONCARGO" query-param="RESOLUCIONCARGO"/>
+			<with-param name="FECHARESOLUCION" query-param="FECHARESOLUCION"/>
+
+		</call-query>
+	</resource>
+
+</data>

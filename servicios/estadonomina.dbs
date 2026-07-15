@@ -1,0 +1,271 @@
+﻿<data name="estadonomina" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="deleteEstadonominaDeletetodo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ESTADO_NOM</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+ 
+	</query>
+	<resource method="DELETE" path="estadonomina/deletetodo">
+		<call-query href="deleteEstadonominaDeletetodo">
+ 
+		</call-query>
+	</resource>
+	<query id="insertEstadonominaAgregarlistanominas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ESTADO_NOM (NUMERO, NUMERO_DOCUMENTO, ESTADO, CUNE, FECHA, TIPO_NOMINA, CODIGO_TRABAJADOR, OBSERVACIONES) VALUES (:NUMERO, :NUMERO_DOCUMENTO, :ESTADO, :CUNE, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), :TIPO_NOMINA, :CODIGO_TRABAJADOR, :OBSERVACIONES)</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NUMERO" sqlType="STRING"/>
+		<param defaultValue="" name="NUMERO_DOCUMENTO" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="CUNE" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_NOMINA" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGO_TRABAJADOR" sqlType="STRING"/>
+		<param defaultValue="" name="OBSERVACIONES" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="estadonomina/agregarlistanominas">
+		<call-query href="insertEstadonominaAgregarlistanominas">
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="NUMERO_DOCUMENTO" query-param="NUMERO_DOCUMENTO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CUNE" query-param="CUNE"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="TIPO_NOMINA" query-param="TIPO_NOMINA"/>
+			<with-param name="CODIGO_TRABAJADOR" query-param="CODIGO_TRABAJADOR"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+
+		</call-query>
+	</resource>
+	<query id="getEstadonominaTodosnominabaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT NUMERO, TIPO_NOMINA, ESTADO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, NUMERO_DOCUMENTO, CUNE FROM ESTADO_NOM WHERE TIPO_NOMINA = 'T_NE_BASE'</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","TIPO_NOMINA":"$TIPO_NOMINA","ESTADO":"$ESTADO","FECHA":"$FECHA","NUMERO_DOCUMENTO":"$NUMERO_DOCUMENTO(type:long)","CUNE":"$CUNE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="estadonomina/todosnominabase">
+		<call-query href="getEstadonominaTodosnominabaseQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getEstadonominaTodosnominaajusteQuery"  useConfig="sysmandsunist">
+		<sql>SELECT NUMERO, TIPO_NOMINA, ESTADO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, NUMERO_DOCUMENTO, CUNE FROM ESTADO_NOM WHERE TIPO_NOMINA = 'T_NE_AJUSTE_RE'</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","TIPO_NOMINA":"$TIPO_NOMINA","ESTADO":"$ESTADO","FECHA":"$FECHA","NUMERO_DOCUMENTO":"$NUMERO_DOCUMENTO(type:long)","CUNE":"$CUNE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="estadonomina/todosnominaajuste">
+		<call-query href="getEstadonominaTodosnominaajusteQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getEstadonominaTodosnominaeliminacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT NUMERO, TIPO_NOMINA, ESTADO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, NUMERO_DOCUMENTO, CUNE FROM ESTADO_NOM WHERE TIPO_NOMINA = 'T_NE_AJUSTE_EL'</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","TIPO_NOMINA":"$TIPO_NOMINA","ESTADO":"$ESTADO","FECHA":"$FECHA","NUMERO_DOCUMENTO":"$NUMERO_DOCUMENTO(type:long)","CUNE":"$CUNE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="estadonomina/todosnominaeliminacion">
+		<call-query href="getEstadonominaTodosnominaeliminacionQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getEstadonominaPagListanominabaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT NUMERO, TIPO_NOMINA, ESTADO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,NUMERO_DOCUMENTO, CUNE FROM ESTADO_NOM WHERE TIPO_NOMINA = 'T_NE_BASE') INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN TIPO_NOMINA IS NULL THEN ' ' ELSE UPPER(TIPO_NOMINA) END) LIKE UPPER(CONCAT(CONCAT('%',:TIPO_NOMINA), '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN NUMERO_DOCUMENTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DOCUMENTO) END) LIKE UPPER(CONCAT(CONCAT('%',:NUMERO_DOCUMENTO), '%')) AND (CASE WHEN CUNE IS NULL THEN ' ' ELSE UPPER(CUNE) END) LIKE UPPER(CONCAT(CONCAT('%',:CUNE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","TIPO_NOMINA":"$TIPO_NOMINA","ESTADO":"$ESTADO","FECHA":"$FECHA","NUMERO_DOCUMENTO":"$NUMERO_DOCUMENTO(type:long)","CUNE":"$CUNE"}]}}		</result>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="TIPO_NOMINA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NUMERO_DOCUMENTO" sqlType="STRING"/>
+		<param name="CUNE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="estadonomina/listanominabase/pag">
+		<call-query href="getEstadonominaPagListanominabaseQuery">
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="TIPO_NOMINA" query-param="TIPO_NOMINA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NUMERO_DOCUMENTO" query-param="NUMERO_DOCUMENTO"/>
+			<with-param name="CUNE" query-param="CUNE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEstadonominaNumListanominabaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT NUMERO, TIPO_NOMINA, ESTADO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,NUMERO_DOCUMENTO, CUNE FROM ESTADO_NOM WHERE TIPO_NOMINA = 'T_NE_BASE') INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN TIPO_NOMINA IS NULL THEN ' ' ELSE UPPER(TIPO_NOMINA) END) LIKE UPPER(CONCAT(CONCAT('%',:TIPO_NOMINA), '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN NUMERO_DOCUMENTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DOCUMENTO) END) LIKE UPPER(CONCAT(CONCAT('%',:NUMERO_DOCUMENTO), '%')) AND (CASE WHEN CUNE IS NULL THEN ' ' ELSE UPPER(CUNE) END) LIKE UPPER(CONCAT(CONCAT('%',:CUNE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="TIPO_NOMINA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NUMERO_DOCUMENTO" sqlType="STRING"/>
+		<param name="CUNE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="estadonomina/listanominabase/num">
+		<call-query href="getEstadonominaNumListanominabaseQuery">
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="TIPO_NOMINA" query-param="TIPO_NOMINA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NUMERO_DOCUMENTO" query-param="NUMERO_DOCUMENTO"/>
+			<with-param name="CUNE" query-param="CUNE"/>
+
+		</call-query>
+	</resource>
+	<query id="getEstadonominaPagListanominaajusteQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT NUMERO, TIPO_NOMINA, ESTADO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,NUMERO_DOCUMENTO, CUNE FROM ESTADO_NOM WHERE TIPO_NOMINA = 'T_NE_AJUSTE_RE') INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN TIPO_NOMINA IS NULL THEN ' ' ELSE UPPER(TIPO_NOMINA) END) LIKE UPPER(CONCAT(CONCAT('%',:TIPO_NOMINA), '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN NUMERO_DOCUMENTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DOCUMENTO) END) LIKE UPPER(CONCAT(CONCAT('%',:NUMERO_DOCUMENTO), '%')) AND (CASE WHEN CUNE IS NULL THEN ' ' ELSE UPPER(CUNE) END) LIKE UPPER(CONCAT(CONCAT('%',:CUNE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","TIPO_NOMINA":"$TIPO_NOMINA","ESTADO":"$ESTADO","FECHA":"$FECHA","NUMERO_DOCUMENTO":"$NUMERO_DOCUMENTO(type:long)","CUNE":"$CUNE"}]}}		</result>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="TIPO_NOMINA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NUMERO_DOCUMENTO" sqlType="STRING"/>
+		<param name="CUNE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="estadonomina/listanominaajuste/pag">
+		<call-query href="getEstadonominaPagListanominaajusteQuery">
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="TIPO_NOMINA" query-param="TIPO_NOMINA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NUMERO_DOCUMENTO" query-param="NUMERO_DOCUMENTO"/>
+			<with-param name="CUNE" query-param="CUNE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEstadonominaNumListanominaajusteQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT NUMERO, TIPO_NOMINA, ESTADO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,NUMERO_DOCUMENTO, CUNE FROM ESTADO_NOM WHERE TIPO_NOMINA = 'T_NE_AJUSTE_RE') INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN TIPO_NOMINA IS NULL THEN ' ' ELSE UPPER(TIPO_NOMINA) END) LIKE UPPER(CONCAT(CONCAT('%',:TIPO_NOMINA), '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN NUMERO_DOCUMENTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DOCUMENTO) END) LIKE UPPER(CONCAT(CONCAT('%',:NUMERO_DOCUMENTO), '%')) AND (CASE WHEN CUNE IS NULL THEN ' ' ELSE UPPER(CUNE) END) LIKE UPPER(CONCAT(CONCAT('%',:CUNE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="TIPO_NOMINA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NUMERO_DOCUMENTO" sqlType="STRING"/>
+		<param name="CUNE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="estadonomina/listanominaajuste/num">
+		<call-query href="getEstadonominaNumListanominaajusteQuery">
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="TIPO_NOMINA" query-param="TIPO_NOMINA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NUMERO_DOCUMENTO" query-param="NUMERO_DOCUMENTO"/>
+			<with-param name="CUNE" query-param="CUNE"/>
+
+		</call-query>
+	</resource>
+	<query id="getEstadonominaPagListanominaeliminacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT NUMERO, TIPO_NOMINA, ESTADO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, NUMERO_DOCUMENTO, CUNE FROM ESTADO_NOM WHERE TIPO_NOMINA = 'T_NE_AJUSTE_EL') INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN TIPO_NOMINA IS NULL THEN ' ' ELSE UPPER(TIPO_NOMINA) END) LIKE UPPER(CONCAT(CONCAT('%',:TIPO_NOMINA), '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN NUMERO_DOCUMENTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DOCUMENTO) END) LIKE UPPER(CONCAT(CONCAT('%',:NUMERO_DOCUMENTO), '%')) AND (CASE WHEN CUNE IS NULL THEN ' ' ELSE UPPER(CUNE) END) LIKE UPPER(CONCAT(CONCAT('%',:CUNE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMERO":"$NUMERO","TIPO_NOMINA":"$TIPO_NOMINA","ESTADO":"$ESTADO","FECHA":"$FECHA","NUMERO_DOCUMENTO":"$NUMERO_DOCUMENTO(type:long)","CUNE":"$CUNE"}]}}		</result>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="TIPO_NOMINA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NUMERO_DOCUMENTO" sqlType="STRING"/>
+		<param name="CUNE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="estadonomina/listanominaeliminacion/pag">
+		<call-query href="getEstadonominaPagListanominaeliminacionQuery">
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="TIPO_NOMINA" query-param="TIPO_NOMINA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NUMERO_DOCUMENTO" query-param="NUMERO_DOCUMENTO"/>
+			<with-param name="CUNE" query-param="CUNE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEstadonominaNumListanominaeliminacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT NUMERO, TIPO_NOMINA, ESTADO,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, NUMERO_DOCUMENTO, CUNE FROM ESTADO_NOM WHERE TIPO_NOMINA = 'T_NE_AJUSTE_EL') INI WHERE (CASE WHEN NUMERO IS NULL THEN ' ' ELSE UPPER(NUMERO) END) LIKE UPPER(CONCAT(:NUMERO, '%')) AND (CASE WHEN TIPO_NOMINA IS NULL THEN ' ' ELSE UPPER(TIPO_NOMINA) END) LIKE UPPER(CONCAT(CONCAT('%',:TIPO_NOMINA), '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END) LIKE UPPER(CONCAT(CONCAT('%',:FECHA), '%')) AND (CASE WHEN NUMERO_DOCUMENTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DOCUMENTO) END) LIKE UPPER(CONCAT(CONCAT('%',:NUMERO_DOCUMENTO), '%')) AND (CASE WHEN CUNE IS NULL THEN ' ' ELSE UPPER(CUNE) END) LIKE UPPER(CONCAT(CONCAT('%',:CUNE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="NUMERO" sqlType="STRING"/>
+		<param name="TIPO_NOMINA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NUMERO_DOCUMENTO" sqlType="STRING"/>
+		<param name="CUNE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="estadonomina/listanominaeliminacion/num">
+		<call-query href="getEstadonominaNumListanominaeliminacionQuery">
+			<with-param name="NUMERO" query-param="NUMERO"/>
+			<with-param name="TIPO_NOMINA" query-param="TIPO_NOMINA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NUMERO_DOCUMENTO" query-param="NUMERO_DOCUMENTO"/>
+			<with-param name="CUNE" query-param="CUNE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEstadonominaActualizalistaestados" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ESTADO_NOM 
+SET 
+    NUMERO_DOCUMENTO = :NUMERO_DOCUMENTO,
+    ESTADO = :ESTADO,
+    CUNE = :CUNE,
+    FECHA = TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'),
+    TIPO_NOMINA = :TIPO_NOMINA,
+    CODIGO_TRABAJADOR = :CODIGO_TRABAJADOR,
+    OBSERVACIONES = :OBSERVACIONES 
+WHERE NUMERO = :NUMERO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NUMERO_DOCUMENTO" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="CUNE" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="TIPO_NOMINA" sqlType="STRING"/>
+		<param name="CODIGO_TRABAJADOR" sqlType="STRING"/>
+		<param name="OBSERVACIONES" sqlType="STRING"/>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="estadonomina/actualizalistaestados">
+		<call-query href="updateEstadonominaActualizalistaestados">
+			<with-param name="NUMERO_DOCUMENTO" query-param="NUMERO_DOCUMENTO"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="CUNE" query-param="CUNE"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="TIPO_NOMINA" query-param="TIPO_NOMINA"/>
+			<with-param name="CODIGO_TRABAJADOR" query-param="CODIGO_TRABAJADOR"/>
+			<with-param name="OBSERVACIONES" query-param="OBSERVACIONES"/>
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEstadonominaExistelistaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(NUMERO) TOTAL  FROM ESTADO_NOM WHERE NUMERO =:NUMERO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="NUMERO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="estadonomina/existelista">
+		<call-query href="getEstadonominaExistelistaQuery">
+			<with-param name="NUMERO" query-param="NUMERO"/>
+
+		</call-query>
+	</resource>
+</data>

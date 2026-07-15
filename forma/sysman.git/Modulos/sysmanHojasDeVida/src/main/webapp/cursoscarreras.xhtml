@@ -1,0 +1,424 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	template="/templateModalDatos.xhtml" xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+                if("#{cursosCarrerasControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TT_FR1681}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{cursosCarrerasControlador.cargarLista}" />
+		<section class="radiusModal">
+			<h:form id="FR1681"
+				style="display: #{cursosCarrerasControlador.accion==null?'block':'none'}; margin-top: 2px">
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="lista" widgetVar="lista"
+					visible="#{cursosCarrerasControlador.accion==null}"
+					style="border-width: 0">
+					<p:confirmDialog global="true" showEffect="fade" id="confFR1681"
+						widgetVar="confFR1681"
+						rendered="#{cursosCarrerasControlador.permisos[1]}">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:dataTable id="TBFR1681" widgetVar="TBFR1681" var="reg"
+						value="#{cursosCarrerasControlador.listaInicial}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" paginator="true" lazy="true">
+						<f:facet name="{Exporters}"
+							rendered="#{cursosCarrerasControlador.permisos[4] }">
+							<h:commandLink
+								rendered="#{cursosCarrerasControlador.permisos[4] }"
+								title="#{idm.TI_VER_EXCEL}">
+								<p:graphicImage name="/images/general/excel.png" width="24" />
+								<p:dataExporter type="xls" target="TBFR1681" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+							<h:commandLink
+								rendered="#{cursosCarrerasControlador.permisos[4] }"
+								title="#{idm.TI_VER_PDF}">
+								<p:graphicImage name="/images/general/pdf.png" width="24" />
+								<p:dataExporter type="pdf" target="TBFR1681" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+						</f:facet>
+						<f:facet name="header">
+							<div style="position: relative; height: 50px">
+								<h:panelGroup class="acme"
+									rendered="#{cursosCarrerasControlador.permisos[0] }">
+									<p:commandLink
+										action="#{cursosCarrerasControlador.cargarRegistroNuevo}"
+										update=":FR1681_nuevo"
+										rendered="#{cursosCarrerasControlador.permisos[0]}"
+										onclick="try { PF('blockLista').show(); } catch (e) { }"
+										oncomplete="try{   PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+										title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+										id="btNuevo">
+										<center>
+											<p:graphicImage name="/images/menus/32/add.png" />
+											<div>#{idm.TI_NUEVO}</div>
+										</center>
+									</p:commandLink>
+								</h:panelGroup>
+							</div>
+                            #{idm.TT_FR1681}
+                        </f:facet>
+						<p:column headerText="#{idm.TG_FR1681_0}"
+							filterBy="#{reg.campos['NOMBRECARRERA']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRECARRERA']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_MODALIDAD2}"
+							filterBy="#{reg.campos['MODALIDAD']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['MODALIDAD']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column width="150" headerText="Acciones"
+							style="text-align: center" exportable="false">
+							<p:commandButton icon="ui-icon-search"
+								title="#{idm.TI_VER_REGISTRO}"
+								action="#{cursosCarrerasControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+								update=":FR1681_nuevo"
+								onclick="try{ PF('blockLista').show();     }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{cursosCarrerasControlador.permisos[3]}"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-document-b"
+								title="#{idm.TI_EDITAR_REGISTRO}"
+								action="#{cursosCarrerasControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+								update=":FR1681_nuevo"
+								onclick="try{ PF('blockLista').show();     }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{cursosCarrerasControlador.permisos[2] }"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-trash"
+								title="#{idm.TI_ELIMINAR_REGISTRO}"
+								onclick="PF('blockListaGuardar').show()"
+								action="#{cursosCarrerasControlador.eliminarReg(reg)}"
+								update=":FR1681:TBFR1681,:FR1681:alert"
+								rendered="#{cursosCarrerasControlador.permisos[1] }"
+								oncomplete=" PF('blockListaGuardar').hide();">
+								<p:confirm header="#{sessionBean.tituloMensajes}"
+									message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR1681">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+			<h:form id="FR1681_nuevo"
+				style="margin-top: 2px;  display: #{cursosCarrerasControlador.accion!=null?'block':'none'}">
+				<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA"
+					my="left bottom" at="left bottom" for="BTBUSQUEDA"
+					hideEffect="fade"
+					rendered="#{cursosCarrerasControlador.accion!='i'}"
+					style="width: 500px">
+					<p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA" var="reg"
+						value="#{cursosCarrerasControlador.listaInicialF}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" selectionMode="single"
+						rowKey="#{reg.llave}" paginator="true" lazy="true">
+						<p:ajax event="rowSelect"
+							listener="#{cursosCarrerasControlador.seleccionarFilaBusqueda}"
+							onstart="PF('blockNuevo').show()"
+							oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();    "
+							update="@form" />
+						<p:column headerText="#{idm.TG_MODALIDAD2}"
+							filterBy="#{reg.campos['MODALIDAD']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['MODALIDAD']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+					</p:dataTable>
+				</p:overlayPanel>
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="nuevoPanel"
+					visible="#{cursosCarrerasControlador.accion!=null}"
+					widgetVar="nuevoPanel" style="border-width: 0">
+					<div
+						style="position: relative; height: 50px; padding-bottom: 80px;">
+						<div class="acme"
+							style="display:#{cursosCarrerasControlador.accion=='v'?'none':'block'}">
+							<p:commandLink
+								action="#{cursosCarrerasControlador.agregarRegistroNuevo(false)}"
+								rendered="#{cursosCarrerasControlador.accion!='v'}"
+								update=":FR1681_nuevo,#{!cursosCarrerasControlador.permisos[2]?':FR1681':'' }"
+								onclick="if (!validarVacios(['CP51869'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+								title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+								oncomplete="asignarEventoContGrande(); validarCargaGrandes(); ">
+								<center>
+									<p:graphicImage name="/images/menus/32/save.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{cursosCarrerasControlador.accion=='v' or !cursosCarrerasControlador.permisos[0]?'none':'block'}">
+							<p:commandLink action="#{cursosCarrerasControlador.guardarNuevo}"
+								rendered="#{cursosCarrerasControlador.accion!='v' and cursosCarrerasControlador.permisos[0]}"
+								update=":FR1681_nuevo"
+								onclick="if (!validarVacios(['CP51869'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{cursosCarrerasControlador.accion!='i'  and cursosCarrerasControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+								oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+								title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}"
+								style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/savenew.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{cursosCarrerasControlador.accion=='i' or !cursosCarrerasControlador.permisos[0]?'none':'block'}">
+							<p:commandLink id="BTBUSQUEDA"
+								rendered="#{cursosCarrerasControlador.accion!='i' and cursosCarrerasControlador.permisos[0]}"
+								title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/search.png" />
+									<div style="height: 30px">#{idm.TI_BUSCAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme">
+							<p:commandLink update=":FR1681:TBFR1681"
+								onclick="try {
+		           PF('TBFR1681').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+								title="#{idm.TI_ATRAS}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/back.png" />
+									<div style="height: 30px">#{idm.TI_VOLVER}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<p:panel
+							rendered="#{cursosCarrerasControlador.accion!='i'  and cursosCarrerasControlador.rid==null }"
+							styleClass="acme"
+							style="min-width: 350px; width:30%; padding: 10px;">
+							<center style="margin: 2px;">
+								<p:commandButton icon="ui-icon-seek-first"
+									action="#{cursosCarrerasControlador.irPrimero()}"
+									title="#{idm.TI_PRIMER_REGISTRO}" update=":FR1681_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-prev"
+									action="#{cursosCarrerasControlador.irAnterior()}"
+									title="#{idm.TI_REGISTRO_ANTERIOR}" update=":FR1681_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:outputLabel
+									value="#{idm.TI_REGISTRO} #{cursosCarrerasControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{cursosCarrerasControlador.listaInicial.rowCount} " />
+								<p:commandButton icon="ui-icon-seek-next"
+									title="#{idm.TI_REGISTRO_SIGUIENTE}"
+									action="#{cursosCarrerasControlador.irSiguiente()}"
+									update=":FR1681_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-end"
+									title="#{idm.TI_ULTIMO_REGISTRO}"
+									action="#{cursosCarrerasControlador.irUltimo()}"
+									update=":FR1681_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); ">
+								</p:commandButton>
+							</center>
+						</p:panel>
+						<p:panel styleClass="acme" style="width:21%; min-width:260px">
+							<h:panelGrid columns="3"
+								style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+								<h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}" />
+								<p:inputText id="CPCREADO" readonly="true" widgetVar="CPCREADO"
+									value="#{cursosCarrerasControlador.registro.campos['CREATED_BY']}"
+									placeholder="#{idm.TI_CREADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPCREADOF" widgetVar="CPCREADOF"
+									value="#{cursosCarrerasControlador.registro.campos['DATE_CREATED']}"
+									disabled="true" />
+								<h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+								<p:inputText id="CPMODIFICADO" readonly="true"
+									widgetVar="CPMODIFICADO"
+									value="#{cursosCarrerasControlador.registro.campos['MODIFIED_BY']}"
+									placeholder="#{idm.TI_MODIFICADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPMODIFICADOF" widgetVar="CPMODIFICADOF"
+									value="#{cursosCarrerasControlador.registro.campos['DATE_MODIFIED']}"
+									disabled="true" />
+							</h:panelGrid>
+						</p:panel>
+					</div>
+					<div id="PL3233" class="
+"
+						style="position: relative; height: 48px;">
+						<h:outputLabel id="LB42759" value="#{idm.TT_LB42759}"
+							style="position: absolute; width:720px; height: 29px; left: 29px;   top: 19px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<div id="PL3234" class="
+"
+						style="position: relative; height: 298px;">
+						<h:outputLabel id="LB42760" value="#{idm.TT_LB42760}"
+							style="position: absolute; width:118px; height: 24px; left: 29px;   top: 15px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  0px;" />
+						<p:inputTextarea autoResize="false" id="CP51876"
+							widgetVar="CP51876"
+							value="#{cursosCarrerasControlador.registro.campos['OBSERVACIONES']}"
+							placeholder="#{idm.TG_OBSERVACIONES3}"
+							readonly="#{cursosCarrerasControlador.accion=='v'?true:false}"
+							tabindex="9" styleClass="inputTab" maxlength="200"
+							style="resize: none; position: absolute; width:597px; height: 48px; left: 153px;   top: 244px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputTextarea>
+						<h:outputLabel id="LB42762" value="#{idm.TT_LB42762}"
+							style="position: absolute; width:118px; height: 24px; left: 29px;   top: 103px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  0px;" />
+						<h:outputLabel id="LB42763" value="#{idm.TT_LB42763}"
+							style="position: absolute; width:118px; height: 24px; left: 29px;   top: 132px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  0px;" />
+						<h:outputLabel id="LB42764" value="#{idm.TG_OBJETO3}"
+							style="position: absolute; width:118px; height: 24px; left: 29px;   top: 162px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  0px;" />
+						<h:outputLabel id="LB42765" value="#{idm.TT_LB42765}"
+							style="position: absolute; width:118px; height: 48px; left: 29px;   top: 191px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  0px;" />
+						<h:outputLabel id="LB42766" value="#{idm.TT_LB42766}"
+							style="position: absolute; width:118px; height: 24px; left: 29px;   top: 74px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  0px;" />
+						<h:outputLabel id="LB42767" value="#{idm.TG_OBSERVACIONES4}"
+							style="position: absolute; width:118px; height: 48px; left: 29px;   top: 244px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  0px;" />
+						<p:inputText id="CP51868" widgetVar="CP51868"
+							styleClass="inputTab"
+							value="#{cursosCarrerasControlador.registro.campos['NITENTIDAD']}"
+							readonly="#{cursosCarrerasControlador.accion=='v'?true:false}"
+							tabindex="3"
+							style="position: absolute; width:294px; height: 24px; text-decoration:none; left: 456px;   top: 45px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:none; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP51869" widgetVar="CP51869"
+							styleClass="inputTab"
+							value="#{cursosCarrerasControlador.registro.campos['NOMBRECARRERA']}"
+							placeholder="#{idm.AC_CP51869}"
+							readonly="#{cursosCarrerasControlador.accion=='v'?true:false}"
+							tabindex="1" maxlength="100"
+							style="position: absolute; width:597px; height: 24px; text-decoration:none; left: 153px;   top: 15px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP51870" widgetVar="CP51870"
+							styleClass="inputTab"
+							value="#{cursosCarrerasControlador.registro.campos['MODALIDAD']}"
+							placeholder="#{idm.AC_CP51870}"
+							readonly="#{cursosCarrerasControlador.accion=='v'?true:false}"
+							tabindex="2" maxlength="50"
+							style="position: absolute; width:298px; height: 24px; text-decoration:none; left: 153px;   top: 45px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP51871" widgetVar="CP51871"
+							styleClass="inputTab"
+							value="#{cursosCarrerasControlador.registro.campos['TITULOOTORGADO']}"
+							placeholder="#{idm.AC_CP51871}"
+							readonly="#{cursosCarrerasControlador.accion=='v'?true:false}"
+							tabindex="5" maxlength="100"
+							style="position: absolute; width:597px; height: 24px; text-decoration:none; left: 153px;   top: 103px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP51872" widgetVar="CP51872"
+							styleClass="inputTab"
+							value="#{cursosCarrerasControlador.registro.campos['DIRIGIDOA']}"
+							placeholder="#{idm.AC_CP51872}"
+							readonly="#{cursosCarrerasControlador.accion=='v'?true:false}"
+							tabindex="6" maxlength="50"
+							style="position: absolute; width:597px; height: 24px; text-decoration:none; left: 153px;   top: 132px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputText id="CP51873" widgetVar="CP51873"
+							styleClass="inputTab"
+							value="#{cursosCarrerasControlador.registro.campos['OBJETO']}"
+							placeholder="#{idm.AC_CP51873}"
+							readonly="#{cursosCarrerasControlador.accion=='v'?true:false}"
+							tabindex="7" maxlength="100"
+							style="position: absolute; width:597px; height: 24px; text-decoration:none; left: 153px;   top: 162px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<p:inputTextarea autoResize="false" id="CP51874"
+							widgetVar="CP51874"
+							value="#{cursosCarrerasControlador.registro.campos['CONTENIDOTEMAS']}"
+							placeholder="#{idm.AC_CP51874}"
+							readonly="#{cursosCarrerasControlador.accion=='v'?true:false}"
+							tabindex="8" styleClass="inputTab" maxlength="4000"
+							style="resize: none; position: absolute; width:597px; height: 48px; left: 153px;   top: 191px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputTextarea>
+						<p:inputText id="CP51875" widgetVar="CP51875"
+							styleClass="inputTab"
+							value="#{cursosCarrerasControlador.registro.campos['DURACION']}"
+							placeholder="#{idm.TG_DURACION2}"
+							readonly="#{cursosCarrerasControlador.accion=='v'?true:false}"
+							tabindex="4" maxlength="20"
+							style="position: absolute; width:298px; height: 24px; text-decoration:none; left: 153px;   top: 74px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<h:outputLabel id="LB42761" value="#{idm.TG_MODALIDAD3}"
+							style="position: absolute; width:118px; height: 24px; left: 29px;   top: 45px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  0px;" />
+					</div>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevo" trigger="">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

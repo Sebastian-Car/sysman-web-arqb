@@ -1,0 +1,82 @@
+/*
+ * UsuariospredialsControladorUrlEnum
+ *
+ * 1.0
+ *
+ * 09/09/2016
+ *
+ * Copyright Stefanini Sysman
+ */
+package com.sysman.predial.enums;
+
+/**
+ * @author Processors-api
+ * 
+ * @version 1.0
+ * 
+ * Enumeracion que permite clasificar cada uno de los identificadores
+ * geenerados en el refactoring y asociados al codigo legacy obtenido
+ * con patrones de busqueda.
+ */
+public enum UsuariospredialsControladorUrlEnum {
+    URL322("USUARIOSPREDIALSCONTROLADORURL322", "400008"),
+
+    URL398("USUARIOSPREDIALSCONTROLADORURL398", "376001"),
+
+    URL468("USUARIOSPREDIALSCONTROLADORURL468", "2001"),
+
+    URL493("USUARIOSPREDIALSCONTROLADORURL493", "5001"),
+
+    URL28766("USUARIOSPREDIALSCONTROLADORURL28766", "376002"),
+
+    URL30119("USUARIOSPREDIALSCONTROLADORURL30119", "383001"),
+
+    URL27067("USUARIOSPREDIALSCONTROLADORURL27067", "379001"),
+
+    URL26457("USUARIOSPREDIALSCONTROLADORURL26457", "378001"),
+
+    URL23561("USUARIOSPREDIALSCONTROLADORURL23561", "209001"),
+
+    URL28112("USUARIOSPREDIALSCONTROLADORURL28112", "382001"),
+
+    URL23968("USUARIOSPREDIALSCONTROLADORURL23968", "1001"),
+
+    URL50088("USUARIOSPREDIALSCONTROLADORURL50088", "367006"),
+
+    URL25760("USUARIOSPREDIALSCONTROLADORURL25760", "375001"),
+
+    URL26108("USUARIOSPREDIALSCONTROLADORURL26108", "384001"),
+
+    URL25493("USUARIOSPREDIALSCONTROLADORURL25493", "377001"),
+
+    URL27630("USUARIOSPREDIALSCONTROLADORURL27630", "380001"),
+
+    URL1261("USUARIOSPREDIALSCONTROLADORURL1261", "367022"),
+
+    URL1385("USUARIOSPREDIALSCONTROLADORURL1385", "385001"),
+
+    URL1705("USUARIOSPREDIALSCONTROLADORURL1705", "386001"),
+
+    URL1750("USUARIOSPREDIALSCONTROLADORURL1750", "385002"),
+
+    URL1978("USUARIOSPREDIALSCONTROLADORURL1978", "373004");
+
+    private final String key;
+    private final String value;
+
+    private UsuariospredialsControladorUrlEnum(String key, String value)
+    {
+        this.key = key;
+        this.value = value;
+    }
+
+    public String getKey()
+    {
+        return key;
+    }
+
+    public String getValue()
+    {
+        return value;
+    }
+}

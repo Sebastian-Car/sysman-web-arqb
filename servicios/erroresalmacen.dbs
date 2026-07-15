@@ -1,0 +1,46 @@
+﻿<data name="erroresalmacen" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getErroresalmacenPagTodosPorTipomovQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ERRORALMACEN.COMPANIA, ERRORALMACEN.TIPOMOVIMIENTO, ERRORALMACEN.MOVIMIENTO, ERRORALMACEN.CODIGO, ERRORALMACEN.MENSAJE  FROM ERRORALMACEN WHERE ERRORALMACEN.COMPANIA= :COMPANIA AND ERRORALMACEN.TIPOMOVIMIENTO = :CLASEORDEN) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN MENSAJE IS NULL THEN ' ' ELSE UPPER(MENSAJE) END)  LIKE UPPER( '%' || :MENSAJE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPOMOVIMIENTO":"$TIPOMOVIMIENTO","MOVIMIENTO":"$MOVIMIENTO","CODIGO":"$CODIGO","MENSAJE":"$MENSAJE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="MENSAJE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="erroresalmacen/todosportipomov/pag">
+		<call-query href="getErroresalmacenPagTodosPorTipomovQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MENSAJE" query-param="MENSAJE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getErroresalmacenNumTodosPorTipomovQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ERRORALMACEN.COMPANIA, ERRORALMACEN.TIPOMOVIMIENTO, ERRORALMACEN.MOVIMIENTO, ERRORALMACEN.CODIGO, ERRORALMACEN.MENSAJE  FROM ERRORALMACEN WHERE ERRORALMACEN.COMPANIA= :COMPANIA AND ERRORALMACEN.TIPOMOVIMIENTO = :CLASEORDEN) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER( '%' || :CODIGO || '%')  AND (CASE WHEN MENSAJE IS NULL THEN ' ' ELSE UPPER(MENSAJE) END)  LIKE UPPER( '%' || :MENSAJE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEORDEN" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="MENSAJE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="erroresalmacen/todosportipomov/num">
+		<call-query href="getErroresalmacenNumTodosPorTipomovQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEORDEN" query-param="CLASEORDEN"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="MENSAJE" query-param="MENSAJE"/>
+
+		</call-query>
+	</resource>
+
+</data>

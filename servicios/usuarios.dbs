@@ -1,0 +1,785 @@
+﻿<data name="usuarios" transports="http https local">
+	<config enableOData="false" id="sysmanirisst">
+		<property name="carbon_datasource_name">SYSMANIRISST</property>
+	</config>
+	<query id="updateUsuariosCodigoPassword" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>UPDATE USUARIO SET PASSWORD =:NUEVA, FECHA_ACTCONTRASENA =:FECHA_ACTCONTRASENA, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED =TO_DATE(:DATE_MODIFIED,'') WHERE TIPOCUENTA = 'U' AND CODIGO = :USUARIO AND USUARIO.PASSWORD = UPPER(PCK_SYSMAN_UTL.FC_ENCRIPTARMD5(:ANTERIOR))</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="NUEVA" sqlType="STRING"/>
+		<param name="FECHA_ACTCONTRASENA" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="ANTERIOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="usuarios/codigopassword">
+		<call-query href="updateUsuariosCodigoPassword">
+			<with-param name="NUEVA" query-param="NUEVA"/>
+			<with-param name="FECHA_ACTCONTRASENA" query-param="FECHA_ACTCONTRASENA"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="ANTERIOR" query-param="ANTERIOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosTipocuentagQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  U.CODIGO,U.APLICACION, A.NOMBRE  FROM USUARIO U JOIN APLICACIONES A ON (U.APLICACION=A.APLICACION) WHERE TIPOCUENTA='G'</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","APLICACION":"$APLICACION(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="usuarios/tipocuentag">
+		<call-query href="getUsuariosTipocuentagQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getUsuariosExisteUsuarioQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  COUNT (1) CUENTA  FROM USUARIO WHERE TIPOCUENTA = 'U' AND CODIGO = :USUARIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTA":"$CUENTA(type:integer)"}]}}		</result>
+		<param name="USUARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/existeusuario">
+		<call-query href="getUsuariosExisteUsuarioQuery">
+			<with-param name="USUARIO" query-param="USUARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosDataAutenticacionQuery"  useConfig="sysmanirisst">
+		<sql>SELECT CODIGO, NOMBRE1, NOMBRE2, APELLIDO1, APELLIDO2, CEDULA, SUCURSAL, PAIS , REGION , CIUDAD , CORREOELECTRONICO , TITULO_PROFESIONAL , ESTILO, IDIOMA, RUTA_IMAGEN, FRASEDELDIA, GENERO, IDENTIFICADOR, ESTADO, DIRECCION, CELULAR,(TO_CHAR(FECHANACIMIENTO,'DD/MM/YYYY HH24:MI:SS')) FECHANACIMIENTO, MINUTOSBLOQUEO, PASSWORD FROM USUARIO WHERE TIPOCUENTA = 'U' AND CODIGO =:CODIGO AND PASSWORD = UPPER(:PASSWORD)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE1":"$NOMBRE1","NOMBRE2":"$NOMBRE2","APELLIDO1":"$APELLIDO1","APELLIDO2":"$APELLIDO2","CEDULA":"$CEDULA","SUCURSAL":"$SUCURSAL","PAIS":"$PAIS","REGION":"$REGION","CIUDAD":"$CIUDAD","CORREOELECTRONICO":"$CORREOELECTRONICO","TITULO_PROFESIONAL":"$TITULO_PROFESIONAL","ESTILO":"$ESTILO","IDIOMA":"$IDIOMA","RUTA_IMAGEN":"$RUTA_IMAGEN","FRASEDELDIA":"$FRASEDELDIA","GENERO":"$GENERO","IDENTIFICADOR":"$IDENTIFICADOR","ESTADO":"$ESTADO","DIRECCION":"$DIRECCION","CELULAR":"$CELULAR","FECHANACIMIENTO":"$FECHANACIMIENTO","MINUTOSBLOQUEO":"$MINUTOSBLOQUEO(type:integer)","PASSWORD":"$PASSWORD"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="PASSWORD" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/dataautenticacion">
+		<call-query href="getUsuariosDataAutenticacionQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="PASSWORD" query-param="PASSWORD"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosTodosPorEstadoYTipocuentaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  USUARIO.NOMBRE1  FROM USUARIO WHERE USUARIO.ESTADO = :ESTADO AND USUARIO.TIPOCUENTA = :TIPOCUENTA UNION SELECT 'TODOS' AS NOMBRE FROM USUARIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE1":"$NOMBRE1"}]}}		</result>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="TIPOCUENTA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/todosporestadoytipocuenta">
+		<call-query href="getUsuariosTodosPorEstadoYTipocuentaQuery">
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosGruposDelUsuarioQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  U.CODIGO, U.APLICACION, U.NIVEL_GRUPO, UD.NIVEL_USUARIO,(CASE UD.MOD_COMPROBANTE WHEN 0 THEN 'false' ELSE 'true' END) MOD_COMPROBANTE, A.NOMBRE NOMBRE_APP, A.AREA, A.DIASHABILES, A.RUTA_ARCHIVOS, RUTA_DOCUMENTOS,(CASE U.ES_ADMINISTRADOR WHEN 0 THEN 'false' ELSE 'true' END) ES_ADMINISTRADOR FROM USUARIO U, USUARIO_D UD, GRUPO_COMPANIA GC, APLICACIONES A WHERE U.CODIGO =UD.GRUPO AND GC.GRUPO =U.CODIGO AND U.APLICACION=A.APLICACION AND UD.USUARIO =:CODIGO AND GC.COMPANIA =:COMPANIA AND U.ESTADO ='A'</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","APLICACION":"$APLICACION(type:integer)","NIVEL_GRUPO":"$NIVEL_GRUPO(type:integer)","NIVEL_USUARIO":"$NIVEL_USUARIO(type:integer)","MOD_COMPROBANTE":"$MOD_COMPROBANTE(type:boolean)","NOMBRE_APP":"$NOMBRE_APP","AREA":"$AREA","DIASHABILES":"$DIASHABILES(type:integer)","RUTA_ARCHIVOS":"$RUTA_ARCHIVOS","RUTA_DOCUMENTOS":"$RUTA_DOCUMENTOS","ES_ADMINISTRADOR":"$ES_ADMINISTRADOR(type:boolean)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/gruposdelusuario">
+		<call-query href="getUsuariosGruposDelUsuarioQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosPagCodigoYNombresInicialQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT USUARIO.CODIGO, (CONCAT(USUARIO.NOMBRE1 ,CONCAT( ' ' ,CONCAT( USUARIO.NOMBRE2 ,CONCAT(' ' ,CONCAT( USUARIO.APELLIDO1 ,CONCAT(' ' ,USUARIO.APELLIDO2))))))) NOMBRE FROM USUARIO ORDER BY USUARIO.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="usuarios/codigoynombresinicial/pag">
+		<call-query href="getUsuariosPagCodigoYNombresInicialQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosNumCodigoYNombresInicialQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT USUARIO.CODIGO, (CONCAT(USUARIO.NOMBRE1 ,CONCAT( ' ' ,CONCAT( USUARIO.NOMBRE2 ,CONCAT(' ' ,CONCAT( USUARIO.APELLIDO1 ,CONCAT(' ' ,USUARIO.APELLIDO2))))))) NOMBRE FROM USUARIO ORDER BY USUARIO.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/codigoynombresinicial/num">
+		<call-query href="getUsuariosNumCodigoYNombresInicialQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosPagCodigoYNombresFinalQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT USUARIO.CODIGO, (CONCAT(USUARIO.NOMBRE1 ,CONCAT(' ' ,CONCAT( USUARIO.NOMBRE2 ,CONCAT( ' ' ,CONCAT(USUARIO.APELLIDO1 ,CONCAT(' ' ,USUARIO.APELLIDO2 ))))))) NOMBRE FROM USUARIO WHERE USUARIO.CODIGO &gt;=:CODIGOINICIAL ORDER BY TO_CHAR(USUARIO.CODIGO)) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="usuarios/codigoynombresfinal/pag">
+		<call-query href="getUsuariosPagCodigoYNombresFinalQuery">
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertUsuarios" keyColumns="CODIGO" returnGeneratedKeys="true" useConfig="sysmanirisst">
+		<sql>INSERT INTO USUARIO (CODIGO, TIPOCUENTA, NOMBRE1, NOMBRE2, APELLIDO1, APELLIDO2, PAIS, REGION, CIUDAD, CORREOELECTRONICO, GENERO, PASSWORD, ESTADO, DIRECCION, CELULAR, NIVEL_GRUPO, APLICACION, CEDULA, SUCURSAL, ES_ADMINISTRADOR, NIVEL_USUARIO, FECHA_ACTCONTRASENA, ALER_CERTIFICADO, FECHA_LIMITE_ING, MAN_FECHA_LIMITE, DATE_CREATED, CREATED_BY) VALUES (:CODIGO, :TIPOCUENTA, :NOMBRE1, :NOMBRE2, :APELLIDO1, :APELLIDO2, :PAIS, :REGION, :CIUDAD, :CORREOELECTRONICO, :GENERO, :PASSWORD, :ESTADO, :DIRECCION, :CELULAR, :NIVEL_GRUPO, :APLICACION, :CEDULA, :SUCURSAL, :ES_ADMINISTRADOR, :NIVEL_USUARIO, TO_DATE(:FECHA_ACTCONTRASENA,'DD/MM/YYYY HH24:MI:SS'), :ALER_CERTIFICADO, TO_DATE(:FECHA_LIMITE_ING,'DD/MM/YYYY HH24:MI:SS'), :MAN_FECHA_LIMITE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param defaultValue="U" name="TIPOCUENTA" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE1" sqlType="STRING"/>
+		<param defaultValue="" name="NOMBRE2" sqlType="STRING"/>
+		<param defaultValue="" name="APELLIDO1" sqlType="STRING"/>
+		<param defaultValue="" name="APELLIDO2" sqlType="STRING"/>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="REGION" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+		<param defaultValue="" name="CORREOELECTRONICO" sqlType="STRING"/>
+		<param defaultValue="" name="GENERO" sqlType="STRING"/>
+		<param defaultValue="" name="PASSWORD" sqlType="STRING"/>
+		<param defaultValue="" name="ESTADO" sqlType="STRING"/>
+		<param defaultValue="" name="DIRECCION" sqlType="STRING"/>
+		<param defaultValue="" name="CELULAR" sqlType="STRING"/>
+		<param defaultValue="" name="NIVEL_GRUPO" sqlType="STRING"/>
+		<param defaultValue="" name="APLICACION" sqlType="STRING"/>
+		<param defaultValue="" name="CEDULA" sqlType="STRING"/>
+		<param defaultValue="" name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="0" name="ES_ADMINISTRADOR" sqlType="STRING"/>
+		<param defaultValue="9" name="NIVEL_USUARIO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_ACTCONTRASENA" sqlType="STRING"/>
+		<param defaultValue="0" name="ALER_CERTIFICADO" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_LIMITE_ING" sqlType="STRING"/>
+		<param defaultValue="0" name="MAN_FECHA_LIMITE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="usuarios">
+		<call-query href="insertUsuarios">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+			<with-param name="NOMBRE1" query-param="NOMBRE1"/>
+			<with-param name="NOMBRE2" query-param="NOMBRE2"/>
+			<with-param name="APELLIDO1" query-param="APELLIDO1"/>
+			<with-param name="APELLIDO2" query-param="APELLIDO2"/>
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="REGION" query-param="REGION"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+			<with-param name="CORREOELECTRONICO" query-param="CORREOELECTRONICO"/>
+			<with-param name="GENERO" query-param="GENERO"/>
+			<with-param name="PASSWORD" query-param="PASSWORD"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="CELULAR" query-param="CELULAR"/>
+			<with-param name="NIVEL_GRUPO" query-param="NIVEL_GRUPO"/>
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="ES_ADMINISTRADOR" query-param="ES_ADMINISTRADOR"/>
+			<with-param name="NIVEL_USUARIO" query-param="NIVEL_USUARIO"/>
+			<with-param name="FECHA_ACTCONTRASENA" query-param="FECHA_ACTCONTRASENA"/>
+			<with-param name="ALER_CERTIFICADO" query-param="ALER_CERTIFICADO"/>
+			<with-param name="FECHA_LIMITE_ING" query-param="FECHA_LIMITE_ING"/>
+			<with-param name="MAN_FECHA_LIMITE" query-param="MAN_FECHA_LIMITE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteUsuarios" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>DELETE FROM USUARIO WHERE USUARIO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="usuarios">
+		<call-query href="deleteUsuarios">
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosPaginaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, CASE WHEN TIPOCUENTA = 'U' THEN 'USUARIO' WHEN TIPOCUENTA = 'G' THEN 'GRUPO' END TIPOCUENTA, CASE WHEN ESTADO = 'A' THEN 'Activo' WHEN ESTADO = 'R' THEN 'Retirado' WHEN ESTADO = 'S' THEN 'Suspendido' END ESTADO, ( CONCAT(NOMBRE1,CONCAT(' ',CONCAT(NOMBRE2,CONCAT(' ',CONCAT(APELLIDO1,CONCAT(' ',APELLIDO2) ) ) ) ) ) ) NOMBRECOMPLETO, CEDULA FROM USUARIO ORDER BY TIPOCUENTA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN TIPOCUENTA IS NULL THEN ' ' ELSE UPPER(TIPOCUENTA) END) LIKE UPPER(CONCAT(:TIPOCUENTA, '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) AND (CASE WHEN NOMBRECOMPLETO IS NULL THEN ' ' ELSE UPPER(NOMBRECOMPLETO) END) LIKE UPPER(CONCAT(:NOMBRECOMPLETO, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","TIPOCUENTA":"$TIPOCUENTA","ESTADO":"$ESTADO","NOMBRECOMPLETO":"$NOMBRECOMPLETO","CEDULA":"$CEDULA"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="TIPOCUENTA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="NOMBRECOMPLETO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="usuarios">
+		<call-query href="getUsuariosPaginaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="NOMBRECOMPLETO" query-param="NOMBRECOMPLETO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosNumeroQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, CASE WHEN TIPOCUENTA = 'U' THEN 'USUARIO' WHEN TIPOCUENTA = 'G' THEN 'GRUPO' END TIPOCUENTA, CASE WHEN ESTADO = 'A' THEN 'Activo' WHEN ESTADO = 'R' THEN 'Retirado' WHEN ESTADO = 'S' THEN 'Suspendido' END ESTADO, ( CONCAT(NOMBRE1,CONCAT(' ',CONCAT(NOMBRE2,CONCAT(' ',CONCAT(APELLIDO1,CONCAT(' ',APELLIDO2) ) ) ) ) ) ) NOMBRECOMPLETO, CEDULA FROM USUARIO ORDER BY TIPOCUENTA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN TIPOCUENTA IS NULL THEN ' ' ELSE UPPER(TIPOCUENTA) END) LIKE UPPER(CONCAT(:TIPOCUENTA, '%')) AND (CASE WHEN ESTADO IS NULL THEN ' ' ELSE UPPER(ESTADO) END) LIKE UPPER(CONCAT(CONCAT('%',:ESTADO), '%')) AND (CASE WHEN NOMBRECOMPLETO IS NULL THEN ' ' ELSE UPPER(NOMBRECOMPLETO) END) LIKE UPPER(CONCAT(:NOMBRECOMPLETO, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="TIPOCUENTA" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="NOMBRECOMPLETO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/numero">
+		<call-query href="getUsuariosNumeroQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="NOMBRECOMPLETO" query-param="NOMBRECOMPLETO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosRegistroQuery"  useConfig="sysmanirisst">
+		<sql>SELECT CODIGO, TIPOCUENTA, NOMBRE1, NOMBRE2, APELLIDO1, APELLIDO2, PAIS, REGION, CIUDAD, CORREOELECTRONICO, GENERO,(TO_CHAR(FECHANACIMIENTO,'DD/MM/YYYY HH24:MI:SS')) FECHANACIMIENTO, PASSWORD, ESTADO, DIRECCION, CELULAR, NIVEL_GRUPO, APLICACION, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED,CEDULA,(CASE ES_ADMINISTRADOR WHEN 0 THEN 'false' ELSE 'true' END) ES_ADMINISTRADOR,SUCURSAL,TO_NUMBER(NIVEL_USUARIO) AS NIVEL_USUARIO ,(TO_CHAR(FECHA_ACTCONTRASENA,'DD/MM/YYYY HH24:MI:SS')) FECHA_ACTCONTRASENA,(CASE ALER_CERTIFICADO WHEN 0 THEN 'false' ELSE 'true' END) ALER_CERTIFICADO,(TO_CHAR(FECHA_LIMITE_ING,'DD/MM/YYYY HH24:MI:SS')) FECHA_LIMITE_ING,(CASE MAN_FECHA_LIMITE WHEN 0 THEN 'false' ELSE 'true' END) MAN_FECHA_LIMITE FROM USUARIO WHERE USUARIO.CODIGO= :KEY_CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","TIPOCUENTA":"$TIPOCUENTA","NOMBRE1":"$NOMBRE1","NOMBRE2":"$NOMBRE2","APELLIDO1":"$APELLIDO1","APELLIDO2":"$APELLIDO2","PAIS":"$PAIS","REGION":"$REGION","CIUDAD":"$CIUDAD","CORREOELECTRONICO":"$CORREOELECTRONICO","GENERO":"$GENERO","FECHANACIMIENTO":"$FECHANACIMIENTO","PASSWORD":"$PASSWORD","ESTADO":"$ESTADO","DIRECCION":"$DIRECCION","CELULAR":"$CELULAR","NIVEL_GRUPO":"$NIVEL_GRUPO(type:integer)","APLICACION":"$APLICACION(type:integer)","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","CEDULA":"$CEDULA","ES_ADMINISTRADOR":"$ES_ADMINISTRADOR(type:boolean)","SUCURSAL":"$SUCURSAL","NIVEL_USUARIO":"$NIVEL_USUARIO(type:integer)","FECHA_ACTCONTRASENA":"$FECHA_ACTCONTRASENA","ALER_CERTIFICADO":"$ALER_CERTIFICADO(type:boolean)","FECHA_LIMITE_ING":"$FECHA_LIMITE_ING","MAN_FECHA_LIMITE":"$MAN_FECHA_LIMITE(type:boolean)"}]}}		</result>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/data">
+		<call-query href="getUsuariosRegistroQuery">
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateUsuarios" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>UPDATE USUARIO SET CODIGO=:CODIGO, TIPOCUENTA=:TIPOCUENTA, NOMBRE1=:NOMBRE1, NOMBRE2=:NOMBRE2, APELLIDO1=:APELLIDO1, APELLIDO2=:APELLIDO2, PAIS=:PAIS, REGION=:REGION, CIUDAD=:CIUDAD, CORREOELECTRONICO=:CORREOELECTRONICO, GENERO=:GENERO, FECHANACIMIENTO=TO_DATE(:FECHANACIMIENTO,'DD/MM/YYYY HH24:MI:SS'), PASSWORD=:PASSWORD, ESTADO=:ESTADO, DIRECCION=:DIRECCION, CELULAR=:CELULAR, NIVEL_GRUPO=:NIVEL_GRUPO, APLICACION=:APLICACION, CEDULA=:CEDULA, SUCURSAL=:SUCURSAL, ES_ADMINISTRADOR=:ES_ADMINISTRADOR, NIVEL_USUARIO=:NIVEL_USUARIO, FECHA_ACTCONTRASENA=TO_DATE(:FECHA_ACTCONTRASENA,'DD/MM/YYYY HH24:MI:SS'), ALER_CERTIFICADO=:ALER_CERTIFICADO, FECHA_LIMITE_ING=TO_DATE(:FECHA_LIMITE_ING,'DD/MM/YYYY HH24:MI:SS'), MAN_FECHA_LIMITE=:MAN_FECHA_LIMITE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE USUARIO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="TIPOCUENTA" sqlType="STRING"/>
+		<param name="NOMBRE1" sqlType="STRING"/>
+		<param name="NOMBRE2" sqlType="STRING"/>
+		<param name="APELLIDO1" sqlType="STRING"/>
+		<param name="APELLIDO2" sqlType="STRING"/>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="REGION" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+		<param name="CORREOELECTRONICO" sqlType="STRING"/>
+		<param name="GENERO" sqlType="STRING"/>
+		<param name="FECHANACIMIENTO" sqlType="STRING"/>
+		<param name="PASSWORD" sqlType="STRING"/>
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="DIRECCION" sqlType="STRING"/>
+		<param name="CELULAR" sqlType="STRING"/>
+		<param name="NIVEL_GRUPO" sqlType="STRING"/>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="ES_ADMINISTRADOR" sqlType="STRING"/>
+		<param name="NIVEL_USUARIO" sqlType="STRING"/>
+		<param name="FECHA_ACTCONTRASENA" sqlType="STRING"/>
+		<param name="ALER_CERTIFICADO" sqlType="STRING"/>
+		<param name="FECHA_LIMITE_ING" sqlType="STRING"/>
+		<param name="MAN_FECHA_LIMITE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="usuarios">
+		<call-query href="updateUsuarios">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="TIPOCUENTA" query-param="TIPOCUENTA"/>
+			<with-param name="NOMBRE1" query-param="NOMBRE1"/>
+			<with-param name="NOMBRE2" query-param="NOMBRE2"/>
+			<with-param name="APELLIDO1" query-param="APELLIDO1"/>
+			<with-param name="APELLIDO2" query-param="APELLIDO2"/>
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="REGION" query-param="REGION"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+			<with-param name="CORREOELECTRONICO" query-param="CORREOELECTRONICO"/>
+			<with-param name="GENERO" query-param="GENERO"/>
+			<with-param name="FECHANACIMIENTO" query-param="FECHANACIMIENTO"/>
+			<with-param name="PASSWORD" query-param="PASSWORD"/>
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="DIRECCION" query-param="DIRECCION"/>
+			<with-param name="CELULAR" query-param="CELULAR"/>
+			<with-param name="NIVEL_GRUPO" query-param="NIVEL_GRUPO"/>
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="ES_ADMINISTRADOR" query-param="ES_ADMINISTRADOR"/>
+			<with-param name="NIVEL_USUARIO" query-param="NIVEL_USUARIO"/>
+			<with-param name="FECHA_ACTCONTRASENA" query-param="FECHA_ACTCONTRASENA"/>
+			<with-param name="ALER_CERTIFICADO" query-param="ALER_CERTIFICADO"/>
+			<with-param name="FECHA_LIMITE_ING" query-param="FECHA_LIMITE_ING"/>
+			<with-param name="MAN_FECHA_LIMITE" query-param="MAN_FECHA_LIMITE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosNumCodigoYNombresFinalQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT USUARIO.CODIGO, (CONCAT(USUARIO.NOMBRE1 ,CONCAT(' ' ,CONCAT( USUARIO.NOMBRE2 ,CONCAT( ' ' ,CONCAT(USUARIO.APELLIDO1 ,CONCAT(' ' ,USUARIO.APELLIDO2 ))))))) NOMBRE FROM USUARIO WHERE USUARIO.CODIGO &gt;=:CODIGOINICIAL ORDER BY TO_CHAR(USUARIO.CODIGO)) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/codigoynombresfinal/num">
+		<call-query href="getUsuariosNumCodigoYNombresFinalQuery">
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosPagTodosUsuariosQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, CONCAT(NOMBRE1 ,CONCAT( ' ' ,CONCAT(NOMBRE2 ,CONCAT(' ' ,CONCAT(APELLIDO1 ,CONCAT(' ' ,APELLIDO2)))))) NOMBRE FROM USUARIO WHERE TIPOCUENTA = 'U') INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="usuarios/todosusuarios/pag">
+		<call-query href="getUsuariosPagTodosUsuariosQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosNumTodosUsuariosQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, CONCAT(NOMBRE1 ,CONCAT( ' ' ,CONCAT(NOMBRE2 ,CONCAT(' ' ,CONCAT(APELLIDO1 ,CONCAT(' ' ,APELLIDO2)))))) NOMBRE FROM USUARIO WHERE TIPOCUENTA = 'U') INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/todosusuarios/num">
+		<call-query href="getUsuariosNumTodosUsuariosQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosPagAutorizaabonosspcuentaqueryQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, ABONOMONTO, ABONOCLAVE  FROM USUARIO WHERE USUARIO.TIPOCUENTA='U' AND USUARIO.ABONOSUPER NOT IN (0) ORDER BY USUARIO.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN ABONOMONTO IS NULL THEN ' ' ELSE UPPER(ABONOMONTO) END)  LIKE UPPER(:ABONOMONTO || '%')  AND (CASE WHEN ABONOCLAVE IS NULL THEN ' ' ELSE UPPER(ABONOCLAVE) END)  LIKE UPPER(:ABONOCLAVE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","ABONOMONTO":"$ABONOMONTO(type:integer)","ABONOCLAVE":"$ABONOCLAVE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ABONOMONTO" sqlType="STRING"/>
+		<param name="ABONOCLAVE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="usuarios/autorizaabonosspcuentaquery/pag">
+		<call-query href="getUsuariosPagAutorizaabonosspcuentaqueryQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ABONOMONTO" query-param="ABONOMONTO"/>
+			<with-param name="ABONOCLAVE" query-param="ABONOCLAVE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosNumAutorizaabonosspcuentaqueryQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, ABONOMONTO, ABONOCLAVE  FROM USUARIO WHERE USUARIO.TIPOCUENTA='U' AND USUARIO.ABONOSUPER NOT IN (0) ORDER BY USUARIO.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN ABONOMONTO IS NULL THEN ' ' ELSE UPPER(ABONOMONTO) END)  LIKE UPPER( '%' || :ABONOMONTO || '%')  AND (CASE WHEN ABONOCLAVE IS NULL THEN ' ' ELSE UPPER(ABONOCLAVE) END)  LIKE UPPER( '%' || :ABONOCLAVE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ABONOMONTO" sqlType="STRING"/>
+		<param name="ABONOCLAVE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/autorizaabonosspcuentaquery/num">
+		<call-query href="getUsuariosNumAutorizaabonosspcuentaqueryQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ABONOMONTO" query-param="ABONOMONTO"/>
+			<with-param name="ABONOCLAVE" query-param="ABONOCLAVE"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosPagCedNomsPorCompQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CEDULA, CONCAT(NOMBRE1 ,CONCAT( ' ' ,CONCAT(NOMBRE2 ,CONCAT(' ' ,CONCAT( APELLIDO1 ,CONCAT(' ' ,APELLIDO2)))))) NOMBRES FROM USUARIO WHERE SUCURSAL =:SUCURSAL ORDER BY CEDULA) INI WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END) LIKE UPPER(CONCAT(:CEDULA, '%')) AND (CASE WHEN NOMBRES IS NULL THEN ' ' ELSE UPPER(NOMBRES) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRES), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CEDULA":"$CEDULA","NOMBRES":"$NOMBRES"}]}}		</result>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="usuarios/cednomsporcomp/pag">
+		<call-query href="getUsuariosPagCedNomsPorCompQuery">
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRES" query-param="NOMBRES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosNumCedNomsPorCompQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CEDULA, CONCAT(NOMBRE1 ,CONCAT( ' ' ,CONCAT(NOMBRE2 ,CONCAT(' ' ,CONCAT( APELLIDO1 ,CONCAT(' ' ,APELLIDO2)))))) NOMBRES FROM USUARIO WHERE SUCURSAL =:SUCURSAL ORDER BY CEDULA) INI WHERE (CASE WHEN CEDULA IS NULL THEN ' ' ELSE UPPER(CEDULA) END) LIKE UPPER(CONCAT(:CEDULA, '%')) AND (CASE WHEN NOMBRES IS NULL THEN ' ' ELSE UPPER(NOMBRES) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRES), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="CEDULA" sqlType="STRING"/>
+		<param name="NOMBRES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/cednomsporcomp/num">
+		<call-query href="getUsuariosNumCedNomsPorCompQuery">
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="CEDULA" query-param="CEDULA"/>
+			<with-param name="NOMBRES" query-param="NOMBRES"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosPagCodNomQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, CONCAT(NOMBRE1 ,CONCAT(' ' ,CONCAT( ' ' ,CONCAT(NOMBRE2 ,CONCAT(' ' ,CONCAT(APELLIDO1 ,CONCAT(' ' ,APELLIDO2))))))) NOMBRES FROM USUARIO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRES IS NULL THEN ' ' ELSE UPPER(NOMBRES) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRES), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRES":"$NOMBRES"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="usuarios/codnom/pag">
+		<call-query href="getUsuariosPagCodNomQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRES" query-param="NOMBRES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosNumCodNomQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, CONCAT(NOMBRE1 ,CONCAT(' ' ,CONCAT( ' ' ,CONCAT(NOMBRE2 ,CONCAT(' ' ,CONCAT(APELLIDO1 ,CONCAT(' ' ,APELLIDO2))))))) NOMBRES FROM USUARIO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRES IS NULL THEN ' ' ELSE UPPER(NOMBRES) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRES), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/codnom/num">
+		<call-query href="getUsuariosNumCodNomQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRES" query-param="NOMBRES"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosPagGetusuariospagcodigoynombrestipocuentaqueryQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT USUARIO.CODIGO, ( CONCAT(USUARIO.NOMBRE1 ,CONCAT( ' ' ,CONCAT(USUARIO.NOMBRE2 ,CONCAT( ' ' ,CONCAT( USUARIO.APELLIDO1 ,CONCAT( ' ' ,USUARIO.APELLIDO2))))))) NOMBRE FROM USUARIO WHERE USUARIO.TIPOCUENTA = 'U' ORDER BY USUARIO.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="usuarios/getusuariospagcodigoynombrestipocuentaquery/pag">
+		<call-query href="getUsuariosPagGetusuariospagcodigoynombrestipocuentaqueryQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosNumGetusuariospagcodigoynombrestipocuentaqueryQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT USUARIO.CODIGO, ( CONCAT(USUARIO.NOMBRE1 ,CONCAT( ' ' ,CONCAT(USUARIO.NOMBRE2 ,CONCAT( ' ' ,CONCAT( USUARIO.APELLIDO1 ,CONCAT( ' ' ,USUARIO.APELLIDO2))))))) NOMBRE FROM USUARIO WHERE USUARIO.TIPOCUENTA = 'U' ORDER BY USUARIO.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CODIGO), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/getusuariospagcodigoynombrestipocuentaquery/num">
+		<call-query href="getUsuariosNumGetusuariospagcodigoynombrestipocuentaqueryQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosCodigoGrupoUsuarioQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  CODIGO  FROM USUARIO WHERE TIPOCUENTA IN ('G') ORDER BY CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="usuarios/codigogrupousuario">
+		<call-query href="getUsuariosCodigoGrupoUsuarioQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getUsuariosEmailsusuariosQuery"  useConfig="sysmanirisst">
+		<sql>SELECT CODIGO, CORREOELECTRONICO FROM USUARIO WHERE INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE(:USUARIO,' ','') ),CONCAT('',CONCAT(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE (CODIGO,' ','') ),'') ),1) &gt; 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","CORREOELECTRONICO":"$CORREOELECTRONICO"}]}}		</result>
+		<param name="USUARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/emailsusuarios">
+		<call-query href="getUsuariosEmailsusuariosQuery">
+			<with-param name="USUARIO" query-param="USUARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateUsuariosMinutoslbloqueo" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>UPDATE USUARIO SET MINUTOSBLOQUEO=:MINUTOSBLOQUEO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE USUARIO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="MINUTOSBLOQUEO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="usuarios/minutoslbloqueo">
+		<call-query href="updateUsuariosMinutoslbloqueo">
+			<with-param name="MINUTOSBLOQUEO" query-param="MINUTOSBLOQUEO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosMinutoactualQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  MINUTOSBLOQUEO  FROM USUARIO WHERE CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"MINUTOSBLOQUEO":"$MINUTOSBLOQUEO(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/minutoactual">
+		<call-query href="getUsuariosMinutoactualQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosPorSegundaClaveQuery"  useConfig="sysmanirisst">
+		<sql>SELECT DISTINCT SEGUNDA_CLAVE, CORREOELECTRONICO, CONCAT(NOMBRE1 ,CONCAT(' ' , NOMBRE2)) NOMBRE FROM USUARIO WHERE CODIGO =:USUARIO AND TO_CHAR(SYSDATE,'DD/MM/YYYY HH24:MI:SS') &lt;= TO_CHAR(FECHA_VENCIMIENTO,'DD/MM/YYYY HH24:MI:SS')</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SEGUNDA_CLAVE":"$SEGUNDA_CLAVE","CORREOELECTRONICO":"$CORREOELECTRONICO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="USUARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/porsegundaclave">
+		<call-query href="getUsuariosPorSegundaClaveQuery">
+			<with-param name="USUARIO" query-param="USUARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosCargarDatosUsuarioQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  CODIGO, NOMBRE1, NOMBRE2, APELLIDO1, APELLIDO2, CEDULA, SUCURSAL, PAIS , REGION , CIUDAD , CORREOELECTRONICO , TITULO_PROFESIONAL , ESTILO, IDIOMA, RUTA_IMAGEN, FRASEDELDIA, GENERO, IDENTIFICADOR, ESTADO, DIRECCION, CELULAR,(TO_CHAR(FECHANACIMIENTO,'DD/MM/YYYY HH24:MI:SS')) FECHANACIMIENTO, MINUTOSBLOQUEO  FROM USUARIO WHERE TIPOCUENTA = 'U' AND CODIGO =:CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE1":"$NOMBRE1","NOMBRE2":"$NOMBRE2","APELLIDO1":"$APELLIDO1","APELLIDO2":"$APELLIDO2","CEDULA":"$CEDULA","SUCURSAL":"$SUCURSAL","PAIS":"$PAIS","REGION":"$REGION","CIUDAD":"$CIUDAD","CORREOELECTRONICO":"$CORREOELECTRONICO","TITULO_PROFESIONAL":"$TITULO_PROFESIONAL","ESTILO":"$ESTILO","IDIOMA":"$IDIOMA","RUTA_IMAGEN":"$RUTA_IMAGEN","FRASEDELDIA":"$FRASEDELDIA","GENERO":"$GENERO","IDENTIFICADOR":"$IDENTIFICADOR","ESTADO":"$ESTADO","DIRECCION":"$DIRECCION","CELULAR":"$CELULAR","FECHANACIMIENTO":"$FECHANACIMIENTO","MINUTOSBLOQUEO":"$MINUTOSBLOQUEO(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/cargardatosusuario">
+		<call-query href="getUsuariosCargarDatosUsuarioQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosDatosSolicitudCdpQuery"  useConfig="sysmanirisst">
+		<sql>SELECT CEDULA, ( CONCAT(USUARIO.NOMBRE1 ,CONCAT(' ' ,CONCAT(USUARIO.NOMBRE2 ,CONCAT( ' ' ,CONCAT( USUARIO.APELLIDO1 ,CONCAT(' ' ,USUARIO.APELLIDO2 ))))))) NOMBRECOMPLETO, SUCURSAL FROM USUARIO WHERE CODIGO =:CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CEDULA":"$CEDULA","NOMBRECOMPLETO":"$NOMBRECOMPLETO","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/datossolicitudcdp">
+		<call-query href="getUsuariosDatosSolicitudCdpQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosNombreCompletoPorCodigoQuery"  useConfig="sysmanirisst">
+		<sql>SELECT (CONCAT(USUARIO.NOMBRE1 ,CONCAT( ' ' ,CONCAT( USUARIO.NOMBRE2 ,CONCAT(' ' ,CONCAT( USUARIO.APELLIDO1 ,CONCAT(' ' ,USUARIO.APELLIDO2))))))) NOMBRE FROM USUARIO WHERE CODIGO LIKE :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/nombrecompletoporcodigo">
+		<call-query href="getUsuariosNombreCompletoPorCodigoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosDiasVigenciaContraseniaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT TRUNC(CURRENT_DATE) -TRUNC(FECHA_ACTCONTRASENA) DIAS_VIGENCIA FROM USUARIO WHERE CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"DIAS_VIGENCIA":"$DIAS_VIGENCIA(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/diasvigenciacontrasenia">
+		<call-query href="getUsuariosDiasVigenciaContraseniaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosPagPortipouserinicialQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, CONCAT(NOMBRE1 ,CONCAT( ' ' ,CONCAT(NOMBRE2 ,CONCAT(' ' ,CONCAT(APELLIDO1 ,CONCAT(' ' ,APELLIDO2)))))) NOMBRE  FROM USUARIO WHERE TIPOCUENTA = 'U' ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="usuarios/portipouserinicial/pag">
+		<call-query href="getUsuariosPagPortipouserinicialQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosNumPortipouserinicialQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, CONCAT(NOMBRE1 ,CONCAT( ' ' ,CONCAT(NOMBRE2 ,CONCAT(' ' ,CONCAT(APELLIDO1 ,CONCAT(' ' ,APELLIDO2)))))) NOMBRE  FROM USUARIO WHERE TIPOCUENTA = 'U' ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/portipouserinicial/num">
+		<call-query href="getUsuariosNumPortipouserinicialQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosPagPortipouserfinalQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, CONCAT(NOMBRE1 ,CONCAT( ' ' ,CONCAT(NOMBRE2 ,CONCAT(' ' ,CONCAT(APELLIDO1 ,CONCAT(' ' ,APELLIDO2)))))) NOMBRE  FROM USUARIO WHERE TIPOCUENTA = 'U' AND CODIGO &gt;= :CODIGOINICIAL ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="usuarios/portipouserfinal/pag">
+		<call-query href="getUsuariosPagPortipouserfinalQuery">
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosNumPortipouserfinalQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, CONCAT(NOMBRE1 ,CONCAT( ' ' ,CONCAT(NOMBRE2 ,CONCAT(' ' ,CONCAT(APELLIDO1 ,CONCAT(' ' ,APELLIDO2)))))) NOMBRE  FROM USUARIO WHERE TIPOCUENTA = 'U' AND CODIGO &gt;= :CODIGOINICIAL ORDER BY CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGOINICIAL" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/portipouserfinal/num">
+		<call-query href="getUsuariosNumPortipouserfinalQuery">
+			<with-param name="CODIGOINICIAL" query-param="CODIGOINICIAL"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosAlertacertificadoQuery"  useConfig="sysmanirisst">
+		<sql>SELECT (CASE ALER_CERTIFICADO WHEN 0 THEN 'false' ELSE 'true' END) ALER_CERTIFICADO FROM USUARIO WHERE CODIGO =:CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ALER_CERTIFICADO":"$ALER_CERTIFICADO(type:boolean)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/alertacertificado">
+		<call-query href="getUsuariosAlertacertificadoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosUsuariovigenteQuery"  useConfig="sysmanirisst">
+		<sql>SELECT CASE WHEN TRUNC(FECHA_LIMITE_ING) &gt;= TRUNC(SYSDATE) THEN 'SI' ELSE 'NO' END AS VIGENTE FROM USUARIO WHERE TIPOCUENTA IN ('U') AND CODIGO LIKE :CODIGO AND NVL(MAN_FECHA_LIMITE,0) &lt;&gt; 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"VIGENTE":"$VIGENTE"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/usuariovigente">
+		<call-query href="getUsuariosUsuariovigenteQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateUsuariosUpdateestado" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>UPDATE USUARIO SET ESTADO=:ESTADO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE USUARIO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ESTADO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="usuarios/updateestado">
+		<call-query href="updateUsuariosUpdateestado">
+			<with-param name="ESTADO" query-param="ESTADO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosEsadminQuery"  useConfig="sysmanirisst">
+		<sql>SELECT U.CODIGO AS CODIGO_USUARIO, G.CODIGO AS CODIGO_GRUPO,(CASE G.ES_ADMINISTRADOR WHEN 0 THEN 'false' ELSE 'true' END) ES_ADMINISTRADOR FROM USUARIO U INNER JOIN USUARIO_D D ON U.CODIGO = D.USUARIO INNER JOIN USUARIO G ON D.GRUPO = G.CODIGO WHERE U.CODIGO = :USUARIO AND D.APLICACION = 999 AND G.TIPOCUENTA = 'G' AND ROWNUM = 1</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO_USUARIO":"$CODIGO_USUARIO","CODIGO_GRUPO":"$CODIGO_GRUPO","ES_ADMINISTRADOR":"$ES_ADMINISTRADOR(type:boolean)"}]}}		</result>
+		<param name="USUARIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/esadmin">
+		<call-query href="getUsuariosEsadminQuery">
+			<with-param name="USUARIO" query-param="USUARIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getUsuariosDatosporcodigoQuery"  useConfig="sysmanirisst">
+		<sql>SELECT CEDULA, CORREOELECTRONICO FROM USUARIO WHERE TIPOCUENTA = 'U' AND CODIGO =:CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CEDULA":"$CEDULA","CORREOELECTRONICO":"$CORREOELECTRONICO"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="usuarios/datosporcodigo">
+		<call-query href="getUsuariosDatosporcodigoQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+
+</data>

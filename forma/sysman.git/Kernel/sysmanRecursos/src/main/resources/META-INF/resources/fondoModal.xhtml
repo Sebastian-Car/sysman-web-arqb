@@ -1,0 +1,652 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pt="http://java.sun.com/jsf/passthrough"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/templateModalDatos.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+	>
+        <ui:define name="script">
+        <script>
+            function loadDetalle() {
+                if("#{fondosControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+    </ui:define>   
+ <ui:define name="titulo">
+        <title>#{fondosControlador.tituloFondos}</title>
+    </ui:define>
+    <ui:define name="contenido">
+        <f:event type="preRenderView" listener="#{fondosControlador.cargarLista}" />
+        <section class="radiusModal" >
+            <h:form id="FR33" style="display: #{fondosControlador.accion==null?'block':'none'}; margin-top: 2px">
+                <p:growl id="alert" showDetail="true" sticky="false" widgetVar="alert" life="5000" autoUpdate="false" escape="false"/>  
+                <p:panel id="lista" widgetVar="lista"   visible="#{fondosControlador.accion==null}" style="border-width: 0"> 
+                    <p:confirmDialog global="true" showEffect="fade"    id="confFR33" widgetVar="confFR33"  rendered="#{fondosControlador.permisos[1]}">
+                        <p:commandButton value="#{idm.TI_SI}"  type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                        <p:commandButton value="#{idm.TI_NO}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                    </p:confirmDialog>
+                    <p:dataTable id="TBFR33" widgetVar="TBFR33"  var="reg" value="#{fondosControlador.listaInicial}"  
+                                 editable="true" 
+                                 emptyMessage="#{idm.TI_EMPTY_MESSAGE}" 
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}" 
+                                 currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+                                 rows="10"
+                                 rowIndexVar="rowIndex"
+                                 paginator="true"
+	           lazy="true">
+                        <f:facet name="{Exporters}" rendered="#{fondosControlador.permisos[4] }" >
+                            <h:commandLink rendered="#{fondosControlador.permisos[4] }" title="#{idm.TI_VER_EXCEL}">
+                                <p:graphicImage name="/images/general/excel.png" width="24"/>
+                                <p:dataExporter type="xls" target="TBFR33" fileName="Datos"  encoding="ISO-8859-1"  />
+                            </h:commandLink>
+                            <h:commandLink rendered="#{fondosControlador.permisos[4] }" title="#{idm.TI_VER_PDF}">
+                                <p:graphicImage name="/images/general/pdf.png" width="24"/>
+                                <p:dataExporter type="pdf" target="TBFR33" fileName="Datos"  encoding="ISO-8859-1"/>
+                            </h:commandLink>
+                        </f:facet>
+                        <f:facet name="header">
+                            <div style="position: relative; height: 50px">
+                                <h:panelGroup class="acme" rendered="#{fondosControlador.permisos[0] and fondosControlador.mostrarInsertar}">
+                                    <p:commandLink action="#{fondosControlador.cargarRegistroNuevo}" 
+                                                   update=":FR33_nuevo"
+                                                   rendered="#{fondosControlador.permisos[0]}"
+                                                   onclick="try { PF('blockLista').show(); PF('TBCB56').nuevo=true;PF('TBCB5735').nuevo=true;PF('TBCB5736').nuevo=true;PF('TBCB6041').nuevo=true;} catch (e) { }"
+                                                   oncomplete="try{ asignarEventoContGrande();
+validarCargaGrandes();
+  PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+                                                   title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;" 
+                                                   id="btNuevo">
+                                        <center><p:graphicImage name="/images/menus/32/add.png"/>
+                                            <div>#{idm.TI_NUEVO}</div>
+                                        </center>
+                                    </p:commandLink>
+                                </h:panelGroup>
+								<h:panelGroup class="acme">
+                                    <p:commandLink  action="#{fondosControlador.cerrarFormulario}"
+                                                   title="#{idm.TI_CERRAR_FORMULARIO}" style="padding-top: 10px;"
+                                                   id="btCerrar">
+                                        <center><p:graphicImage name="/images/menus/32/close.png"/>
+                                            <div>#{idm.TI_CERRAR}</div>
+                                        </center>
+                                    </p:commandLink>
+                                </h:panelGroup>
+                            </div>
+	<p:remoteCommand name="rcCerrar" actionListener="#{fondosControlador.ejecutarrcCerrar}" 
+ /> 
+                            #{fondosControlador.tituloFondos}
+                        </f:facet>
+<p:column headerText="#{idm.TG_CODIGO7}" filterBy="#{reg.campos['ID_DE_FONDO']}" filterMatchMode="contains" style="text-align:center; "  width="10%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['ID_DE_FONDO']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_NIT2}" filterBy="#{reg.campos['NIT']}" filterMatchMode="contains" style="text-align:center; "  width="10%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['NIT']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_NOMBRE3}" filterBy="#{reg.campos['NOMBRE_FONDO']}" filterMatchMode="contains" style="text-align:center; "  width="45%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['NOMBRE_FONDO']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_CODA}" filterBy="#{reg.campos['CODA']}" filterMatchMode="contains" style="text-align:center; "  width="25%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['CODA']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_FR33_4}" filterBy="#{reg.campos['PUBLICO']}" filterMatchMode="exact" style="text-align:center; "  width="10%" >
+ <f:facet name="filter">
+                                    <p:selectOneMenu onchange="PF('TBFR33').filter()" >
+                                        <f:selectItem itemLabel="#{idm.TI_TODOS}" itemValue=""  />
+                                        <f:selectItem itemLabel="#{idm.TI_SI}" itemValue="true" />
+                                        <f:selectItem itemLabel="#{idm.TI_NO}" itemValue="false" />
+                                    </p:selectOneMenu>
+                        </f:facet>     <h:outputText value="#{reg.campos['PUBLICO']=='false'? idm.TI_NO:idm.TI_SI}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column width="150"  headerText="Acciones" style="text-align: center" exportable="false">
+ <p:commandButton icon="ui-icon-search"   title="#{idm.TI_VER_REGISTRO}" 
+                                             action="#{fondosControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+                                             update=":FR33_nuevo"
+                                             onclick="try{ PF('blockLista').show();  PF('TBCB56').nuevo=true;PF('TBCB5735').nuevo=true;PF('TBCB5736').nuevo=true;PF('TBCB6041').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+                                             rendered="#{fondosControlador.permisos[3]}"
+                                             oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+                                <f:param name="rowIndex" value="#{rowIndex}" />
+                            </p:commandButton>
+	<p:commandButton icon="ui-icon-document-b"   title="#{idm.TI_EDITAR_REGISTRO}" 
+                                             action="#{fondosControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+                                             update=":FR33_nuevo"
+                                             onclick="try{ PF('blockLista').show();  PF('TBCB56').nuevo=true;PF('TBCB5735').nuevo=true;PF('TBCB5736').nuevo=true;PF('TBCB6041').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+                                             rendered="#{fondosControlador.permisos[2] }"
+                                             oncomplete="try{asignarEventoContGrande();
+validarCargaGrandes();
+ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+                                <f:param name="rowIndex" value="#{rowIndex}" />
+                            </p:commandButton>
+	       <p:commandButton icon="ui-icon-trash"   title="#{idm.TI_ELIMINAR_REGISTRO}" 
+		 onclick="PF('blockListaGuardar').show()"
+                                             action="#{fondosControlador.eliminarReg(reg)}" 
+                                             update=":FR33:TBFR33,:FR33:alert"
+                                             rendered="#{fondosControlador.permisos[1] and fondosControlador.mostrarInsertar}"
+                                             oncomplete=" PF('blockListaGuardar').hide();">
+                                <p:confirm header="#{sessionBean.tituloMensajes}" message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                    <p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR33">
+#{idm.TI_CARGANDO}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                    <p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                </p:panel>
+            </h:form>
+<h:form id="FR33_nuevo"     style="margin-top: 2px;  display: #{fondosControlador.accion!=null?'block':'none'}"     >
+	<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA" my="left bottom" at="left bottom"  for="BTBUSQUEDA"  hideEffect="fade" rendered="#{fondosControlador.accion!='i'}"  style="width: 500px"   >
+                    <p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA"  var="reg" value="#{fondosControlador.listaInicialF}"
+                                 editable="true"
+                                 emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+                                 currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+                                 rows="10"
+                                 rowIndexVar="rowIndex"
+                                 selectionMode="single"
+                                 rowKey="#{reg.llave}"
+                                 paginator="true"
+                                 lazy="true">
+                        <p:ajax event="rowSelect" listener="#{fondosControlador.seleccionarFilaBusqueda}" onstart="PF('blockNuevo').show()" oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();    " update="@form"  />
+	<p:column headerText="#{idm.TG_NIT2}" filterBy="#{reg.campos['NIT']}" filterMatchMode="contains" style="text-align:center; "  width="25%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['NIT']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_NOMBRE3}" filterBy="#{reg.campos['NOMBRE_FONDO']}" filterMatchMode="contains" style="text-align:center; "  width="50%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['NOMBRE_FONDO']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_CODA}" filterBy="#{reg.campos['CODA']}" filterMatchMode="contains" style="text-align:center; "  width="0%" filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['CODA']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+                    </p:dataTable>
+                </p:overlayPanel>
+               <p:growl id="alert" showDetail="true" sticky="false" widgetVar="alert" life="5000" autoUpdate="false"  escape="false" />  
+                <p:panel id="nuevoPanel"   visible="#{fondosControlador.accion!=null}" widgetVar="nuevoPanel"  style="border-width: 0">
+	<div style="position: relative; height: 50px; padding-bottom: 80px;  " >
+	<div class="acme" style="display:#{fondosControlador.accion=='v'?'none':'block'}">
+                            <p:commandLink action="#{fondosControlador.agregarRegistroNuevo(false)}" rendered="#{fondosControlador.accion!='v'}"
+                                           update=":FR33_nuevo,#{!fondosControlador.permisos[2]?':FR33':'' }"
+                                          onclick="if (!validarVacios(['CB52','CB53','CB54','CB56','CP270','CP271'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+                                          title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+ oncomplete="asignarEventoContGrande(); validarCargaGrandes(); " >
+                                <center><p:graphicImage name="/images/menus/32/save.png"/>
+                                    <div style="height: 30px">#{idm.TI_GUARDAR}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+	<div class="acme" style="display:#{fondosControlador.accion=='v' or !fondosControlador.permisos[0]?'none':'block'}">
+                            <p:commandLink action="#{fondosControlador.guardarNuevo}" rendered="#{fondosControlador.accion!='v' and fondosControlador.permisos[0]}"
+                                           update=":FR33_nuevo"
+	                      onclick="if (!validarVacios(['CB52','CB53','CB54','CB56','CP270','CP271'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{fondosControlador.accion!='i'  and fondosControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+                                           oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+                                           title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}" style="padding-top: 10px;" >
+                                <center><p:graphicImage name="/images/menus/32/savenew.png"/>
+                                    <div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+ <div class="acme" style="display:#{fondosControlador.accion=='i' or !fondosControlador.permisos[0]?'none':'block'}">
+                            <p:commandLink id="BTBUSQUEDA" rendered="#{fondosControlador.accion!='i' and fondosControlador.permisos[0]}"
+                                           title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;"  >
+                                <center><p:graphicImage name="/images/menus/32/search.png"/>
+                                    <div style="height: 30px">#{idm.TI_BUSCAR}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+ 	<div class="acme" >
+                            <p:commandLink update=":FR33:TBFR33"
+                                           onclick="try {
+		           PF('TBFR33').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+                                           title="#{idm.TI_ATRAS}" style="padding-top: 10px;" >
+                                <center><p:graphicImage name="/images/menus/32/back.png"/>
+                                    <div style="height: 30px">#{idm.TI_VOLVER}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+                        <p:panel rendered="#{fondosControlador.accion!='i'  and fondosControlador.rid==null }" styleClass="acme" style="min-width: 350px; width:30%; padding: 10px;">
+                            <center style="margin: 2px;"> 
+                                <p:commandButton icon="ui-icon-seek-first"   
+                                                 action="#{fondosControlador.irPrimero()}"
+                                                 title="#{idm.TI_PRIMER_REGISTRO}" 
+                                                 update=":FR33_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); "
+                                                 >
+                                </p:commandButton>
+                                <p:commandButton icon="ui-icon-seek-prev"   
+                                                 action="#{fondosControlador.irAnterior()}"
+                                                 title="#{idm.TI_REGISTRO_ANTERIOR}" 
+                                                 update=":FR33_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); "
+                                                 >
+                                </p:commandButton>
+	           <p:outputLabel value="#{idm.TI_REGISTRO} #{fondosControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{fondosControlador.listaInicial.rowCount} " />
+                                <p:commandButton icon="ui-icon-seek-next"   
+                                                 title="#{idm.TI_REGISTRO_SIGUIENTE}" 
+                                                 action="#{fondosControlador.irSiguiente()}"
+                                                 update=":FR33_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); ">
+                                </p:commandButton>
+                                <p:commandButton icon="ui-icon-seek-end"
+                                                 title="#{idm.TI_ULTIMO_REGISTRO}" 
+                                                 action="#{fondosControlador.irUltimo()}"
+                                                 update=":FR33_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); ">
+                                </p:commandButton>
+                            </center>
+                        </p:panel>
+	   <p:panel styleClass="acme" style="width:21%; min-width:260px">
+                            <h:panelGrid columns="3"  style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+                                <h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}"/>
+                                <p:inputText id="CPCREADO"  readonly="true" widgetVar="CPCREADO"
+                                             value="#{fondosControlador.registro.campos['CREATED_BY']}"   placeholder="#{idm.TI_CREADOR}" disabled="true"/>
+                                <p:calendar   locale="es"  style="width: 60%" pattern="dd/MM/yyyy"  id="CPCREADOF"  widgetVar="CPCREADOF" value="#{fondosControlador.registro.campos['DATE_CREATED']}" disabled="true" />
+                                <h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+                                <p:inputText id="CPMODIFICADO"  readonly="true" widgetVar="CPMODIFICADO"
+                                             value="#{fondosControlador.registro.campos['MODIFIED_BY']}"   placeholder="#{idm.TI_MODIFICADOR}" disabled="true"/>
+                                <p:calendar   locale="es"  style="width: 60%" pattern="dd/MM/yyyy"  id="CPMODIFICADOF" widgetVar="CPMODIFICADOF" value="#{fondosControlador.registro.campos['DATE_MODIFIED']}" disabled="true" />
+                            </h:panelGrid>
+                        </p:panel>
+                    </div>
+<div id="PL75" class="
+" style="position: relative; height: 58px; ">
+<h:outputLabel id="LB174" value="#{fondosControlador.tituloFondos}"       style="position: absolute; width:968px; height: 24px; left: 9px;   top: 19px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+</div>
+<div id="PL76" class="
+" style="position: relative; height: 856px; ">
+<p:selectOneMenu filter="true" editable="false"       effect="fade" id="CB5576"   widgetVar="CB5576"  value="#{fondosControlador.registro.campos['FORMA_PAGO']}" disabled="#{fondosControlador.accion=='v'?true:false}"  tabindex="6"  
+ style="position: absolute; width:243px; height: 24px; left: 709px;   top: 73px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px ;"
+>
+      <f:selectItem/>
+       <f:selectItem itemValue="E" itemLabel="#{idm.OD_CB5576_0}"/>
+<f:selectItem itemValue="C" itemLabel="#{idm.OD_CB5576_1}"/>
+<f:selectItem itemValue="T" itemLabel="#{idm.OD_CB5576_2}"/>
+<f:selectItem itemValue="A" itemLabel="#{idm.OD_CB5576_3}"/>
+<f:selectItem itemValue="H" itemLabel="#{idm.OD_CB5576_4}"/>
+<f:selectItem itemValue="G" itemLabel="#{idm.OD_CB5576_5}"/>
+<f:selectItem itemValue="I" itemLabel="#{idm.OD_CB5576_6}"/>
+</p:selectOneMenu>
+<p:inputText id="CP57666"   widgetVar="CP57666"  
+styleClass="inputTab"
+value="#{fondosControlador.nombreSiif}"  
+   readonly="#{fondosControlador.accion=='v'?true:false}"  
+  style="position: absolute; width:195px; height: 24px; text-decoration:none; left: 760px;   top: 219px; text-align: left; font-weight: none; font-style: none; font-family: Tahoma; font-size: 13px; display:true; background:#FFFFFF; color:#000000; border:#A6A6A6  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<h:outputLabel id="LB43484" value="#{idm.TT_LB43484}"       style="position: absolute; width:150px; height: 24px; left: 554px;   top: 131px; text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB43483" value="#{idm.TT_LB43483}"  rendered="#{fondosControlador.rubroPatrono}"     style="position: absolute; width:168px; height: 24px; left: 10px;   top: 277px; text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<p:inputText id="CB5735" widgetVar="CB5735" onfocus="if(!false){PF('BTCB5735').jq.focus();}" onclick="if(!false){PF('PLCB5735').show();}" value="#{fondosControlador.registro.campos['RUBRO_SIIF_EMPLEADO']}"   disabled="#{fondosControlador.bloqueoRubroEmpleado}" tabindex="-1"    
+style="cursor:pointer; position: absolute; width:98px; height: 24px; left: 356px;   top: 307px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:none; background:#FFFFFF; color:#000000; border:#000000  none  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />   
+	<p:commandButton id="BTCB5735"   onblur="PF('CB5735').jq.blur();"  onfocus="PF('CB5735').jq.addClass('ui-state-focus');" widgetVar="BTCB5735"   disabled="#{fondosControlador.bloqueoRubroEmpleado}" type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"    
+                                                     style="position: absolute; width:25px; height:  24px; left: 452px;   top: 307px; display:none; "     tabindex="20"    />   
+	<p:overlayPanel widgetVar="PLCB5735" id="PLCB5735" onShow="if(PF('TBCB5735').nuevo){ PF('TBCB5735').filter(); PF('TBCB5735').nuevo=false;}"  onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB5735').jq.focus();}"  my="left" at="left"  for="BTCB5735" hideEffect="fade" rendered= "#{fondosControlador.accion!='v'}"  style="width: 500px"   >   
+		<p:dataTable id="TBCB5735" widgetVar="TBCB5735"  var="reg" value="#{fondosControlador.listaRubroEmpleado}"     
+                                                     editable="true"    
+                                                     emptyMessage="#{idm.TI_EMPTY_MESSAGE}"    
+                                                     currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"   
+                                                     rows="11"   
+                                                     rowIndexVar="rowIndex"   
+                                                     selectionMode="single"   
+                                                     rowKey="#{reg.campos['CODIGO']}"   
+                                                     paginator="true"   
+                                                     lazy="true">   
+			<p:ajax event="rowSelect" listener="#{fondosControlador.seleccionarFilaRubroEmpleado}" update=":FR33_nuevo:CB5735,"    
+  oncomplete="PF('PLCB5735').hide(); "  />   
+			<p:column headerText="#{idm.TG_CODIGO7}" style="text-align:center; "  width="30%" filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['CODIGO']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.TG_ANIO3}" style="text-align:center; "  width="20%" filterBy="#{reg.campos['ANO']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['ANO']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.TG_NOMBRE3}" style="text-align:center; "  width="50%" filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['NOMBRE']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+		</p:dataTable>   
+    </p:overlayPanel>   
+<p:inputText id="CB6041" widgetVar="CB6041" onfocus="if(!false){PF('BTCB6041').jq.focus();}" onclick="if(!false){PF('PLCB6041').show();}" value="#{fondosControlador.registro.campos['DOC_SIIF']}"   disabled="#{fondosControlador.accion=='v'?true:false}" tabindex="-1"    
+style="cursor:pointer; position: absolute; width:25px; height: 24px; left: 709px;   top: 219px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />   
+	<p:commandButton id="BTCB6041"   onblur="PF('CB6041').jq.blur();"  onfocus="PF('CB6041').jq.addClass('ui-state-focus');" widgetVar="BTCB6041"   disabled="#{fondosControlador.accion=='v'?true:false}" type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"    
+                                                     style="position: absolute; width:25px; height:  24px; left: 732px;   top: 219px; display:block; "     tabindex="15"    />   
+	<p:overlayPanel widgetVar="PLCB6041" id="PLCB6041" onShow="if(PF('TBCB6041').nuevo){ PF('TBCB6041').filter(); PF('TBCB6041').nuevo=false;}"  onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB6041').jq.focus();}"  my="left" at="left"  for="BTCB6041" hideEffect="fade" rendered= "#{fondosControlador.accion!='v'}"  style="width: 600px"   >   
+		<p:dataTable id="TBCB6041" widgetVar="TBCB6041"  var="reg" value="#{fondosControlador.listaDocSiifCesantias}"     
+                                                     editable="true"    
+                                                     emptyMessage="#{idm.TI_EMPTY_MESSAGE}"    
+                                                     currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"   
+                                                     rows="11"   
+                                                     rowIndexVar="rowIndex"   
+                                                     selectionMode="single"   
+                                                     rowKey="#{reg.campos['DCTO_IDENTIDAD']}"   
+                                                     paginator="true"   
+                                                     lazy="true">   
+			<p:ajax event="rowSelect" listener="#{fondosControlador.seleccionarFilaDocSiifCesantias}" update=":FR33_nuevo:CB6041,@([id$=CP57666])"    
+  oncomplete="PF('PLCB6041').hide(); "  />   
+			<p:column headerText="#{idm.TG_CODIGO7}" style="text-align:center; "  width="15%" filterBy="#{reg.campos['DCTO_IDENTIDAD']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['DCTO_IDENTIDAD']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.TG_NOMBRE3}" style="text-align:center; "  width="55%" filterBy="#{reg.campos['DESCRIPCION']}" filterMatchMode="contains" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['DESCRIPCION']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.NG_CB6041_2}" style="text-align:center; "  width=" 30%" filterBy="#{reg.campos['DOC_SIIF_CESANTIAS']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['DOC_SIIF_CESANTIAS']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+		</p:dataTable>   
+    </p:overlayPanel>   
+<p:selectOneMenu filter="true" editable="false"       effect="fade" id="CB5737"   widgetVar="CB5737"  value="#{fondosControlador.registro.campos['TIPO_CUENTA']}" disabled="#{fondosControlador.bloqueoRubroPatrono or  fondosControlador.accion=='v'?true:false}"  tabindex="9"  
+ style="position: absolute; width:243px; height: 24px; left: 709px;   top: 131px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#A6A6A6; border:#A6A6A6  solid  1px;"
+>
+      <f:selectItem/>
+       <f:selectItem itemValue="A" itemLabel="#{idm.OD_CB5737_0}"/>
+<f:selectItem itemValue="C" itemLabel="#{idm.OD_CB5737_1}"/>
+</p:selectOneMenu>
+<p:inputText id="CB5736" widgetVar="CB5736" onfocus="if(!false){PF('BTCB5736').jq.focus();}" onclick="if(!false){PF('PLCB5736').show();}" value="#{fondosControlador.registro.campos['RUBRO_SIIF_PATRONO']}"   disabled="#{fondosControlador.bloqueoRubroPatrono}" tabindex="-1"    
+style="cursor:pointer; position: absolute; width:98px; height: 24px; left: 356px;   top: 277px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:none; background:#FFFFFF; color:#000000; border:#000000  none  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />   
+	<p:commandButton id="BTCB5736"   onblur="PF('CB5736').jq.blur();"  onfocus="PF('CB5736').jq.addClass('ui-state-focus');" widgetVar="BTCB5736"   disabled="#{fondosControlador.bloqueoRubroPatrono}" type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"    
+                                                     style="position: absolute; width:25px; height:  24px; left: 452px;   top: 277px; display:none; "     tabindex="18"    />   
+	<p:overlayPanel widgetVar="PLCB5736" id="PLCB5736" onShow="if(PF('TBCB5736').nuevo){ PF('TBCB5736').filter(); PF('TBCB5736').nuevo=false;}"  onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB5736').jq.focus();}"  my="left" at="left"  for="BTCB5736" hideEffect="fade" rendered= "#{fondosControlador.accion!='v'}"  style="width: 500px"   >   
+		<p:dataTable id="TBCB5736" widgetVar="TBCB5736"  var="reg" value="#{fondosControlador.listaRubroPatrono}"     
+                                                     editable="true"    
+                                                     emptyMessage="#{idm.TI_EMPTY_MESSAGE}"    
+                                                     currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"   
+                                                     rows="11"   
+                                                     rowIndexVar="rowIndex"   
+                                                     selectionMode="single"   
+                                                     rowKey="#{reg.campos['CODIGO']}"   
+                                                     paginator="true"   
+                                                     lazy="true">   
+			<p:ajax event="rowSelect" listener="#{fondosControlador.seleccionarFilaRubroPatrono}" update=":FR33_nuevo:CB5736,"    
+  oncomplete="PF('PLCB5736').hide(); "  />   
+			<p:column headerText="#{idm.TG_CODIGO7}" style="text-align:center; "  width="30%" filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['CODIGO']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.TG_ANIO3}" style="text-align:center; "  width="20%" filterBy="#{reg.campos['ANO']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['ANO']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.TG_NOMBRE3}" style="text-align:center; "  width="50%" filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['NOMBRE']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+		</p:dataTable>   
+    </p:overlayPanel>   
+<h:outputLabel id="LB43482" value="#{idm.TT_LB43482}"  rendered="#{fondosControlador.rubroEmpleado}"     style="position: absolute; width:168px; height: 24px; left: 10px;   top: 307px; text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB178" value="#{idm.TG_DEPARTAMENTO4}"       style="position: absolute; width:168px; height: 24px; left: 10px;   top: 131px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+<h:outputLabel id="LB179" value="#{idm.TT_LB179}"       style="position: absolute; width:168px; height: 24px; left: 10px;   top: 160px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+<h:outputLabel id="LB182" value="#{idm.TG_DIRECCION5}"       style="position: absolute; width:168px; height: 24px; left: 10px;   top: 190px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+<h:outputLabel id="LB183" value="#{idm.TG_TELEFONO4}"       style="position: absolute; width:168px; height: 24px; left: 10px;   top: 219px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+<h:outputLabel id="LB184" value="#{idm.TG_CORREO_ELECTRONICO}"       style="position: absolute; width:168px; height: 24px; left: 10px;   top: 248px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+<h:outputLabel id="LB185" value="#{idm.TG_NIT8}"       style="position: absolute; width:168px; height: 24px; left: 10px;   top: 43px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+<h:outputLabel id="LB186" value="#{idm.TT_LB186}"       style="position: absolute; width:150px; height: 24px; left: 554px;   top: 73px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+<h:outputLabel id="LB187" value="#{idm.TG_BANCO5}"       style="position: absolute; width:150px; height: 24px; left: 554px;   top: 102px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+<h:outputLabel id="LB188" value="#{idm.TT_LB188}"       style="position: absolute; width:150px; height: 24px; left: 554px;   top: 160px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+<h:outputLabel id="LB189" value="#{idm.TT_LB189}"       style="position: absolute; width:150px; height: 24px; left: 554px;   top: 190px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB190" value="#{idm.TT_LB190}"       style="position: absolute; width:170px; height: 24px; left: 535px;   top: 219px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+<p:inputText id="CP269"   widgetVar="CP269"  
+styleClass="inputTab"
+value="#{fondosControlador.registro.campos['ID_DE_FONDO']}"  
+  placeholder="#{idm.AC_CP269}" readonly="true" tabindex="1" 
+maxlength="5"
+  style="position: absolute; width:168px; height: 24px; text-decoration:none; left: 183px;   top: 14px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#A6A6A6  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputText id="CP270"   widgetVar="CP270"  
+styleClass="inputTab"
+value="#{fondosControlador.registro.campos['NOMBRE_FONDO']}"  
+  placeholder="#{idm.AC_CP270}" readonly="true" tabindex="3" 
+maxlength="60"
+  style="position: absolute; width:596px; height: 24px; text-decoration:none; left: 356px;   top: 43px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputText id="CP271"   widgetVar="CP271"  
+styleClass="inputTab"
+value="#{fondosControlador.registro.campos['CODA']}"  
+  placeholder="#{idm.TG_CODA}" readonly="#{fondosControlador.elementosBloqueados or  fondosControlador.accion=='v'?true:false}" tabindex="4" 
+maxlength="8"
+  style="position: absolute; width:168px; height: 24px; text-decoration:none; left: 183px;   top: 73px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputText id="CP277"   widgetVar="CP277"  
+styleClass="inputTab"
+value="#{fondosControlador.registro.campos['CUENTA_CONSIGNAR']}"  
+  placeholder="#{idm.AC_CP277}" readonly="#{fondosControlador.accion=='v'?true:false}" tabindex="11" 
+maxlength="20"
+  style="position: absolute; width:243px; height: 24px; text-decoration:none; left: 709px;   top: 160px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputText id="CP278"   widgetVar="CP278"  
+styleClass="inputTab"
+value="#{fondosControlador.registro.campos['DIRECCION']}"  
+  placeholder="#{idm.AC_CP278}" readonly="#{fondosControlador.elementosBloqueados or  fondosControlador.accion=='v'?true:false}" tabindex="13" 
+maxlength="40"
+  style="position: absolute; width:297px; height: 24px; text-decoration:none; left: 183px;   top: 190px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputText id="CP279"   widgetVar="CP279"  
+styleClass="inputTab"
+value="#{fondosControlador.registro.campos['TELEFONO']}"  
+  placeholder="#{idm.AC_CP279}" readonly="#{fondosControlador.elementosBloqueados or  fondosControlador.accion=='v'?true:false}" tabindex="14" 
+maxlength="20"
+  style="position: absolute; width:168px; height: 24px; text-decoration:none; left: 183px;   top: 219px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputText id="CP280"   widgetVar="CP280"  
+styleClass="inputTab"
+value="#{fondosControlador.registro.campos['CORREOELECTRONICO']}"  
+  placeholder="#{idm.AC_CP280}" readonly="#{fondosControlador.elementosBloqueados or  fondosControlador.accion=='v'?true:false}" tabindex="16" 
+maxlength="60"
+  style="position: absolute; width:297px; height: 24px; text-decoration:none; left: 183px;   top: 248px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+ <pe:keyFilter mask="email"/>  
+</p:inputText>
+<p:inputText id="CP55374"   widgetVar="CP55374"  
+styleClass="inputTab"
+value="#{fondosControlador.registro.campos['RUBRO_SIIF_PATRONO']}"  
+   readonly="#{fondosControlador.accion=='v'?true:false}" tabindex="17" 
+ rendered="#{fondosControlador.rubroPatrono}"
+  style="position: absolute; width:168px; height: 24px; text-decoration:none; left: 183px;   top: 277px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputText id="CP55375"   widgetVar="CP55375"  
+styleClass="inputTab"
+value="#{fondosControlador.registro.campos['RUBRO_SIIF_EMPLEADO']}"  
+   readonly="#{fondosControlador.accion=='v'?true:false}" tabindex="19" 
+ rendered="#{fondosControlador.rubroEmpleado}"
+  style="position: absolute; width:168px; height: 24px; text-decoration:none; left: 183px;   top: 307px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<h:outputLabel id="LB177" value="#{idm.TG_PAIS4}"       style="position: absolute; width:168px; height: 24px; left: 10px;   top: 102px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+<h:outputLabel id="LB176" value="#{idm.TT_LB176}"       style="position: absolute; width:168px; height: 24px; left: 10px;   top: 73px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+<h:outputLabel id="LB175" value="#{idm.TG_CODIGO13}"       style="position: absolute; width:168px; height: 24px; left: 10px;   top: 14px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+<p:inputText id="CB56" widgetVar="CB56" onfocus="if(!false){PF('BTCB56').jq.focus();}" onclick="if(!false){PF('PLCB56').show();}" value="#{fondosControlador.registro.campos['NIT']}"   disabled="#{fondosControlador.elementosBloqueados}" tabindex="-1"    
+style="cursor:pointer; position: absolute; width:143px; height: 24px; left: 183px;   top: 43px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#A6A6A6  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />   
+	<p:commandButton id="BTCB56"   onblur="PF('CB56').jq.blur();"  onfocus="PF('CB56').jq.addClass('ui-state-focus');" widgetVar="BTCB56"   disabled="#{fondosControlador.elementosBloqueados}" type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"    
+                                                     style="position: absolute; width:25px; height:  24px; left: 324px;   top: 43px; display:block; "     tabindex="2"    />   
+	<p:overlayPanel widgetVar="PLCB56" id="PLCB56" onShow="if(PF('TBCB56').nuevo){ PF('TBCB56').filter(); PF('TBCB56').nuevo=false;}"  onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB56').jq.focus();}"  my="left" at="left"  for="BTCB56" hideEffect="fade" rendered= "#{fondosControlador.accion!='v'}"  style="width: 500px"   >   
+		<p:dataTable id="TBCB56" widgetVar="TBCB56"  var="reg" value="#{fondosControlador.listaNit}"     
+                                                     editable="true"    
+                                                     emptyMessage="#{idm.TI_EMPTY_MESSAGE}"    
+                                                     currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"   
+                                                     rows="11"   
+                                                     rowIndexVar="rowIndex"   
+                                                     selectionMode="single"   
+                                                     rowKey="#{reg.campos['NIT']}"   
+                                                     paginator="true"   
+                                                     lazy="true">   
+			<p:ajax event="rowSelect" listener="#{fondosControlador.seleccionarFilaNit}" update=":FR33_nuevo:CB56,:FR33_nuevo:CP270"    
+  oncomplete="PF('PLCB56').hide(); "  />   
+			<p:column headerText="#{idm.TG_NIT2}" style="text-align:center; "  width="75" filterBy="#{reg.campos['NIT']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['NIT']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.TG_SUCURSAL}" style="text-align:center; "  width="60" filterBy="#{reg.campos['SUCURSAL']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['SUCURSAL']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.TG_NOMBRE3}" style="text-align:center; "  width="120" filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['NOMBRE']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+		</p:dataTable>   
+    </p:overlayPanel>   
+<p:selectOneMenu filter="true" editable="false"       effect="fade" id="CB55"   widgetVar="CB55"  value="#{fondosControlador.registro.campos['BANCO_PAGO']}" disabled="#{fondosControlador.accion=='v'?true:false}"  tabindex="7"  
+ style="position: absolute; width:243px; height: 24px; left: 709px;   top: 102px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px ;"
+>
+      <f:selectItem/>
+       <f:selectItems value="#{fondosControlador.listaBancoPago}" var="regc" itemLabel="#{regc.campos['NOMBREBANCO']}" itemValue="#{regc.campos['BANCO']}" /></p:selectOneMenu>
+<p:selectOneMenu filter="true" editable="false"       effect="fade" id="CB54"   widgetVar="CB54"  value="#{fondosControlador.registro.campos['CIUDAD']}" disabled="#{fondosControlador.elementosBloqueados or  fondosControlador.accion=='v'?true:false}"  tabindex="10"  
+ style="position: absolute; width:168px; height: 24px; left: 183px;   top: 160px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px ;"
+>
+      <f:selectItem/>
+       <f:selectItems value="#{fondosControlador.listaCiudad}" var="regc" itemLabel="#{regc.campos['NOMBRE']}" itemValue="#{regc.campos['CODIGO']}" /></p:selectOneMenu>
+<p:selectOneMenu filter="true" editable="false"       effect="fade" id="CB53"   widgetVar="CB53"  value="#{fondosControlador.registro.campos['DEPARTAMENTO']}" disabled="#{fondosControlador.elementosBloqueados or  fondosControlador.accion=='v'?true:false}"  tabindex="8"  
+ style="position: absolute; width:168px; height: 24px; left: 183px;   top: 131px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px ;"
+>
+      <p:ajax listener="#{fondosControlador.cambiarDepartamento}" update="
+CB54"     /> 
+      <f:selectItem/>
+       <f:selectItems value="#{fondosControlador.listaDepartamento}" var="regc" itemLabel="#{regc.campos['NOMBRE']}" itemValue="#{regc.campos['CODIGO']}" /></p:selectOneMenu>
+<p:selectOneMenu filter="true" editable="false"       effect="fade" id="CB52"   widgetVar="CB52"  value="#{fondosControlador.registro.campos['PAIS']}" disabled="#{fondosControlador.elementosBloqueados or  fondosControlador.accion=='v'?true:false}"  tabindex="6"  
+ style="position: absolute; width:168px; height: 24px; left: 183px;   top: 102px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#404040; border:#A6A6A6  solid  1px ;"
+>
+      <p:ajax listener="#{fondosControlador.cambiarPais}" update="CB53,CB54"     /> 
+      <f:selectItem/>
+       <f:selectItems value="#{fondosControlador.listaPais}" var="regc" itemLabel="#{regc.campos['NOMBRE']}" itemValue="#{regc.campos['PAIS']}" /></p:selectOneMenu>
+<h:panelGroup id="SF5"  style="position: absolute; width:942px; height: 500px; left: 10px;   top: 336px; "  rendered="#{fondosControlador.ocultarClases}" >
+<div id="PL77" class="
+" style="position: relative; height: 43px; ">
+<h:outputLabel id="LB191" value="#{idm.TT_LB191}"       style="position: absolute; width:519px; height: 24px; left: 0px;   top: 10px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#7F7F7F  none  1px ;"   />
+</div>
+<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}" id="dlg5" widgetVar="dlg5" resizable="false" modal="true"   rendered="#{fondosControlador.permisos[0]}" position="center top" onHide="restaurarCampos(['CB57'])"  >
+                <h:panelGrid columns="2" cellpadding="2">
+                            <h:outputLabel  value="#{idm.TC_CB57}:" id="LCB57"       class="cont-inst-element"/>
+<p:selectOneMenu filter="true"  effect="fade" id="CB57"    editable="false"      widgetVar="CB57"    value="#{fondosControlador.registroSub.campos['CLASE']}"     onchange="" style="
+"  class="cont-inst-element">
+<f:selectItem/>
+ 		<f:selectItems value="#{fondosControlador.listaCLASE}" var="regc" itemLabel="#{regc.campos['NOMBRE']}" itemValue="#{regc.campos['CODIGO']}" />                                   
+                           </p:selectOneMenu>
+                    <f:facet name="footer">
+                        <center>
+                         <p:commandButton value="#{idm.TI_GUARDAR}"  style="padding:10px;"  update=":FR33_nuevo:alert,tablePL78,dlg5," actionListener="#{fondosControlador.agregarRegistroSubSubclasefondo}"
+                                         oncomplete="PF('dlg5').hide();PF('blockNuevoGuardar').hide();"  onclick="    if (!validarVaciosModal(['CB57'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockNuevoGuardar').show();" />
+                         <p:button value="#{idm.TG_CANCELAR}"  style="padding:10px;" href="#"    onclick="PF('dlg5').hide();"/>
+                        </center>    
+                    </f:facet>  
+                </h:panelGrid>
+            </p:dialog>
+<div id="PL78" class="
+" style="position: relative; height: 150px; ">    
+<p:remoteCommand name=
+"refreshTabPL78" update="tablePL78" />
+	<p:dataTable id="tablePL78" var="reg" value="#{fondosControlador.listaSubclasefondo}"    
+		emptyMessage="#{idm.TI_EMPTY_MESSAGE}"    
+		scrollable="true" 
+		scrollHeight="150"   
+		scrollWidth="755"  
+		rowIndexVar="rowNun"  
+		editable="true" widgetVar="tablePL78" 
+		tabindex="21"> 
+	 	<p:ajax event="rowEditInit"   oncomplete="ocultarEditor(); "/>
+		<p:ajax event="rowEdit" update=":FR33_nuevo:alert,tablePL78," onstart="PF('blockNuevoGuardar').show()"  oncomplete="refreshTabPL78(); PF('blockNuevoGuardar').hide();  mostarEditor();" listener="#{fondosControlador.editarRegSubSubclasefondo}" />    
+	  	<p:ajax event="rowEditCancel" update="tablePL78
+"  listener="#{fondosControlador.cancelarEdicionSubclasefondo}" oncomplete=" mostarEditor();"/>    
+	           <f:facet name="header">    
+                                                <div style="position: relative; height: 50px">    
+                                                    <h:panelGroup class="acme" style="width: 50px;"   rendered="#{fondosControlador.accion=='m' 
+}"  >    
+                                                        <h:outputLink value="javascript:void(0)" onclick=" PF('dlg5').show();" title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;" tabindex="21">    
+                                                            <center><p:graphicImage name="/images/menus/32/adds.png"/>    
+                                                                <div style="font-size: 12px">#{idm.TI_NUEVO}</div>    
+                                                            </center>    
+                                                        </h:outputLink>    
+                                                    </h:panelGroup>    
+                                                 </div>    
+			#{idm.TG_CLASIFICACION}
+                                            </f:facet>
+	   <p:column headerText="#{idm.TC_CB57}" width="514"  style="
+">   
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{reg.campos['NOMBRE_CLASEFONDO']}" /></f:facet>
+                        <f:facet name="input">
+						  <h:selectOneMenu  id="CB57"  value="#{reg.campos['CLASE']}" style="width:100%"    onchange="">
+						<f:selectItem/>
+                          <f:selectItems value="#{fondosControlador.listaCLASE}" var="regc" itemLabel="#{regc.campos['NOMBRE']}" itemValue="#{regc.campos['CODIGO']}" /> 
+						  </h:selectOneMenu>	
+						</f:facet>
+                    </p:cellEditor>
+        </p:column>
+<p:column width="30" rendered="#{fondosControlador.accion=='m'}" >
+                    <p:rowEditor 
+/>
+                </p:column>
+<p:column width="30" rendered="#{fondosControlador.accion=='m'}">
+                                <p:commandButton icon="ui-icon-trash"   title="#{idm.TI_ELIMINAR_REGISTRO}" 
+                                                 action="#{fondosControlador.eliminarRegSubSubclasefondo(reg)}" 
+                                                 oncomplete="PF('blockNuevoGuardar').hide(); refreshTabPL78();"
+		      onclick="PF('blockNuevoGuardar').show();"
+                                                 update=":FR33_nuevo:alert,tablePL78,"
+                                                 style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;"
+		      tabindex="21"
+>
+                                     <p:confirm header="#{sessionBean.tituloMensajes}" message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+                                </p:commandButton>
+  </p:column>
+            </p:dataTable>
+</div>
+</h:panelGroup><p:selectBooleanCheckbox id="CK25"  widgetVar="CK25"  
+value="#{fondosControlador.registro.campos['PUBLICO']}" disabled="#{fondosControlador.accion=='v'?true:false}" 
+tabindex="13"  style="position: absolute;  left: 709px;   top: 190px; display:block; "
+>
+</p:selectBooleanCheckbox>
+</div>
+                   <p:blockUI block="nuevoPanel" widgetVar="blockNuevo"  trigger="">
+#{idm.TI_CARGANDO}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                    <p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                </p:panel>
+            </h:form>
+        </section>
+    </ui:define>
+</ui:composition>

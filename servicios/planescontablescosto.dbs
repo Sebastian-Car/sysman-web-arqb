@@ -1,0 +1,106 @@
+﻿<data name="planescontablescosto" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getPlanescontablescostoPagCentroDeCostoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CENTRO_COSTO.CODIGO, CENTRO_COSTO.NOMBRE,(CASE CENTRO_COSTO.MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO FROM PLAN_CONTABLECOSTO LEFT JOIN CENTRO_COSTO ON PLAN_CONTABLECOSTO.COMPANIA = CENTRO_COSTO.COMPANIA AND PLAN_CONTABLECOSTO.CENTRO_COSTO = CENTRO_COSTO.CODIGO WHERE PLAN_CONTABLECOSTO.COMPANIA = :COMPANIA AND CENTRO_COSTO.MOVIMIENTO NOT IN (0) AND PLAN_CONTABLECOSTO.ANO= :ANO AND PLAN_CONTABLECOSTO.CODIGO= :CUENTA ORDER BY CENTRO_COSTO.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN MOVIMIENTO IS NULL THEN ' ' ELSE UPPER(MOVIMIENTO) END)  LIKE UPPER( '%' || :MOVIMIENTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","MOVIMIENTO":"$MOVIMIENTO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="planescontablescosto/centrodecosto/pag">
+		<call-query href="getPlanescontablescostoPagCentroDeCostoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPlanescontablescostoNumCentroDeCostoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CENTRO_COSTO.CODIGO, CENTRO_COSTO.NOMBRE,(CASE CENTRO_COSTO.MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO FROM PLAN_CONTABLECOSTO LEFT JOIN CENTRO_COSTO ON PLAN_CONTABLECOSTO.COMPANIA = CENTRO_COSTO.COMPANIA AND PLAN_CONTABLECOSTO.CENTRO_COSTO = CENTRO_COSTO.CODIGO WHERE PLAN_CONTABLECOSTO.COMPANIA = :COMPANIA AND CENTRO_COSTO.MOVIMIENTO NOT IN (0) AND PLAN_CONTABLECOSTO.ANO= :ANO AND PLAN_CONTABLECOSTO.CODIGO= :CUENTA ORDER BY CENTRO_COSTO.CODIGO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN MOVIMIENTO IS NULL THEN ' ' ELSE UPPER(MOVIMIENTO) END)  LIKE UPPER( '%' || :MOVIMIENTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="planescontablescosto/centrodecosto/num">
+		<call-query href="getPlanescontablescostoNumCentroDeCostoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPlanescontablescostoPagCentrosequivalentesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CENTRO_COSTO.CODIGO, CENTRO_COSTO.NOMBRE,(CASE CENTRO_COSTO.MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO FROM PLAN_CONTABLECOSTO LEFT JOIN CENTRO_COSTO ON PLAN_CONTABLECOSTO.COMPANIA = CENTRO_COSTO.COMPANIA AND PLAN_CONTABLECOSTO.CENTRO_COSTO = CENTRO_COSTO.CODIGO WHERE PLAN_CONTABLECOSTO.COMPANIA =:COMPANIA AND CENTRO_COSTO.MOVIMIENTO NOT IN ( 0 ) AND PLAN_CONTABLECOSTO.ANO =:ANO AND PLAN_CONTABLECOSTO.CODIGO =:CUENTA AND INSTR(:CENTROS,CONCAT('#',CONCAT(CENTRO_COSTO.CODIGO, '#')),1) &gt; 0 ORDER BY CENTRO_COSTO.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN MOVIMIENTO IS NULL THEN ' ' ELSE UPPER(MOVIMIENTO) END) LIKE UPPER(CONCAT(CONCAT('%',:MOVIMIENTO), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","MOVIMIENTO":"$MOVIMIENTO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="CENTROS" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="planescontablescosto/centrosequivalentes/pag">
+		<call-query href="getPlanescontablescostoPagCentrosequivalentesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="CENTROS" query-param="CENTROS"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPlanescontablescostoNumCentrosequivalentesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CENTRO_COSTO.CODIGO, CENTRO_COSTO.NOMBRE,(CASE CENTRO_COSTO.MOVIMIENTO WHEN 0 THEN 'false' ELSE 'true' END) MOVIMIENTO FROM PLAN_CONTABLECOSTO LEFT JOIN CENTRO_COSTO ON PLAN_CONTABLECOSTO.COMPANIA = CENTRO_COSTO.COMPANIA AND PLAN_CONTABLECOSTO.CENTRO_COSTO = CENTRO_COSTO.CODIGO WHERE PLAN_CONTABLECOSTO.COMPANIA =:COMPANIA AND CENTRO_COSTO.MOVIMIENTO NOT IN ( 0 ) AND PLAN_CONTABLECOSTO.ANO =:ANO AND PLAN_CONTABLECOSTO.CODIGO =:CUENTA AND INSTR(:CENTROS,CONCAT('#',CONCAT(CENTRO_COSTO.CODIGO, '#')),1) &gt; 0 ORDER BY CENTRO_COSTO.CODIGO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN MOVIMIENTO IS NULL THEN ' ' ELSE UPPER(MOVIMIENTO) END) LIKE UPPER(CONCAT(CONCAT('%',:MOVIMIENTO), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CUENTA" sqlType="STRING"/>
+		<param name="CENTROS" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MOVIMIENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="planescontablescosto/centrosequivalentes/num">
+		<call-query href="getPlanescontablescostoNumCentrosequivalentesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CUENTA" query-param="CUENTA"/>
+			<with-param name="CENTROS" query-param="CENTROS"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MOVIMIENTO" query-param="MOVIMIENTO"/>
+
+		</call-query>
+	</resource>
+
+</data>

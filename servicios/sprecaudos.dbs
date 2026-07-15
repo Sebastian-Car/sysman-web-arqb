@@ -1,0 +1,312 @@
+﻿<data name="sprecaudos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSprecaudosTodosPorFechaYBancoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NUMEROPAQUETE  FROM SP_RECAUDOS WHERE COMPANIA = :COMPANIA AND FECHA = TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS') AND BANCO = :BANCO ORDER BY NUMEROPAQUETE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NUMEROPAQUETE":"$NUMEROPAQUETE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sprecaudos/todosporfechaybanco">
+		<call-query href="getSprecaudosTodosPorFechaYBancoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSprecaudosPagListarDatosBorrarpagosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_RECAUDOS.COMPANIA, SP_RECAUDOS.BANCO,(TO_CHAR(SP_RECAUDOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, TO_CHAR(SP_RECAUDOS.FECHA,'DD/MM/YYYY') FECHAGR, SP_BANCOS.NOMBRE, SP_RECAUDOS.NUMEROPAQUETE, SP_RECAUDOS.COMENTARIOS  FROM SP_RECAUDOS LEFT JOIN SP_BANCOS ON SP_RECAUDOS.COMPANIA = SP_BANCOS.COMPANIA AND SP_RECAUDOS.BANCO = SP_BANCOS.CODIGO WHERE SP_RECAUDOS.COMPANIA = :COMPANIA AND SP_RECAUDOS.USUARIO = CASE WHEN :CONDICIONUSUARIO IS NULL THEN SP_RECAUDOS.USUARIO ELSE :CONDICIONUSUARIO END AND SP_RECAUDOS.FECHA = CASE WHEN TO_DATE(:CONDICIONFECHA,'DD/MM/YYYY') IS NULL THEN SP_RECAUDOS.FECHA ELSE TO_DATE(:CONDICIONFECHA,'DD/MM/YYYY') END ORDER BY SP_RECAUDOS.COMPANIA, SP_RECAUDOS.FECHA DESC, SP_RECAUDOS.BANCO, SP_RECAUDOS.NUMEROPAQUETE) WHERE (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END)  LIKE UPPER( '%' || :BANCO || '%')  AND (CASE WHEN FECHAGR IS NULL THEN ' ' ELSE UPPER(FECHAGR) END)  LIKE UPPER( '%' || :FECHAGR || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NUMEROPAQUETE IS NULL THEN ' ' ELSE UPPER(NUMEROPAQUETE) END)  LIKE UPPER( '%' || :NUMEROPAQUETE || '%')  AND (CASE WHEN COMENTARIOS IS NULL THEN ' ' ELSE UPPER(COMENTARIOS) END)  LIKE UPPER( '%' || :COMENTARIOS || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","BANCO":"$BANCO","FECHA":"$FECHA","FECHAGR":"$FECHAGR","NOMBRE":"$NOMBRE","NUMEROPAQUETE":"$NUMEROPAQUETE","COMENTARIOS":"$COMENTARIOS"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONDICIONUSUARIO" sqlType="STRING"/>
+		<param name="CONDICIONFECHA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="FECHAGR" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NUMEROPAQUETE" sqlType="STRING"/>
+		<param name="COMENTARIOS" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sprecaudos/listardatosborrarpagos/pag">
+		<call-query href="getSprecaudosPagListarDatosBorrarpagosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONDICIONUSUARIO" query-param="CONDICIONUSUARIO"/>
+			<with-param name="CONDICIONFECHA" query-param="CONDICIONFECHA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="FECHAGR" query-param="FECHAGR"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NUMEROPAQUETE" query-param="NUMEROPAQUETE"/>
+			<with-param name="COMENTARIOS" query-param="COMENTARIOS"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSprecaudosNumListarDatosBorrarpagosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_RECAUDOS.COMPANIA, SP_RECAUDOS.BANCO,(TO_CHAR(SP_RECAUDOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, TO_CHAR(SP_RECAUDOS.FECHA,'DD/MM/YYYY') FECHAGR, SP_BANCOS.NOMBRE, SP_RECAUDOS.NUMEROPAQUETE, SP_RECAUDOS.COMENTARIOS  FROM SP_RECAUDOS LEFT JOIN SP_BANCOS ON SP_RECAUDOS.COMPANIA = SP_BANCOS.COMPANIA AND SP_RECAUDOS.BANCO = SP_BANCOS.CODIGO WHERE SP_RECAUDOS.COMPANIA = :COMPANIA AND SP_RECAUDOS.USUARIO = CASE WHEN :CONDICIONUSUARIO IS NULL THEN SP_RECAUDOS.USUARIO ELSE :CONDICIONUSUARIO END AND SP_RECAUDOS.FECHA = CASE WHEN TO_DATE(:CONDICIONFECHA,'DD/MM/YYYY') IS NULL THEN SP_RECAUDOS.FECHA ELSE TO_DATE(:CONDICIONFECHA,'DD/MM/YYYY') END ORDER BY SP_RECAUDOS.COMPANIA, SP_RECAUDOS.FECHA DESC, SP_RECAUDOS.BANCO, SP_RECAUDOS.NUMEROPAQUETE) WHERE (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END)  LIKE UPPER( '%' || :BANCO || '%')  AND (CASE WHEN FECHAGR IS NULL THEN ' ' ELSE UPPER(FECHAGR) END)  LIKE UPPER( '%' || :FECHAGR || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NUMEROPAQUETE IS NULL THEN ' ' ELSE UPPER(NUMEROPAQUETE) END)  LIKE UPPER( '%' || :NUMEROPAQUETE || '%')  AND (CASE WHEN COMENTARIOS IS NULL THEN ' ' ELSE UPPER(COMENTARIOS) END)  LIKE UPPER( '%' || :COMENTARIOS || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONDICIONUSUARIO" sqlType="STRING"/>
+		<param name="CONDICIONFECHA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="FECHAGR" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NUMEROPAQUETE" sqlType="STRING"/>
+		<param name="COMENTARIOS" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sprecaudos/listardatosborrarpagos/num">
+		<call-query href="getSprecaudosNumListarDatosBorrarpagosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONDICIONUSUARIO" query-param="CONDICIONUSUARIO"/>
+			<with-param name="CONDICIONFECHA" query-param="CONDICIONFECHA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="FECHAGR" query-param="FECHAGR"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NUMEROPAQUETE" query-param="NUMEROPAQUETE"/>
+			<with-param name="COMENTARIOS" query-param="COMENTARIOS"/>
+
+		</call-query>
+	</resource>
+	<query id="getSprecaudosSeleccionarRegistroborrarpagosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SP_RECAUDOS.COMPANIA, SP_RECAUDOS.BANCO, SP_RECAUDOS.NUMEROPAQUETE,(TO_CHAR(SP_RECAUDOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, SP_RECAUDOS.COMENTARIOS, SP_RECAUDOS.USUARIO, SP_RECAUDOS.CREATED_BY, SP_RECAUDOS.MODIFIED_BY,(TO_CHAR(SP_RECAUDOS.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED,(TO_CHAR(SP_RECAUDOS.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, SP_BANCOS.NOMBRE NOMBREBANCO  FROM SP_RECAUDOS LEFT JOIN SP_BANCOS ON SP_RECAUDOS.COMPANIA = SP_BANCOS.COMPANIA AND SP_RECAUDOS.BANCO = SP_BANCOS.CODIGO WHERE SP_RECAUDOS.COMPANIA = :KEY_COMPANIA AND SP_RECAUDOS.BANCO = :KEY_BANCO AND SP_RECAUDOS.NUMEROPAQUETE = :KEY_NUMEROPAQUETE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","BANCO":"$BANCO","NUMEROPAQUETE":"$NUMEROPAQUETE","FECHA":"$FECHA","COMENTARIOS":"$COMENTARIOS","USUARIO":"$USUARIO","CREATED_BY":"$CREATED_BY","MODIFIED_BY":"$MODIFIED_BY","DATE_CREATED":"$DATE_CREATED","DATE_MODIFIED":"$DATE_MODIFIED","NOMBREBANCO":"$NOMBREBANCO"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_BANCO" sqlType="STRING"/>
+		<param name="KEY_NUMEROPAQUETE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sprecaudos/seleccionarregistroborrarpagos">
+		<call-query href="getSprecaudosSeleccionarRegistroborrarpagosQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_BANCO" query-param="KEY_BANCO"/>
+			<with-param name="KEY_NUMEROPAQUETE" query-param="KEY_NUMEROPAQUETE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSprecaudosPagBancosPorCompaniaYFechaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT RECAUDOS.BANCO, BANCOS.NOMBRE,(TO_CHAR(RECAUDOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM SP_RECAUDOS RECAUDOS LEFT JOIN SP_BANCOS BANCOS ON RECAUDOS.COMPANIA = BANCOS.COMPANIA AND RECAUDOS.BANCO = BANCOS.CODIGO WHERE RECAUDOS.COMPANIA = :COMPANIA AND TRUNC(RECAUDOS.FECHA) = TO_DATE(:FECHA,'DD/MM/YYYY')) WHERE (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END)  LIKE UPPER(:BANCO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"BANCO":"$BANCO","NOMBRE":"$NOMBRE","FECHA":"$FECHA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sprecaudos/bancosporcompaniayfecha/pag">
+		<call-query href="getSprecaudosPagBancosPorCompaniaYFechaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSprecaudosNumBancosPorCompaniaYFechaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT RECAUDOS.BANCO, BANCOS.NOMBRE,(TO_CHAR(RECAUDOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA FROM SP_RECAUDOS RECAUDOS LEFT JOIN SP_BANCOS BANCOS ON RECAUDOS.COMPANIA = BANCOS.COMPANIA AND RECAUDOS.BANCO = BANCOS.CODIGO WHERE RECAUDOS.COMPANIA = :COMPANIA AND TRUNC(RECAUDOS.FECHA) = TO_DATE(:FECHA,'DD/MM/YYYY')) WHERE (CASE WHEN BANCO IS NULL THEN ' ' ELSE UPPER(BANCO) END)  LIKE UPPER(:BANCO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sprecaudos/bancosporcompaniayfecha/num">
+		<call-query href="getSprecaudosNumBancosPorCompaniaYFechaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSprecaudos" keyColumns="COMPANIA,BANCO,NUMEROPAQUETE" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SP_RECAUDOS (COMPANIA, BANCO, NUMEROPAQUETE, BARRAS, TIPO, VALORREPORTADO, CUPONESREPORTADOS, VALORREGISTRADO, CUPONESREGISTRADOS, DIFERENCIAVALORES, USUARIO, COMENTARIOS, CREATED_BY, FECHA, DATE_CREATED) VALUES (:COMPANIA, :BANCO, :NUMEROPAQUETE, :BARRAS, :TIPO, :VALORREPORTADO, :CUPONESREPORTADOS, :VALORREGISTRADO, :CUPONESREGISTRADOS, :DIFERENCIAVALORES, :USUARIO, :COMENTARIOS, :CREATED_BY, TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_FECHA":"$FECHA","KEY_BANCO":"$BANCO","KEY_NUMEROPAQUETE":"$NUMEROPAQUETE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="NUMEROPAQUETE" sqlType="STRING"/>
+		<param defaultValue="0" name="BARRAS" sqlType="STRING"/>
+		<param defaultValue="1" name="TIPO" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORREPORTADO" sqlType="STRING"/>
+		<param defaultValue="0" name="CUPONESREPORTADOS" sqlType="STRING"/>
+		<param defaultValue="0" name="VALORREGISTRADO" sqlType="STRING"/>
+		<param defaultValue="0" name="CUPONESREGISTRADOS" sqlType="STRING"/>
+		<param defaultValue="0" name="DIFERENCIAVALORES" sqlType="STRING"/>
+		<param defaultValue="" name="USUARIO" sqlType="STRING"/>
+		<param defaultValue="" name="COMENTARIOS" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="sprecaudos">
+		<call-query href="insertSprecaudos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="NUMEROPAQUETE" query-param="NUMEROPAQUETE"/>
+			<with-param name="BARRAS" query-param="BARRAS"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="VALORREPORTADO" query-param="VALORREPORTADO"/>
+			<with-param name="CUPONESREPORTADOS" query-param="CUPONESREPORTADOS"/>
+			<with-param name="VALORREGISTRADO" query-param="VALORREGISTRADO"/>
+			<with-param name="CUPONESREGISTRADOS" query-param="CUPONESREGISTRADOS"/>
+			<with-param name="DIFERENCIAVALORES" query-param="DIFERENCIAVALORES"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="COMENTARIOS" query-param="COMENTARIOS"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSprecaudos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SP_RECAUDOS WHERE SP_RECAUDOS.COMPANIA= :KEY_COMPANIA AND SP_RECAUDOS.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS')  AND SP_RECAUDOS.BANCO= :KEY_BANCO AND SP_RECAUDOS.NUMEROPAQUETE= :KEY_NUMEROPAQUETE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+		<param name="KEY_BANCO" sqlType="STRING"/>
+		<param name="KEY_NUMEROPAQUETE" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="sprecaudos">
+		<call-query href="deleteSprecaudos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+			<with-param name="KEY_BANCO" query-param="KEY_BANCO"/>
+			<with-param name="KEY_NUMEROPAQUETE" query-param="KEY_NUMEROPAQUETE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSprecaudosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SP_RECAUDOS.COMPANIA, SP_RECAUDOS.BANCO, SP_BANCOS.NOMBRE, SP_RECAUDOS.NUMEROPAQUETE,(TO_CHAR(SP_RECAUDOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, DECODE(SP_RECAUDOS.TIPO,'1','Primer Pago','2','Segundo Pago','D','Pago Doble') AS NOMBRETIPO, SP_RECAUDOS.TIPO , SP_RECAUDOS.VALORREGISTRADO  FROM SP_RECAUDOS INNER JOIN SP_BANCOS ON SP_RECAUDOS.COMPANIA=SP_BANCOS.COMPANIA AND SP_RECAUDOS.BANCO=SP_BANCOS.CODIGO WHERE SP_RECAUDOS.COMPANIA=:COMPANIA) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NUMEROPAQUETE IS NULL THEN ' ' ELSE UPPER(NUMEROPAQUETE) END)  LIKE UPPER(:NUMEROPAQUETE || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN NOMBRETIPO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPO) END)  LIKE UPPER( '%' || :NOMBRETIPO || '%')  AND (CASE WHEN VALORREGISTRADO IS NULL THEN ' ' ELSE UPPER(VALORREGISTRADO) END)  LIKE UPPER(:VALORREGISTRADO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","BANCO":"$BANCO","NOMBRE":"$NOMBRE","NUMEROPAQUETE":"$NUMEROPAQUETE","FECHA":"$FECHA","NOMBRETIPO":"$NOMBRETIPO","TIPO":"$TIPO","VALORREGISTRADO":"$VALORREGISTRADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NUMEROPAQUETE" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NOMBRETIPO" sqlType="STRING"/>
+		<param name="VALORREGISTRADO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sprecaudos">
+		<call-query href="getSprecaudosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NUMEROPAQUETE" query-param="NUMEROPAQUETE"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NOMBRETIPO" query-param="NOMBRETIPO"/>
+			<with-param name="VALORREGISTRADO" query-param="VALORREGISTRADO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSprecaudosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SP_RECAUDOS.COMPANIA, SP_RECAUDOS.BANCO, SP_BANCOS.NOMBRE, SP_RECAUDOS.NUMEROPAQUETE,(TO_CHAR(SP_RECAUDOS.FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, DECODE(SP_RECAUDOS.TIPO,'1','Primer Pago','2','Segundo Pago','D','Pago Doble') AS NOMBRETIPO, SP_RECAUDOS.TIPO , SP_RECAUDOS.VALORREGISTRADO  FROM SP_RECAUDOS INNER JOIN SP_BANCOS ON SP_RECAUDOS.COMPANIA=SP_BANCOS.COMPANIA AND SP_RECAUDOS.BANCO=SP_BANCOS.CODIGO WHERE SP_RECAUDOS.COMPANIA=:COMPANIA) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NUMEROPAQUETE IS NULL THEN ' ' ELSE UPPER(NUMEROPAQUETE) END)  LIKE UPPER(:NUMEROPAQUETE || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN NOMBRETIPO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPO) END)  LIKE UPPER( '%' || :NOMBRETIPO || '%')  AND (CASE WHEN VALORREGISTRADO IS NULL THEN ' ' ELSE UPPER(VALORREGISTRADO) END)  LIKE UPPER(:VALORREGISTRADO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NUMEROPAQUETE" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="NOMBRETIPO" sqlType="STRING"/>
+		<param name="VALORREGISTRADO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sprecaudos/numero">
+		<call-query href="getSprecaudosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NUMEROPAQUETE" query-param="NUMEROPAQUETE"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="NOMBRETIPO" query-param="NOMBRETIPO"/>
+			<with-param name="VALORREGISTRADO" query-param="VALORREGISTRADO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSprecaudosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, BANCO, NUMEROPAQUETE,BARRAS, TIPO, VALORREPORTADO, CUPONESREPORTADOS, VALORREGISTRADO, CUPONESREGISTRADOS, DIFERENCIAVALORES, USUARIO, COMENTARIOS, CREATED_BY, MODIFIED_BY,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM SP_RECAUDOS WHERE SP_RECAUDOS.COMPANIA= :KEY_COMPANIA AND SP_RECAUDOS.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS') AND SP_RECAUDOS.BANCO= :KEY_BANCO AND SP_RECAUDOS.NUMEROPAQUETE= :KEY_NUMEROPAQUETE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","BANCO":"$BANCO","NUMEROPAQUETE":"$NUMEROPAQUETE","BARRAS":"$BARRAS(type:integer)","TIPO":"$TIPO","VALORREPORTADO":"$VALORREPORTADO","CUPONESREPORTADOS":"$CUPONESREPORTADOS","VALORREGISTRADO":"$VALORREGISTRADO","CUPONESREGISTRADOS":"$CUPONESREGISTRADOS","DIFERENCIAVALORES":"$DIFERENCIAVALORES","USUARIO":"$USUARIO","COMENTARIOS":"$COMENTARIOS","CREATED_BY":"$CREATED_BY","MODIFIED_BY":"$MODIFIED_BY","FECHA":"$FECHA","DATE_CREATED":"$DATE_CREATED","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+		<param name="KEY_BANCO" sqlType="STRING"/>
+		<param name="KEY_NUMEROPAQUETE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sprecaudos/data">
+		<call-query href="getSprecaudosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+			<with-param name="KEY_BANCO" query-param="KEY_BANCO"/>
+			<with-param name="KEY_NUMEROPAQUETE" query-param="KEY_NUMEROPAQUETE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSprecaudos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SP_RECAUDOS SET COMPANIA=:COMPANIA, BANCO=:BANCO, NUMEROPAQUETE=:NUMEROPAQUETE, BARRAS=:BARRAS, TIPO=:TIPO, VALORREPORTADO=:VALORREPORTADO, CUPONESREPORTADOS=:CUPONESREPORTADOS, VALORREGISTRADO=:VALORREGISTRADO, CUPONESREGISTRADOS=:CUPONESREGISTRADOS, DIFERENCIAVALORES=:DIFERENCIAVALORES, USUARIO=:USUARIO, COMENTARIOS=:COMENTARIOS, MODIFIED_BY=:MODIFIED_BY, FECHA=TO_DATE(:FECHA,'DD/MM/YYYY HH24:MI:SS'), DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE SP_RECAUDOS.COMPANIA= :KEY_COMPANIA AND SP_RECAUDOS.FECHA= TO_DATE(:KEY_FECHA,'DD/MM/YYYY HH24:MI:SS')  AND SP_RECAUDOS.BANCO= :KEY_BANCO AND SP_RECAUDOS.NUMEROPAQUETE= :KEY_NUMEROPAQUETE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="BANCO" sqlType="STRING"/>
+		<param name="NUMEROPAQUETE" sqlType="STRING"/>
+		<param name="BARRAS" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="VALORREPORTADO" sqlType="STRING"/>
+		<param name="CUPONESREPORTADOS" sqlType="STRING"/>
+		<param name="VALORREGISTRADO" sqlType="STRING"/>
+		<param name="CUPONESREGISTRADOS" sqlType="STRING"/>
+		<param name="DIFERENCIAVALORES" sqlType="STRING"/>
+		<param name="USUARIO" sqlType="STRING"/>
+		<param name="COMENTARIOS" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_FECHA" sqlType="STRING"/>
+		<param name="KEY_BANCO" sqlType="STRING"/>
+		<param name="KEY_NUMEROPAQUETE" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="sprecaudos">
+		<call-query href="updateSprecaudos">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="BANCO" query-param="BANCO"/>
+			<with-param name="NUMEROPAQUETE" query-param="NUMEROPAQUETE"/>
+			<with-param name="BARRAS" query-param="BARRAS"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="VALORREPORTADO" query-param="VALORREPORTADO"/>
+			<with-param name="CUPONESREPORTADOS" query-param="CUPONESREPORTADOS"/>
+			<with-param name="VALORREGISTRADO" query-param="VALORREGISTRADO"/>
+			<with-param name="CUPONESREGISTRADOS" query-param="CUPONESREGISTRADOS"/>
+			<with-param name="DIFERENCIAVALORES" query-param="DIFERENCIAVALORES"/>
+			<with-param name="USUARIO" query-param="USUARIO"/>
+			<with-param name="COMENTARIOS" query-param="COMENTARIOS"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_FECHA" query-param="KEY_FECHA"/>
+			<with-param name="KEY_BANCO" query-param="KEY_BANCO"/>
+			<with-param name="KEY_NUMEROPAQUETE" query-param="KEY_NUMEROPAQUETE"/>
+
+		</call-query>
+	</resource>
+
+</data>

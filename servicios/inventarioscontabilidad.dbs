@@ -1,0 +1,357 @@
+﻿<data name="inventarioscontabilidad" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getInventarioscontabilidadExisteElementoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COUNT(*) CUENTA  FROM INVENTARIOCONTABILIDAD WHERE COMPANIA= :COMPANIA AND ANO= :ANO AND CODIGOELEMENTO= :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CUENTA":"$CUENTA(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="inventarioscontabilidad/existeelemento">
+		<call-query href="getInventarioscontabilidadExisteElementoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertInventarioscontabilidadInvContabilidad" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO INVENTARIOCONTABILIDAD (COMPANIA, CODIGOELEMENTO, ANO, CREATED_BY, DATE_CREATED) VALUES (:COMPANIA, :CODIGOELEMENTO, :ANO, :CREATED_BY, :DATE_CREATED)</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="inventarioscontabilidad/invcontabilidad">
+		<call-query href="insertInventarioscontabilidadInvContabilidad">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+
+		</call-query>
+	</resource>
+	<query id="getInventarioscontabilidadPagCodigoNombreConMovQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT INVENTARIO.CODIGOELEMENTO, INVENTARIO.NOMBRECORTO  FROM INVENTARIO WHERE INVENTARIO.COMPANIA = :COMPANIA AND INVENTARIO.TIENEMOVIMIENTO NOT IN (0)) WHERE (CASE WHEN CODIGOELEMENTO IS NULL THEN ' ' ELSE UPPER(CODIGOELEMENTO) END)  LIKE UPPER(:CODIGOELEMENTO || '%')  AND (CASE WHEN NOMBRECORTO IS NULL THEN ' ' ELSE UPPER(NOMBRECORTO) END)  LIKE UPPER( '%' || :NOMBRECORTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGOELEMENTO":"$CODIGOELEMENTO","NOMBRECORTO":"$NOMBRECORTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="NOMBRECORTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="inventarioscontabilidad/codigonombreconmov/pag">
+		<call-query href="getInventarioscontabilidadPagCodigoNombreConMovQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="NOMBRECORTO" query-param="NOMBRECORTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getInventarioscontabilidadNumCodigoNombreConMovQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT INVENTARIO.CODIGOELEMENTO, INVENTARIO.NOMBRECORTO  FROM INVENTARIO WHERE INVENTARIO.COMPANIA = :COMPANIA AND INVENTARIO.TIENEMOVIMIENTO NOT IN (0)) WHERE (CASE WHEN CODIGOELEMENTO IS NULL THEN ' ' ELSE UPPER(CODIGOELEMENTO) END)  LIKE UPPER(:CODIGOELEMENTO || '%')  AND (CASE WHEN NOMBRECORTO IS NULL THEN ' ' ELSE UPPER(NOMBRECORTO) END)  LIKE UPPER( '%' || :NOMBRECORTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="NOMBRECORTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="inventarioscontabilidad/codigonombreconmov/num">
+		<call-query href="getInventarioscontabilidadNumCodigoNombreConMovQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="NOMBRECORTO" query-param="NOMBRECORTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getInventarioscontabilidadContieneElementosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  'X' EXISTE  FROM INVENTARIOCONTABILIDAD WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND CODIGOELEMENTO= :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"EXISTE":"$EXISTE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="inventarioscontabilidad/contieneelementos">
+		<call-query href="getInventarioscontabilidadContieneElementosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertInventarioscontabilidad" keyColumns="COMPANIA,CODIGOELEMENTO,ANO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO INVENTARIOCONTABILIDAD (COMPANIA, CODIGOELEMENTO, ANO, AJUSINFLACREDITO, AJUSINFLADEBITO, AJUSDEPRECCREDITO, AJUSDEPRECDEBITO, DEPRECCREDITO, DEPRECDEBITO, COSTOSALDB, COSTOSALCR, COSTOSALAJDB, COSTOSALAJCR, AJUSINFLADEBITOS, AJUSINFLACREDITOS, DEPRECDEBITOS, DEPRECCREDITOS, AJUSDEPRECDEBITOS, AJUSDEPRECCREDITOS, DEPACUMULADADB, DEPACUMULADACR, AJUSTEDEPRECIACIONDB, AJUSTEDEPRECIACIONCR, DEPRECDEBITOCOMODATO1, DEPRECCREDITOCOMODATO, DEPRECDEBITOSCOMODATO, DEPRECCREDITOSCOMODATO, DEPACUMULADADBCOMODATO, DEPACUMULADACRCOMODATO, DEPCUANTIAMIN_DEB, DEPCUANTIAMIN_CRE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGOELEMENTO, :ANO, :AJUSINFLACREDITO, :AJUSINFLADEBITO, :AJUSDEPRECCREDITO, :AJUSDEPRECDEBITO, :DEPRECCREDITO, :DEPRECDEBITO, :COSTOSALDB, :COSTOSALCR, :COSTOSALAJDB, :COSTOSALAJCR, :AJUSINFLADEBITOS, :AJUSINFLACREDITOS, :DEPRECDEBITOS, :DEPRECCREDITOS, :AJUSDEPRECDEBITOS, :AJUSDEPRECCREDITOS, :DEPACUMULADADB, :DEPACUMULADACR, :AJUSTEDEPRECIACIONDB, :AJUSTEDEPRECIACIONCR, :DEPRECDEBITOCOMODATO1, :DEPRECCREDITOCOMODATO, :DEPRECDEBITOSCOMODATO, :DEPRECCREDITOSCOMODATO, :DEPACUMULADADBCOMODATO, :DEPACUMULADACRCOMODATO, :DEPCUANTIAMIN_DEB, :DEPCUANTIAMIN_CRE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGOELEMENTO":"$CODIGOELEMENTO","KEY_ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param defaultValue="" name="AJUSINFLACREDITO" sqlType="STRING"/>
+		<param defaultValue="" name="AJUSINFLADEBITO" sqlType="STRING"/>
+		<param defaultValue="" name="AJUSDEPRECCREDITO" sqlType="STRING"/>
+		<param defaultValue="" name="AJUSDEPRECDEBITO" sqlType="STRING"/>
+		<param defaultValue="" name="DEPRECCREDITO" sqlType="STRING"/>
+		<param defaultValue="" name="DEPRECDEBITO" sqlType="STRING"/>
+		<param defaultValue="" name="COSTOSALDB" sqlType="STRING"/>
+		<param defaultValue="" name="COSTOSALCR" sqlType="STRING"/>
+		<param defaultValue="" name="COSTOSALAJDB" sqlType="STRING"/>
+		<param defaultValue="" name="COSTOSALAJCR" sqlType="STRING"/>
+		<param defaultValue="" name="AJUSINFLADEBITOS" sqlType="STRING"/>
+		<param defaultValue="" name="AJUSINFLACREDITOS" sqlType="STRING"/>
+		<param defaultValue="" name="DEPRECDEBITOS" sqlType="STRING"/>
+		<param defaultValue="" name="DEPRECCREDITOS" sqlType="STRING"/>
+		<param defaultValue="" name="AJUSDEPRECDEBITOS" sqlType="STRING"/>
+		<param defaultValue="" name="AJUSDEPRECCREDITOS" sqlType="STRING"/>
+		<param defaultValue="" name="DEPACUMULADADB" sqlType="STRING"/>
+		<param defaultValue="" name="DEPACUMULADACR" sqlType="STRING"/>
+		<param defaultValue="" name="AJUSTEDEPRECIACIONDB" sqlType="STRING"/>
+		<param defaultValue="" name="AJUSTEDEPRECIACIONCR" sqlType="STRING"/>
+		<param defaultValue="" name="DEPRECDEBITOCOMODATO1" sqlType="STRING"/>
+		<param defaultValue="" name="DEPRECCREDITOCOMODATO" sqlType="STRING"/>
+		<param defaultValue="" name="DEPRECDEBITOSCOMODATO" sqlType="STRING"/>
+		<param defaultValue="" name="DEPRECCREDITOSCOMODATO" sqlType="STRING"/>
+		<param defaultValue="" name="DEPACUMULADADBCOMODATO" sqlType="STRING"/>
+		<param defaultValue="" name="DEPACUMULADACRCOMODATO" sqlType="STRING"/>
+		<param defaultValue="" name="DEPCUANTIAMIN_DEB" sqlType="STRING"/>
+		<param defaultValue="" name="DEPCUANTIAMIN_CRE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="inventarioscontabilidad">
+		<call-query href="insertInventarioscontabilidad">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="AJUSINFLACREDITO" query-param="AJUSINFLACREDITO"/>
+			<with-param name="AJUSINFLADEBITO" query-param="AJUSINFLADEBITO"/>
+			<with-param name="AJUSDEPRECCREDITO" query-param="AJUSDEPRECCREDITO"/>
+			<with-param name="AJUSDEPRECDEBITO" query-param="AJUSDEPRECDEBITO"/>
+			<with-param name="DEPRECCREDITO" query-param="DEPRECCREDITO"/>
+			<with-param name="DEPRECDEBITO" query-param="DEPRECDEBITO"/>
+			<with-param name="COSTOSALDB" query-param="COSTOSALDB"/>
+			<with-param name="COSTOSALCR" query-param="COSTOSALCR"/>
+			<with-param name="COSTOSALAJDB" query-param="COSTOSALAJDB"/>
+			<with-param name="COSTOSALAJCR" query-param="COSTOSALAJCR"/>
+			<with-param name="AJUSINFLADEBITOS" query-param="AJUSINFLADEBITOS"/>
+			<with-param name="AJUSINFLACREDITOS" query-param="AJUSINFLACREDITOS"/>
+			<with-param name="DEPRECDEBITOS" query-param="DEPRECDEBITOS"/>
+			<with-param name="DEPRECCREDITOS" query-param="DEPRECCREDITOS"/>
+			<with-param name="AJUSDEPRECDEBITOS" query-param="AJUSDEPRECDEBITOS"/>
+			<with-param name="AJUSDEPRECCREDITOS" query-param="AJUSDEPRECCREDITOS"/>
+			<with-param name="DEPACUMULADADB" query-param="DEPACUMULADADB"/>
+			<with-param name="DEPACUMULADACR" query-param="DEPACUMULADACR"/>
+			<with-param name="AJUSTEDEPRECIACIONDB" query-param="AJUSTEDEPRECIACIONDB"/>
+			<with-param name="AJUSTEDEPRECIACIONCR" query-param="AJUSTEDEPRECIACIONCR"/>
+			<with-param name="DEPRECDEBITOCOMODATO1" query-param="DEPRECDEBITOCOMODATO1"/>
+			<with-param name="DEPRECCREDITOCOMODATO" query-param="DEPRECCREDITOCOMODATO"/>
+			<with-param name="DEPRECDEBITOSCOMODATO" query-param="DEPRECDEBITOSCOMODATO"/>
+			<with-param name="DEPRECCREDITOSCOMODATO" query-param="DEPRECCREDITOSCOMODATO"/>
+			<with-param name="DEPACUMULADADBCOMODATO" query-param="DEPACUMULADADBCOMODATO"/>
+			<with-param name="DEPACUMULADACRCOMODATO" query-param="DEPACUMULADACRCOMODATO"/>
+			<with-param name="DEPCUANTIAMIN_DEB" query-param="DEPCUANTIAMIN_DEB"/>
+			<with-param name="DEPCUANTIAMIN_CRE" query-param="DEPCUANTIAMIN_CRE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteInventarioscontabilidad" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM INVENTARIOCONTABILIDAD WHERE INVENTARIOCONTABILIDAD.COMPANIA= :KEY_COMPANIA AND INVENTARIOCONTABILIDAD.CODIGOELEMENTO= :KEY_CODIGOELEMENTO AND INVENTARIOCONTABILIDAD.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="inventarioscontabilidad">
+		<call-query href="deleteInventarioscontabilidad">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOELEMENTO" query-param="KEY_CODIGOELEMENTO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getInventarioscontabilidadPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CODIGOELEMENTO, ANO, AJUSINFLACREDITO, AJUSINFLADEBITO, AJUSDEPRECCREDITO, AJUSDEPRECDEBITO, DEPRECCREDITO, DEPRECDEBITO  FROM INVENTARIOCONTABILIDAD WHERE INVENTARIOCONTABILIDAD.COMPANIA = :COMPANIA AND INVENTARIOCONTABILIDAD.CODIGOELEMENTO = :CODIGO AND INVENTARIOCONTABILIDAD.ANO = :ANO) WHERE (CASE WHEN CODIGOELEMENTO IS NULL THEN ' ' ELSE UPPER(CODIGOELEMENTO) END)  LIKE UPPER(:CODIGOELEMENTO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%')  AND (CASE WHEN AJUSINFLACREDITO IS NULL THEN ' ' ELSE UPPER(AJUSINFLACREDITO) END)  LIKE UPPER(:AJUSINFLACREDITO || '%')  AND (CASE WHEN AJUSINFLADEBITO IS NULL THEN ' ' ELSE UPPER(AJUSINFLADEBITO) END)  LIKE UPPER(:AJUSINFLADEBITO || '%')  AND (CASE WHEN AJUSDEPRECCREDITO IS NULL THEN ' ' ELSE UPPER(AJUSDEPRECCREDITO) END)  LIKE UPPER(:AJUSDEPRECCREDITO || '%')  AND (CASE WHEN AJUSDEPRECDEBITO IS NULL THEN ' ' ELSE UPPER(AJUSDEPRECDEBITO) END)  LIKE UPPER(:AJUSDEPRECDEBITO || '%')  AND (CASE WHEN DEPRECCREDITO IS NULL THEN ' ' ELSE UPPER(DEPRECCREDITO) END)  LIKE UPPER(:DEPRECCREDITO || '%')  AND (CASE WHEN DEPRECDEBITO IS NULL THEN ' ' ELSE UPPER(DEPRECDEBITO) END)  LIKE UPPER(:DEPRECDEBITO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGOELEMENTO":"$CODIGOELEMENTO","ANO":"$ANO(type:integer)","AJUSINFLACREDITO":"$AJUSINFLACREDITO","AJUSINFLADEBITO":"$AJUSINFLADEBITO","AJUSDEPRECCREDITO":"$AJUSDEPRECCREDITO","AJUSDEPRECDEBITO":"$AJUSDEPRECDEBITO","DEPRECCREDITO":"$DEPRECCREDITO","DEPRECDEBITO":"$DEPRECDEBITO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="AJUSINFLACREDITO" sqlType="STRING"/>
+		<param name="AJUSINFLADEBITO" sqlType="STRING"/>
+		<param name="AJUSDEPRECCREDITO" sqlType="STRING"/>
+		<param name="AJUSDEPRECDEBITO" sqlType="STRING"/>
+		<param name="DEPRECCREDITO" sqlType="STRING"/>
+		<param name="DEPRECDEBITO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="inventarioscontabilidad">
+		<call-query href="getInventarioscontabilidadPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="AJUSINFLACREDITO" query-param="AJUSINFLACREDITO"/>
+			<with-param name="AJUSINFLADEBITO" query-param="AJUSINFLADEBITO"/>
+			<with-param name="AJUSDEPRECCREDITO" query-param="AJUSDEPRECCREDITO"/>
+			<with-param name="AJUSDEPRECDEBITO" query-param="AJUSDEPRECDEBITO"/>
+			<with-param name="DEPRECCREDITO" query-param="DEPRECCREDITO"/>
+			<with-param name="DEPRECDEBITO" query-param="DEPRECDEBITO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getInventarioscontabilidadNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CODIGOELEMENTO, ANO, AJUSINFLACREDITO, AJUSINFLADEBITO, AJUSDEPRECCREDITO, AJUSDEPRECDEBITO, DEPRECCREDITO, DEPRECDEBITO  FROM INVENTARIOCONTABILIDAD WHERE INVENTARIOCONTABILIDAD.COMPANIA = :COMPANIA AND INVENTARIOCONTABILIDAD.CODIGOELEMENTO = :CODIGO AND INVENTARIOCONTABILIDAD.ANO = :ANO) WHERE (CASE WHEN CODIGOELEMENTO IS NULL THEN ' ' ELSE UPPER(CODIGOELEMENTO) END)  LIKE UPPER(:CODIGOELEMENTO || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER( '%' || :ANO || '%')  AND (CASE WHEN AJUSINFLACREDITO IS NULL THEN ' ' ELSE UPPER(AJUSINFLACREDITO) END)  LIKE UPPER( '%' || :AJUSINFLACREDITO || '%')  AND (CASE WHEN AJUSINFLADEBITO IS NULL THEN ' ' ELSE UPPER(AJUSINFLADEBITO) END)  LIKE UPPER( '%' || :AJUSINFLADEBITO || '%')  AND (CASE WHEN AJUSDEPRECCREDITO IS NULL THEN ' ' ELSE UPPER(AJUSDEPRECCREDITO) END)  LIKE UPPER( '%' || :AJUSDEPRECCREDITO || '%')  AND (CASE WHEN AJUSDEPRECDEBITO IS NULL THEN ' ' ELSE UPPER(AJUSDEPRECDEBITO) END)  LIKE UPPER( '%' || :AJUSDEPRECDEBITO || '%')  AND (CASE WHEN DEPRECCREDITO IS NULL THEN ' ' ELSE UPPER(DEPRECCREDITO) END)  LIKE UPPER( '%' || :DEPRECCREDITO || '%')  AND (CASE WHEN DEPRECDEBITO IS NULL THEN ' ' ELSE UPPER(DEPRECDEBITO) END)  LIKE UPPER( '%' || :DEPRECDEBITO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="AJUSINFLACREDITO" sqlType="STRING"/>
+		<param name="AJUSINFLADEBITO" sqlType="STRING"/>
+		<param name="AJUSDEPRECCREDITO" sqlType="STRING"/>
+		<param name="AJUSDEPRECDEBITO" sqlType="STRING"/>
+		<param name="DEPRECCREDITO" sqlType="STRING"/>
+		<param name="DEPRECDEBITO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="inventarioscontabilidad/numero">
+		<call-query href="getInventarioscontabilidadNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="AJUSINFLACREDITO" query-param="AJUSINFLACREDITO"/>
+			<with-param name="AJUSINFLADEBITO" query-param="AJUSINFLADEBITO"/>
+			<with-param name="AJUSDEPRECCREDITO" query-param="AJUSDEPRECCREDITO"/>
+			<with-param name="AJUSDEPRECDEBITO" query-param="AJUSDEPRECDEBITO"/>
+			<with-param name="DEPRECCREDITO" query-param="DEPRECCREDITO"/>
+			<with-param name="DEPRECDEBITO" query-param="DEPRECDEBITO"/>
+
+		</call-query>
+	</resource>
+	<query id="getInventarioscontabilidadRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, CODIGOELEMENTO, ANO, AJUSINFLACREDITO, AJUSINFLADEBITO, AJUSDEPRECCREDITO, AJUSDEPRECDEBITO, DEPRECCREDITO, DEPRECDEBITO, COSTOSALDB, COSTOSALCR, COSTOSALAJDB, COSTOSALAJCR, AJUSINFLADEBITOS, AJUSINFLACREDITOS, DEPRECDEBITOS, DEPRECCREDITOS, AJUSDEPRECDEBITOS, AJUSDEPRECCREDITOS, DEPACUMULADADB, DEPACUMULADACR, AJUSTEDEPRECIACIONDB, AJUSTEDEPRECIACIONCR, DEPRECDEBITOCOMODATO1, DEPRECCREDITOCOMODATO, DEPRECDEBITOSCOMODATO, DEPRECCREDITOSCOMODATO, DEPACUMULADADBCOMODATO, DEPACUMULADACRCOMODATO, DEPCUANTIAMIN_DEB, DEPCUANTIAMIN_CRE, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM INVENTARIOCONTABILIDAD WHERE INVENTARIOCONTABILIDAD.COMPANIA= :KEY_COMPANIA AND INVENTARIOCONTABILIDAD.CODIGOELEMENTO= :KEY_CODIGOELEMENTO AND INVENTARIOCONTABILIDAD.ANO= :KEY_ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGOELEMENTO":"$CODIGOELEMENTO","ANO":"$ANO(type:integer)","AJUSINFLACREDITO":"$AJUSINFLACREDITO","AJUSINFLADEBITO":"$AJUSINFLADEBITO","AJUSDEPRECCREDITO":"$AJUSDEPRECCREDITO","AJUSDEPRECDEBITO":"$AJUSDEPRECDEBITO","DEPRECCREDITO":"$DEPRECCREDITO","DEPRECDEBITO":"$DEPRECDEBITO","COSTOSALDB":"$COSTOSALDB","COSTOSALCR":"$COSTOSALCR","COSTOSALAJDB":"$COSTOSALAJDB","COSTOSALAJCR":"$COSTOSALAJCR","AJUSINFLADEBITOS":"$AJUSINFLADEBITOS","AJUSINFLACREDITOS":"$AJUSINFLACREDITOS","DEPRECDEBITOS":"$DEPRECDEBITOS","DEPRECCREDITOS":"$DEPRECCREDITOS","AJUSDEPRECDEBITOS":"$AJUSDEPRECDEBITOS","AJUSDEPRECCREDITOS":"$AJUSDEPRECCREDITOS","DEPACUMULADADB":"$DEPACUMULADADB","DEPACUMULADACR":"$DEPACUMULADACR","AJUSTEDEPRECIACIONDB":"$AJUSTEDEPRECIACIONDB","AJUSTEDEPRECIACIONCR":"$AJUSTEDEPRECIACIONCR","DEPRECDEBITOCOMODATO1":"$DEPRECDEBITOCOMODATO1","DEPRECCREDITOCOMODATO":"$DEPRECCREDITOCOMODATO","DEPRECDEBITOSCOMODATO":"$DEPRECDEBITOSCOMODATO","DEPRECCREDITOSCOMODATO":"$DEPRECCREDITOSCOMODATO","DEPACUMULADADBCOMODATO":"$DEPACUMULADADBCOMODATO","DEPACUMULADACRCOMODATO":"$DEPACUMULADACRCOMODATO","DEPCUANTIAMIN_DEB":"$DEPCUANTIAMIN_DEB","DEPCUANTIAMIN_CRE":"$DEPCUANTIAMIN_CRE","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="inventarioscontabilidad/data">
+		<call-query href="getInventarioscontabilidadRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOELEMENTO" query-param="KEY_CODIGOELEMENTO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateInventarioscontabilidad" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE INVENTARIOCONTABILIDAD SET COMPANIA=:COMPANIA, CODIGOELEMENTO=:CODIGOELEMENTO, ANO=:ANO, AJUSINFLACREDITO=:AJUSINFLACREDITO, AJUSINFLADEBITO=:AJUSINFLADEBITO, AJUSDEPRECCREDITO=:AJUSDEPRECCREDITO, AJUSDEPRECDEBITO=:AJUSDEPRECDEBITO, DEPRECCREDITO=:DEPRECCREDITO, DEPRECDEBITO=:DEPRECDEBITO, COSTOSALDB=:COSTOSALDB, COSTOSALCR=:COSTOSALCR, COSTOSALAJDB=:COSTOSALAJDB, COSTOSALAJCR=:COSTOSALAJCR, AJUSINFLADEBITOS=:AJUSINFLADEBITOS, AJUSINFLACREDITOS=:AJUSINFLACREDITOS, DEPRECDEBITOS=:DEPRECDEBITOS, DEPRECCREDITOS=:DEPRECCREDITOS, AJUSDEPRECDEBITOS=:AJUSDEPRECDEBITOS, AJUSDEPRECCREDITOS=:AJUSDEPRECCREDITOS, DEPACUMULADADB=:DEPACUMULADADB, DEPACUMULADACR=:DEPACUMULADACR, AJUSTEDEPRECIACIONDB=:AJUSTEDEPRECIACIONDB, AJUSTEDEPRECIACIONCR=:AJUSTEDEPRECIACIONCR, DEPRECDEBITOCOMODATO1=:DEPRECDEBITOCOMODATO1, DEPRECCREDITOCOMODATO=:DEPRECCREDITOCOMODATO, DEPRECDEBITOSCOMODATO=:DEPRECDEBITOSCOMODATO, DEPRECCREDITOSCOMODATO=:DEPRECCREDITOSCOMODATO, DEPACUMULADADBCOMODATO=:DEPACUMULADADBCOMODATO, DEPACUMULADACRCOMODATO=:DEPACUMULADACRCOMODATO, DEPCUANTIAMIN_DEB=:DEPCUANTIAMIN_DEB, DEPCUANTIAMIN_CRE=:DEPCUANTIAMIN_CRE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE INVENTARIOCONTABILIDAD.COMPANIA= :KEY_COMPANIA AND INVENTARIOCONTABILIDAD.CODIGOELEMENTO= :KEY_CODIGOELEMENTO AND INVENTARIOCONTABILIDAD.ANO= :KEY_ANO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="AJUSINFLACREDITO" sqlType="STRING"/>
+		<param name="AJUSINFLADEBITO" sqlType="STRING"/>
+		<param name="AJUSDEPRECCREDITO" sqlType="STRING"/>
+		<param name="AJUSDEPRECDEBITO" sqlType="STRING"/>
+		<param name="DEPRECCREDITO" sqlType="STRING"/>
+		<param name="DEPRECDEBITO" sqlType="STRING"/>
+		<param name="COSTOSALDB" sqlType="STRING"/>
+		<param name="COSTOSALCR" sqlType="STRING"/>
+		<param name="COSTOSALAJDB" sqlType="STRING"/>
+		<param name="COSTOSALAJCR" sqlType="STRING"/>
+		<param name="AJUSINFLADEBITOS" sqlType="STRING"/>
+		<param name="AJUSINFLACREDITOS" sqlType="STRING"/>
+		<param name="DEPRECDEBITOS" sqlType="STRING"/>
+		<param name="DEPRECCREDITOS" sqlType="STRING"/>
+		<param name="AJUSDEPRECDEBITOS" sqlType="STRING"/>
+		<param name="AJUSDEPRECCREDITOS" sqlType="STRING"/>
+		<param name="DEPACUMULADADB" sqlType="STRING"/>
+		<param name="DEPACUMULADACR" sqlType="STRING"/>
+		<param name="AJUSTEDEPRECIACIONDB" sqlType="STRING"/>
+		<param name="AJUSTEDEPRECIACIONCR" sqlType="STRING"/>
+		<param name="DEPRECDEBITOCOMODATO1" sqlType="STRING"/>
+		<param name="DEPRECCREDITOCOMODATO" sqlType="STRING"/>
+		<param name="DEPRECDEBITOSCOMODATO" sqlType="STRING"/>
+		<param name="DEPRECCREDITOSCOMODATO" sqlType="STRING"/>
+		<param name="DEPACUMULADADBCOMODATO" sqlType="STRING"/>
+		<param name="DEPACUMULADACRCOMODATO" sqlType="STRING"/>
+		<param name="DEPCUANTIAMIN_DEB" sqlType="STRING"/>
+		<param name="DEPCUANTIAMIN_CRE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOELEMENTO" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="inventarioscontabilidad">
+		<call-query href="updateInventarioscontabilidad">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOELEMENTO" query-param="CODIGOELEMENTO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="AJUSINFLACREDITO" query-param="AJUSINFLACREDITO"/>
+			<with-param name="AJUSINFLADEBITO" query-param="AJUSINFLADEBITO"/>
+			<with-param name="AJUSDEPRECCREDITO" query-param="AJUSDEPRECCREDITO"/>
+			<with-param name="AJUSDEPRECDEBITO" query-param="AJUSDEPRECDEBITO"/>
+			<with-param name="DEPRECCREDITO" query-param="DEPRECCREDITO"/>
+			<with-param name="DEPRECDEBITO" query-param="DEPRECDEBITO"/>
+			<with-param name="COSTOSALDB" query-param="COSTOSALDB"/>
+			<with-param name="COSTOSALCR" query-param="COSTOSALCR"/>
+			<with-param name="COSTOSALAJDB" query-param="COSTOSALAJDB"/>
+			<with-param name="COSTOSALAJCR" query-param="COSTOSALAJCR"/>
+			<with-param name="AJUSINFLADEBITOS" query-param="AJUSINFLADEBITOS"/>
+			<with-param name="AJUSINFLACREDITOS" query-param="AJUSINFLACREDITOS"/>
+			<with-param name="DEPRECDEBITOS" query-param="DEPRECDEBITOS"/>
+			<with-param name="DEPRECCREDITOS" query-param="DEPRECCREDITOS"/>
+			<with-param name="AJUSDEPRECDEBITOS" query-param="AJUSDEPRECDEBITOS"/>
+			<with-param name="AJUSDEPRECCREDITOS" query-param="AJUSDEPRECCREDITOS"/>
+			<with-param name="DEPACUMULADADB" query-param="DEPACUMULADADB"/>
+			<with-param name="DEPACUMULADACR" query-param="DEPACUMULADACR"/>
+			<with-param name="AJUSTEDEPRECIACIONDB" query-param="AJUSTEDEPRECIACIONDB"/>
+			<with-param name="AJUSTEDEPRECIACIONCR" query-param="AJUSTEDEPRECIACIONCR"/>
+			<with-param name="DEPRECDEBITOCOMODATO1" query-param="DEPRECDEBITOCOMODATO1"/>
+			<with-param name="DEPRECCREDITOCOMODATO" query-param="DEPRECCREDITOCOMODATO"/>
+			<with-param name="DEPRECDEBITOSCOMODATO" query-param="DEPRECDEBITOSCOMODATO"/>
+			<with-param name="DEPRECCREDITOSCOMODATO" query-param="DEPRECCREDITOSCOMODATO"/>
+			<with-param name="DEPACUMULADADBCOMODATO" query-param="DEPACUMULADADBCOMODATO"/>
+			<with-param name="DEPACUMULADACRCOMODATO" query-param="DEPACUMULADACRCOMODATO"/>
+			<with-param name="DEPCUANTIAMIN_DEB" query-param="DEPCUANTIAMIN_DEB"/>
+			<with-param name="DEPCUANTIAMIN_CRE" query-param="DEPCUANTIAMIN_CRE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOELEMENTO" query-param="KEY_CODIGOELEMENTO"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+
+		</call-query>
+	</resource>
+
+</data>

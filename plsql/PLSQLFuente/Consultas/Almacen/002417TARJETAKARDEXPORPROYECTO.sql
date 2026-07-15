@@ -1,0 +1,114 @@
+MERGE INTO CONSULTAS FIN USING (SELECT '002417TARJETAKARDEXPORPROYECTO' INFORME ,TO_CLOB(q'[WITH SALDOSANTERIORES AS (SELECT D_MOVIMIENTO.COMPANIA,
+                         D_MOVIMIENTO.TIPOMOVIMIENTO,
+                         D_MOVIMIENTO.MOVIMIENTO,
+                         D_MOVIMIENTO.ELEMENTO,
+                         D_MOVIMIENTO.FECHA,
+                         D_MOVIMIENTO.HORA,
+                         D_MOVIMIENTO.SALDOKARDEX AS SALDOANTERIOR,
+                         D_MOVIMIENTO.VALORUNITARIO AS VLRUNITARIOANT,
+                         D_MOVIMIENTO.SALDOKARDEX * VALORUNITARIO TOTALANTERIOR
+                    FROM 
+                    D_MOVIMIENTO INNER JOIN 
+                        (
+                        SELECT  D_MOVIMIENTO.COMPANIA, 
+                                D_MOVIMIENTO.ELEMENTO,
+                                MAX(
+                                TO_DATE(
+                                TO_CHAR(D_MOVIMIENTO.FECHA + 
+                                        NUMTODSINTERVAL(TO_CHAR(D_MOVIMIENTO.HORA,'hh24'),'HOUR'  ) +
+                                        NUMTODSINTERVAL(TO_CHAR(D_MOVIMIENTO.HORA,'mi'  ),'MINUTE') +
+                                        NUMTODSINTERVAL(TO_CHAR(D_MOVIMIENTO.HORA,'ss'  ),'SECOND')
+                                ,'DD/MM/YYYY hh24:mi:ss')
+                                ,'DD/MM/YYYY hh24:mi:ss')
+                                ) FECHA_HORA
+                          FROM D_MOVIMIENTO  
+                          WHERE IND_REG NOT IN(0)
+                          AND D_MOVIMIENTO.COMPANIA = s$compania$s
+                          AND   TO_DATE(
+                                TO_CHAR(D_MOVIMIENTO.FECHA + 
+                                        NUMTODSINTERVAL(TO_CHAR(D_MOVIMIENTO.HORA,'hh24'),'HOUR'  ) +
+                                        NUMTODSINTERVAL(TO_CHAR(D_MOVIMIENTO.HORA,'mi'  ),'MINUTE') +
+                                        NUMTODSINTERVAL(TO_CHAR(D_MOVIMIENTO.HORA,'ss'  ),'SECOND')
+                                ,'DD/MM/YYYY hh24:mi:ss')
+                                ,'DD/MM/YYYY hh24:mi:ss')          <= s$fechaFinal$s /*FECHAINICIAL FORMULARIO*/
+                                 AND D_MOVIMIENTO.ELEMENTO  BETWEEN s$elementoInicial$s AND s$elementoFinal$s  /* BETWEEN  ELEMENTO_INICIAL Y ELEMENTO_FINAL */
+                          GROUP BY D_MOVIMIENTO.COMPANIA, 
+                                   D_MOVIMIENTO.ELEMENTO
+                        ) ULTIMO
+                     ON D_MOVIMIENTO.COMPANIA =ULTIMO.COMPANIA
+                    AND D_MOVIMIENTO.ELEMENTO =ULTIMO.ELEMENTO
+                    AND TO_DATE(
+                            TO_CHAR(D_MOVIMIENTO.FECHA + 
+                                    NUMTODSINTERVAL(TO_CHAR(D_MOVIMIENTO.HORA,'hh24'),'HOUR'  ) +
+                                    NUMTODSINTERVAL(TO_CHAR(D_MOVIMIENTO.HORA,'mi'  ),'MINUTE') +
+                                    NUMTODSINTERVAL(TO_CHAR(D_MOVIMIENTO.HORA,'ss'  ),'SECOND')
+                            ,'DD/MM/YYYY hh24:mi:ss')
+                            ,'DD/MM/YYYY hh24:mi:ss')     ]') || TO_CLOB(q'[            =ULTIMO.FECHA_HORA
+          group by 
+                         D_MOVIMIENTO.COMPANIA,
+                         D_MOVIMIENTO.TIPOMOVIMIENTO,
+                         D_MOVIMIENTO.MOVIMIENTO,
+                         D_MOVIMIENTO.ELEMENTO,
+                         D_MOVIMIENTO.fECHA,
+                         D_MOVIMIENTO.HORA,
+                         D_MOVIMIENTO.SALDOKARDEX ,
+                         D_MOVIMIENTO.VALORUNITARIO)      
+   SELECT 
+          V_TARJETAKARDEX.FECHA,
+          (CASE 
+                WHEN  V_TARJETAKARDEX.CLASE  = 'E'
+                THEN 'INGRESO'
+                ELSE 'EGRESO'
+            END) AS TIPOMOVIMIENTO,
+         V_TARJETAKARDEX.MOVIMIENTO,
+          V_TARJETAKARDEX.CODIGO,
+          V_TARJETAKARDEX.ENTRADAS,
+          V_TARJETAKARDEX.SALIDAS,
+          V_TARJETAKARDEX.VLRMOV,
+          V_TARJETAKARDEX.VALORTOTAL,
+          V_TARJETAKARDEX.SALDOKARDEX,
+          V_TARJETAKARDEX.VLRTOTAL,
+         V_TARJETAKARDEX.VLRUNITARIOPROM
+      
+FROM V_TARJETAKARDEX 
+  LEFT JOIN MOVIMIENTO
+     ON V_TARJETAKARDEX.COMPANIA = MOVIMIENTO.COMPANIA 
+     AND  V_TARJETAKARDEX.TIPOMOVIMIENTO = MOVIMIENTO.TIPOMOVIMIENTO
+     AND V_TARJETAKARDEX.MOVIMIENTO = MOVIMIENTO.NUMERO
+     LEFT JOIN PROYECTOS ON MOVIMIENTO.COMPANIA = PROYECTOS.COMPANIA
+     AND MOVIMIENTO.CODIGOPROYECTO = PROYECTOS.CODIGO
+LEFT JOIN TERCERO 
+      ON MOVIMIENTO.COMPANIA  = TERCERO.COMPANIA
+      AND MOVIMIENTO.RESPONSABLE_DESTINO = TERCERO.NIT 
+     AND  MOVIMIENTO.SUCURSAL = TERCERO.SUCURSAL
+  LEFT JOIN SALDOSANTERIORES
+    ON V_TARJETAKARDEX.COMPANIA = SALDOSANTERIORES.COMPANIA
+    AND V_TARJETAKARDEX.CODIGOELEMENTO = SALDOSANTERIORES.ELEMENTO
+WHERE V_TARJETAKARDEX.COMPANIA = s$compania$s
+  AND V_TARJETAKARDEX.CODIGOELEMENTO BETWEEN s$elementoInicial$s AND s$elementoFinal$s
+  AND V_TARJETAKARDEX.FECHA BETWEEN s$fechaInicial$s AND s$fechaFinal$s
+  AND PROYECTOS.CODIGO BETWEEN s$proyectoini$s AND s$proyectofin$s
+  AND V_TARJETAKARDEX.TIENEMOVIMIENTO NOT IN(0) 
+group by
+  
+              V_TARJETAKARDEX.CODIGOELEMENTO,
+              V_TARJETAKARDEX.FECHA,
+              V_TARJETAKARDEX.HORA,
+              V_TARJETAKARDEX.MOVIMIENTO,
+              (CASE 
+                WHEN  V_TARJETAKARDEX.CLASE  = 'E'
+                THEN 'INGRESO'
+                ELSE 'EGRESO'
+            END),
+              V_TARJETAKARDEX.VALORTOTAL,
+              V_TARJETAKARDEX.VLRTOTAL,
+              V_TARJETAKARDEX.VLRUNITARIOPROM,
+              V_TARJETAKARDEX.VLRMOV,
+              NVL(V_TARJETAKARDEX.VLRMOV , V_TARJETAKARDEX.VLRUNITARIOPROM) ,
+              V_TARJETAKARDEX.ENTRADAS,
+              V_TARJETAKARDEX.SALIDAS,
+              V_TARJETAKARDEX.SALDOKARDEX,
+              V_TARJETAKARDEX.VALORSALDOS,
+              V_TARJETAKARDEX.CODIGO
+ORDER BY  
+  TO_DATE(TO_CHAR(V_TARJETAKARDEX.FECHA, 'DD/MM/YYYY') || TO_CHAR(V_TARJETAKARDEX.HORA, ' HH24:MI:SS'), 'DD/MM/YYYY HH24:MI:SS') DESC]') CONSULTA, 10 APLICACION ,TO_CLOB(q'[]') CONSULTA_OPCIONAL, NULL CREATED_BY, NULL MODIFIED_BY  FROM DUAL ) INI ON (INI.INFORME = FIN.INFORME )  WHEN MATCHED THEN  UPDATE SET FIN.CONSULTA =  INI.CONSULTA, FIN.APLICACION =  INI.APLICACION, FIN.CONSULTA_OPCIONAL =  INI.CONSULTA_OPCIONAL, FIN.MODIFIED_BY = INI.MODIFIED_BY, FIN.DATE_MODIFIED = SYSDATE  WHEN NOT MATCHED THEN  INSERT (INFORME,CONSULTA, APLICACION,CONSULTA_OPCIONAL,CREATED_BY,DATE_CREATED)  VALUES (INI.INFORME,INI.CONSULTA, INI.APLICACION,INI.CONSULTA_OPCIONAL,INI.CREATED_BY,SYSDATE);

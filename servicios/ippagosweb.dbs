@@ -1,0 +1,161 @@
+﻿<data name="ippagosweb" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getIppagoswebPagRecibosUsuariosNoRegistradosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_PAGOS_WEB.REFERENCIA, IP_PAGOS_WEB.CODIGO_PREDIO, IP_PAGOS_WEB.NUMERO_ORDEN, IP_PAGOS_WEB.VALOR, IP_PAGOS_WEB.ANO_GENERADO, IP_PAGOS_WEB.NIT_NO_INSCRITRO, IP_PAGOS_WEB.NOMBRE_NO_INSCRITRO, IP_PAGOS_WEB.CERTIFICADO, IP_USUARIOS_PREDIAL.DIRECCION, CASE WHEN IP_PAGOS_WEB.BANCO_PAGO IS NULL OR IP_PAGOS_WEB.BANCO_PAGO = ' ' THEN IP_USUARIOS_PREDIAL.PAG_BAN ELSE IP_PAGOS_WEB.BANCO_PAGO END BANCO_PAGO, TO_CHAR(IP_PAGOS_WEB.FECHA_PAGO,'DD/MM/YYYY') FECHA_PAGO, IP_USUARIOS_PREDIAL.SUCURSAL  FROM IP_PAGOS_WEB INNER JOIN IP_USUARIOS_PREDIAL ON (IP_PAGOS_WEB.COMPANIA = IP_USUARIOS_PREDIAL.COMPANIA) AND (IP_PAGOS_WEB.CODIGO_PREDIO = IP_USUARIOS_PREDIAL.CODIGO) AND (IP_PAGOS_WEB.NUMERO_ORDEN = IP_USUARIOS_PREDIAL.NUMERO_ORDEN) WHERE IP_PAGOS_WEB.COMPANIA = :COMPANIA AND IP_PAGOS_WEB.TIPO = :TIPO AND IP_PAGOS_WEB.PAGO NOT IN (0) AND IP_USUARIOS_PREDIAL.CODIGO = :CODIGO) WHERE (CASE WHEN REFERENCIA IS NULL THEN ' ' ELSE UPPER(REFERENCIA) END)  LIKE UPPER(:REFERENCIA || '%')  AND (CASE WHEN CODIGO_PREDIO IS NULL THEN ' ' ELSE UPPER(CODIGO_PREDIO) END)  LIKE UPPER(:CODIGO_PREDIO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"REFERENCIA":"$REFERENCIA","CODIGO_PREDIO":"$CODIGO_PREDIO","NUMERO_ORDEN":"$NUMERO_ORDEN","VALOR":"$VALOR","ANO_GENERADO":"$ANO_GENERADO(type:integer)","NIT_NO_INSCRITRO":"$NIT_NO_INSCRITRO","NOMBRE_NO_INSCRITRO":"$NOMBRE_NO_INSCRITRO","CERTIFICADO":"$CERTIFICADO","DIRECCION":"$DIRECCION","BANCO_PAGO":"$BANCO_PAGO","FECHA_PAGO":"$FECHA_PAGO","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="CODIGO_PREDIO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ippagosweb/recibosusuariosnoregistrados/pag">
+		<call-query href="getIppagoswebPagRecibosUsuariosNoRegistradosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="CODIGO_PREDIO" query-param="CODIGO_PREDIO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagoswebNumRecibosUsuariosNoRegistradosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_PAGOS_WEB.REFERENCIA, IP_PAGOS_WEB.CODIGO_PREDIO, IP_PAGOS_WEB.NUMERO_ORDEN, IP_PAGOS_WEB.VALOR, IP_PAGOS_WEB.ANO_GENERADO, IP_PAGOS_WEB.NIT_NO_INSCRITRO, IP_PAGOS_WEB.NOMBRE_NO_INSCRITRO, IP_PAGOS_WEB.CERTIFICADO, IP_USUARIOS_PREDIAL.DIRECCION, CASE WHEN IP_PAGOS_WEB.BANCO_PAGO IS NULL OR IP_PAGOS_WEB.BANCO_PAGO = ' ' THEN IP_USUARIOS_PREDIAL.PAG_BAN ELSE IP_PAGOS_WEB.BANCO_PAGO END BANCO_PAGO, TO_CHAR(IP_PAGOS_WEB.FECHA_PAGO,'DD/MM/YYYY') FECHA_PAGO, IP_USUARIOS_PREDIAL.SUCURSAL  FROM IP_PAGOS_WEB INNER JOIN IP_USUARIOS_PREDIAL ON (IP_PAGOS_WEB.COMPANIA = IP_USUARIOS_PREDIAL.COMPANIA) AND (IP_PAGOS_WEB.CODIGO_PREDIO = IP_USUARIOS_PREDIAL.CODIGO) AND (IP_PAGOS_WEB.NUMERO_ORDEN = IP_USUARIOS_PREDIAL.NUMERO_ORDEN) WHERE IP_PAGOS_WEB.COMPANIA = :COMPANIA AND IP_PAGOS_WEB.TIPO = :TIPO AND IP_PAGOS_WEB.PAGO NOT IN (0) AND IP_USUARIOS_PREDIAL.CODIGO = :CODIGO) WHERE (CASE WHEN REFERENCIA IS NULL THEN ' ' ELSE UPPER(REFERENCIA) END)  LIKE UPPER(:REFERENCIA || '%')  AND (CASE WHEN CODIGO_PREDIO IS NULL THEN ' ' ELSE UPPER(CODIGO_PREDIO) END)  LIKE UPPER( '%' || :CODIGO_PREDIO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="CODIGO_PREDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagosweb/recibosusuariosnoregistrados/num">
+		<call-query href="getIppagoswebNumRecibosUsuariosNoRegistradosQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="CODIGO_PREDIO" query-param="CODIGO_PREDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagoswebPorReferenciasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  REFERENCIA  FROM IP_PAGOS_WEB WHERE COMPANIA = :COMPANIA AND CODIGO_PREDIO = :CODIGO AND NUMERO_ORDEN = :NUMERO_ORDEN AND TIPO IN('PS') AND PAGO IN(0) AND ANULADO IN(0)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"REFERENCIA":"$REFERENCIA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagosweb/porreferencias">
+		<call-query href="getIppagoswebPorReferenciasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+
+		</call-query>
+	</resource>
+	<query id="insertIppagoswebPorRecibosDePazYSalvo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_PAGOS_WEB (COMPANIA,TIPO,REFERENCIA, CODIGO_PREDIO,NUMERO_ORDEN, FECHA_EXPEDICION, VALOR, FECHA_LIMITE_PAG, PAGO,ANULADO,NOMBRE_NO_INSCRITRO, NIT_NO_INSCRITRO, ANO_GENERADO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA,'PS',:REFERENCIA,:PREDIO,:NUMERO_ORDEN,SYSDATE,:VALORPYS,SYSDATE,0,0,:INSCRITO,:NITINSCRITO,EXTRACT(YEAR FROM SYSDATE),SYSDATE,:CREATED_BY)</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+		<param name="NUMERO_ORDEN" sqlType="STRING"/>
+		<param name="VALORPYS" sqlType="STRING"/>
+		<param name="INSCRITO" sqlType="STRING"/>
+		<param name="NITINSCRITO" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="ippagosweb/porrecibosdepazysalvo">
+		<call-query href="insertIppagoswebPorRecibosDePazYSalvo">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+			<with-param name="NUMERO_ORDEN" query-param="NUMERO_ORDEN"/>
+			<with-param name="VALORPYS" query-param="VALORPYS"/>
+			<with-param name="INSCRITO" query-param="INSCRITO"/>
+			<with-param name="NITINSCRITO" query-param="NITINSCRITO"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagoswebPagRefCodpredPagPorCiaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  REFERENCIA, CODIGO_PREDIO, NUMERO_ORDEN, VALOR, ANO_GENERADO, CERTIFICADO,(TO_CHAR(FECHA_VENCIMIENTO,'DD/MM/YYYY HH24:MI:SS')) FECHA_VENCIMIENTO FROM IP_PAGOS_WEB WHERE ( COMPANIA = :COMPANIA AND CODIGO_PREDIO NOT IN('999999999999999') AND TIPO = 'PS' AND PAGO NOT IN (0) ) OR ( CODIGO_PREDIO IN('999999999999999') AND CERTIFICADO IS NOT NULL )) WHERE (CASE WHEN REFERENCIA IS NULL THEN ' ' ELSE UPPER(REFERENCIA) END)  LIKE UPPER(:REFERENCIA || '%')  AND (CASE WHEN CODIGO_PREDIO IS NULL THEN ' ' ELSE UPPER(CODIGO_PREDIO) END)  LIKE UPPER(:CODIGO_PREDIO || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN ANO_GENERADO IS NULL THEN ' ' ELSE UPPER(ANO_GENERADO) END)  LIKE UPPER( '%' || :ANO_GENERADO || '%')  AND (CASE WHEN CERTIFICADO IS NULL THEN ' ' ELSE UPPER(CERTIFICADO) END)  LIKE UPPER( '%' || :CERTIFICADO || '%')  AND (CASE WHEN FECHA_VENCIMIENTO IS NULL THEN ' ' ELSE UPPER(FECHA_VENCIMIENTO) END)  LIKE UPPER( '%' || :FECHA_VENCIMIENTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"REFERENCIA":"$REFERENCIA","CODIGO_PREDIO":"$CODIGO_PREDIO","NUMERO_ORDEN":"$NUMERO_ORDEN","VALOR":"$VALOR","ANO_GENERADO":"$ANO_GENERADO(type:integer)","CERTIFICADO":"$CERTIFICADO","FECHA_VENCIMIENTO":"$FECHA_VENCIMIENTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="CODIGO_PREDIO" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="ANO_GENERADO" sqlType="STRING"/>
+		<param name="CERTIFICADO" sqlType="STRING"/>
+		<param name="FECHA_VENCIMIENTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="ippagosweb/refcodpredpagporcia/pag">
+		<call-query href="getIppagoswebPagRefCodpredPagPorCiaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="CODIGO_PREDIO" query-param="CODIGO_PREDIO"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ANO_GENERADO" query-param="ANO_GENERADO"/>
+			<with-param name="CERTIFICADO" query-param="CERTIFICADO"/>
+			<with-param name="FECHA_VENCIMIENTO" query-param="FECHA_VENCIMIENTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagoswebNumRefCodpredPagPorCiaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  REFERENCIA, CODIGO_PREDIO, NUMERO_ORDEN, VALOR, ANO_GENERADO, CERTIFICADO,(TO_CHAR(FECHA_VENCIMIENTO,'DD/MM/YYYY HH24:MI:SS')) FECHA_VENCIMIENTO FROM IP_PAGOS_WEB WHERE ( COMPANIA = :COMPANIA AND CODIGO_PREDIO NOT IN('999999999999999') AND TIPO = 'PS' AND PAGO NOT IN (0) ) OR ( CODIGO_PREDIO IN('999999999999999') AND CERTIFICADO IS NOT NULL )) WHERE (CASE WHEN REFERENCIA IS NULL THEN ' ' ELSE UPPER(REFERENCIA) END)  LIKE UPPER(:REFERENCIA || '%')  AND (CASE WHEN CODIGO_PREDIO IS NULL THEN ' ' ELSE UPPER(CODIGO_PREDIO) END)  LIKE UPPER( '%' || :CODIGO_PREDIO || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%')  AND (CASE WHEN ANO_GENERADO IS NULL THEN ' ' ELSE UPPER(ANO_GENERADO) END)  LIKE UPPER( '%' || :ANO_GENERADO || '%')  AND (CASE WHEN CERTIFICADO IS NULL THEN ' ' ELSE UPPER(CERTIFICADO) END)  LIKE UPPER( '%' || :CERTIFICADO || '%')  AND (CASE WHEN FECHA_VENCIMIENTO IS NULL THEN ' ' ELSE UPPER(FECHA_VENCIMIENTO) END)  LIKE UPPER( '%' || :FECHA_VENCIMIENTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+		<param name="CODIGO_PREDIO" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="ANO_GENERADO" sqlType="STRING"/>
+		<param name="CERTIFICADO" sqlType="STRING"/>
+		<param name="FECHA_VENCIMIENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagosweb/refcodpredpagporcia/num">
+		<call-query href="getIppagoswebNumRefCodpredPagPorCiaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+			<with-param name="CODIGO_PREDIO" query-param="CODIGO_PREDIO"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="ANO_GENERADO" query-param="ANO_GENERADO"/>
+			<with-param name="CERTIFICADO" query-param="CERTIFICADO"/>
+			<with-param name="FECHA_VENCIMIENTO" query-param="FECHA_VENCIMIENTO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIppagoswebFechaExpedicionDeReferenciaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  TO_CHAR(TRUNC(FECHA_EXPEDICION),'DD/MM/YYYY HH24:MI:SS') FECHA_EXPEDICION ,(CASE ANULADO WHEN 0 THEN 'false' ELSE 'true' END) ANULADO,(CASE PAGO WHEN 0 THEN 'false' ELSE 'true' END) PAGO,CODIGO_PREDIO ,VALOR ,TIPO ,NUMERO_ORDEN ,(TO_CHAR(FECHA_LIMITE_PAG,'DD/MM/YYYY HH24:MI:SS')) FECHA_LIMITE_PAG,(TO_CHAR(FECHA_ANULADO,'DD/MM/YYYY HH24:MI:SS')) FECHA_ANULADO FROM IP_PAGOS_WEB WHERE COMPANIA = :COMPANIA AND TIPO IN ('PS') AND REFERENCIA IN (:REFERENCIA)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FECHA_EXPEDICION":"$FECHA_EXPEDICION","ANULADO":"$ANULADO(type:boolean)","PAGO":"$PAGO(type:boolean)","CODIGO_PREDIO":"$CODIGO_PREDIO","VALOR":"$VALOR","TIPO":"$TIPO","NUMERO_ORDEN":"$NUMERO_ORDEN","FECHA_LIMITE_PAG":"$FECHA_LIMITE_PAG","FECHA_ANULADO":"$FECHA_ANULADO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="REFERENCIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="ippagosweb/fechaexpediciondereferencia">
+		<call-query href="getIppagoswebFechaExpedicionDeReferenciaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="REFERENCIA" query-param="REFERENCIA"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,105 @@
+/*
+ * FrmTramitesControladorUrlEnum
+ *
+ * 1.0
+ *
+ * 09/09/2016
+ *
+ * Copyright Stefanini Sysman
+ */
+package com.sysman.workflow.enums;
+
+/**
+ * @author Processors-api
+ * 
+ * @version 1.0
+ * 
+ * Enumeracion que permite clasificar cada uno de los identificadores
+ * geenerados en el refactoring y asociados al codigo legacy obtenido
+ * con patrones de busqueda.
+ */
+public enum FrmTramitesControladorUrlEnum {
+
+    URL0008("FRMTRAMITESCONTROLADORURL0008", "1048002"),
+
+    URL0011("FRMTRAMITESCONTROLADORURL0011", "1047002"),
+
+    URL0006("FRMTRAMITESCONTROLADORURL0006", "1045004"),
+
+    URL0003("FRMTRAMITESCONTROLADORURL0003", "1045001"),
+
+    URL0007("FRMTRAMITESCONTROLADORURL0007", "1040002"),
+
+    URL7008("FRMTRAMITESCONTROLADORURL7008", "1040001"),
+
+    URL0002("FRMTRAMITESCONTROLADORURL0002", "1036001"),
+
+    URL0004("FRMTRAMITESCONTROLADORURL0004", "1035004"),
+
+    URL0001("FRMTRAMITESCONTROLADORURL0001", "1035002"),
+
+    URL7377("FRMTRAMITESCONTROLADORURL7377", "1032003"),
+
+    URL8946("FRMTRAMITESCONTROLADORURL8946", "997001"),
+    
+    URL8947("FRMTRAMITESCONTROLADORURL8947", "997002"),
+
+    URL0005("FRMTRAMITESCONTROLADORURL0005", "988006"),
+
+    URL9368("FRMTRAMITESCONTROLADORURL9368", "988005"),
+    
+
+    URL0010("FRMTRAMITESCONTROLADORURL0010", "187003"),
+
+    URL0009("FRMTRAMITESCONTROLADORURL0009", "63005"),
+
+    URL9725("FRMTRAMITESCONTROLADORURL9725", "58001"),
+
+    URL7736("FRMTRAMITESCONTROLADORURL7736", "5001"),
+
+    URL10460("FRMTRAMITESCONTROLADORURL10460", "2005"),
+
+    URL10091("FRMTRAMITESCONTROLADORURL10091", "1002"),
+    
+    URL10093("FRMTRAMITESCONTROLADORURL10093", "1048003"),
+    
+    URL10094("FRMTRAMITESCONTROLADORURL10093", "1829001"),
+    
+    URL01841("FRMTRAMITESCONTROLADORURL01841", "1032005"),
+    
+    URL01842("FRMTRAMITESCONTROLADORURL01841", "1040003"),
+    
+    URL01848("FRMTRAMITESCONTROLADORURL01848", "1040005"),
+    
+    URL01843("FRMTRAMITESCONTROLADORURL01843", "988007"),
+    
+    URL01844("FRMTRAMITESCONTROLADORURL01844", "62105"),//1845001 dss de tabala temporal wf_dependencias
+    /**
+     * Permite consultar el nombre y valor de las variables generales de un tr&aacute;mite
+     */
+    URL01847("FRMTRAMITESCONTROLADORURL01847","1847001"),
+    
+    URL001("FRMTRAMITESCONTROLADORURL01847","1042014"),
+    
+    URL002("FRMTRAMITESCONTROLADORURL0008","1878001"),
+    
+    URL104000R("FRMTRAMITESCONTROLADORURL104000R","104000R"),
+    
+    URL1035013("FRMTRAMITESCONTROLADORURL1035013","1035013");//(CFBARRERA CCC: 2155)
+	
+    private final String key;
+    private final String value;
+
+    private FrmTramitesControladorUrlEnum(String key, String value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getValue() {
+        return value;
+    }
+}

@@ -1,0 +1,59 @@
+﻿<data name="deteriorocartera" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getDeteriorocarteraVerificarExistenciaPorPeriodoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DISTINCT 'X' EXISTE FROM DETERIORO_CARTERA WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND MES = :MES</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"EXISTE":"$EXISTE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="deteriorocartera/verificarexistenciaporperiodo">
+		<call-query href="getDeteriorocarteraVerificarExistenciaPorPeriodoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteDeteriorocarteraEliminarCarteraPorPeriodo" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM DETERIORO_CARTERA WHERE COMPANIA =:COMPANIA AND ANO =:ANO AND MES =:MES</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="deteriorocartera/eliminarcarteraporperiodo">
+		<call-query href="deleteDeteriorocarteraEliminarCarteraPorPeriodo">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+
+		</call-query>
+	</resource>
+	<query id="getDeteriorocarteraGetdeterioroinformeQuery"  useConfig="sysmandsunist">
+		<sql>SELECT DISTINCT D.ANO, D.MES, D.TERCERO, CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(TRIM(T.NOMBRE1) , ' ' ), TRIM(T.NOMBRE2) ), ' ' ), TRIM(T.APELLIDO1) ), ' ' ), TRIM(T.APELLIDO2)) AS NOMBRETERCERO, D.TIPO_FACTURA AS TIPO, D.NUMERO_FACTURA AS NUMERO, D.DESCRIPCION, TO_CHAR(D.FECHA_FACTURA,'DD-Mon-YYYY') AS FECHA, D.CUENTA, D.EDAD, D.TASA, D.VALOR_FACTURA AS VALOR, D.VALOR AS DETERIORO_MENSUAL, D.DETERIORO_ACUMULADO, D.VALOR_FACTURA-D.DETERIORO_ACUMULADO VALOR_NETO FROM DETERIORO_CARTERA D INNER JOIN TERCERO T ON T.COMPANIA=D.COMPANIA AND T.NIT= D.TERCERO WHERE D.COMPANIA = :COMPANIA AND D.ANO = :ANO AND D.MES = :MES AND CASE WHEN (D.VALOR_FACTURA-D.DETERIORO_ACUMULADO) > 0 THEN 1 ELSE 0 END IN(:NETO)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANO":"$ANO(type:integer)","MES":"$MES(type:integer)","TERCERO":"$TERCERO","NOMBRETERCERO":"$NOMBRETERCERO","TIPO":"$TIPO","NUMERO":"$NUMERO(type:long)","DESCRIPCION":"$DESCRIPCION","FECHA":"$FECHA","CUENTA":"$CUENTA","EDAD":"$EDAD","TASA":"$TASA","VALOR":"$VALOR","DETERIORO_MENSUAL":"$DETERIORO_MENSUAL","DETERIORO_ACUMULADO":"$DETERIORO_ACUMULADO","VALOR_NETO":"$VALOR_NETO(type:double)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="MES" sqlType="STRING"/>
+		<param name="NETO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="deteriorocartera/getdeterioroinforme">
+		<call-query href="getDeteriorocarteraGetdeterioroinformeQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="MES" query-param="MES"/>
+			<with-param name="NETO" query-param="NETO"/>
+
+		</call-query>
+	</resource>
+
+</data>

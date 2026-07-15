@@ -1,0 +1,181 @@
+﻿<data name="aplicaciones" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getAplicacionesTodosPorNombreQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  APLICACION , NOMBRE  FROM APLICACIONES ORDER BY NOMBRE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"APLICACION":"$APLICACION(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="aplicaciones/todospornombre">
+		<call-query href="getAplicacionesTodosPorNombreQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getAplicacionesGeneralQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  APLICACION,NOMBRE,AREA,DIASHABILES,RUTA_ARCHIVOS, RUTA_DOCUMENTOS  FROM APLICACIONES WHERE APLICACION=-1</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"APLICACION":"$APLICACION(type:integer)","NOMBRE":"$NOMBRE","AREA":"$AREA","DIASHABILES":"$DIASHABILES(type:integer)","RUTA_ARCHIVOS":"$RUTA_ARCHIVOS","RUTA_DOCUMENTOS":"$RUTA_DOCUMENTOS"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="aplicaciones/general">
+		<call-query href="getAplicacionesGeneralQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getAplicacionesRutasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  APLICACION,RUTA_ARCHIVOS  FROM APLICACIONES</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"APLICACION":"$APLICACION(type:integer)","RUTA_ARCHIVOS":"$RUTA_ARCHIVOS"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="aplicaciones/rutas">
+		<call-query href="getAplicacionesRutasQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getAplicacionesRutapormoduloQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  RUTA_ARCHIVOS  FROM APLICACIONES WHERE APLICACION = :APLICACION</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RUTA_ARCHIVOS":"$RUTA_ARCHIVOS"}]}}		</result>
+		<param name="APLICACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="aplicaciones/rutapormodulo">
+		<call-query href="getAplicacionesRutapormoduloQuery">
+			<with-param name="APLICACION" query-param="APLICACION"/>
+
+		</call-query>
+	</resource>
+	<query id="getAplicacionesNombreporaplicacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  NOMBRE  FROM APLICACIONES WHERE APLICACION = :MODULO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="MODULO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="aplicaciones/nombreporaplicacion">
+		<call-query href="getAplicacionesNombreporaplicacionQuery">
+			<with-param name="MODULO" query-param="MODULO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAplicacionesTraerrutraQuery"  useConfig="sysmandsunist">
+		<sql>SELECT RUTA_DOCUMENTOS FROM APLICACIONES WHERE NOMBRE='WORKFLOW'</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RUTA_DOCUMENTOS":"$RUTA_DOCUMENTOS"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="aplicaciones/traerrutra">
+		<call-query href="getAplicacionesTraerrutraQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getAplicacionesObtenertokenidbotQuery"  useConfig="sysmandsunist">
+		<sql>SELECT IDBOT, TOKENBOT FROM APLICACIONES WHERE APLICACION = :APLICACION AND USABOT &lt;&gt; 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"IDBOT":"$IDBOT","TOKENBOT":"$TOKENBOT"}]}}		</result>
+		<param name="APLICACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="aplicaciones/obtenertokenidbot">
+		<call-query href="getAplicacionesObtenertokenidbotQuery">
+			<with-param name="APLICACION" query-param="APLICACION"/>
+
+		</call-query>
+	</resource>
+	<query id="getAplicacionesGetaplicacionesdeterminadasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT APLICACION, NOMBRE FROM APLICACIONES WHERE APLICACION IN (1,3,10)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"APLICACION":"$APLICACION(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+ 
+	</query>
+	<resource method="GET" path="aplicaciones/getaplicacionesdeterminadas">
+		<call-query href="getAplicacionesGetaplicacionesdeterminadasQuery">
+ 
+		</call-query>
+	</resource>
+	<query id="getAplicacionesPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  APLICACION, NOMBRE, RUTA_ARCHIVOS  FROM APLICACIONES ORDER BY APLICACION) WHERE (CASE WHEN APLICACION IS NULL THEN ' ' ELSE UPPER(APLICACION) END)  LIKE UPPER( '%' || :APLICACION || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN RUTA_ARCHIVOS IS NULL THEN ' ' ELSE UPPER(RUTA_ARCHIVOS) END)  LIKE UPPER( '%' || :RUTA_ARCHIVOS || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"APLICACION":"$APLICACION(type:integer)","NOMBRE":"$NOMBRE","RUTA_ARCHIVOS":"$RUTA_ARCHIVOS"}]}}		</result>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="RUTA_ARCHIVOS" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="aplicaciones">
+		<call-query href="getAplicacionesPaginaQuery">
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="RUTA_ARCHIVOS" query-param="RUTA_ARCHIVOS"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAplicacionesNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  APLICACION, NOMBRE, RUTA_ARCHIVOS  FROM APLICACIONES ORDER BY APLICACION) WHERE (CASE WHEN APLICACION IS NULL THEN ' ' ELSE UPPER(APLICACION) END)  LIKE UPPER( '%' || :APLICACION || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN RUTA_ARCHIVOS IS NULL THEN ' ' ELSE UPPER(RUTA_ARCHIVOS) END)  LIKE UPPER( '%' || :RUTA_ARCHIVOS || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="RUTA_ARCHIVOS" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="aplicaciones/numero">
+		<call-query href="getAplicacionesNumeroQuery">
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="RUTA_ARCHIVOS" query-param="RUTA_ARCHIVOS"/>
+
+		</call-query>
+	</resource>
+	<query id="updateAplicaciones" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE APLICACIONES SET RUTA_ARCHIVOS=:RUTA_ARCHIVOS, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE APLICACIONES.APLICACION= :KEY_APLICACION</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="RUTA_ARCHIVOS" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_APLICACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="aplicaciones">
+		<call-query href="updateAplicaciones">
+			<with-param name="RUTA_ARCHIVOS" query-param="RUTA_ARCHIVOS"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_APLICACION" query-param="KEY_APLICACION"/>
+
+		</call-query>
+	</resource>
+	<query id="getAplicacionesPagGetmodulosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT APLICACION , NOMBRE FROM APLICACIONES ORDER BY NOMBRE) INI WHERE (CASE WHEN APLICACION IS NULL THEN ' ' ELSE UPPER(APLICACION) END) LIKE UPPER(CONCAT(CONCAT('%',:APLICACION), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"APLICACION":"$APLICACION(type:integer)","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="aplicaciones/getmodulos/pag">
+		<call-query href="getAplicacionesPagGetmodulosQuery">
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAplicacionesNumGetmodulosQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT APLICACION , NOMBRE FROM APLICACIONES ORDER BY NOMBRE) INI WHERE (CASE WHEN APLICACION IS NULL THEN ' ' ELSE UPPER(APLICACION) END) LIKE UPPER(CONCAT(CONCAT('%',:APLICACION), '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="aplicaciones/getmodulos/num">
+		<call-query href="getAplicacionesNumGetmodulosQuery">
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+
+</data>

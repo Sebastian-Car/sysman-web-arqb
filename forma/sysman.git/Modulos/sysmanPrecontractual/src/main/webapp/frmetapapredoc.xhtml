@@ -1,0 +1,323 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	template="/templateModalDatos.xhtml" xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+              asignarEventoContGrande();
+validarCargaGrandes();
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TT_FR528}</title>
+		<f:metadata>
+			<f:viewParam name="tipoContrato"
+				value="#{etapaPreDocControlador.tipoContrato}" />
+			<f:viewParam name="idEtapa" value="#{etapaPreDocControlador.idEtapa}" />
+			<f:viewParam name="descripcion"
+				value="#{etapaPreDocControlador.descripcion}" />
+		</f:metadata>
+	</ui:define>
+	<ui:define name="contenido">
+		<section class="radiusModal">
+			<f:event type="preRenderView"
+				listener="#{etapaPreDocControlador.cargarForma}" />
+			<div id="FR528" style="height: 550px;">
+				<h:form style="height: 100%;" id="FRFR528">
+					<p:growl id="alert" showDetail="true" sticky="false"
+						widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+					<p:overlayPanel widgetVar="PLCB1901" id="PLCB1901"
+						onShow="if(PF('TBCB1901').nuevo){ PF('TBCB1901').filter(); PF('TBCB1901').nuevo=false;}"
+						onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB1901').jq.focus();}"
+						my="bottom" at="bottom" for="BTCB1901" hideEffect="fade"
+						style="width: 430px">
+						<p:dataTable id="TBCB1901" widgetVar="TBCB1901" var="reg"
+							value="#{etapaPreDocControlador.listaModelo}" editable="true"
+							emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="11" rowIndexVar="rowIndex" selectionMode="single"
+							rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+							<p:ajax event="rowSelect"
+								listener="#{etapaPreDocControlador.seleccionarFilaModelo}"
+								update=":FRFR528:CB1901,:FRFR528:BTCB1901,"
+								oncomplete="PF('PLCB1901').hide(); $('#speCB1901').remove();  " />
+							<p:column headerText="#{idm.TG_CODIGO7}"
+								style="text-align:center; " width="30%"
+								filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['CODIGO']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+							<p:column headerText="#{idm.TG_NOMBRE3}"
+								style="text-align:center; " width="70%"
+								filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+								filterStyle="width:100%;">
+								<h:outputText value="#{reg.campos['NOMBRE']}"
+									style="float:left;  text-align:left;  min-height: 20px;" />
+							</p:column>
+						</p:dataTable>
+					</p:overlayPanel>
+					<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}" id="dlg"
+						widgetVar="dlg" resizable="false" modal="true"
+						rendered="#{etapaPreDocControlador.permisos[0]}"
+						position="center top"
+						onHide="restaurarCampos(['CB1901','CP16406'])">
+						<h:panelGrid columns="2" cellpadding="2">
+							<h:outputLabel value="#{idm.TC_CP16406}:" id="LCP16406" />
+							<pe:inputNumber id="CP16406" widgetVar="CP16406"
+								value="#{etapaPreDocControlador.registro.campos['IDETAPA']}"
+								label="LCP16406" decimalPlaces="0" thousandSeparator=","
+								decimalSeparator="." styleClass="inputTab"
+								converter="convertidorDouble" readonly="true"
+								style=" width: 95%;float: left;">
+							</pe:inputNumber>
+							<h:outputLabel value="#{idm.TG_DESCRIPCION7}:" id="LCP16298" />
+							<p:inputText id="CP16298" readonly="true" widgetVar="CP16298"
+								styleClass="inputTab"
+								value="#{etapaPreDocControlador.registro.campos['DESCRIPCION']}"
+								label="LCP16298" style=" width: 95%; float: left;">
+							</p:inputText>
+							<h:outputLabel value="#{idm.TC_CB1901}:" id="LCB1901" />
+							<h:panelGroup>
+								<p:inputText id="CB1901" widgetVar="CB1901"
+									onfocus="if(!false){PF('BTCB1901').jq.focus();}"
+									onclick="if(!false){PF('PLCB1901').show();}"
+									value="#{etapaPreDocControlador.registro.campos['MODELO_DOC']}"
+									style="cursor:pointer; width: 80%;" tabindex="-1" />
+								<p:commandButton id="BTCB1901" widgetVar="BTCB1901"
+									onclick="PF('PLCB1901').show();"
+									onblur="PF('CB1901').jq.blur();"
+									onfocus="PF('CB1901').jq.addClass('ui-state-focus');"
+									type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"
+									style="width:25px; height:  23px; top:3px; border-left-width: 0; " />
+							</h:panelGroup>
+							<f:facet name="footer">
+								<center>
+									<p:commandButton value="#{idm.TI_GUARDAR}"
+										style="padding:10px;" update="FRFR528,"
+										actionListener="#{etapaPreDocControlador.agregarRegistroNuevo}"
+										oncomplete="PF('dlg').hide(); PF('blockGuardar').hide();"
+										onclick="     if (!validarVaciosModal(['CB1901','CP16406'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockGuardar').show();" />
+									<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+										href="#" onclick="PF('dlg').hide();" />
+								</center>
+							</f:facet>
+						</h:panelGrid>
+					</p:dialog>
+					<p:confirmDialog global="true" showEffect="fade">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<div id="PL1140" class="
+"
+						style="position: relative; height: 67px;">
+						<center>
+							<p:inputText id="HCB1901" rendered="true" widgetVar="HCB1901"
+								value="#{etapaPreDocControlador.auxiliar}"
+								style="width: 0px; height: 0px; border: #ffffff; background: #FFFFFF; box-shadow: none"
+								disabled="true" />
+						</center>
+						<p:overlayPanel widgetVar="PLSCB1901" id="PLSCB1901"
+							rendered="true"
+							onShow="if(PF('TBSCB1901').nuevo){ PF('TBSCB1901').clearFilters(); PF('TBSCB1901').nuevo=false;}"
+							onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){aux= aux.replace(':BT',':'); aux=aux.replace(/:/g,'\\:'); $('#'+aux).focus();}"
+							for="HCB1901" hideEffect="fade" style="width:430px; ">
+							<p:dataTable id="TBSCB1901" widgetVar="TBSCB1901" var="reg"
+								value="#{etapaPreDocControlador.listaModeloE}" editable="true"
+								emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+								currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+								rows="11" rowIndexVar="rowIndex" selectionMode="single"
+								rowKey="#{reg.campos['CODIGO']}" paginator="true" lazy="true">
+								<p:ajax event="rowSelect"
+									listener="#{etapaPreDocControlador.seleccionarFilaModeloE}"
+									update=":FRFR528:HCB1901"
+									oncomplete=" aux= aux.replace(':BT',':'); aux=aux.replace(/:/g,'\\:'); $('#'+aux)[0].value=PF('HCB1901').jq[0].value;  PF('PLSCB1901').hide();  $('#'+aux).change(); ind=false; " />
+								<p:column headerText="#{idm.TG_CODIGO7}"
+									style="text-align:center; " width="30%"
+									filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['CODIGO']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+								<p:column headerText="#{idm.TG_NOMBRE3}"
+									style="text-align:center; " width="70%"
+									filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+									filterStyle="width:100%;">
+									<h:outputText value="#{reg.campos['NOMBRE']}"
+										style="float:left;  text-align:left;  min-height: 20px;" />
+								</p:column>
+							</p:dataTable>
+						</p:overlayPanel>
+						<p:remoteCommand name="refreshTab" update="TBFR528"
+							oncomplete="PF('blockGuardar').hide();" />
+						<p:dataTable id="TBFR528" var="reg"
+							value="#{etapaPreDocControlador.listaInicial}" editable="true"
+							widgetVar="TBFR528" emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+							paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+							currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+							rows="10" rowIndexVar="rowNun" paginator="true" scrollable="true"
+							scrollWidth="100%" lazy="true">
+							<f:facet name="{Exporters}"
+								rendered="#{etapaPreDocControlador.permisos[4] }">
+								<h:commandLink rendered="#{etapaPreDocControlador.permisos[4] }"
+									title="#{idm.TI_VER_EXCEL}">
+									<p:graphicImage name="/images/general/excel.png" width="24" />
+									<p:dataExporter type="xls" target="TBFR528" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+								<h:commandLink rendered="#{etapaPreDocControlador.permisos[4] }"
+									title="#{idm.TI_VER_PDF}">
+									<p:graphicImage name="/images/general/pdf.png" width="24" />
+									<p:dataExporter type="pdf" target="TBFR528" fileName="Datos"
+										encoding="ISO-8859-1" />
+								</h:commandLink>
+							</f:facet>
+							<p:ajax event="rowEdit" update=":FRFR528:alert,"
+								listener="#{etapaPreDocControlador.editar}"
+								oncomplete="refreshTab(); mostarEditor();"
+								onstart="PF('blockGuardar').show();" />
+							<p:ajax event="rowEditCancel"
+								listener="#{etapaPreDocControlador.cancelarEdicion}"
+								oncomplete="  mostarEditor();" />
+							<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+							<f:facet name="header">
+								<div style="position: relative; height: 50px">
+									<h:panelGroup class="acme"
+										rendered="#{etapaPreDocControlador.permisos[0]  }">
+										<h:outputLink value="javascript:void(0)"
+											onclick="
+		PF('dlg').show();
+		"
+											title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;">
+											<center>
+												<p:graphicImage name="/images/menus/32/add.png" />
+												<div>#{idm.TI_NUEVO}</div>
+											</center>
+										</h:outputLink>
+									</h:panelGroup>
+									<h:panelGroup class="acme">
+										<p:commandLink
+											action="#{etapaPreDocControlador.cerrarFormulario}"
+											title="#{idm.TI_CERRAR_FORMULARIO}"
+											style="padding-top: 10px;" id="btCerrar">
+											<center>
+												<p:graphicImage name="/images/menus/32/close.png" />
+												<div>#{idm.TI_CERRAR}</div>
+											</center>
+										</p:commandLink>
+									</h:panelGroup>
+								</div>	 
+                            #{idm.TT_FR528}
+                            </f:facet>
+							<p:column headerText="#{idm.TC_CP16406}"
+								filterBy="#{reg.campos['IDETAPA']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="30%" rendered="true"
+								style="
+" styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['IDETAPA']}"
+											converter="convertidorDoubleContinuo"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<pe:inputNumber id="CP16406" styleClass="inputTab"
+											readonly="true" value="#{reg.campos['IDETAPA']}"
+											decimalPlaces="0" thousandSeparator="," decimalSeparator="."
+											converter="convertidorDouble" style="width: 95%">
+										</pe:inputNumber>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TG_DESCRIPCION7}"
+								filterBy="#{reg.campos['DESCRIPCION']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="40%" rendered="true"
+								styleClass="
+">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['DESCRIPCION']}"
+											style="text-align:  left; float:  left" />
+									</f:facet>
+									<f:facet name="input">
+										<p:inputText id="CP16298" styleClass="inputTab"
+											value="#{reg.campos['DESCRIPCION']}" style="width:100%"
+											readonly="true">
+										</p:inputText>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column headerText="#{idm.TC_CB1901}"
+								filterBy="#{reg.campos['MODELO_DOC']}" filterStyle="width:100%"
+								filterMatchMode="contains" width="30%" rendered="true">
+								<p:cellEditor>
+									<f:facet name="output">
+										<h:outputText value="#{reg.campos['MODELO_DOC']}" />
+									</f:facet>
+									<f:facet name="input">
+										<h:panelGroup>
+											<p:inputText id="CB1901"
+												onfocus="if(!false){onfocusCBG('#{component.clientId}');}"
+												onchange="return ind;" value="#{reg.campos['MODELO_DOC']}"
+												onclick="if(!false){ PF('PLSCB1901').show('#{component.clientId}');}  aux= '#{component.clientId}'; ind = true;"
+												tabindex="-1" style="cursor:pointer; width: 75%;">
+											</p:inputText>
+											<p:commandButton id="BTCB1901" type="button"
+												icon="ui-icon ui-icon-triangle-1-s ui-c"
+												onclick="PF('PLSCB1901').show('#{component.clientId}'); aux= '#{component.clientId}';  ind = true;"
+												onblur="onblurBTCBG('#{component.clientId}');"
+												onfocus="onfocusBTCBG('#{component.clientId}');"
+												style="width:25px; height:  20px; top:4px; border-left-width: 0; " />
+										</h:panelGroup>
+									</f:facet>
+								</p:cellEditor>
+							</p:column>
+							<p:column width="30" exportable="false"
+								rendered="#{etapaPreDocControlador.permisos[2] }">
+								<p:rowEditor />
+							</p:column>
+							<p:column width="30" exportable="false"
+								rendered="#{etapaPreDocControlador.permisos[1] }">
+								<p:commandButton icon="ui-icon-trash"
+									title="#{idm.TI_ELIMINAR_REGISTRO}"
+									onclick="PF('blockGuardar').show()"
+									action="#{etapaPreDocControlador.eliminarReg(reg)}"
+									oncomplete="refreshTab(); PF('blockGuardar').hide();"
+									update=":FRFR528:alert,"
+									style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;">
+									<p:confirm header="#{sessionBean.tituloMensajes}"
+										message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+								</p:commandButton>
+							</p:column>
+						</p:dataTable>
+						<p:blockUI block="FRFR528" widgetVar="blockGuardar">
+                        #{idm.TI_GUARDANDO_CAMBIOS}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+						<p:blockUI block="FRFR528" widgetVar="blockCarga"
+							trigger="TBFR528,">
+                        #{idm.TI_CARGANDO}<br />
+							<p:graphicImage name="/images/general/loading.gif" />
+						</p:blockUI>
+					</div>
+				</h:form>
+			</div>
+		</section>
+	</ui:define>
+</ui:composition>

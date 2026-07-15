@@ -1,0 +1,142 @@
+﻿<data name="planpptalctabancaria" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getPlanpptalctabancariaPagCuentasBcRelacionadasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CUENTA_CONTABLE CODIGO, PLAN_CONTABLE.NOMBRE, TO_CHAR(PLAN_CONTABLE.SALDO13, '99,999,999,999,999,990.90') SALDO FROM PLAN_PPTAL_CTABANCARIA INNER JOIN PLAN_CONTABLE ON PLAN_PPTAL_CTABANCARIA.COMPANIA = PLAN_CONTABLE.COMPANIA AND PLAN_PPTAL_CTABANCARIA.ANO = PLAN_CONTABLE.ANO AND PLAN_PPTAL_CTABANCARIA.CUENTA_CONTABLE = PLAN_CONTABLE.CODIGO WHERE PLAN_PPTAL_CTABANCARIA.COMPANIA =:COMPANIA AND PLAN_PPTAL_CTABANCARIA.ANO =:ANO AND PLAN_PPTAL_CTABANCARIA.RUBRO_PPTAL IN ( SELECT DISTINCT CUENTA FROM DETALLE_COMPROBANTE_PPTAL WHERE COMPANIA =:COMPANIA AND INSTR(:LISTAAFECTAR,CONCAT('#',CONCAT(ANO,CONCAT(',',CONCAT(TIPO_CPTE,CONCAT(',',CONCAT(COMPROBANTE,'#') ) ) ) ) ),1) &gt; 0 )) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN SALDO IS NULL THEN ' ' ELSE UPPER(SALDO) END) LIKE UPPER(CONCAT(:SALDO, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","SALDO":"$SALDO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="LISTAAFECTAR" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SALDO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="planpptalctabancaria/cuentasbcrelacionadas/pag">
+		<call-query href="getPlanpptalctabancariaPagCuentasBcRelacionadasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="LISTAAFECTAR" query-param="LISTAAFECTAR"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SALDO" query-param="SALDO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPlanpptalctabancariaNumCuentasBcRelacionadasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CUENTA_CONTABLE CODIGO, PLAN_CONTABLE.NOMBRE, TO_CHAR(PLAN_CONTABLE.SALDO13, '99,999,999,999,999,990.90') SALDO FROM PLAN_PPTAL_CTABANCARIA INNER JOIN PLAN_CONTABLE ON PLAN_PPTAL_CTABANCARIA.COMPANIA = PLAN_CONTABLE.COMPANIA AND PLAN_PPTAL_CTABANCARIA.ANO = PLAN_CONTABLE.ANO AND PLAN_PPTAL_CTABANCARIA.CUENTA_CONTABLE = PLAN_CONTABLE.CODIGO WHERE PLAN_PPTAL_CTABANCARIA.COMPANIA =:COMPANIA AND PLAN_PPTAL_CTABANCARIA.ANO =:ANO AND PLAN_PPTAL_CTABANCARIA.RUBRO_PPTAL IN ( SELECT DISTINCT CUENTA FROM DETALLE_COMPROBANTE_PPTAL WHERE COMPANIA =:COMPANIA AND INSTR(:LISTAAFECTAR,CONCAT('#',CONCAT(ANO,CONCAT(',',CONCAT(TIPO_CPTE,CONCAT(',',CONCAT(COMPROBANTE,'#') ) ) ) ) ),1) &gt; 0 )) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN SALDO IS NULL THEN ' ' ELSE UPPER(SALDO) END) LIKE UPPER(CONCAT(:SALDO, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="LISTAAFECTAR" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="SALDO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="planpptalctabancaria/cuentasbcrelacionadas/num">
+		<call-query href="getPlanpptalctabancariaNumCuentasBcRelacionadasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="LISTAAFECTAR" query-param="LISTAAFECTAR"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="SALDO" query-param="SALDO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertPlanpptalctabancaria" keyColumns="COMPANIA,ANO,RUBRO_PPTAL,CUENTA_CONTABLE" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PLAN_PPTAL_CTABANCARIA (COMPANIA, ANO, CUENTA_CONTABLE, RUBRO_PPTAL, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :CUENTA_CONTABLE, :RUBRO_PPTAL, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_RUBRO_PPTAL":"$RUBRO_PPTAL","KEY_CUENTA_CONTABLE":"$CUENTA_CONTABLE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CUENTA_CONTABLE" sqlType="STRING"/>
+		<param name="RUBRO_PPTAL" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="planpptalctabancaria">
+		<call-query href="insertPlanpptalctabancaria">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CUENTA_CONTABLE" query-param="CUENTA_CONTABLE"/>
+			<with-param name="RUBRO_PPTAL" query-param="RUBRO_PPTAL"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deletePlanpptalctabancaria" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM PLAN_PPTAL_CTABANCARIA WHERE PLAN_PPTAL_CTABANCARIA.COMPANIA= :KEY_COMPANIA AND PLAN_PPTAL_CTABANCARIA.ANO= :KEY_ANO AND PLAN_PPTAL_CTABANCARIA.RUBRO_PPTAL= :KEY_RUBRO_PPTAL AND PLAN_PPTAL_CTABANCARIA.CUENTA_CONTABLE= :KEY_CUENTA_CONTABLE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_RUBRO_PPTAL" sqlType="STRING"/>
+		<param name="KEY_CUENTA_CONTABLE" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="planpptalctabancaria">
+		<call-query href="deletePlanpptalctabancaria">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_RUBRO_PPTAL" query-param="KEY_RUBRO_PPTAL"/>
+			<with-param name="KEY_CUENTA_CONTABLE" query-param="KEY_CUENTA_CONTABLE"/>
+
+		</call-query>
+	</resource>
+	<query id="getPlanpptalctabancariaPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PLAN_PPTAL_CTABANCARIA.COMPANIA, PLAN_PPTAL_CTABANCARIA.ANO, PLAN_PPTAL_CTABANCARIA.CUENTA_CONTABLE, PLAN_PPTAL_CTABANCARIA.RUBRO_PPTAL, PLAN_CONTABLE.NOMBRE  FROM PLAN_PPTAL_CTABANCARIA INNER JOIN PLAN_CONTABLE ON PLAN_PPTAL_CTABANCARIA.COMPANIA = PLAN_CONTABLE.COMPANIA AND PLAN_PPTAL_CTABANCARIA.ANO = PLAN_CONTABLE.ANO AND PLAN_PPTAL_CTABANCARIA.CUENTA_CONTABLE = PLAN_CONTABLE.CODIGO WHERE PLAN_PPTAL_CTABANCARIA.COMPANIA = :COMPANIA AND PLAN_PPTAL_CTABANCARIA.ANO = :ANO AND PLAN_PPTAL_CTABANCARIA.RUBRO_PPTAL = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","CUENTA_CONTABLE":"$CUENTA_CONTABLE","RUBRO_PPTAL":"$RUBRO_PPTAL","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="planpptalctabancaria">
+		<call-query href="getPlanpptalctabancariaPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePlanpptalctabancaria" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PLAN_PPTAL_CTABANCARIA SET CUENTA_CONTABLE=:CUENTA_CONTABLE, RUBRO_PPTAL=:RUBRO_PPTAL, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PLAN_PPTAL_CTABANCARIA.COMPANIA= :KEY_COMPANIA AND PLAN_PPTAL_CTABANCARIA.ANO= :KEY_ANO AND PLAN_PPTAL_CTABANCARIA.RUBRO_PPTAL= :KEY_RUBRO_PPTAL AND PLAN_PPTAL_CTABANCARIA.CUENTA_CONTABLE= :KEY_CUENTA_CONTABLE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CUENTA_CONTABLE" sqlType="STRING"/>
+		<param name="RUBRO_PPTAL" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_RUBRO_PPTAL" sqlType="STRING"/>
+		<param name="KEY_CUENTA_CONTABLE" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="planpptalctabancaria">
+		<call-query href="updatePlanpptalctabancaria">
+			<with-param name="CUENTA_CONTABLE" query-param="CUENTA_CONTABLE"/>
+			<with-param name="RUBRO_PPTAL" query-param="RUBRO_PPTAL"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_RUBRO_PPTAL" query-param="KEY_RUBRO_PPTAL"/>
+			<with-param name="KEY_CUENTA_CONTABLE" query-param="KEY_CUENTA_CONTABLE"/>
+
+		</call-query>
+	</resource>
+
+</data>

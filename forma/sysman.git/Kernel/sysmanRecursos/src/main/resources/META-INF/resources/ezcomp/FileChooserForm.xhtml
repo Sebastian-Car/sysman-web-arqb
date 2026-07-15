@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html >
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <!-- INTERFACE -->
+    <cc:interface componentType="FileChooserForm">
+        <cc:attribute  name="idF" required="true"  />
+        <cc:attribute  name="allowTypes" required="false"   default="/(\\.|\\/)([\\d|\\D]*)$/i" />
+        <cc:attribute  name="accept" required="false"  />
+        <cc:attribute  name="formulario" required="false"  />
+        <cc:attribute  name="sizeLimit" required="false"  default="" />
+        <cc:attribute  name="style" required="false"  default="" />
+        <cc:attribute  name="update" required="false"  default="" />
+        <cc:attribute  name="etiqueta" required="false"  default="#{idm.TI_SELECCIONAR_ARCHIVO}" />
+        <cc:attribute  name="etiquetaBoton" required="false"  default="#{idm.TI_SUBIR_ARCHIVO}" />
+        <cc:attribute  name="contenedor" required="true"  type="com.sysman.util.ContenedorArchivo"  />
+        <cc:attribute  name="tabindex" required="false"  default="0"   />
+        <cc:attribute  name="disabled" required="false"  default="false"   />
+        <cc:attribute  name="onCompleteLoad" required="false"  default=""   />
+        <cc:attribute  name="onCompleteSelect" required="false"  default=""   />
+        <cc:attribute  name="onStartLoad" required="false"  default=""   />
+        <cc:attribute  name="onStartSelect" required="false"  default=""   />
+    </cc:interface>
+    
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:overlayPanel widgetVar="PL#{cc.attrs.idF}"  id="PL#{cc.attrs.idF}"
+                        my="left bottom" at="left bottom"
+                        onHide="PF('CP#{cc.attrs.idF}').jq.focus();"
+                        hideEffect="fade" style="width: 500px"
+                        >
+            <p:dataTable id="TB#{cc.attrs.idF}" widgetVar="TB#{cc.attrs.idF}"  var="arc" value="#{cc.listaArch}"
+                         emptyMessage="#{idm.TI_EMPTY_MSG_FILE}"
+                         currentPageReportTemplate="Registros: {startRecord} - {endRecord} de {totalRecords}, Página: {currentPage}/{totalPages}"
+                         rows="11"
+                         rowIndexVar="rowIndex"
+                         selectionMode="single"
+                         paginator="true"
+                         rowKey="#{arc.name}"
+                         >
+                <p:ajax event="rowSelect"  listener="#{cc.onRowSelectArchivo}"  onstart="PF('CP#{cc.attrs.idF}').jq[0].value=PF('TB#{cc.attrs.idF}').selection[0]; PF('PL#{cc.attrs.idF}').hide(); #{cc.attrs.onStartSelect}" oncomplete="#{cc.attrs.onCompleteSelect}" />
+
+                <p:column headerText="#{idm.TG_NOMBRE3}" style="text-align:center; "  width="210" filterBy="#{arc.name}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                    <h:outputText value="#{arc.name}"  style="float:left;  text-align:left;  min-height: 20px;" />
+                </p:column>
+                <p:column headerText="#{idm.TI_MODIFICADO1}" style="text-align:center; "  width="80" filterBy="#{cc.formatearFechaModificado(arc.lastModified())}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                    <h:outputText value="#{cc.formatearFechaModificado(arc.lastModified())}"  style="float:left;  text-align:left;  min-height: 20px;" />
+                </p:column>
+                <p:column width="70"  headerText="#{idm.TI_ACCIONES}" style="text-align: center" exportable="false">
+                    <p:commandButton icon="ui-icon-arrowthickstop-1-s"   title="#{idm.TI_DESCARGAR_ARCHIVO}" ajax="false"
+                                     actionListener="#{cc.descargar(arc)}">
+                        <p:fileDownload value="#{cc.archivoDescarga}" />
+                    </p:commandButton>
+                    <p:commandButton icon="ui-icon-trash"   title="#{idm.TI_ELIMINAR_ARCHIVO}"
+                                     onclick="if (PF('CP#{cc.attrs.idF}').jq[0].value == '#{arc.name}') {
+                                                 PF('CP#{cc.attrs.idF}').jq[0].value = null;
+                                             }"
+                                     actionListener="#{cc.eliminar(arc)}"
+                                     update="TB#{cc.attrs.idF},#{cc.attrs.update}">
+                        <p:confirm header="#{sessionBean.tituloMensajes}" message="#{idm.TI_MSM_ELIMINAR_ARCHIVO}" icon="ui-icon-alert" />
+                    </p:commandButton>
+
+                </p:column>
+            </p:dataTable>
+        </p:overlayPanel>
+        <h:panelGrid columns="3" style="#{cc.attrs.style}" columnClasses="FLetiqueta" >
+            <h:outputLabel value="#{cc.attrs.etiqueta}" />
+            <p:inputText value="#{cc.seleccionado}"
+                         tabindex="#{cc.attrs.tabindex}"
+                         id="CP#{cc.attrs.idF}"
+                         widgetVar="CP#{cc.attrs.idF}"
+                         disabled="#{cc.attrs.disabled}"
+                         onclick="PF('PL#{cc.attrs.idF}').show('#{component.clientId}');"
+                         title="#{idm.TI_CLIC_SELECCIONAR_ARCHIVO_CARGADO}"
+                         onkeypress="if (event.keyCode == 13) {
+                                     this.click();
+                                 } else if (event.keyCode != 9) {
+                                     return false;
+                                 }"
+
+                         style="cursor:pointer;"
+                         />
+            <p:fileUpload  id="FC#{cc.attrs.idF}"
+                           widgetVar="FC#{cc.attrs.idF}"
+                           styleClass="funico"
+                           sizeLimit="#{cc.attrs.sizeLimit}"
+                           label="#{cc.attrs.etiquetaBoton}"
+                           invalidSizeMessage="#{idm.TI_MSG_TAMANIO_ARCHIVO_MAX}"
+                           invalidFileMessage="#{idm.TI_MSG_TIPO_ARCHIVO_NO_VALIDO}"
+                           mode="advanced"
+                           disabled="#{cc.attrs.disabled}"
+                           auto="true"
+                           allowTypes="#{cc.attrs.allowTypes}"
+                           accept="#{cc.attrs.accept}"
+                           fileUploadListener="#{cc.upload}"
+                           onstart="#{cc.attrs.onStartLoad}"
+                           oncomplete="#{cc.attrs.onCompleteLoad}"
+                           style="height: 25px;"
+                           update="TB#{cc.attrs.idF},CP#{cc.attrs.idF},PL#{cc.attrs.idF},TB#{cc.attrs.idF},#{cc.attrs.update}">
+            </p:fileUpload>
+        </h:panelGrid>
+    </cc:implementation>
+</html>

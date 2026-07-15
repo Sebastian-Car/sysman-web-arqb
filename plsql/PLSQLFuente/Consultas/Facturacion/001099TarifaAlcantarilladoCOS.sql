@@ -1,0 +1,48 @@
+SELECT  SP_TARIFAS.FIJOALCANTARILLADO, 
+        SP_TARIFAS.SUBALCFIJO, 
+        SP_TARIFAS.SOBREALCFIJO, 
+        SP_TARIFAS.CONSUMOBASICO, 
+        (SP_TARIFAS.ALCBASICO + CASE WHEN s$tarifa$s = -1
+                                      THEN SP_TARIFAS.VALORTASAAMBIENTALALC
+                                      ELSE 0
+                                END) AS ALCBASICO, 
+        SP_TARIFAS.SUBALCBASICO, 
+        SP_TARIFAS.SOBREALCBASICO, 
+        SP_TARIFAS.CONSUMOCOMPLEMENTARIO, 
+        (SP_TARIFAS.ALCCOMPLEMENTARIO + CASE WHEN s$tarifa$s = -1 
+                                            THEN SP_TARIFAS.VALORTASAAMBIENTALALC
+                                            ELSE 0
+                                        END) AS ALCCOMPLEMENTARIO, 
+        SP_TARIFAS.SUBALCCOMPLEMENTARIO, 
+        SP_TARIFAS.SOBREALCCOMPLEMENTARIO, 
+        SP_TARIFAS.CONSUMOSUNTUARIO, 
+        (SP_TARIFAS.ALCSUNTUARIO + CASE WHEN s$tarifa$s = -1
+                                        THEN SP_TARIFAS.VALORTASAAMBIENTALALC
+                                        ELSE 0
+                                   END) AS ALCSUNTUARIO, 
+        SP_TARIFAS.SUBALCSUNTUARIO, 
+        SP_TARIFAS.SOBREALCSUNTUARIO, 
+        SP_TARIFAS.DERCONEXIONALCAN, 
+        SP_TARIFAS.PORCALCANTARILLADO, 
+        NVL(SINMEDICIONALC,0) AS SINMEDICION, 
+        SP_TARIFAS.USO, 
+        SP_TARIFAS.ESTRATO, 
+        SP_USOS.NOMBRE AS NOMBREUSO, 
+        SP_ESTRATOS.NOMBRE AS NOMBREESTRATO 
+FROM  SP_TARIFAS 
+        INNER JOIN SP_USOS 
+          ON SP_TARIFAS.USO       = SP_USOS.CODIGO 
+          AND SP_TARIFAS.COMPANIA = SP_USOS.COMPANIA 
+            INNER JOIN SP_ESTRATOS 
+              ON SP_TARIFAS.ESTRATO       = SP_ESTRATOS.CODIGO 
+              AND SP_TARIFAS.USO          = SP_ESTRATOS.USO 
+              AND SP_TARIFAS.COMPANIA     = SP_ESTRATOS.COMPANIA 
+WHERE SP_TARIFAS.COMPANIA   = s$compania$s
+AND   SP_TARIFAS.ANO        = s$ano$s 
+AND   SP_TARIFAS.PERIODO    = 's$mes$s' 
+AND   SP_USOS.CODIGO        <> '99' 
+ORDER BY  SP_TARIFAS.COMPANIA, 
+          SP_TARIFAS.ANO, 
+          SP_TARIFAS.PERIODO, 
+          SP_TARIFAS.USO, 
+          SP_TARIFAS.ESTRATO

@@ -1,0 +1,10 @@
+SELECT BANCO, 
+       CUENTA, 
+       NOMBRE, 
+       TELEFONO, 
+       FAX, 
+       DIRECCION, 
+       SUCURSAL 
+FROM BANCOS_NOMINA 
+WHERE BANCOS_NOMINA.COMPANIA = s$compania$s
+ORDER BY BANCO

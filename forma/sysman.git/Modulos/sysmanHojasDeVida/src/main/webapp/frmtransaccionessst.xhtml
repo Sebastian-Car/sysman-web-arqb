@@ -1,0 +1,569 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:pt="http://java.sun.com/jsf/passthrough"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/template.xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:pe="http://primefaces.org/ui/extensions"
+	>
+        <ui:define name="script">
+        <script>
+            function loadDetalle() {
+                if("#{frmtransaccionessstsControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+    </ui:define>   
+ <ui:define name="titulo">
+        <title>#{frmtransaccionessstsControlador.tituloFrmPrincipal}</title>
+    </ui:define>
+    <ui:define name="contenido">
+        <f:event type="preRenderView" listener="#{frmtransaccionessstsControlador.cargarLista}" />
+        <section class="radius" >
+            <h:form id="FR1563" >
+                <p:growl id="alert" showDetail="true" sticky="false" widgetVar="alert" life="5000" autoUpdate="false" escape="false"/>  
+                <p:panel id="lista" widgetVar="lista"   visible="#{frmtransaccionessstsControlador.accion==null}" > 
+                    <p:confirmDialog global="true" showEffect="fade"    id="confFR1563" widgetVar="confFR1563"  rendered="#{frmtransaccionessstsControlador.permisos[1]}">
+                        <p:commandButton value="#{idm.TI_SI}"  type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+                        <p:commandButton value="#{idm.TI_NO}" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+                    </p:confirmDialog>
+                    <p:dataTable id="TBFR1563" widgetVar="TBFR1563"  var="reg" value="#{frmtransaccionessstsControlador.listaInicial}"  
+                                 editable="true" 
+                                 emptyMessage="#{idm.TI_EMPTY_MESSAGE}" 
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}" 
+                                 currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+                                 rows="10"
+                                 rowIndexVar="rowIndex"
+                                 paginator="true"
+	           lazy="true">
+                        <f:facet name="{Exporters}" rendered="#{frmtransaccionessstsControlador.permisos[4] }" >
+                            <h:commandLink rendered="#{frmtransaccionessstsControlador.permisos[4] }" title="#{idm.TI_VER_EXCEL}">
+                                <p:graphicImage name="/images/general/excel.png" width="24"/>
+                                <p:dataExporter type="xls" target="TBFR1563" fileName="Datos"  encoding="ISO-8859-1"  />
+                            </h:commandLink>
+                            <h:commandLink rendered="#{frmtransaccionessstsControlador.permisos[4] }" title="#{idm.TI_VER_PDF}">
+                                <p:graphicImage name="/images/general/pdf.png" width="24"/>
+                                <p:dataExporter type="pdf" target="TBFR1563" fileName="Datos"  encoding="ISO-8859-1"/>
+                            </h:commandLink>
+                        </f:facet>
+                        <f:facet name="header">
+                            <div style="position: relative; height: 50px">
+                                <h:panelGroup class="acme" rendered="#{frmtransaccionessstsControlador.permisos[0] }">
+                                    <p:commandLink action="#{frmtransaccionessstsControlador.cargarRegistroNuevo}" 
+                                                   update=":FR1563_nuevo:nuevoPanel"
+                                                   rendered="#{frmtransaccionessstsControlador.permisos[0]}"
+                                                   onclick="try { PF('blockLista').show(); PF('TBCB5184').nuevo=true;PF('TBCB5187').nuevo=true;PF('TBCB6048').nuevo=true;} catch (e) { }"
+                                                   oncomplete="try{ asignarEventoContGrande();
+validarCargaGrandes();
+  PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+                                                   title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;" 
+                                                   id="btNuevo">
+                                        <center><p:graphicImage name="/images/menus/32/add.png"/>
+                                            <div>#{idm.TI_NUEVO}</div>
+                                        </center>
+                                    </p:commandLink>
+                                </h:panelGroup>
+                                <div class="acme">
+                                    <h:outputLink value="#{request.contextPath}/menu.sysman"  title="#{idm.TI_VOLVER}" style="padding-top: 10px;" >  
+		<center><p:graphicImage name="/images/menus/32/close.png"/>
+                                            <div>#{idm.TI_CERRAR}</div>
+                                        </center>
+                                    </h:outputLink>
+                                </div>
+                            </div>
+                            #{frmtransaccionessstsControlador.tituloFrmPrincipal}
+                        </f:facet>
+<p:column headerText="#{idm.TG_CONSECUTIVO}" filterBy="#{reg.campos['CONSECUTIVO']}" filterMatchMode="startsWith" style="text-align:center; "   filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['CONSECUTIVO']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_FECHA4}" filterBy="#{reg.campos['FECHA']}" filterMatchMode="startsWith" style="text-align:center; "   filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['FECHA']}"  style="float:left;  text-align:left;" >
+<f:convertDateTime pattern="dd/MM/yyyy"  timeZone="#{sessionBean.timeZone}" />
+</h:outputText>
+    </p:column>
+<p:column headerText="#{idm.TG_FR1563_4}" filterBy="#{reg.campos['NOMBRE_CLASE_EVENTO']}" filterMatchMode="startsWith" style="text-align:center; "   filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['NOMBRE_CLASE_EVENTO']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_DESCRIPCION6}" filterBy="#{reg.campos['DESCRIPCION']}" filterMatchMode="startsWith" style="text-align:center; "   filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['DESCRIPCION']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_CEDULA6}" filterBy="#{reg.campos['CEDULA']}" filterMatchMode="startsWith" style="text-align:center; "   filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['CEDULA']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_NOMBRE3}" filterBy="#{reg.campos['NOMBRECOMPLETO']}" filterMatchMode="startsWith" style="text-align:center; "   filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['NOMBRECOMPLETO']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column width="150"  headerText="Acciones" style="text-align: center" exportable="false">
+ <p:commandButton icon="ui-icon-search"   title="#{idm.TI_VER_REGISTRO}" 
+                                             action="#{frmtransaccionessstsControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+                                             update=":FR1563_nuevo"
+                                             onclick="try{ PF('blockLista').show();  PF('TBCB5184').nuevo=true;PF('TBCB5187').nuevo=true;PF('TBCB6048').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+                                             rendered="#{frmtransaccionessstsControlador.permisos[3]}"
+                                             oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+                                <f:param name="rowIndex" value="#{rowIndex}" />
+                            </p:commandButton>
+	<p:commandButton icon="ui-icon-document-b"   title="#{idm.TI_EDITAR_REGISTRO}" 
+                                             action="#{frmtransaccionessstsControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+                                             update=":FR1563_nuevo"
+                                             onclick="try{ PF('blockLista').show();  PF('TBCB5184').nuevo=true;PF('TBCB5187').nuevo=true;PF('TBCB6048').nuevo=true;   }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+                                             rendered="#{frmtransaccionessstsControlador.permisos[2] }"
+                                             oncomplete="try{asignarEventoContGrande();
+validarCargaGrandes();
+ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+                                <f:param name="rowIndex" value="#{rowIndex}" />
+                            </p:commandButton>
+	       <p:commandButton icon="ui-icon-trash"   title="#{idm.TI_ELIMINAR_REGISTRO}" 
+		 onclick="PF('blockListaGuardar').show()"
+                                             action="#{frmtransaccionessstsControlador.eliminarReg(reg)}" 
+                                             update=":FR1563:TBFR1563,:FR1563:alert"
+                                             rendered="#{frmtransaccionessstsControlador.permisos[1] }"
+                                             oncomplete=" PF('blockListaGuardar').hide();">
+                                <p:confirm header="#{sessionBean.tituloMensajes}" message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                    <p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR1563">
+#{idm.TI_CARGANDO}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                    <p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                </p:panel>
+            </h:form>
+<h:form id="FR1563_nuevo"    style="margin-top: -20px;"      >
+	<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA" my="left bottom" at="left bottom"  for="BTBUSQUEDA"  hideEffect="fade" rendered="#{frmtransaccionessstsControlador.accion!='i'}"  style="width: 500px"   >
+                    <p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA"  var="reg" value="#{frmtransaccionessstsControlador.listaInicialF}"
+                                 editable="true"
+                                 emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+                                 currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+                                 rows="10"
+                                 rowIndexVar="rowIndex"
+                                 selectionMode="single"
+                                 rowKey="#{reg.llave}"
+                                 paginator="true"
+                                 lazy="true">
+                        <p:ajax event="rowSelect" listener="#{frmtransaccionessstsControlador.seleccionarFilaBusqueda}" onstart="PF('blockNuevo').show()" oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();    " update="@form"  />
+	<p:column headerText="#{idm.TG_CONSECUTIVO}" filterBy="#{reg.campos['CONSECUTIVO']}" filterMatchMode="startsWith" style="text-align:center; "   filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['CONSECUTIVO']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+<p:column headerText="#{idm.TG_FECHA4}" filterBy="#{reg.campos['FECHA']}" filterMatchMode="startsWith" style="text-align:center; "   filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['FECHA']}"  style="float:left;  text-align:left;" >
+<f:convertDateTime pattern="dd/MM/yyyy"  timeZone="#{sessionBean.timeZone}" />
+</h:outputText>
+    </p:column>
+<p:column headerText="#{idm.TG_FR1563_4}" filterBy="#{reg.campos['NOMBRE_CLASE_EVENTO']}" filterMatchMode="startsWith" style="text-align:center; "   filterStyle="width: 100%">
+     <h:outputText value="#{reg.campos['NOMBRE_CLASE_EVENTO']}"  style="float:left;  text-align:left;"  />
+    </p:column>
+                    </p:dataTable>
+                </p:overlayPanel>
+               <p:growl id="alert" showDetail="true" sticky="false" widgetVar="alert" life="5000" autoUpdate="false"  escape="false" />  
+                <p:panel id="nuevoPanel"   visible="#{frmtransaccionessstsControlador.accion!=null}" widgetVar="nuevoPanel"  >
+	<div style="position: relative; height: 50px; padding-bottom: 80px;  " >
+	<div class="acme" style="display:#{frmtransaccionessstsControlador.accion=='v'?'none':'block'}">
+                            <p:commandLink action="#{frmtransaccionessstsControlador.agregarRegistroNuevo(false)}" rendered="#{frmtransaccionessstsControlador.accion!='v'}"
+                                           update=":FR1563_nuevo,#{!frmtransaccionessstsControlador.permisos[2]?':FR1563':'' }"
+                                          onclick="if (!validarVacios(['CB5184','CB5187','CP49168','CP49169'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+                                          title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+ oncomplete="asignarEventoContGrande(); validarCargaGrandes(); " >
+                                <center><p:graphicImage name="/images/menus/32/save.png"/>
+                                    <div style="height: 30px">#{idm.TI_GUARDAR}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+	<div class="acme" style="display:#{frmtransaccionessstsControlador.accion=='v' or !frmtransaccionessstsControlador.permisos[0]?'none':'block'}">
+                            <p:commandLink action="#{frmtransaccionessstsControlador.guardarNuevo}" rendered="#{frmtransaccionessstsControlador.accion!='v' and frmtransaccionessstsControlador.permisos[0]}"
+                                           update=":FR1563_nuevo"
+	                      onclick="if (!validarVacios(['CB5184','CB5187','CP49168','CP49169'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{frmtransaccionessstsControlador.accion!='i'  and frmtransaccionessstsControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+                                           oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+                                           title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}" style="padding-top: 10px;" >
+                                <center><p:graphicImage name="/images/menus/32/savenew.png"/>
+                                    <div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+ <div class="acme" style="display:#{frmtransaccionessstsControlador.accion=='i' or !frmtransaccionessstsControlador.permisos[0]?'none':'block'}">
+                            <p:commandLink id="BTBUSQUEDA" rendered="#{frmtransaccionessstsControlador.accion!='i' and frmtransaccionessstsControlador.permisos[0]}"
+                                           title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;"  >
+                                <center><p:graphicImage name="/images/menus/32/search.png"/>
+                                    <div style="height: 30px">#{idm.TI_BUSCAR}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+ 	<div class="acme" >
+                            <p:commandLink update=":FR1563:TBFR1563"
+                                           onclick="try {
+		           PF('TBFR1563').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+                                           title="#{idm.TI_ATRAS}" style="padding-top: 10px;" >
+                                <center><p:graphicImage name="/images/menus/32/back.png"/>
+                                    <div style="height: 30px">#{idm.TI_VOLVER}</div>
+                                </center>
+                            </p:commandLink>
+                        </div>
+                        <p:panel rendered="#{frmtransaccionessstsControlador.accion!='i'  and frmtransaccionessstsControlador.rid==null }" styleClass="acme" style="min-width: 350px; width:30%; padding: 10px;">
+                            <center style="margin: 2px;"> 
+                                <p:commandButton icon="ui-icon-seek-first"   
+                                                 action="#{frmtransaccionessstsControlador.irPrimero()}"
+                                                 title="#{idm.TI_PRIMER_REGISTRO}" 
+                                                 update=":FR1563_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); "
+                                                 >
+                                </p:commandButton>
+                                <p:commandButton icon="ui-icon-seek-prev"   
+                                                 action="#{frmtransaccionessstsControlador.irAnterior()}"
+                                                 title="#{idm.TI_REGISTRO_ANTERIOR}" 
+                                                 update=":FR1563_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); "
+                                                 >
+                                </p:commandButton>
+	           <p:outputLabel value="#{idm.TI_REGISTRO} #{frmtransaccionessstsControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{frmtransaccionessstsControlador.listaInicial.rowCount} " />
+                                <p:commandButton icon="ui-icon-seek-next"   
+                                                 title="#{idm.TI_REGISTRO_SIGUIENTE}" 
+                                                 action="#{frmtransaccionessstsControlador.irSiguiente()}"
+                                                 update=":FR1563_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); ">
+                                </p:commandButton>
+                                <p:commandButton icon="ui-icon-seek-end"
+                                                 title="#{idm.TI_ULTIMO_REGISTRO}" 
+                                                 action="#{frmtransaccionessstsControlador.irUltimo()}"
+                                                 update=":FR1563_nuevo"
+                                                 onclick="PF('blockNuevo').show();"
+                                                 oncomplete="PF('blockNuevo').hide(); ">
+                                </p:commandButton>
+                            </center>
+                        </p:panel>
+	   <p:panel styleClass="acme" style="width:21%; min-width:260px">
+                            <h:panelGrid columns="3"  style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+                                <h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}"/>
+                                <p:inputText id="CPCREADO"  readonly="true" widgetVar="CPCREADO"
+                                             value="#{frmtransaccionessstsControlador.registro.campos['CREATED_BY']}"   placeholder="#{idm.TI_CREADOR}" disabled="true"/>
+                                <p:calendar   locale="es"  style="width: 60%" pattern="dd/MM/yyyy"  id="CPCREADOF"  widgetVar="CPCREADOF" value="#{frmtransaccionessstsControlador.registro.campos['DATE_CREATED']}" disabled="true" />
+                                <h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+                                <p:inputText id="CPMODIFICADO"  readonly="true" widgetVar="CPMODIFICADO"
+                                             value="#{frmtransaccionessstsControlador.registro.campos['MODIFIED_BY']}"   placeholder="#{idm.TI_MODIFICADOR}" disabled="true"/>
+                                <p:calendar   locale="es"  style="width: 60%" pattern="dd/MM/yyyy"  id="CPMODIFICADOF" widgetVar="CPMODIFICADOF" value="#{frmtransaccionessstsControlador.registro.campos['DATE_MODIFIED']}" disabled="true" />
+                            </h:panelGrid>
+                        </p:panel>
+                    </div>
+<div id="PL2992" class="
+" style="position: relative; height: 962px; ">
+<p:selectOneMenu filter="true" editable="false"       effect="fade" id="CB5909"   widgetVar="CB5909"  value="#{frmtransaccionessstsControlador.registro.campos['TIPO_COBERTURA']}" disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}"  tabindex="28"  
+ style="position: absolute; width:249px; height: 23px; left: 252px;   top: 736px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmtransaccionessstsControlador.visibleCobertura?'block':'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px;"
+>
+      <f:selectItem/>
+       <f:selectItem itemValue="1" itemLabel="#{idm.OD_CB5909_0}"/>
+<f:selectItem itemValue="2" itemLabel="#{idm.OD_CB5909_1}"/>
+</p:selectOneMenu>
+<h:outputLabel id="LB45141" value="#{idm.TT_LB45141}"       style="position: absolute; width:218px; height: 24px; left: 29px;   top: 706px; text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<p:inputTextarea autoResize="false"  id="CP55293"  widgetVar="CP55293"  value="#{frmtransaccionessstsControlador.registro.campos['LUGAR']}" 
+   readonly="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="19" 
+  styleClass="inputTab" 
+  style="resize: none; position: absolute; width:536px; height: 24px; left: 252px;   top: 706px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+  >
+  </p:inputTextarea>
+<p:inputText id="CP51175"   widgetVar="CP51175"  
+styleClass="inputTab"
+value="#{frmtransaccionessstsControlador.registro.campos['RUTAFORMATO_PLANTILLA']}"  
+   readonly="true" tabindex="21" 
+  style="position: absolute; width:154px; height: 23px; text-decoration:none; left: 251px;   top: 826px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputText id="CP49269"   widgetVar="CP49269"  
+styleClass="inputTab"
+value="#{frmtransaccionessstsControlador.registro.campos['NOMBRE_TRANSACCION']}"  
+   readonly="true" tabindex="2" 
+  style="position: absolute; width:536px; height: 20px; text-decoration:none; left: 252px;   top: 107px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputText id="CP49268"   widgetVar="CP49268"  
+styleClass="inputTab"
+value="#{frmtransaccionessstsControlador.registro.campos['SUCURSAL']}"  
+   readonly="true" tabindex="18" 
+  style="position: absolute; width:154px; height: 24px; text-decoration:none; left: 252px;   top: 676px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputText id="CP49267"   widgetVar="CP49267"  
+styleClass="inputTab"
+value="#{frmtransaccionessstsControlador.registro.campos['ID_EMPLEADO']}"  
+   readonly="true" tabindex="14" 
+  style="position: absolute; width:154px; height: 24px; text-decoration:none; left: 252px;   top: 589px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<h:outputLabel id="LB45140" value="#{idm.TT_LB45140}"       style="position: absolute; width:218px; height: 23px; left: 29px;   top: 736px; text-align: right; font-weight: bold; font-style: normal;text-decoration:normal; font-family: Tahoma; font-size: 13px; display:#{frmtransaccionessstsControlador.visibleCobertura?'block':'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<p:selectOneMenu filter="true" editable="false"    rendered="true"   effect="fade" id="CB5189"   widgetVar="CB5189"  value="#{frmtransaccionessstsControlador.registro.campos['CLASEINTEGRANTE']}" disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}"  tabindex="13"  
+ style="position: absolute; width:183px; height: 24px; left: 604px;   top: 559px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{!frmtransaccionessstsControlador.visibleCompromisos?'block':'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;"
+>
+      <f:selectItem/>
+       <f:selectItem itemValue="1" itemLabel="#{idm.OD_CB5189_0}"/>
+<f:selectItem itemValue="2" itemLabel="#{idm.OD_CB5189_1}"/>
+</p:selectOneMenu>
+<p:selectOneMenu filter="true" editable="false"    rendered="#{frmtransaccionessstsControlador.visibleCargoComite}"   effect="fade" id="CB5190"   widgetVar="CB5190"  value="#{frmtransaccionessstsControlador.registro.campos['CARGOCOMITE']}" disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}"  tabindex="15"  
+ style="position: absolute; width:183px; height: 24px; left: 604px;   top: 589px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;"
+>
+      <f:selectItem/>
+       <f:selectItem itemValue="1" itemLabel="#{idm.OD_CB5190_0}"/>
+<f:selectItem itemValue="2" itemLabel="#{idm.OD_CB5190_1}"/>
+<f:selectItem itemValue="3" itemLabel="#{idm.OD_CB5190_2}"/>
+</p:selectOneMenu>
+<p:inputText id="CB6048" widgetVar="CB6048" onfocus="if(!false){PF('BTCB6048').jq.focus();}" onclick="if(!false){PF('PLCB6048').show();}" value="#{frmtransaccionessstsControlador.registro.campos['AGENTE']}"   disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="-1"    
+  rendered="#{frmtransaccionessstsControlador.visibleAgente}" 
+style="cursor:pointer; position: absolute; width:104px; height: 23px; left: 251px;   top: 794px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />   
+	<p:commandButton id="BTCB6048"   onblur="PF('CB6048').jq.blur();"  onfocus="PF('CB6048').jq.addClass('ui-state-focus');" widgetVar="BTCB6048"   disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}" type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"    
+                                                     style="position: absolute; width:25px; height:  23px; left: 353px;   top: 794px; display:block; "     tabindex="32"  rendered="#{frmtransaccionessstsControlador.visibleAgente}"  />   
+	<p:overlayPanel widgetVar="PLCB6048" id="PLCB6048" onShow="if(PF('TBCB6048').nuevo){ PF('TBCB6048').filter(); PF('TBCB6048').nuevo=false;}"  onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB6048').jq.focus();}"  my="left" at="left"  for="BTCB6048" hideEffect="fade" rendered= "#{frmtransaccionessstsControlador.accion!='v'}"  style="width: 500px"   >   
+		<p:dataTable id="TBCB6048" widgetVar="TBCB6048"  var="reg" value="#{frmtransaccionessstsControlador.listaAgente}"     
+                                                     editable="true"    
+                                                     emptyMessage="#{idm.TI_EMPTY_MESSAGE}"    
+                                                     currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"   
+                                                     rows="11"   
+                                                     rowIndexVar="rowIndex"   
+                                                     selectionMode="single"   
+                                                     rowKey="#{reg.campos['CODIGO']}"   
+                                                     paginator="true"   
+                                                     lazy="true">   
+			<p:ajax event="rowSelect" listener="#{frmtransaccionessstsControlador.seleccionarFilaAgente}" update=":FR1563_nuevo:CB6048,@([id$=CP56574])"    
+  oncomplete="PF('PLCB6048').hide(); "  />   
+			<p:column headerText="#{idm.TG_CODIGO7}" style="text-align:center; "  width="20%" filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['CODIGO']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.TG_NOMBRE3}" style="text-align:center; "  width="50%" filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="contains" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['NOMBRE']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.NG_CB6048_2}" style="text-align:center; "  width="40%" filterBy="#{reg.campos['NOMBRECLASE']}" filterMatchMode="contains" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['NOMBRECLASE']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+		</p:dataTable>   
+    </p:overlayPanel>   
+<h:outputLabel id="LB40427" value="#{idm.TG_NUMERO8}"       style="position: absolute; width:218px; height: 20px; left: 29px;   top: 81px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40428" value="#{frmtransaccionessstsControlador.tituloTxtFecha}"       style="position: absolute; width:218px; height: 23px; left: 29px;   top: 132px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40429" value="#{idm.TT_LB40429}"       style="position: absolute; width:218px; height: 20px; left: 29px;   top: 211px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40430" value="#{idm.TT_LB40430}"       style="position: absolute; width:218px; height: 20px; left: 29px;   top: 107px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40431" value="#{idm.TG_HORA2}"       style="position: absolute; width:218px; height: 20px; left: 29px;   top: 186px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40432" value="#{idm.TT_LB40432}"       style="position: absolute; width:218px; height: 95px; left: 29px;   top: 237px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40433" value="#{idm.TT_LB40433}"       style="position: absolute; width:218px; height: 24px; left: 29px;   top: 589px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40434" value="#{idm.TT_LB40434}"       style="position: absolute; width:218px; height: 24px; left: 29px;   top: 559px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40435" value="#{idm.TG_SUCURSAL2}"       style="position: absolute; width:218px; height: 24px; left: 29px;   top: 676px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40436" value="#{frmtransaccionessstsControlador.tituloTexto}"       style="position: absolute; width:218px; height: 87px; left: 29px;   top: 337px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40437" value="#{idm.TT_LB40437}"       style="position: absolute; width:218px; height: 23px; left: 29px;   top: 826px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40439" value="#{idm.TG_NOMBRE4}"       style="position: absolute; width:218px; height: 24px; left: 29px;   top: 618px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40440" value="#{idm.TT_LB40440}"       style="position: absolute; width:122px; height: 20px; left: 411px;   top: 160px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{!frmtransaccionessstsControlador.visibleCompromisos?'block':'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40441" value="#{idm.TT_LB40441}"       style="position: absolute; width:188px; height: 24px; left: 411px;   top: 559px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{!frmtransaccionessstsControlador.visibleCompromisos?'block':'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40442" value="#{idm.TT_LB40442}"       style="position: absolute; width:122px; height: 20px; left: 411px;   top: 186px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{!frmtransaccionessstsControlador.visibleCompromisos?'block':'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40443" value="#{idm.TT_LB40443}"  rendered="#{frmtransaccionessstsControlador.visibleCargoComite}"     style="position: absolute; width:188px; height: 24px; left: 411px;   top: 589px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40444" value="#{idm.TT_LB40444}"       style="position: absolute; width:218px; height: 20px; left: 29px;   top: 160px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:#{!frmtransaccionessstsControlador.visibleCompromisos?'block':'none'}; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40445" value="#{idm.TT_LB40445}"       style="position: absolute; width:218px; height: 24px; left: 29px;   top: 647px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40446" value="#{frmtransaccionessstsControlador.tituloCompromisos}"       style="position: absolute; width:218px; height: 95px; left: 29px;   top: 429px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB40447" value="#{frmtransaccionessstsControlador.tituloFrmPrincipal}"       style="position: absolute; width:398px; height: 25px; left: 276px;   top: 14px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB45153" value="#{idm.TT_LB45153}"  rendered="#{frmtransaccionessstsControlador.mostrarCobertura}"     style="position: absolute; width:218px; height: 24px; left: 29px;   top: 766px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB45156" value="#{frmtransaccionessstsControlador.fechaLimite}"  rendered="#{frmtransaccionessstsControlador.mostrarFechaLimite}"     style="position: absolute; width:218px; height: 24px; left: 29px;   top: 529px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<h:outputLabel id="LB46035" value="#{idm.TT_LB46035}"  rendered="#{frmtransaccionessstsControlador.visibleAgente}"     style="position: absolute; width:218px; height: 24px; left: 29px;   top: 795px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;"   />
+<p:inputText id="CP49167"   widgetVar="CP49167"  
+styleClass="inputTab"
+value="#{frmtransaccionessstsControlador.registro.campos['CONSECUTIVO']}"  
+   readonly="true" tabindex="1" 
+  style="position: absolute; width:154px; height: 20px; text-decoration:none; left: 252px;   top: 81px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:calendar   locale="es" navigator="true"  mask="true"  pattern="dd/MM/yyyy" 
+  id="CP49168"   widgetVar="CP49168"  value="#{frmtransaccionessstsControlador.registro.campos['FECHA']}"    readonly="#{frmtransaccionessstsControlador.accion=='v'?true:false}"  disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="3" 
+  style="position: absolute; width:154px; height: 23px; left: 252px;   top: 132px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" >
+<p:ajax  event="dateSelect"  onstart="validarFechas('CP49168','CP49176'); return false;"     />
+<p:ajax  event="change"  onstart="validarFechas('CP49168','CP49176'); return false;"     /> 
+</p:calendar>
+<p:calendar   locale="es" pattern="HH:mm" timeOnly="true"   id="CP49169" value="#{frmtransaccionessstsControlador.registro.campos['HORA_INICIO']}"  
+   readonly="#{frmtransaccionessstsControlador.accion=='v'?true:false}"  disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="6" 
+  style="position: absolute; width:154px; height: 20px; left: 252px;   top: 186px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+<p:inputTextarea autoResize="false"  id="CP49170"  widgetVar="CP49170"  value="#{frmtransaccionessstsControlador.registro.campos['DESCRIPCION']}" 
+   readonly="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="9" 
+  styleClass="inputTab" maxlength="255"
+  style="resize: none; position: absolute; width:536px; height: 95px; left: 252px;   top: 237px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+  >
+  </p:inputTextarea>
+<p:inputTextarea autoResize="false"  id="CP49171"  widgetVar="CP49171"  value="#{frmtransaccionessstsControlador.registro.campos['TEXTO']}" 
+   readonly="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="10" 
+  styleClass="inputTab" maxlength="255"
+  style="resize: none; position: absolute; width:536px; height: 87px; left: 252px;   top: 337px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+  >
+  </p:inputTextarea>
+<p:inputText id="CP49173"   widgetVar="CP49173"  
+styleClass="inputTab"
+value="#{frmtransaccionessstsControlador.registro.campos['NOMBRE_COMPLETO']}"  
+   readonly="true" tabindex="16" 
+  style="position: absolute; width:536px; height: 24px; text-decoration:none; left: 252px;   top: 618px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:calendar   locale="es" pattern="HH:mm" timeOnly="true"   id="CP49174" value="#{frmtransaccionessstsControlador.registro.campos['HORA_INICIO']}"  
+   readonly="#{frmtransaccionessstsControlador.accion=='v'?true:false}"  disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="5" 
+  style="position: absolute; width:122px; height: 20px; left: 538px;   top: 160px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{!frmtransaccionessstsControlador.visibleCompromisos?'block':'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+<p:calendar   locale="es" pattern="HH:mm" timeOnly="true"   id="CP49175" value="#{frmtransaccionessstsControlador.registro.campos['HORA_FIN']}"  
+   readonly="#{frmtransaccionessstsControlador.accion=='v'?true:false}"  disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="7" 
+  style="position: absolute; width:122px; height: 20px; left: 538px;   top: 186px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{!frmtransaccionessstsControlador.visibleCompromisos?'block':'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" />
+<p:calendar   locale="es" navigator="true"  mask="true"  pattern="dd/MM/yyyy" 
+  id="CP49176"   widgetVar="CP49176"  value="#{frmtransaccionessstsControlador.registro.campos['FECHAFIN']}"    readonly="#{frmtransaccionessstsControlador.accion=='v'?true:false}"  disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="4" 
+  style="position: absolute; width:154px; height: 20px; left: 252px;   top: 160px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{!frmtransaccionessstsControlador.visibleCompromisos?'block':'none'}; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" >
+</p:calendar>
+<p:inputText id="CP49177"   widgetVar="CP49177"  
+styleClass="inputTab"
+value="#{frmtransaccionessstsControlador.registro.campos['CARGO_ACTUAL']}"  
+   readonly="true" tabindex="17" 
+  style="position: absolute; width:536px; height: 24px; text-decoration:none; left: 252px;   top: 647px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:inputTextarea autoResize="false"  id="CP49178"  widgetVar="CP49178"  value="#{frmtransaccionessstsControlador.registro.campos['COMPROMISOS']}" 
+   readonly="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="12" 
+  styleClass="inputTab" 
+  style="resize: none; position: absolute; width:536px; height: 95px; left: 252px;   top: 429px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+  >
+  </p:inputTextarea>
+<p:inputText id="CP55321"   widgetVar="CP55321"  
+styleClass="inputTab"
+value="#{frmtransaccionessstsControlador.registro.campos['COBERTURA']}"  
+   readonly="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="20" 
+ rendered="#{frmtransaccionessstsControlador.mostrarCobertura}"
+  style="position: absolute; width:536px; height: 24px; text-decoration:none; left: 252px;   top: 766px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:calendar   locale="es" navigator="true"  mask="true"  pattern="dd/MM/yyyy" 
+  id="CP55332"   widgetVar="CP55332"  value="#{frmtransaccionessstsControlador.registro.campos['FECHALIMITECOMP']}"    readonly="#{frmtransaccionessstsControlador.accion=='v'?true:false}"  disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="29" 
+rendered="#{frmtransaccionessstsControlador.mostrarFechaLimite}"
+  style="position: absolute; width:154px; height: 24px; left: 252px;   top: 529px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ;" >
+</p:calendar>
+<p:inputText id="CB5187" widgetVar="CB5187" onfocus="if(!false){PF('BTCB5187').jq.focus();}" onclick="if(!false){PF('PLCB5187').show();}" value="#{frmtransaccionessstsControlador.registro.campos['CEDULA']}"   disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="-1"    
+style="cursor:pointer; position: absolute; width:129px; height: 24px; left: 252px;   top: 559px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />   
+	<p:commandButton id="BTCB5187"   onblur="PF('CB5187').jq.blur();"  onfocus="PF('CB5187').jq.addClass('ui-state-focus');" widgetVar="BTCB5187"   disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}" type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"    
+                                                     style="position: absolute; width:25px; height:  24px; left: 379px;   top: 559px; display:block; "     tabindex="11"    />   
+	<p:overlayPanel widgetVar="PLCB5187" id="PLCB5187" onShow="if(PF('TBCB5187').nuevo){ PF('TBCB5187').filter(); PF('TBCB5187').nuevo=false;}"  onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB5187').jq.focus();}"  my="center" at="center"  for="BTCB5187" hideEffect="fade" rendered= "#{frmtransaccionessstsControlador.accion!='v'}"  style="width: 650px"   >   
+		<p:dataTable id="TBCB5187" widgetVar="TBCB5187"  var="reg" value="#{frmtransaccionessstsControlador.listaCedula}"     
+                                                     editable="true"    
+                                                     emptyMessage="#{idm.TI_EMPTY_MESSAGE}"    
+                                                     currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"   
+                                                     rows="11"   
+                                                     rowIndexVar="rowIndex"   
+                                                     selectionMode="single"   
+                                                     rowKey="#{reg.campos['NUMERO_DCTO']}"   
+                                                     paginator="true"   
+                                                     lazy="true">   
+			<p:ajax event="rowSelect" listener="#{frmtransaccionessstsControlador.seleccionarFilaCedula}" update=":FR1563_nuevo:CB5187,@([id$=CP49173]),@([id$=CP49177]),@([id$=CP49268]),@([id$=CP49267])"    
+  oncomplete="PF('PLCB5187').hide(); "  />   
+			<p:column headerText="#{idm.TG_NIT5}" style="text-align:center; "  width="120" filterBy="#{reg.campos['NUMERO_DCTO']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['NUMERO_DCTO']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.NG_CB5187_1}" style="text-align:center; "  width="80" filterBy="#{reg.campos['ID_DE_EMPLEADO']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['ID_DE_EMPLEADO']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.TG_NOMBRES}" style="text-align:center; "  width="300" filterBy="#{reg.campos['NOMBRE_COMPLETO']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['NOMBRE_COMPLETO']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.NG_CB5187_4}" style="text-align:center; "  width="300" filterBy="#{reg.campos['CARGO_ACTUAL']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['CARGO_ACTUAL']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+		</p:dataTable>   
+    </p:overlayPanel>   
+<p:inputText id="CB5184" widgetVar="CB5184" onfocus="if(!false){PF('BTCB5184').jq.focus();}" onclick="if(!false){PF('PLCB5184').show();}" value="#{frmtransaccionessstsControlador.registro.campos['NOMBRE_CLASE_EVENTO']}"   disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="-1"    
+style="cursor:pointer; position: absolute; width:511px; height: 20px; left: 252px;   top: 211px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;" />   
+	<p:commandButton id="BTCB5184"   onblur="PF('CB5184').jq.blur();"  onfocus="PF('CB5184').jq.addClass('ui-state-focus');" widgetVar="BTCB5184"   disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}" type="button" icon="ui-icon ui-icon-triangle-1-s ui-c"    
+                                                     style="position: absolute; width:25px; height:  20px; left: 761px;   top: 211px; display:block; "     tabindex="8"    />   
+	<p:overlayPanel widgetVar="PLCB5184" id="PLCB5184" onShow="if(PF('TBCB5184').nuevo){ PF('TBCB5184').filter(); PF('TBCB5184').nuevo=false;}"  onHide="if(document.activeElement.id=='' || document.activeElement.id.indexOf('filter')>-1){PF('CB5184').jq.focus();}"  my="left" at="left"  for="BTCB5184" hideEffect="fade" rendered= "#{frmtransaccionessstsControlador.accion!='v'}"  style="width: 500px"   >   
+		<p:dataTable id="TBCB5184" widgetVar="TBCB5184"  var="reg" value="#{frmtransaccionessstsControlador.listaClaseEvento}"     
+                                                     editable="true"    
+                                                     emptyMessage="#{idm.TI_EMPTY_MESSAGE}"    
+                                                     currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"   
+                                                     rows="11"   
+                                                     rowIndexVar="rowIndex"   
+                                                     selectionMode="single"   
+                                                     rowKey="#{reg.campos['CODIGO']}"   
+                                                     paginator="true"   
+                                                     lazy="true">   
+			<p:ajax event="rowSelect" listener="#{frmtransaccionessstsControlador.seleccionarFilaClaseEvento}" update=":FR1563_nuevo:CB5184,@([id$=LB40432]),@([id$=LB40436]),@([id$=LB40446]),@([id$=CP49178]),@([id$=LB40444]),@([id$=CP49176]),@([id$=LB40440]),@([id$=CP49174]),@([id$=LB40442]),@([id$=CP49175]),@([id$=LB40441]),@([id$=CB5189]),@([id$=LB40443]),@([id$=CB5190]),@([id$=CP51175])"    
+  oncomplete="PF('PLCB5184').hide(); "  />   
+			<p:column headerText="#{idm.TG_CODIGO7}" style="text-align:center; "  width="30%" filterBy="#{reg.campos['CODIGO']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['CODIGO']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.TG_NOMBRE3}" style="text-align:center; "  width="50%" filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith" filterStyle="width:100%;">
+                                                <h:outputText value="#{reg.campos['NOMBRE']}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+<p:column headerText="#{idm.NG_CB5184_2}" style="text-align:center; "  width="30%" filterBy="#{reg.campos['IND_REUNION']}" filterMatchMode="startsWith" >
+ <f:facet name="filter">
+                                    <p:selectOneMenu onchange="PF('TBCB5184').filter()" >
+                                        <f:selectItem itemLabel="#{idm.TI_TODOS}" itemValue=""  />
+                                        <f:selectItem itemLabel="#{idm.TI_SI}" itemValue="true" />
+                                        <f:selectItem itemLabel="#{idm.TI_NO}" itemValue="false" />
+                                    </p:selectOneMenu>
+                        </f:facet>                                                <h:outputText value="#{reg.campos['IND_REUNION']=='false'? idm.TI_NO: reg.campos['IND_REUNION']=='true'? idm.TI_SI:''}"  style="float:left;  text-align:left;  min-height: 20px;"   />
+                                    </p:column>
+		</p:dataTable>   
+    </p:overlayPanel>   
+<p:commandButton id="BT3105"   widgetVar="BT3105"         disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}"     update="@([id$=alert])"     tabindex="24"  value="#{idm.TG_ACTIVIDADES2}"   actionListener="#{frmtransaccionessstsControlador.oprimirActividades}"   style="position: absolute; width:118px; height: 39px; left: 222px;   top: 884px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#AAAAAA  solid  1px ;"  >
+</p:commandButton>
+<p:commandButton id="BT2973"   widgetVar="BT2973"         disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}"     update="@([id$=alert])"     tabindex="26"  value="#{idm.TG_ANEXOS}"   actionListener="#{frmtransaccionessstsControlador.oprimirAnexos}"   style="position: absolute; width:118px; height: 39px; left: 472px;   top: 885px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#AAAAAA  solid  1px ;"  >
+</p:commandButton>
+<p:commandButton id="BT2864"   widgetVar="BT2864"         disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}"     update="@([id$=alert]),@form"     tabindex="27"  value="#{idm.TG_DETALLE2}"   actionListener="#{frmtransaccionessstsControlador.oprimirBtnDetalle}"   style="position: absolute; width:118px; height: 39px; left: 597px;   top: 885px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmtransaccionessstsControlador.visibleBtnDetalle?'block':'none'};  color:#0000FF; border:#AAAAAA  solid  1px ;"  >
+</p:commandButton>
+<p:commandButton id="BT2863"   widgetVar="BT2863"         disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}"          tabindex="25"  value="#{idm.TT_BT2863}"   actionListener="#{frmtransaccionessstsControlador.oprimirBtnGenerarCronograma}"   style="position: absolute; width:118px; height: 39px; left: 347px;   top: 885px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmtransaccionessstsControlador.indicadorComite?'block':'none'};  color:#0000FF; border:#AAAAAA  solid  1px ;"  >
+</p:commandButton>
+<p:inputText id="CP56574"   widgetVar="CP56574"  
+styleClass="inputTab"
+value="#{frmtransaccionessstsControlador.registro.campos['NOMBREAGENTE']}"  
+   readonly="#{frmtransaccionessstsControlador.accion=='v'?true:false}" tabindex="30" 
+ rendered="#{frmtransaccionessstsControlador.visibleAgente}"
+  style="position: absolute; width:404px; height: 24px; text-decoration:none; left: 385px;   top: 795px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px ; padding-bottom: 0; padding-left: 2px; padding-top: 0;" 
+>
+</p:inputText>
+<p:commandButton id="BT2798"   widgetVar="BT2798"         disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}"     update="@([id$=alert])"     tabindex="23"  value="#{idm.TT_BT2798}"   actionListener="#{frmtransaccionessstsControlador.oprimirBtnParticipantes}"   style="position: absolute; width:118px; height: 39px; left: 97px;   top: 884px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:#{frmtransaccionessstsControlador.indicadorResponsable?'block':'none'};  color:#0000FF; border:#AAAAAA  solid  1px;"  >
+</p:commandButton>
+<p:commandButton id="BT2800"   widgetVar="BT2800"         disabled="#{frmtransaccionessstsControlador.accion=='v'?true:false}"   icon="ui-iconImprimir"  update="@([id$=alert]),@form"     tabindex="22"  value=""   actionListener="#{frmtransaccionessstsControlador.oprimirBtnPlantilla}"   style="position: absolute; width:50px; height: 50px; left: 423px;   top: 823px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; display:block;  color:#0000FF; border:#AAAAAA  solid  1px;"  >
+</p:commandButton>
+</div>
+                   <p:blockUI block="nuevoPanel" widgetVar="blockNuevo"  trigger="">
+#{idm.TI_CARGANDO}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                    <p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br/>
+                        <p:graphicImage name="/images/general/loading.gif"/>
+                    </p:blockUI>
+                </p:panel>
+            </h:form>
+        </section>
+    </ui:define>
+</ui:composition>

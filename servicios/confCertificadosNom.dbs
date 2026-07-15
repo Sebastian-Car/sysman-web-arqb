@@ -1,0 +1,97 @@
+﻿<data name="confCertificadosNom" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getConfcertificadosnomDatoscertQuery"  useConfig="sysmandsunist">
+		<sql>SELECT ID ,COMPANIA ,RUTA_CERTIFICADO ,CONTRA_CERTIFICADO ,TES_ID ,PIN_SOFTWARE ,TIPO_AMBIENTE FROM CONF_CERTIFICADONOMINA WHERE COMPANIA = :UN_COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","COMPANIA":"$COMPANIA","RUTA_CERTIFICADO":"$RUTA_CERTIFICADO","CONTRA_CERTIFICADO":"$CONTRA_CERTIFICADO","TES_ID":"$TES_ID","PIN_SOFTWARE":"$PIN_SOFTWARE","TIPO_AMBIENTE":"$TIPO_AMBIENTE(type:integer)"}]}}		</result>
+		<param name="UN_COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="confcertificadosnom/datoscert">
+		<call-query href="getConfcertificadosnomDatoscertQuery">
+			<with-param name="UN_COMPANIA" query-param="UN_COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getConfcertificadosnomPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT ID,COMPANIA,RUTA_CERTIFICADO,CONTRA_CERTIFICADO,TES_ID,PIN_SOFTWARE, TIPO_AMBIENTE, CASE TIPO_AMBIENTE WHEN 1 THEN 'HABILITACION' WHEN 0 THEN 'PRODUCCION' ELSE '' END AMBIENTE FROM CONF_CERTIFICADONOMINA WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN RUTA_CERTIFICADO IS NULL THEN ' ' ELSE UPPER(RUTA_CERTIFICADO) END) LIKE UPPER(CONCAT(CONCAT('%',:RUTA_CERTIFICADO), '%')) AND (CASE WHEN CONTRA_CERTIFICADO IS NULL THEN ' ' ELSE UPPER(CONTRA_CERTIFICADO) END) LIKE UPPER(CONCAT(CONCAT('%',:CONTRA_CERTIFICADO), '%')) AND (CASE WHEN TES_ID IS NULL THEN ' ' ELSE UPPER(TES_ID) END) LIKE UPPER(CONCAT(CONCAT('%',:TES_ID), '%')) AND (CASE WHEN PIN_SOFTWARE IS NULL THEN ' ' ELSE UPPER(PIN_SOFTWARE) END) LIKE UPPER(CONCAT(CONCAT('%',:PIN_SOFTWARE), '%')) AND (CASE WHEN AMBIENTE IS NULL THEN ' ' ELSE UPPER(AMBIENTE) END) LIKE UPPER(CONCAT(CONCAT('%',:AMBIENTE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ID":"$ID","COMPANIA":"$COMPANIA","RUTA_CERTIFICADO":"$RUTA_CERTIFICADO","CONTRA_CERTIFICADO":"$CONTRA_CERTIFICADO","TES_ID":"$TES_ID","PIN_SOFTWARE":"$PIN_SOFTWARE","TIPO_AMBIENTE":"$TIPO_AMBIENTE(type:integer)","AMBIENTE":"$AMBIENTE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="RUTA_CERTIFICADO" sqlType="STRING"/>
+		<param name="CONTRA_CERTIFICADO" sqlType="STRING"/>
+		<param name="TES_ID" sqlType="STRING"/>
+		<param name="PIN_SOFTWARE" sqlType="STRING"/>
+		<param name="AMBIENTE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="confcertificadosnom">
+		<call-query href="getConfcertificadosnomPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RUTA_CERTIFICADO" query-param="RUTA_CERTIFICADO"/>
+			<with-param name="CONTRA_CERTIFICADO" query-param="CONTRA_CERTIFICADO"/>
+			<with-param name="TES_ID" query-param="TES_ID"/>
+			<with-param name="PIN_SOFTWARE" query-param="PIN_SOFTWARE"/>
+			<with-param name="AMBIENTE" query-param="AMBIENTE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getConfcertificadosnomNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT ID,COMPANIA,RUTA_CERTIFICADO,CONTRA_CERTIFICADO,TES_ID,PIN_SOFTWARE, TIPO_AMBIENTE, CASE TIPO_AMBIENTE WHEN 1 THEN 'HABILITACION' WHEN 0 THEN 'PRODUCCION' ELSE '' END AMBIENTE FROM CONF_CERTIFICADONOMINA WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN RUTA_CERTIFICADO IS NULL THEN ' ' ELSE UPPER(RUTA_CERTIFICADO) END) LIKE UPPER(CONCAT(CONCAT('%',:RUTA_CERTIFICADO), '%')) AND (CASE WHEN CONTRA_CERTIFICADO IS NULL THEN ' ' ELSE UPPER(CONTRA_CERTIFICADO) END) LIKE UPPER(CONCAT(CONCAT('%',:CONTRA_CERTIFICADO), '%')) AND (CASE WHEN TES_ID IS NULL THEN ' ' ELSE UPPER(TES_ID) END) LIKE UPPER(CONCAT(CONCAT('%',:TES_ID), '%')) AND (CASE WHEN PIN_SOFTWARE IS NULL THEN ' ' ELSE UPPER(PIN_SOFTWARE) END) LIKE UPPER(CONCAT(CONCAT('%',:PIN_SOFTWARE), '%')) AND (CASE WHEN AMBIENTE IS NULL THEN ' ' ELSE UPPER(AMBIENTE) END) LIKE UPPER(CONCAT(CONCAT('%',:AMBIENTE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="RUTA_CERTIFICADO" sqlType="STRING"/>
+		<param name="CONTRA_CERTIFICADO" sqlType="STRING"/>
+		<param name="TES_ID" sqlType="STRING"/>
+		<param name="PIN_SOFTWARE" sqlType="STRING"/>
+		<param name="AMBIENTE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="confcertificadosnom/numero">
+		<call-query href="getConfcertificadosnomNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="RUTA_CERTIFICADO" query-param="RUTA_CERTIFICADO"/>
+			<with-param name="CONTRA_CERTIFICADO" query-param="CONTRA_CERTIFICADO"/>
+			<with-param name="TES_ID" query-param="TES_ID"/>
+			<with-param name="PIN_SOFTWARE" query-param="PIN_SOFTWARE"/>
+			<with-param name="AMBIENTE" query-param="AMBIENTE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateConfcertificadosnom" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CONF_CERTIFICADONOMINA SET RUTA_CERTIFICADO=:RUTA_CERTIFICADO, CONTRA_CERTIFICADO=:CONTRA_CERTIFICADO, TES_ID=:TES_ID, PIN_SOFTWARE=:PIN_SOFTWARE, TIPO_AMBIENTE=:TIPO_AMBIENTE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CONF_CERTIFICADONOMINA.ID= :KEY_ID AND CONF_CERTIFICADONOMINA.COMPANIA= :KEY_COMPANIA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="RUTA_CERTIFICADO" sqlType="STRING"/>
+		<param name="CONTRA_CERTIFICADO" sqlType="STRING"/>
+		<param name="TES_ID" sqlType="STRING"/>
+		<param name="PIN_SOFTWARE" sqlType="STRING"/>
+		<param name="TIPO_AMBIENTE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_ID" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="confcertificadosnom">
+		<call-query href="updateConfcertificadosnom">
+			<with-param name="RUTA_CERTIFICADO" query-param="RUTA_CERTIFICADO"/>
+			<with-param name="CONTRA_CERTIFICADO" query-param="CONTRA_CERTIFICADO"/>
+			<with-param name="TES_ID" query-param="TES_ID"/>
+			<with-param name="PIN_SOFTWARE" query-param="PIN_SOFTWARE"/>
+			<with-param name="TIPO_AMBIENTE" query-param="TIPO_AMBIENTE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_ID" query-param="KEY_ID"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+
+		</call-query>
+	</resource>
+
+</data>

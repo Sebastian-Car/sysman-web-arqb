@@ -1,0 +1,567 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:pt="http://java.sun.com/jsf/passthrough"
+	xmlns:ui="http://java.sun.com/jsf/facelets" template="/template.xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="script">
+		<script>
+            function loadDetalle() {
+                if("#{acuerdoPazControlador.rid}"!="#{null}"){
+                try{ PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; }
+            }
+            }
+            window.onload = loadDetalle;
+        </script>
+	</ui:define>
+	<ui:define name="titulo">
+		<title>#{idm.TT_FR2514}</title>
+	</ui:define>
+	<ui:define name="contenido">
+		<f:event type="preRenderView"
+			listener="#{acuerdoPazControlador.cargarLista}" />
+		<section class="radius">
+			<h:form id="FR2514">
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="lista" widgetVar="lista"
+					visible="#{acuerdoPazControlador.accion==null}">
+					<p:confirmDialog global="true" showEffect="fade" id="confFR2514"
+						widgetVar="confFR2514"
+						rendered="#{acuerdoPazControlador.permisos[1]}">
+						<p:commandButton value="#{idm.TI_SI}" type="button"
+							styleClass="ui-confirmdialog-yes" icon="ui-icon-check" />
+						<p:commandButton value="#{idm.TI_NO}" type="button"
+							styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+					</p:confirmDialog>
+					<p:dataTable id="TBFR2514" widgetVar="TBFR2514" var="reg"
+						value="#{acuerdoPazControlador.listaInicial}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {Exporters}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" paginator="true" lazy="true">
+						<f:facet name="{Exporters}"
+							rendered="#{acuerdoPazControlador.permisos[4] }">
+							<h:commandLink rendered="#{acuerdoPazControlador.permisos[4] }"
+								title="#{idm.TI_VER_EXCEL}">
+								<p:graphicImage name="/images/general/excel.png" width="24" />
+								<p:dataExporter type="xls" target="TBFR2514" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+							<h:commandLink rendered="#{acuerdoPazControlador.permisos[4] }"
+								title="#{idm.TI_VER_PDF}">
+								<p:graphicImage name="/images/general/pdf.png" width="24" />
+								<p:dataExporter type="pdf" target="TBFR2514" fileName="Datos"
+									encoding="ISO-8859-1" />
+							</h:commandLink>
+						</f:facet>
+						<f:facet name="header">
+							<div style="position: relative; height: 50px">
+								<h:panelGroup class="acme"
+									rendered="#{acuerdoPazControlador.permisos[0] }">
+									<p:commandLink
+										action="#{acuerdoPazControlador.cargarRegistroNuevo}"
+										update=":FR2514_nuevo:nuevoPanel"
+										rendered="#{acuerdoPazControlador.permisos[0]}"
+										onclick="try { PF('blockLista').show(); } catch (e) { }"
+										oncomplete="try{   PF('blockLista').hide(); PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{}"
+										title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+										id="btNuevo">
+										<center>
+											<p:graphicImage name="/images/menus/32/add.png" />
+											<div>#{idm.TI_NUEVO}</div>
+										</center>
+									</p:commandLink>
+								</h:panelGroup>
+								<div class="acme">
+									<h:outputLink value="#{request.contextPath}/menu.sysman"
+										title="#{idm.TI_VOLVER}" style="padding-top: 10px;">
+										<center>
+											<p:graphicImage name="/images/menus/32/close.png" />
+											<div>#{idm.TI_CERRAR}</div>
+										</center>
+									</h:outputLink>
+								</div>
+							</div>
+                            #{idm.TT_FR2514}
+                        </f:facet>
+						<p:column headerText="#{idm.TG_ACUERDO}"
+							filterBy="#{reg.campos['COD_ACUERDO']}"
+							filterMatchMode="startsWith" style="text-align:center; "
+							width="20%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['COD_ACUERDO']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_SIGLA2}"
+							filterBy="#{reg.campos['SIGLA']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="20%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['SIGLA']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_NOMBRE3}"
+							filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="60%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column width="150" headerText="Acciones"
+							style="text-align: center" exportable="false">
+							<p:commandButton icon="ui-icon-search"
+								title="#{idm.TI_VER_REGISTRO}"
+								action="#{acuerdoPazControlador.cargarRegistro(reg.llave,'v',rowIndex)}"
+								update=":FR2514_nuevo"
+								onclick="try{ PF('blockLista').show();     }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{acuerdoPazControlador.permisos[3]}"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-document-b"
+								title="#{idm.TI_EDITAR_REGISTRO}"
+								action="#{acuerdoPazControlador.cargarRegistro(reg.llave,'m',rowIndex)}"
+								update=":FR2514_nuevo"
+								onclick="try{ PF('blockLista').show();     }catch(e){ } finally{ try {
+                                                             PF('TBPLBUSQUEDA').clearFilters();
+                                                             PF('TBPLBUSQUEDA').filter();
+                                                         } catch (e) {
+                                                         }}"
+								rendered="#{acuerdoPazControlador.permisos[2] }"
+								oncomplete="try{ PF('blockLista').hide();   PF('lista').close(); PF('nuevoPanel').show();}catch(e){ return; } finally{ } ">
+								<f:param name="rowIndex" value="#{rowIndex}" />
+							</p:commandButton>
+							<p:commandButton icon="ui-icon-trash"
+								title="#{idm.TI_ELIMINAR_REGISTRO}"
+								onclick="PF('blockListaGuardar').show()"
+								action="#{acuerdoPazControlador.eliminarReg(reg)}"
+								update=":FR2514:TBFR2514,:FR2514:alert"
+								rendered="#{acuerdoPazControlador.permisos[1] }"
+								oncomplete=" PF('blockListaGuardar').hide();">
+								<p:confirm header="#{sessionBean.tituloMensajes}"
+									message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+					<p:blockUI block="lista" widgetVar="blockLista" trigger="TBFR2514">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="lista" widgetVar="blockListaGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+			<h:form id="FR2514_nuevo" style="margin-top: -20px;">
+				<p:overlayPanel widgetVar="PLBUSQUEDA" id="PLBUSQUEDA"
+					my="left bottom" at="left bottom" for="BTBUSQUEDA"
+					hideEffect="fade" rendered="#{acuerdoPazControlador.accion!='i'}"
+					style="width: 500px">
+					<p:dataTable id="TBPLBUSQUEDA" widgetVar="TBPLBUSQUEDA" var="reg"
+						value="#{acuerdoPazControlador.listaInicialF}" editable="true"
+						emptyMessage="#{idm.TI_EMPTY_MESSAGE}"
+						currentPageReportTemplate="#{idm.TI_REGISTROS}: {startRecord} - {endRecord} de {totalRecords}, #{idm.TI_PAGINA}: {currentPage}/{totalPages}"
+						rows="10" rowIndexVar="rowIndex" selectionMode="single"
+						rowKey="#{reg.llave}" paginator="true" lazy="true">
+						<p:ajax event="rowSelect"
+							listener="#{acuerdoPazControlador.seleccionarFilaBusqueda}"
+							onstart="PF('blockNuevo').show()"
+							oncomplete="PF('blockNuevo').hide(); PF('PLBUSQUEDA').hide();   vaciarSubforms(['PL4852']); "
+							update="@form" />
+						<p:column headerText="#{idm.TG_SIGLA2}"
+							filterBy="#{reg.campos['SIGLA']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="20%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['SIGLA']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+						<p:column headerText="#{idm.TG_NOMBRE3}"
+							filterBy="#{reg.campos['NOMBRE']}" filterMatchMode="startsWith"
+							style="text-align:center; " width="60%" filterStyle="width: 100%">
+							<h:outputText value="#{reg.campos['NOMBRE']}"
+								style="float:left;  text-align:left;" />
+						</p:column>
+					</p:dataTable>
+				</p:overlayPanel>
+				<p:growl id="alert" showDetail="true" sticky="false"
+					widgetVar="alert" life="5000" autoUpdate="false" escape="false" />
+				<p:panel id="nuevoPanel"
+					visible="#{acuerdoPazControlador.accion!=null}"
+					widgetVar="nuevoPanel">
+					<div
+						style="position: relative; height: 50px; padding-bottom: 80px;">
+						<div class="acme"
+							style="display:#{acuerdoPazControlador.accion=='v'?'none':'block'}">
+							<p:commandLink
+								action="#{acuerdoPazControlador.agregarRegistroNuevo(false)}"
+								rendered="#{acuerdoPazControlador.accion!='v'}"
+								update=":FR2514_nuevo,#{!acuerdoPazControlador.permisos[2]?':FR2514':'' }"
+								onclick="if (!validarVacios(['CP72923','CP72925'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+"
+								title="#{idm.TI_GUARDAR_CAMBIOS}" style="padding-top: 10px;"
+								oncomplete="asignarEventoContGrande(); validarCargaGrandes(); ">
+								<center>
+									<p:graphicImage name="/images/menus/32/save.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{acuerdoPazControlador.accion=='v' or !acuerdoPazControlador.permisos[0]?'none':'block'}">
+							<p:commandLink action="#{acuerdoPazControlador.guardarNuevo}"
+								rendered="#{acuerdoPazControlador.accion!='v' and acuerdoPazControlador.permisos[0]}"
+								update=":FR2514_nuevo"
+								onclick="if (!validarVacios(['CP72923','CP72925'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         }
+ PF('blockNuevoGuardar').show();
+if (#{acuerdoPazControlador.accion!='i'  and acuerdoPazControlador.rid==null}) {
+                                                       PF('TBPLBUSQUEDA').clearFilters();
+                                                   }
+"
+								oncomplete="try{asignarEventoContGrande(); validarCargaGrandes(); PF('blockNuevoGuardar').hide();}catch(e){return;}"
+								title="#{idm.TI_GUARDAR_CAMBIOS_NUEVO}"
+								style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/savenew.png" />
+									<div style="height: 30px">#{idm.TI_GUARDAR_NUEVO}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme"
+							style="display:#{acuerdoPazControlador.accion=='i' or !acuerdoPazControlador.permisos[0]?'none':'block'}">
+							<p:commandLink id="BTBUSQUEDA"
+								rendered="#{acuerdoPazControlador.accion!='i' and acuerdoPazControlador.permisos[0]}"
+								title="#{idm.TI_BUSCAR_UN_REGISTRO}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/search.png" />
+									<div style="height: 30px">#{idm.TI_BUSCAR}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<div class="acme">
+							<p:commandLink update=":FR2514:TBFR2514"
+								onclick="try {
+		           PF('TBFR2514').filter();
+                                                       PF('nuevoPanel').close();
+                                                       PF('lista').show();
+		            return false;	
+                                                   } catch (e) {
+		            return false;
+                                                   }"
+								title="#{idm.TI_ATRAS}" style="padding-top: 10px;">
+								<center>
+									<p:graphicImage name="/images/menus/32/back.png" />
+									<div style="height: 30px">#{idm.TI_VOLVER}</div>
+								</center>
+							</p:commandLink>
+						</div>
+						<p:panel
+							rendered="#{acuerdoPazControlador.accion!='i'  and acuerdoPazControlador.rid==null }"
+							styleClass="acme"
+							style="min-width: 350px; width:30%; padding: 10px;">
+							<center style="margin: 2px;">
+								<p:commandButton icon="ui-icon-seek-first"
+									action="#{acuerdoPazControlador.irPrimero()}"
+									title="#{idm.TI_PRIMER_REGISTRO}" update=":FR2514_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); vaciarSubforms(['PL4852']);">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-prev"
+									action="#{acuerdoPazControlador.irAnterior()}"
+									title="#{idm.TI_REGISTRO_ANTERIOR}" update=":FR2514_nuevo"
+									onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); vaciarSubforms(['PL4852']);">
+								</p:commandButton>
+								<p:outputLabel
+									value="#{idm.TI_REGISTRO} #{acuerdoPazControlador.registro.indice+1} #{idm.TI_REGISTRO_DE} #{acuerdoPazControlador.listaInicial.rowCount} " />
+								<p:commandButton icon="ui-icon-seek-next"
+									title="#{idm.TI_REGISTRO_SIGUIENTE}"
+									action="#{acuerdoPazControlador.irSiguiente()}"
+									update=":FR2514_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); vaciarSubforms(['PL4852']);">
+								</p:commandButton>
+								<p:commandButton icon="ui-icon-seek-end"
+									title="#{idm.TI_ULTIMO_REGISTRO}"
+									action="#{acuerdoPazControlador.irUltimo()}"
+									update=":FR2514_nuevo" onclick="PF('blockNuevo').show();"
+									oncomplete="PF('blockNuevo').hide(); vaciarSubforms(['PL4852']);">
+								</p:commandButton>
+							</center>
+						</p:panel>
+						<p:panel styleClass="acme" style="width:21%; min-width:260px">
+							<h:panelGrid columns="3"
+								style="margin-left: -15px; margin-right: -10px; margin-top: -6px;">
+								<h:outputLabel id="LBCREADO" value="#{idm.TI_CREADO}" />
+								<p:inputText id="CPCREADO" readonly="true" widgetVar="CPCREADO"
+									value="#{acuerdoPazControlador.registro.campos['CREATED_BY']}"
+									placeholder="#{idm.TI_CREADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPCREADOF" widgetVar="CPCREADOF"
+									value="#{acuerdoPazControlador.registro.campos['DATE_CREATED']}"
+									disabled="true" />
+								<h:outputLabel id="LBMODIFICADO" value="#{idm.TI_MODIFICADO}" />
+								<p:inputText id="CPMODIFICADO" readonly="true"
+									widgetVar="CPMODIFICADO"
+									value="#{acuerdoPazControlador.registro.campos['MODIFIED_BY']}"
+									placeholder="#{idm.TI_MODIFICADOR}" disabled="true" />
+								<p:calendar locale="es" style="width: 60%" pattern="dd/MM/yyyy"
+									id="CPMODIFICADOF" widgetVar="CPMODIFICADOF"
+									value="#{acuerdoPazControlador.registro.campos['DATE_MODIFIED']}"
+									disabled="true" />
+							</h:panelGrid>
+						</p:panel>
+					</div>
+					<div id="PL4849" class="
+"
+						style="position: relative; height: 30px;">
+						<h:outputLabel id="LB58029" value="#{idm.TT_LB58029}"
+							style="position: absolute; width:800px; height: 25px; left: 0px;   top: 5px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px ;" />
+					</div>
+					<div id="PL4850" class="
+"
+						style="position: relative; height: 800px;">
+						<h:panelGroup id="SF259"
+							style="position: absolute; width:800px; height: 300px; left: 29px;   top: 160px; ">
+							<p:dialog dynamic="true" header="#{idm.TI_NUEVO_REGISTRO}"
+								id="dlg259" widgetVar="dlg259" resizable="false" modal="true"
+								rendered="#{acuerdoPazControlador.permisos[0]}"
+								onHide="restaurarCampos(['CP72926','CP72927'])">
+								<h:panelGrid columns="2" cellpadding="2">
+									<h:outputLabel value="#{idm.TC_CP72926}:" id="LCP72926"
+										class="cont-inst-element" />
+									<pe:inputNumber id="CP72926" widgetVar="CP72926"
+										value="#{acuerdoPazControlador.registroSub.campos['COD_PILAR']}"
+										label="LCP72926" decimalPlaces="0" thousandSeparator=","
+										decimalSeparator="." styleClass="inputTab" maxValue="99"
+										minValue="-99" converter="convertidorDouble"
+										style=" width: 95%;float: left;" class="cont-inst-element">
+									</pe:inputNumber>
+									<h:outputLabel value="#{idm.TC_CP72927}:" id="LCP72927"
+										class="cont-inst-element" />
+									<p:inputText id="CP72927" widgetVar="CP72927"
+										styleClass="inputTab"
+										value="#{acuerdoPazControlador.registroSub.campos['DESCRIPCION']}"
+										label="LCP72927" style=" width: 95%; float: left;"
+										class="cont-inst-element" maxlength="150">
+									</p:inputText>
+									<h:outputLabel value="#{idm.TC_CK2334}:" id="LCK2334"
+										style="display:block" class="cont-inst-element" />
+									<p:selectBooleanCheckbox id="CK2334" widgetVar="CK2334"
+										value="#{acuerdoPazControlador.registroSub.campos['ACTIVO']}"
+										label="LCK2334" style="min-width: 80px; display:block"
+										class="cont-inst-element">
+									</p:selectBooleanCheckbox>
+									<f:facet name="footer">
+										<center>
+											<p:commandButton value="#{idm.TI_GUARDAR}"
+												style="padding:10px;"
+												update=":FR2514_nuevo:alert,tablePL4852,dlg259,"
+												actionListener="#{acuerdoPazControlador.agregarRegistroSubPilares}"
+												oncomplete="PF('dlg259').hide();PF('blockNuevoGuardar').hide();"
+												onclick="    if (!validarVaciosModal(['CP72926','CP72927'])) {
+PF('alert').renderMessage({'summary':'#{idm.TI_TT_ERROR_VALIDACION}',
+                             'detail':'#{idm.TI_MS_ERROR_VALIDACION}',
+                             'severity':'error'});
+     return false;
+         } PF('blockNuevoGuardar').show();" />
+											<p:button value="#{idm.TG_CANCELAR}" style="padding:10px;"
+												href="#" onclick="PF('dlg259').hide();" />
+										</center>
+									</f:facet>
+								</h:panelGrid>
+							</p:dialog>
+							<div id="PL4852" class="
+"
+								style="position: relative; height: 300px;">
+								<p:remoteCommand name="refreshTabPL4852" update="tablePL4852" />
+								<p:dataTable id="tablePL4852" var="reg"
+									value="#{acuerdoPazControlador.listaPilares}"
+									emptyMessage="#{idm.TI_EMPTY_MESSAGE}" scrollable="true"
+									scrollHeight="300" scrollWidth="800" rowIndexVar="rowNun"
+									paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+									currentPageReportTemplate="#{acuerdoPazControlador.listaPilares!=null ? idm.TI_REPORT_TEMPLATE : idm.TI_REGISTROS}"
+									rows="10" paginator="true" lazy="true" editable="true"
+									widgetVar="tablePL4852" tabindex="4">
+									<p:ajax event="rowEditInit" oncomplete="ocultarEditor(); " />
+									<p:ajax event="rowEdit"
+										update=":FR2514_nuevo:alert,tablePL4852,"
+										onstart="PF('blockNuevoGuardar').show()"
+										oncomplete="refreshTabPL4852();PF('tablePL4852').filter(); PF('blockNuevoGuardar').hide();  mostarEditor();"
+										listener="#{acuerdoPazControlador.editarRegSubPilares}" />
+									<p:ajax event="rowEditCancel" update="tablePL4852
+"
+										listener="#{acuerdoPazControlador.cancelarEdicionPilares}"
+										oncomplete="refreshTabPL4852(); mostarEditor();" />
+									<f:facet name="header">
+										<div style="position: relative; height: 50px">
+											<h:panelGroup class="acme" style="width: 50px;"
+												rendered="#{acuerdoPazControlador.accion=='m' 
+}">
+												<h:outputLink value="javascript:void(0)"
+													onclick=" PF('dlg259').show();"
+													title="#{idm.TI_NUEVO_REGISTRO}" style="padding-top: 10px;"
+													tabindex="4">
+													<center>
+														<p:graphicImage name="/images/menus/32/adds.png" />
+														<div style="font-size: 12px">#{idm.TI_NUEVO}</div>
+													</center>
+												</h:outputLink>
+											</h:panelGroup>
+										</div>    
+			#{idm.TT_SF259}
+                                            </f:facet>
+									<p:column headerText="#{idm.TC_CP72926}" width="20%"
+										filterBy="#{reg.campos['COD_PILAR']}" filterStyle="width:100%"
+										filterMatchMode="contains" style="
+" styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['COD_PILAR']}"
+													converter="convertidorDoubleContinuo"
+													style="text-align:  left; float:  left" />
+											</f:facet>
+											<f:facet name="input">
+												<pe:inputNumber id="CP72926"
+													value="#{reg.campos['COD_PILAR']}" styleClass="inputTab"
+													style="width:100%" readonly="true" decimalPlaces="0"
+													thousandSeparator="," decimalSeparator="." maxValue="99"
+													minValue="-99" converter="convertidorDouble">
+												</pe:inputNumber>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TC_CP72927}" width="40%"
+										filterBy="#{reg.campos['DESCRIPCION']}"
+										filterStyle="width:100%" filterMatchMode="contains" style="
+"
+										styleClass="
+">
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText value="#{reg.campos['DESCRIPCION']}" />
+											</f:facet>
+											<f:facet name="input">
+												<p:inputText id="CP72927" styleClass="inputTab"
+													value="#{reg.campos['DESCRIPCION']}" style="width:100%"
+													maxlength="150">
+												</p:inputText>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TC_CK2334}" width="15%"
+										filterBy="#{reg.campos['ACTIVO']}" filterMatchMode="exact"
+										styleClass="
+">
+										<f:facet name="filter">
+											<p:selectOneMenu onchange="PF('tablePL4852').filter()">
+												<f:selectItem itemLabel="Todos" itemValue="" />
+												<f:selectItem itemLabel="#{idm.TI_SI}" itemValue="true" />
+												<f:selectItem itemLabel="#{idm.TI_NO}" itemValue="false" />
+											</p:selectOneMenu>
+										</f:facet>
+										<p:cellEditor>
+											<f:facet name="output">
+												<h:outputText
+													value="#{reg.campos['ACTIVO']=='false'? 'No':'Si'}" />
+											</f:facet>
+											<f:facet name="input">
+												<center>
+													<h:selectBooleanCheckbox id="CK2334"
+														value="#{reg.campos['ACTIVO']}">
+													</h:selectBooleanCheckbox>
+												</center>
+											</f:facet>
+										</p:cellEditor>
+									</p:column>
+									<p:column headerText="#{idm.TC_BT4386}" exportable="false"
+										width="25%" style="
+">
+										<p:commandButton id="BT4386" widgetVar="BT4386" tabindex="4"
+											value="#{idm.TT_BT4386}"
+											actionListener="#{acuerdoPazControlador.oprimirIniciativa(reg,rowNun)}"
+											style="width:100%;  height:35px; text-align: left; font-weight: bold; font-style: normal; font-family: Tahoma; font-size: 13px; 
+  color:#0000FF; border:#AAAAAA  solid  1px;">
+										</p:commandButton>
+									</p:column>
+									<p:column width="30"
+										rendered="#{acuerdoPazControlador.accion=='m'}">
+										<p:rowEditor />
+									</p:column>
+									<p:column width="30"
+										rendered="#{acuerdoPazControlador.accion=='m'}">
+										<p:commandButton icon="ui-icon-trash"
+											title="#{idm.TI_ELIMINAR_REGISTRO}"
+											action="#{acuerdoPazControlador.eliminarRegSubPilares(reg)}"
+											oncomplete="PF('blockNuevoGuardar').hide(); refreshTabPL4852();"
+											onclick="PF('blockNuevoGuardar').show();"
+											update=":FR2514_nuevo:alert,tablePL4852,"
+											style="background: none; border: none;  width: 10px; height: 13px; margin-top:8px ;"
+											tabindex="4">
+											<p:confirm header="#{sessionBean.tituloMensajes}"
+												message="#{idm.TI_MSM_ELIMINAR}" icon="ui-icon-alert" />
+										</p:commandButton>
+									</p:column>
+								</p:dataTable>
+							</div>
+						</h:panelGroup>
+						<h:outputLabel id="LB58030" value="#{idm.TG_ACUERDO2}"
+							style="position: absolute; width:165px; height: 25px; left: 29px;   top: 10px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+						<h:outputLabel id="LB58031" value="#{idm.TG_SIGLA3}"
+							style="position: absolute; width:165px; height: 25px; left: 29px;   top: 41px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+						<p:inputText id="CP72925" widgetVar="CP72925"
+							styleClass="inputTab"
+							value="#{acuerdoPazControlador.registro.campos['NOMBRE']}"
+							readonly="#{acuerdoPazControlador.accion=='v'?true:false}"
+							tabindex="3" maxlength="150"
+							style="position: absolute; width:430px; height: 25px; text-decoration:none; left: 200px;   top: 71px; text-align: left; font-weight: normal; font-style: none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<h:outputLabel id="LB58033" value="#{idm.TT_LB58033}"
+							style="position: absolute; width:800px; height: 25px; left: 0px;   top: 130px; text-align: center; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 15px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+						<pe:inputNumber id="CP72923" widgetVar="CP72923"
+							styleClass="inputTab"
+							value="#{acuerdoPazControlador.registro.campos['COD_ACUERDO']}"
+							decimalPlaces="0" thousandSeparator="," decimalSeparator="."
+							readonly="#{acuerdoPazControlador.accion == 'm' or acuerdoPazControlador.accion == 'v' or  acuerdoPazControlador.accion=='v'?true:false}"
+							tabindex="1" maxValue="99" minValue="-99"
+							converter="convertidorDouble"
+							style="position: absolute; width:120px; height: 25px; text-decoration:none; left: 200px;   top: 10px; text-align: left; font-weight: normal; font-style: none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-top: 0;">
+						</pe:inputNumber>
+						<p:inputText id="CP72924" widgetVar="CP72924"
+							styleClass="inputTab"
+							value="#{acuerdoPazControlador.registro.campos['SIGLA']}"
+							readonly="#{acuerdoPazControlador.accion=='v'?true:false}"
+							tabindex="2" maxlength="5"
+							style="position: absolute; width:120px; height: 25px; text-decoration:none; left: 200px;   top: 41px; text-align: left; font-weight: normal; font-style: normal; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  solid  1px; padding-bottom: 0; padding-left: 2px; padding-top: 0;">
+						</p:inputText>
+						<h:outputLabel id="LB58032" value="#{idm.TG_NOMBRE4}"
+							style="position: absolute; width:165px; height: 25px; left: 29px;   top: 71px; text-align: right; font-weight: bold; font-style: normal;text-decoration:none; font-family: Tahoma; font-size: 13px; display:block; background:#FFFFFF; color:#000000; border:#000000  none  1px;" />
+					</div>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevo"
+						trigger="FR2514_nuevo:tablePL4852">
+#{idm.TI_CARGANDO}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+					<p:blockUI block="nuevoPanel" widgetVar="blockNuevoGuardar">
+#{idm.TI_GUARDANDO_CAMBIOS}<br />
+						<p:graphicImage name="/images/general/loading.gif" />
+					</p:blockUI>
+				</p:panel>
+			</h:form>
+		</section>
+	</ui:define>
+</ui:composition>

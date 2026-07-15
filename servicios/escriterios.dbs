@@ -1,0 +1,144 @@
+﻿<data name="escriterios" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getEscriteriosCriteriosPorTipoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, CODIGOCRITERIO, NOMBRE  FROM ES_CRITERIOS WHERE COMPANIA = :COMPANIA AND CODIGOMODALIDAD = :TIPO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGOCRITERIO":"$CODIGOCRITERIO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="escriterios/criteriosportipo">
+		<call-query href="getEscriteriosCriteriosPorTipoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEscriteriosTotalPuntajePorCodigoTipoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SUM(NVL(ES_DFACTORES.PUNTAJE,0)) TOTAL  FROM ES_CRITERIOS LEFT JOIN ES_CRITERIOSFAC ON ES_CRITERIOS.CODIGOCRITERIO = ES_CRITERIOSFAC.CODIGOCRITERIO AND ES_CRITERIOS.CODIGOMODALIDAD = ES_CRITERIOSFAC.CODIGOMODALIDAD AND ES_CRITERIOS.COMPANIA = ES_CRITERIOSFAC.COMPANIA LEFT JOIN ES_DFACTORES ON ES_CRITERIOSFAC.COMPANIA = ES_DFACTORES.COMPANIA AND ES_CRITERIOSFAC.CODIGOESTUDIO = ES_DFACTORES.CODIGOESTUDIO AND ES_CRITERIOSFAC.CODIGOMODALIDAD = ES_DFACTORES.CODIGOMODALIDAD AND ES_CRITERIOSFAC.CODIGOCRITERIO = ES_DFACTORES.CODIGOCRITERIO WHERE ES_CRITERIOSFAC.COMPANIA = :COMPANIA AND ES_CRITERIOSFAC.CODIGOESTUDIO = :CODIGOESTUDIO AND ES_CRITERIOSFAC.CODIGOMODALIDAD = :TIPO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOESTUDIO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="escriterios/totalpuntajeporcodigotipo">
+		<call-query href="getEscriteriosTotalPuntajePorCodigoTipoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOESTUDIO" query-param="CODIGOESTUDIO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertEscriterios" keyColumns="COMPANIA,CODIGOMODALIDAD,CODIGOCRITERIO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ES_CRITERIOS (COMPANIA, CODIGOMODALIDAD, CODIGOCRITERIO, NOMBRE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :CODIGOMODALIDAD, :CODIGOCRITERIO, :NOMBRE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_CODIGOMODALIDAD":"$CODIGOMODALIDAD","KEY_CODIGOCRITERIO":"$CODIGOCRITERIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGOMODALIDAD" sqlType="STRING"/>
+		<param name="CODIGOCRITERIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="escriterios">
+		<call-query href="insertEscriterios">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGOMODALIDAD" query-param="CODIGOMODALIDAD"/>
+			<with-param name="CODIGOCRITERIO" query-param="CODIGOCRITERIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEscriterios" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ES_CRITERIOS WHERE ES_CRITERIOS.COMPANIA= :KEY_COMPANIA AND ES_CRITERIOS.CODIGOMODALIDAD= :KEY_CODIGOMODALIDAD AND ES_CRITERIOS.CODIGOCRITERIO= :KEY_CODIGOCRITERIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOMODALIDAD" sqlType="STRING"/>
+		<param name="KEY_CODIGOCRITERIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="escriterios">
+		<call-query href="deleteEscriterios">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOMODALIDAD" query-param="KEY_CODIGOMODALIDAD"/>
+			<with-param name="KEY_CODIGOCRITERIO" query-param="KEY_CODIGOCRITERIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEscriteriosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, CODIGOMODALIDAD, CODIGOCRITERIO, NOMBRE  FROM ES_CRITERIOS WHERE COMPANIA = :COMPANIA AND CODIGOMODALIDAD = :CODIGO) WHERE (CASE WHEN CODIGOCRITERIO IS NULL THEN ' ' ELSE UPPER(CODIGOCRITERIO) END)  LIKE UPPER(:CODIGOCRITERIO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CODIGOMODALIDAD":"$CODIGOMODALIDAD","CODIGOCRITERIO":"$CODIGOCRITERIO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CODIGOCRITERIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="escriterios">
+		<call-query href="getEscriteriosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CODIGOCRITERIO" query-param="CODIGOCRITERIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEscriteriosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, CODIGOMODALIDAD, CODIGOCRITERIO, NOMBRE  FROM ES_CRITERIOS WHERE COMPANIA = :COMPANIA AND CODIGOMODALIDAD = :CODIGO) WHERE (CASE WHEN CODIGOCRITERIO IS NULL THEN ' ' ELSE UPPER(CODIGOCRITERIO) END)  LIKE UPPER(:CODIGOCRITERIO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="CODIGOCRITERIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="escriterios/numero">
+		<call-query href="getEscriteriosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="CODIGOCRITERIO" query-param="CODIGOCRITERIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEscriterios" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ES_CRITERIOS SET CODIGOCRITERIO=:CODIGOCRITERIO, NOMBRE=:NOMBRE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ES_CRITERIOS.COMPANIA= :KEY_COMPANIA AND ES_CRITERIOS.CODIGOMODALIDAD= :KEY_CODIGOMODALIDAD AND ES_CRITERIOS.CODIGOCRITERIO= :KEY_CODIGOCRITERIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CODIGOCRITERIO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_CODIGOMODALIDAD" sqlType="STRING"/>
+		<param name="KEY_CODIGOCRITERIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="escriterios">
+		<call-query href="updateEscriterios">
+			<with-param name="CODIGOCRITERIO" query-param="CODIGOCRITERIO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_CODIGOMODALIDAD" query-param="KEY_CODIGOMODALIDAD"/>
+			<with-param name="KEY_CODIGOCRITERIO" query-param="KEY_CODIGOCRITERIO"/>
+
+		</call-query>
+	</resource>
+
+</data>

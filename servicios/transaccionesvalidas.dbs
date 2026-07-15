@@ -1,0 +1,94 @@
+﻿<data name="transaccionesvalidas" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getTransaccionesvalidasValidarTransaccionesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE OBLIGA_TERCERO WHEN 0 THEN 'false' ELSE 'true' END) OBLIGA_TERCERO,(CASE OBLIGA_ORIGEN WHEN 0 THEN 'false' ELSE 'true' END) OBLIGA_ORIGEN,(CASE OBLIGA_DESTINO WHEN 0 THEN 'false' ELSE 'true' END) OBLIGA_DESTINO,(CASE OBLIGA_PROVEEDOR WHEN 0 THEN 'false' ELSE 'true' END) OBLIGA_PROVEEDOR,(CASE IGUALA_ORIGENDESTINO WHEN 0 THEN 'false' ELSE 'true' END) IGUALA_ORIGENDESTINO FROM TRANSACCIONES_VALIDAS WHERE COMPANIA = :COMPANIA AND CLASE = :CLASEMOVIMIENTO AND CONCEPTO = :CONCEPTOMOVIMIENTO AND CLASE_BODEGA_ORIGEN = :CLASEBODEGAORIGEN AND CLASE_BODEGA_DESTINO = :CLASEBODEGADESTINO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"OBLIGA_TERCERO":"$OBLIGA_TERCERO(type:boolean)","OBLIGA_ORIGEN":"$OBLIGA_ORIGEN(type:boolean)","OBLIGA_DESTINO":"$OBLIGA_DESTINO(type:boolean)","OBLIGA_PROVEEDOR":"$OBLIGA_PROVEEDOR(type:boolean)","IGUALA_ORIGENDESTINO":"$IGUALA_ORIGENDESTINO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CLASEMOVIMIENTO" sqlType="STRING"/>
+		<param name="CONCEPTOMOVIMIENTO" sqlType="STRING"/>
+		<param name="CLASEBODEGAORIGEN" sqlType="STRING"/>
+		<param name="CLASEBODEGADESTINO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="transaccionesvalidas/validartransacciones">
+		<call-query href="getTransaccionesvalidasValidarTransaccionesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CLASEMOVIMIENTO" query-param="CLASEMOVIMIENTO"/>
+			<with-param name="CONCEPTOMOVIMIENTO" query-param="CONCEPTOMOVIMIENTO"/>
+			<with-param name="CLASEBODEGAORIGEN" query-param="CLASEBODEGAORIGEN"/>
+			<with-param name="CLASEBODEGADESTINO" query-param="CLASEBODEGADESTINO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesvalidasValidarConceptosYBodegasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA, CONCEPTO, CLASE_BODEGA_ORIGEN, CLASE_BODEGA_DESTINO, CLASE  FROM TRANSACCIONES_VALIDAS WHERE COMPANIA = :COMPANIA AND CONCEPTO = :CONCEPTO AND CLASE = :CLASE AND CLASE_BODEGA_ORIGEN = :BODEGAORIGEN AND CLASE_BODEGA_DESTINO = :BODEGADESTINO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CONCEPTO":"$CONCEPTO","CLASE_BODEGA_ORIGEN":"$CLASE_BODEGA_ORIGEN","CLASE_BODEGA_DESTINO":"$CLASE_BODEGA_DESTINO","CLASE":"$CLASE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONCEPTO" sqlType="STRING"/>
+		<param name="CLASE" sqlType="STRING"/>
+		<param name="BODEGAORIGEN" sqlType="STRING"/>
+		<param name="BODEGADESTINO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="transaccionesvalidas/validarconceptosybodegas">
+		<call-query href="getTransaccionesvalidasValidarConceptosYBodegasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONCEPTO" query-param="CONCEPTO"/>
+			<with-param name="CLASE" query-param="CLASE"/>
+			<with-param name="BODEGAORIGEN" query-param="BODEGAORIGEN"/>
+			<with-param name="BODEGADESTINO" query-param="BODEGADESTINO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesvalidasPagConNombresDeConceptosYBodegasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TRANSACCIONES_VALIDAS.COMPANIA, TRANSACCIONES_VALIDAS.CLASE_BODEGA_ORIGEN, ORG.NOMBRE AS ORIGEN, TRANSACCIONES_VALIDAS.CLASE_BODEGA_DESTINO, DST.NOMBRE AS DESTINO, TRANSACCIONES_VALIDAS.CONCEPTO, CONCEPTO.NOMBRE AS NOMBRECONCEPTO, TRANSACCIONES_VALIDAS.CLASE, CASE TRANSACCIONES_VALIDAS.CLASE WHEN 'E' THEN 'Entrada' WHEN 'S' THEN 'Salida' WHEN 'T' THEN 'Traspaso' WHEN 'D' THEN 'Descargo' END NOMBRECLASE, TRANSACCIONES_VALIDAS.TIPO_ELEMENTO, CASE TRANSACCIONES_VALIDAS.TIPO_ELEMENTO WHEN 'D' THEN 'Devolutivo' WHEN 'N' THEN 'Inmuebles' WHEN 'C' THEN 'Consumo' WHEN 'S' THEN 'Servicios' WHEN 'M' THEN 'Consumo Controlado' WHEN 'E' THEN 'Elementos Recibidos en Comodato' END NOMBRETIPOELEMENTO  FROM TRANSACCIONES_VALIDAS INNER JOIN CLASE_BODEGA ORG ON TRANSACCIONES_VALIDAS.CLASE_BODEGA_ORIGEN = ORG.CODIGO INNER JOIN CLASE_BODEGA DST ON TRANSACCIONES_VALIDAS.CLASE_BODEGA_DESTINO = DST.CODIGO INNER JOIN CONCEPTO ON TRANSACCIONES_VALIDAS.CONCEPTO = CONCEPTO.CODIGO INNER JOIN TIPOELEMENTO ON TRANSACCIONES_VALIDAS.TIPO_ELEMENTO = TIPOELEMENTO.CODIGO WHERE TRANSACCIONES_VALIDAS.COMPANIA = :COMPANIA ORDER BY TRANSACCIONES_VALIDAS.CLASE_BODEGA_ORIGEN, TRANSACCIONES_VALIDAS.CLASE_BODEGA_DESTINO) WHERE (CASE WHEN ORIGEN IS NULL THEN ' ' ELSE UPPER(ORIGEN) END)  LIKE UPPER( '%' || :ORIGEN || '%')  AND (CASE WHEN DESTINO IS NULL THEN ' ' ELSE UPPER(DESTINO) END)  LIKE UPPER( '%' || :DESTINO || '%')  AND (CASE WHEN NOMBRECONCEPTO IS NULL THEN ' ' ELSE UPPER(NOMBRECONCEPTO) END)  LIKE UPPER( '%' || :NOMBRECONCEPTO || '%')  AND (CASE WHEN NOMBRECLASE IS NULL THEN ' ' ELSE UPPER(NOMBRECLASE) END)  LIKE UPPER( '%' || :NOMBRECLASE || '%')  AND (CASE WHEN NOMBRETIPOELEMENTO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPOELEMENTO) END)  LIKE UPPER( '%' || :NOMBRETIPOELEMENTO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","CLASE_BODEGA_ORIGEN":"$CLASE_BODEGA_ORIGEN","ORIGEN":"$ORIGEN","CLASE_BODEGA_DESTINO":"$CLASE_BODEGA_DESTINO","DESTINO":"$DESTINO","CONCEPTO":"$CONCEPTO","NOMBRECONCEPTO":"$NOMBRECONCEPTO","CLASE":"$CLASE","NOMBRECLASE":"$NOMBRECLASE","TIPO_ELEMENTO":"$TIPO_ELEMENTO","NOMBRETIPOELEMENTO":"$NOMBRETIPOELEMENTO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ORIGEN" sqlType="STRING"/>
+		<param name="DESTINO" sqlType="STRING"/>
+		<param name="NOMBRECONCEPTO" sqlType="STRING"/>
+		<param name="NOMBRECLASE" sqlType="STRING"/>
+		<param name="NOMBRETIPOELEMENTO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="transaccionesvalidas/connombresdeconceptosybodegas/pag">
+		<call-query href="getTransaccionesvalidasPagConNombresDeConceptosYBodegasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ORIGEN" query-param="ORIGEN"/>
+			<with-param name="DESTINO" query-param="DESTINO"/>
+			<with-param name="NOMBRECONCEPTO" query-param="NOMBRECONCEPTO"/>
+			<with-param name="NOMBRECLASE" query-param="NOMBRECLASE"/>
+			<with-param name="NOMBRETIPOELEMENTO" query-param="NOMBRETIPOELEMENTO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getTransaccionesvalidasNumConNombresDeConceptosYBodegasQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TRANSACCIONES_VALIDAS.COMPANIA, TRANSACCIONES_VALIDAS.CLASE_BODEGA_ORIGEN, ORG.NOMBRE AS ORIGEN, TRANSACCIONES_VALIDAS.CLASE_BODEGA_DESTINO, DST.NOMBRE AS DESTINO, TRANSACCIONES_VALIDAS.CONCEPTO, CONCEPTO.NOMBRE AS NOMBRECONCEPTO, TRANSACCIONES_VALIDAS.CLASE, CASE TRANSACCIONES_VALIDAS.CLASE WHEN 'E' THEN 'Entrada' WHEN 'S' THEN 'Salida' WHEN 'T' THEN 'Traspaso' WHEN 'D' THEN 'Descargo' END NOMBRECLASE, TRANSACCIONES_VALIDAS.TIPO_ELEMENTO, CASE TRANSACCIONES_VALIDAS.TIPO_ELEMENTO WHEN 'D' THEN 'Devolutivo' WHEN 'N' THEN 'Inmuebles' WHEN 'C' THEN 'Consumo' WHEN 'S' THEN 'Servicios' WHEN 'M' THEN 'Consumo Controlado' WHEN 'E' THEN 'Elementos Recibidos en Comodato' END NOMBRETIPOELEMENTO  FROM TRANSACCIONES_VALIDAS INNER JOIN CLASE_BODEGA ORG ON TRANSACCIONES_VALIDAS.CLASE_BODEGA_ORIGEN = ORG.CODIGO INNER JOIN CLASE_BODEGA DST ON TRANSACCIONES_VALIDAS.CLASE_BODEGA_DESTINO = DST.CODIGO INNER JOIN CONCEPTO ON TRANSACCIONES_VALIDAS.CONCEPTO = CONCEPTO.CODIGO INNER JOIN TIPOELEMENTO ON TRANSACCIONES_VALIDAS.TIPO_ELEMENTO = TIPOELEMENTO.CODIGO WHERE TRANSACCIONES_VALIDAS.COMPANIA = :COMPANIA ORDER BY TRANSACCIONES_VALIDAS.CLASE_BODEGA_ORIGEN, TRANSACCIONES_VALIDAS.CLASE_BODEGA_DESTINO) WHERE (CASE WHEN ORIGEN IS NULL THEN ' ' ELSE UPPER(ORIGEN) END)  LIKE UPPER( '%' || :ORIGEN || '%')  AND (CASE WHEN DESTINO IS NULL THEN ' ' ELSE UPPER(DESTINO) END)  LIKE UPPER( '%' || :DESTINO || '%')  AND (CASE WHEN NOMBRECONCEPTO IS NULL THEN ' ' ELSE UPPER(NOMBRECONCEPTO) END)  LIKE UPPER( '%' || :NOMBRECONCEPTO || '%')  AND (CASE WHEN NOMBRECLASE IS NULL THEN ' ' ELSE UPPER(NOMBRECLASE) END)  LIKE UPPER( '%' || :NOMBRECLASE || '%')  AND (CASE WHEN NOMBRETIPOELEMENTO IS NULL THEN ' ' ELSE UPPER(NOMBRETIPOELEMENTO) END)  LIKE UPPER( '%' || :NOMBRETIPOELEMENTO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ORIGEN" sqlType="STRING"/>
+		<param name="DESTINO" sqlType="STRING"/>
+		<param name="NOMBRECONCEPTO" sqlType="STRING"/>
+		<param name="NOMBRECLASE" sqlType="STRING"/>
+		<param name="NOMBRETIPOELEMENTO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="transaccionesvalidas/connombresdeconceptosybodegas/num">
+		<call-query href="getTransaccionesvalidasNumConNombresDeConceptosYBodegasQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ORIGEN" query-param="ORIGEN"/>
+			<with-param name="DESTINO" query-param="DESTINO"/>
+			<with-param name="NOMBRECONCEPTO" query-param="NOMBRECONCEPTO"/>
+			<with-param name="NOMBRECLASE" query-param="NOMBRECLASE"/>
+			<with-param name="NOMBRETIPOELEMENTO" query-param="NOMBRETIPOELEMENTO"/>
+
+		</call-query>
+	</resource>
+
+</data>

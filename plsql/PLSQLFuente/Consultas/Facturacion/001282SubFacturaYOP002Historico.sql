@@ -1,0 +1,99 @@
+WITH  
+ TEMP_HISTORIA AS   
+(SELECT HISTORIA.COMPANIA,   
+        HISTORIA.CICLO,    
+        HISTORIA.CODIGORUTA,    
+        HISTORIA.ANO,    
+        HISTORIA.PERIODO,   
+        HISTORIA.CODIGOINTERNO,   
+        CONCEPTO.CODIGO CONCEPTO,   
+        CONCEPTO.NOMBRE,   
+        CASE CONCEPTO.CODIGO   
+            WHEN 1  THEN C1   
+            WHEN 2  THEN C2    
+            WHEN 3  THEN C3   
+            WHEN 4  THEN C4  
+            WHEN 5  THEN C5  
+            WHEN 6  THEN C6  
+            WHEN 7  THEN C7   
+            WHEN 8  THEN C8   
+            WHEN 9  THEN C9   
+            WHEN 10 THEN C10  
+            WHEN 11 THEN C11  
+            WHEN 12 THEN C12  
+            WHEN 13 THEN C13   
+            WHEN 14 THEN C14   
+            WHEN 15 THEN C15  
+            WHEN 16 THEN C16   
+            WHEN 17 THEN C17  
+            WHEN 18 THEN C18   
+            WHEN 19 THEN C19   
+            WHEN 20 THEN C20   
+            WHEN 21 THEN C21  
+            WHEN 22 THEN C22  
+            WHEN 23 THEN C23  
+            WHEN 24 THEN C24  
+            WHEN 25 THEN C25   
+            WHEN 26 THEN C26   
+            WHEN 27 THEN C27  
+            WHEN 28 THEN C28  
+            WHEN 29 THEN C29  
+            WHEN 30 THEN C30  
+            WHEN 31 THEN C31   
+            WHEN 32 THEN C32   
+            WHEN 33 THEN C33   
+            WHEN 34 THEN C34   
+            WHEN 35 THEN C35   
+            WHEN 36 THEN C36   
+            WHEN 37 THEN C37   
+            WHEN 38 THEN C38   
+            WHEN 39 THEN C39  
+            WHEN 40 THEN C40   
+            WHEN 41 THEN C41  
+            WHEN 42 THEN C42  
+            WHEN 43 THEN C43   
+            WHEN 44 THEN C44   
+            WHEN 45 THEN C45  
+            WHEN 46 THEN C46  
+            WHEN 47 THEN C47  
+            WHEN 48 THEN C48  
+            WHEN 49 THEN C49   
+            WHEN 50 THEN C50   
+            WHEN 246 THEN C246  
+            WHEN 247 THEN C247  
+            WHEN 248 THEN C248  
+            WHEN 249 THEN C249  
+            WHEN 250 THEN C250  
+        END VALOR    
+   FROM SP_HISTORIA HISTORIA   
+        INNER JOIN SP_CONCEPTOS CONCEPTO   
+                ON HISTORIA.COMPANIA = CONCEPTO.COMPANIA   
+  WHERE HISTORIA.COMPANIA   = $P{PR_COMPANIA}   
+    AND HISTORIA.CICLO      = $P{PR_CICLO}    
+    AND HISTORIA.CODIGORUTA = $P{PR_CODIGORUTA}   
+    AND HISTORIA.ANO        = $P{PR_ANO}   
+    AND HISTORIA.PERIODO    = $P{PR_PERIODO}  
+    AND (CODIGO BETWEEN 1 AND 50 OR CODIGO BETWEEN 246 AND 250))  
+SELECT TEMP_HISTORIA.COMPANIA,
+       TEMP_HISTORIA.CICLO,
+       TEMP_HISTORIA.CODIGORUTA,
+       TEMP_HISTORIA.ANO,
+       TEMP_HISTORIA.PERIODO,
+       TEMP_HISTORIA.CONCEPTO,
+       CONCEPTOS.NOMBRE,
+       TEMP_HISTORIA.VALOR AS VALOR,
+       CONCEPTOS.CODIGO,
+       '' NROCUOTA,
+       '' FALTA,
+       '' SALDOFINANCIABLE
+  FROM TEMP_HISTORIA
+  INNER JOIN SP_CONCEPTOS CONCEPTOS
+          ON TEMP_HISTORIA.COMPANIA        = CONCEPTOS.COMPANIA
+         AND TEMP_HISTORIA.CONCEPTO        = CONCEPTOS.CODIGO
+ WHERE (TEMP_HISTORIA.COMPANIA   = $P{PR_COMPANIA}
+   AND TEMP_HISTORIA.CONCEPTO    NOT IN (1,2,3,4,5,16,20,21,22,33,39,46,48)
+   AND TEMP_HISTORIA.CONCEPTO    <= 50
+   AND TEMP_HISTORIA.VALOR        NOT IN (0))
+    OR (TEMP_HISTORIA.COMPANIA   = $P{PR_COMPANIA}
+   AND TEMP_HISTORIA.CONCEPTO    IN (246,247,248,249)
+   AND TEMP_HISTORIA.VALOR       NOT IN (0)) 

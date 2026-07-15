@@ -1,0 +1,154 @@
+﻿<data name="natreunioncomisionpersonal" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertNatreunioncomisionpersonal" keyColumns="COMPANIA,TIPOCOMITE,NUMERO_COMITE" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO NAT_REUNION_COMISIONPERSONAL (COMPANIA, FECHA_REUNION, AGENDA_TRABAJO, DESARROLLO, COMPROMISOS, TIPOCOMITE, NUMERO_COMITE, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, TO_DATE(:FECHA_REUNION,'DD/MM/YYYY HH24:MI:SS'), :AGENDA_TRABAJO, :DESARROLLO, :COMPROMISOS, :TIPOCOMITE, :NUMERO_COMITE, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_TIPOCOMITE":"$TIPOCOMITE(type:integer)","KEY_NUMERO_COMITE":"$NUMERO_COMITE(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHA_REUNION" sqlType="STRING"/>
+		<param defaultValue="" name="AGENDA_TRABAJO" sqlType="STRING"/>
+		<param defaultValue="" name="DESARROLLO" sqlType="STRING"/>
+		<param defaultValue="" name="COMPROMISOS" sqlType="STRING"/>
+		<param name="TIPOCOMITE" sqlType="STRING"/>
+		<param name="NUMERO_COMITE" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="natreunioncomisionpersonal">
+		<call-query href="insertNatreunioncomisionpersonal">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHA_REUNION" query-param="FECHA_REUNION"/>
+			<with-param name="AGENDA_TRABAJO" query-param="AGENDA_TRABAJO"/>
+			<with-param name="DESARROLLO" query-param="DESARROLLO"/>
+			<with-param name="COMPROMISOS" query-param="COMPROMISOS"/>
+			<with-param name="TIPOCOMITE" query-param="TIPOCOMITE"/>
+			<with-param name="NUMERO_COMITE" query-param="NUMERO_COMITE"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteNatreunioncomisionpersonal" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM NAT_REUNION_COMISIONPERSONAL WHERE NAT_REUNION_COMISIONPERSONAL.COMPANIA= :KEY_COMPANIA AND NAT_REUNION_COMISIONPERSONAL.TIPOCOMITE= :KEY_TIPOCOMITE AND NAT_REUNION_COMISIONPERSONAL.NUMERO_COMITE= :KEY_NUMERO_COMITE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPOCOMITE" sqlType="INTEGER"/>
+		<param name="KEY_NUMERO_COMITE" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="natreunioncomisionpersonal">
+		<call-query href="deleteNatreunioncomisionpersonal">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPOCOMITE" query-param="KEY_TIPOCOMITE"/>
+			<with-param name="KEY_NUMERO_COMITE" query-param="KEY_NUMERO_COMITE"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatreunioncomisionpersonalPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  NAT_REUNION_COMISIONPERSONAL.COMPANIA, NAT_REUNION_COMISIONPERSONAL.TIPOCOMITE, NAT_COMITE.NOMBRE, NAT_REUNION_COMISIONPERSONAL.NUMERO_COMITE,(TO_CHAR(NAT_REUNION_COMISIONPERSONAL.FECHA_REUNION,'DD/MM/YYYY HH24:MI:SS')) FECHA_REUNION, NAT_REUNION_COMISIONPERSONAL.AGENDA_TRABAJO, NAT_REUNION_COMISIONPERSONAL.DESARROLLO, NAT_REUNION_COMISIONPERSONAL.COMPROMISOS  FROM NAT_REUNION_COMISIONPERSONAL INNER JOIN NAT_COMITE ON NAT_REUNION_COMISIONPERSONAL.COMPANIA = NAT_COMITE.COMPANIA AND NAT_REUNION_COMISIONPERSONAL.TIPOCOMITE = NAT_COMITE.CODIGO WHERE NAT_REUNION_COMISIONPERSONAL.COMPANIA = :COMPANIA AND NAT_REUNION_COMISIONPERSONAL.TIPOCOMITE = :TIPO_COMITE) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NUMERO_COMITE IS NULL THEN ' ' ELSE UPPER(NUMERO_COMITE) END)  LIKE UPPER(:NUMERO_COMITE || '%')  AND (CASE WHEN FECHA_REUNION IS NULL THEN ' ' ELSE UPPER(FECHA_REUNION) END)  LIKE UPPER(:FECHA_REUNION || '%')  AND (CASE WHEN AGENDA_TRABAJO IS NULL THEN ' ' ELSE UPPER(AGENDA_TRABAJO) END)  LIKE UPPER( '%' || :AGENDA_TRABAJO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPOCOMITE":"$TIPOCOMITE(type:integer)","NOMBRE":"$NOMBRE","NUMERO_COMITE":"$NUMERO_COMITE(type:long)","FECHA_REUNION":"$FECHA_REUNION","AGENDA_TRABAJO":"$AGENDA_TRABAJO","DESARROLLO":"$DESARROLLO","COMPROMISOS":"$COMPROMISOS"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO_COMITE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NUMERO_COMITE" sqlType="STRING"/>
+		<param name="FECHA_REUNION" sqlType="STRING"/>
+		<param name="AGENDA_TRABAJO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="natreunioncomisionpersonal">
+		<call-query href="getNatreunioncomisionpersonalPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO_COMITE" query-param="TIPO_COMITE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NUMERO_COMITE" query-param="NUMERO_COMITE"/>
+			<with-param name="FECHA_REUNION" query-param="FECHA_REUNION"/>
+			<with-param name="AGENDA_TRABAJO" query-param="AGENDA_TRABAJO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatreunioncomisionpersonalNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  NAT_REUNION_COMISIONPERSONAL.COMPANIA, NAT_REUNION_COMISIONPERSONAL.TIPOCOMITE, NAT_COMITE.NOMBRE, NAT_REUNION_COMISIONPERSONAL.NUMERO_COMITE,(TO_CHAR(NAT_REUNION_COMISIONPERSONAL.FECHA_REUNION,'DD/MM/YYYY HH24:MI:SS')) FECHA_REUNION, NAT_REUNION_COMISIONPERSONAL.AGENDA_TRABAJO, NAT_REUNION_COMISIONPERSONAL.DESARROLLO, NAT_REUNION_COMISIONPERSONAL.COMPROMISOS  FROM NAT_REUNION_COMISIONPERSONAL INNER JOIN NAT_COMITE ON NAT_REUNION_COMISIONPERSONAL.COMPANIA = NAT_COMITE.COMPANIA AND NAT_REUNION_COMISIONPERSONAL.TIPOCOMITE = NAT_COMITE.CODIGO WHERE NAT_REUNION_COMISIONPERSONAL.COMPANIA = :COMPANIA AND NAT_REUNION_COMISIONPERSONAL.TIPOCOMITE = :TIPO_COMITE) WHERE (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN NUMERO_COMITE IS NULL THEN ' ' ELSE UPPER(NUMERO_COMITE) END)  LIKE UPPER(:NUMERO_COMITE || '%')  AND (CASE WHEN FECHA_REUNION IS NULL THEN ' ' ELSE UPPER(FECHA_REUNION) END)  LIKE UPPER(:FECHA_REUNION || '%')  AND (CASE WHEN AGENDA_TRABAJO IS NULL THEN ' ' ELSE UPPER(AGENDA_TRABAJO) END)  LIKE UPPER( '%' || :AGENDA_TRABAJO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPO_COMITE" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="NUMERO_COMITE" sqlType="STRING"/>
+		<param name="FECHA_REUNION" sqlType="STRING"/>
+		<param name="AGENDA_TRABAJO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="natreunioncomisionpersonal/numero">
+		<call-query href="getNatreunioncomisionpersonalNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPO_COMITE" query-param="TIPO_COMITE"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="NUMERO_COMITE" query-param="NUMERO_COMITE"/>
+			<with-param name="FECHA_REUNION" query-param="FECHA_REUNION"/>
+			<with-param name="AGENDA_TRABAJO" query-param="AGENDA_TRABAJO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatreunioncomisionpersonalRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  COMPANIA,(TO_CHAR(FECHA_REUNION,'DD/MM/YYYY HH24:MI:SS')) FECHA_REUNION,AGENDA_TRABAJO,DESARROLLO,COMPROMISOS,TIPOCOMITE,NUMERO_COMITE, CREATED_BY,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM NAT_REUNION_COMISIONPERSONAL WHERE NAT_REUNION_COMISIONPERSONAL.COMPANIA= :KEY_COMPANIA AND NAT_REUNION_COMISIONPERSONAL.TIPOCOMITE= :KEY_TIPOCOMITE AND NAT_REUNION_COMISIONPERSONAL.NUMERO_COMITE= :KEY_NUMERO_COMITE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","FECHA_REUNION":"$FECHA_REUNION","AGENDA_TRABAJO":"$AGENDA_TRABAJO","DESARROLLO":"$DESARROLLO","COMPROMISOS":"$COMPROMISOS","TIPOCOMITE":"$TIPOCOMITE(type:integer)","NUMERO_COMITE":"$NUMERO_COMITE(type:long)","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPOCOMITE" sqlType="STRING"/>
+		<param name="KEY_NUMERO_COMITE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="natreunioncomisionpersonal/data">
+		<call-query href="getNatreunioncomisionpersonalRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPOCOMITE" query-param="KEY_TIPOCOMITE"/>
+			<with-param name="KEY_NUMERO_COMITE" query-param="KEY_NUMERO_COMITE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateNatreunioncomisionpersonal" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE NAT_REUNION_COMISIONPERSONAL SET COMPANIA=:COMPANIA, FECHA_REUNION=TO_DATE(:FECHA_REUNION,'DD/MM/YYYY HH24:MI:SS'), AGENDA_TRABAJO=:AGENDA_TRABAJO, DESARROLLO=:DESARROLLO, COMPROMISOS=:COMPROMISOS, TIPOCOMITE=:TIPOCOMITE, NUMERO_COMITE=:NUMERO_COMITE, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE NAT_REUNION_COMISIONPERSONAL.COMPANIA= :KEY_COMPANIA AND NAT_REUNION_COMISIONPERSONAL.TIPOCOMITE= :KEY_TIPOCOMITE AND NAT_REUNION_COMISIONPERSONAL.NUMERO_COMITE= :KEY_NUMERO_COMITE</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="FECHA_REUNION" sqlType="STRING"/>
+		<param name="AGENDA_TRABAJO" sqlType="STRING"/>
+		<param name="DESARROLLO" sqlType="STRING"/>
+		<param name="COMPROMISOS" sqlType="STRING"/>
+		<param name="TIPOCOMITE" sqlType="STRING"/>
+		<param name="NUMERO_COMITE" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPOCOMITE" sqlType="STRING"/>
+		<param name="KEY_NUMERO_COMITE" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="natreunioncomisionpersonal">
+		<call-query href="updateNatreunioncomisionpersonal">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="FECHA_REUNION" query-param="FECHA_REUNION"/>
+			<with-param name="AGENDA_TRABAJO" query-param="AGENDA_TRABAJO"/>
+			<with-param name="DESARROLLO" query-param="DESARROLLO"/>
+			<with-param name="COMPROMISOS" query-param="COMPROMISOS"/>
+			<with-param name="TIPOCOMITE" query-param="TIPOCOMITE"/>
+			<with-param name="NUMERO_COMITE" query-param="NUMERO_COMITE"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPOCOMITE" query-param="KEY_TIPOCOMITE"/>
+			<with-param name="KEY_NUMERO_COMITE" query-param="KEY_NUMERO_COMITE"/>
+
+		</call-query>
+	</resource>
+
+</data>

@@ -1,0 +1,614 @@
+﻿<data name="iptarifas" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getIptarifasTodosPorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT IP_TARIFAS.TRPCOD, CONCAT(TRPCOD,CONCAT(' / ',TRPPOR) ) TAR FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA =:COMPANIA AND IP_TARIFAS.TRPANO =:ANO AND IP_TARIFAS.TRPCOD =:TRPCOD AND IP_TARIFAS.TRPRAN =:TRPRAN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TRPCOD":"$TRPCOD","TAR":"$TAR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/todosporcodigo">
+		<call-query href="getIptarifasTodosPorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasPagTodosPorTarifaAplicadaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_TARIFAS.TRPCOD,IP_TARIFAS.TRPDES,IP_TARIFAS.TRPPOR,IP_TARIFAS.TRPRAN,IP_TARIFAS.TRPRAN1,IP_TARIFAS.TRPRAN2  FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = :ANO GROUP BY IP_TARIFAS.TRPCOD,IP_TARIFAS.TRPPOR,IP_TARIFAS.TRPDES,IP_TARIFAS.TRPRAN,IP_TARIFAS.TRPANO,IP_TARIFAS.TRPRAN1,IP_TARIFAS.TRPRAN2) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%')  AND (CASE WHEN TRPPOR IS NULL THEN ' ' ELSE UPPER(TRPPOR) END)  LIKE UPPER(:TRPPOR || '%')  AND (CASE WHEN TRPRAN1 IS NULL THEN ' ' ELSE UPPER(TRPRAN1) END)  LIKE UPPER(:TRPRAN1 || '%')  AND (CASE WHEN TRPRAN2 IS NULL THEN ' ' ELSE UPPER(TRPRAN2) END)  LIKE UPPER(:TRPRAN2 || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TRPCOD":"$TRPCOD","TRPDES":"$TRPDES","TRPPOR":"$TRPPOR","TRPRAN":"$TRPRAN","TRPRAN1":"$TRPRAN1","TRPRAN2":"$TRPRAN2"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+		<param name="TRPRAN1" sqlType="STRING"/>
+		<param name="TRPRAN2" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/todosportarifaaplicada/pag">
+		<call-query href="getIptarifasPagTodosPorTarifaAplicadaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="TRPRAN1" query-param="TRPRAN1"/>
+			<with-param name="TRPRAN2" query-param="TRPRAN2"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasNumTodosPorTarifaAplicadaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_TARIFAS.TRPCOD,IP_TARIFAS.TRPDES,IP_TARIFAS.TRPPOR,IP_TARIFAS.TRPRAN,IP_TARIFAS.TRPRAN1,IP_TARIFAS.TRPRAN2  FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = :ANO GROUP BY IP_TARIFAS.TRPCOD,IP_TARIFAS.TRPPOR,IP_TARIFAS.TRPDES,IP_TARIFAS.TRPRAN,IP_TARIFAS.TRPANO,IP_TARIFAS.TRPRAN1,IP_TARIFAS.TRPRAN2) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%')  AND (CASE WHEN TRPPOR IS NULL THEN ' ' ELSE UPPER(TRPPOR) END)  LIKE UPPER( '%' || :TRPPOR || '%')  AND (CASE WHEN TRPRAN1 IS NULL THEN ' ' ELSE UPPER(TRPRAN1) END)  LIKE UPPER( '%' || :TRPRAN1 || '%')  AND (CASE WHEN TRPRAN2 IS NULL THEN ' ' ELSE UPPER(TRPRAN2) END)  LIKE UPPER( '%' || :TRPRAN2 || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+		<param name="TRPRAN1" sqlType="STRING"/>
+		<param name="TRPRAN2" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/todosportarifaaplicada/num">
+		<call-query href="getIptarifasNumTodosPorTarifaAplicadaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="TRPRAN1" query-param="TRPRAN1"/>
+			<with-param name="TRPRAN2" query-param="TRPRAN2"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasPagTodosPorCompaniaAnioActualQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_TARIFAS.TRPCOD, IP_TARIFAS.TRPDES, IP_TARIFAS.TRPANO, IP_TARIFAS.TRPRAN  FROM IP_TARIFAS WHERE COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = EXTRACT(YEAR FROM SYSDATE)) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TRPCOD":"$TRPCOD","TRPDES":"$TRPDES","TRPANO":"$TRPANO(type:integer)","TRPRAN":"$TRPRAN"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/todosporcompaniaanioactual/pag">
+		<call-query href="getIptarifasPagTodosPorCompaniaAnioActualQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasNumTodosPorCompaniaAnioActualQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_TARIFAS.TRPCOD, IP_TARIFAS.TRPDES, IP_TARIFAS.TRPANO, IP_TARIFAS.TRPRAN  FROM IP_TARIFAS WHERE COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = EXTRACT(YEAR FROM SYSDATE)) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/todosporcompaniaanioactual/num">
+		<call-query href="getIptarifasNumTodosPorCompaniaAnioActualQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasPagTodosPorCodigoInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_TARIFAS.TRPCOD, IP_TARIFAS.TRPDES  FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = :ANO) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TRPCOD":"$TRPCOD","TRPDES":"$TRPDES"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/todosporcodigoinicial/pag">
+		<call-query href="getIptarifasPagTodosPorCodigoInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasNumTodosPorCodigoInicialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_TARIFAS.TRPCOD, IP_TARIFAS.TRPDES  FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = :ANO) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/todosporcodigoinicial/num">
+		<call-query href="getIptarifasNumTodosPorCodigoInicialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasPagTodosPorCodigoFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_TARIFAS.TRPCOD, IP_TARIFAS.TRPDES  FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = :ANO AND IP_TARIFAS.TRPCOD &gt;= :TARIFA) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TRPCOD":"$TRPCOD","TRPDES":"$TRPDES"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/todosporcodigofinal/pag">
+		<call-query href="getIptarifasPagTodosPorCodigoFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasNumTodosPorCodigoFinalQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_TARIFAS.TRPCOD, IP_TARIFAS.TRPDES  FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = :ANO AND IP_TARIFAS.TRPCOD &gt;= :TARIFA) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TARIFA" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/todosporcodigofinal/num">
+		<call-query href="getIptarifasNumTodosPorCodigoFinalQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TARIFA" query-param="TARIFA"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+
+		</call-query>
+	</resource>
+	<query id="insertIptarifas" keyColumns="COMPANIA,TRPCOD,TRPANO,TRPRAN" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO IP_TARIFAS (COMPANIA, TRPANO, TRPCOD, TRPRAN, TRPDES, TRPRAN1, TRPRAN2, TRPPOR, PORCBOMB, TRPALUMBRADO, TRPINC, TRPFOR, TRPINT, TRPCAR, CONTROL, GRUPO_TARIFA, PORCDESCUENTOS, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :TRPANO, :TRPCOD, :TRPRAN, :TRPDES, :TRPRAN1, :TRPRAN2, :TRPPOR, :PORCBOMB, :TRPALUMBRADO, :TRPINC, :TRPFOR, :TRPINT, :TRPCAR, :CONTROL, :GRUPO_TARIFA, :PORCDESCUENTOS, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_TRPCOD":"$TRPCOD","KEY_TRPANO":"$TRPANO(type:integer)","KEY_TRPRAN":"$TRPRAN"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TRPANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param defaultValue="" name="TRPDES" sqlType="STRING"/>
+		<param defaultValue="0" name="TRPRAN1" sqlType="STRING"/>
+		<param defaultValue="99999999999" name="TRPRAN2" sqlType="STRING"/>
+		<param defaultValue="0" name="TRPPOR" sqlType="STRING"/>
+		<param defaultValue="0" name="PORCBOMB" sqlType="STRING"/>
+		<param defaultValue="0" name="TRPALUMBRADO" sqlType="STRING"/>
+		<param defaultValue="0" name="TRPINC" sqlType="STRING"/>
+		<param defaultValue="0" name="TRPFOR" sqlType="STRING"/>
+		<param defaultValue="0" name="TRPINT" sqlType="STRING"/>
+		<param defaultValue="0" name="TRPCAR" sqlType="STRING"/>
+		<param defaultValue="0" name="CONTROL" sqlType="STRING"/>
+		<param defaultValue="" name="GRUPO_TARIFA" sqlType="STRING"/>
+		<param defaultValue="0" name="PORCDESCUENTOS" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="iptarifas">
+		<call-query href="insertIptarifas">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TRPANO" query-param="TRPANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="TRPRAN1" query-param="TRPRAN1"/>
+			<with-param name="TRPRAN2" query-param="TRPRAN2"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="PORCBOMB" query-param="PORCBOMB"/>
+			<with-param name="TRPALUMBRADO" query-param="TRPALUMBRADO"/>
+			<with-param name="TRPINC" query-param="TRPINC"/>
+			<with-param name="TRPFOR" query-param="TRPFOR"/>
+			<with-param name="TRPINT" query-param="TRPINT"/>
+			<with-param name="TRPCAR" query-param="TRPCAR"/>
+			<with-param name="CONTROL" query-param="CONTROL"/>
+			<with-param name="GRUPO_TARIFA" query-param="GRUPO_TARIFA"/>
+			<with-param name="PORCDESCUENTOS" query-param="PORCDESCUENTOS"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteIptarifas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA= :KEY_COMPANIA AND IP_TARIFAS.TRPCOD= :KEY_TRPCOD AND IP_TARIFAS.TRPANO= :KEY_TRPANO AND IP_TARIFAS.TRPRAN= :KEY_TRPRAN</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TRPCOD" sqlType="STRING"/>
+		<param name="KEY_TRPANO" sqlType="INTEGER"/>
+		<param name="KEY_TRPRAN" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="iptarifas">
+		<call-query href="deleteIptarifas">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TRPCOD" query-param="KEY_TRPCOD"/>
+			<with-param name="KEY_TRPANO" query-param="KEY_TRPANO"/>
+			<with-param name="KEY_TRPRAN" query-param="KEY_TRPRAN"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA , TRPANO, TRPCOD , TRPRAN, TRPDES, TRPRAN1, TRPRAN2, TRPPOR, PORCBOMB, TRPALUMBRADO, TRPINC,(CASE TRPFOR WHEN 0 THEN 'false' ELSE 'true' END) TRPFOR, TRPINT, TRPCAR,(CASE CONTROL WHEN 0 THEN 'false' ELSE 'true' END) CONTROL, GRUPO_TARIFA, PORCDESCUENTOS  FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = :ANO ORDER BY IP_TARIFAS.TRPANO DESC , IP_TARIFAS.TRPCOD) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER( '%' || :TRPCOD || '%')  AND (CASE WHEN TRPRAN IS NULL THEN ' ' ELSE UPPER(TRPRAN) END)  LIKE UPPER( '%' || :TRPRAN || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%')  AND (CASE WHEN TRPRAN1 IS NULL THEN ' ' ELSE UPPER(TRPRAN1) END)  LIKE UPPER( '%' || :TRPRAN1 || '%')  AND (CASE WHEN TRPRAN2 IS NULL THEN ' ' ELSE UPPER(TRPRAN2) END)  LIKE UPPER( '%' || :TRPRAN2 || '%')  AND (CASE WHEN TRPPOR IS NULL THEN ' ' ELSE UPPER(TRPPOR) END)  LIKE UPPER( '%' || :TRPPOR || '%')  AND (CASE WHEN PORCBOMB IS NULL THEN ' ' ELSE UPPER(PORCBOMB) END)  LIKE UPPER( '%' || :PORCBOMB || '%')  AND (CASE WHEN TRPALUMBRADO IS NULL THEN ' ' ELSE UPPER(TRPALUMBRADO) END)  LIKE UPPER( '%' || :TRPALUMBRADO || '%')  AND (CASE WHEN TRPINC IS NULL THEN ' ' ELSE UPPER(TRPINC) END)  LIKE UPPER( '%' || :TRPINC || '%')  AND (CASE WHEN TRPFOR IS NULL THEN ' ' ELSE UPPER(TRPFOR) END)  LIKE UPPER( '%' || :TRPFOR || '%')  AND (CASE WHEN TRPINT IS NULL THEN ' ' ELSE UPPER(TRPINT) END)  LIKE UPPER( '%' || :TRPINT || '%')  AND (CASE WHEN TRPCAR IS NULL THEN ' ' ELSE UPPER(TRPCAR) END)  LIKE UPPER( '%' || :TRPCAR || '%')  AND (CASE WHEN CONTROL IS NULL THEN ' ' ELSE UPPER(CONTROL) END)  LIKE UPPER( '%' || :CONTROL || '%')  AND (CASE WHEN GRUPO_TARIFA IS NULL THEN ' ' ELSE UPPER(GRUPO_TARIFA) END)  LIKE UPPER( '%' || :GRUPO_TARIFA || '%')  AND (CASE WHEN PORCDESCUENTOS IS NULL THEN ' ' ELSE UPPER(PORCDESCUENTOS) END)  LIKE UPPER( '%' || :PORCDESCUENTOS || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TRPANO":"$TRPANO(type:integer)","TRPCOD":"$TRPCOD","TRPRAN":"$TRPRAN","TRPDES":"$TRPDES","TRPRAN1":"$TRPRAN1","TRPRAN2":"$TRPRAN2","TRPPOR":"$TRPPOR","PORCBOMB":"$PORCBOMB","TRPALUMBRADO":"$TRPALUMBRADO","TRPINC":"$TRPINC","TRPFOR":"$TRPFOR(type:boolean)","TRPINT":"$TRPINT","TRPCAR":"$TRPCAR","CONTROL":"$CONTROL(type:boolean)","GRUPO_TARIFA":"$GRUPO_TARIFA","PORCDESCUENTOS":"$PORCDESCUENTOS"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="TRPRAN1" sqlType="STRING"/>
+		<param name="TRPRAN2" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+		<param name="PORCBOMB" sqlType="STRING"/>
+		<param name="TRPALUMBRADO" sqlType="STRING"/>
+		<param name="TRPINC" sqlType="STRING"/>
+		<param name="TRPFOR" sqlType="STRING"/>
+		<param name="TRPINT" sqlType="STRING"/>
+		<param name="TRPCAR" sqlType="STRING"/>
+		<param name="CONTROL" sqlType="STRING"/>
+		<param name="GRUPO_TARIFA" sqlType="STRING"/>
+		<param name="PORCDESCUENTOS" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iptarifas">
+		<call-query href="getIptarifasPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="TRPRAN1" query-param="TRPRAN1"/>
+			<with-param name="TRPRAN2" query-param="TRPRAN2"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="PORCBOMB" query-param="PORCBOMB"/>
+			<with-param name="TRPALUMBRADO" query-param="TRPALUMBRADO"/>
+			<with-param name="TRPINC" query-param="TRPINC"/>
+			<with-param name="TRPFOR" query-param="TRPFOR"/>
+			<with-param name="TRPINT" query-param="TRPINT"/>
+			<with-param name="TRPCAR" query-param="TRPCAR"/>
+			<with-param name="CONTROL" query-param="CONTROL"/>
+			<with-param name="GRUPO_TARIFA" query-param="GRUPO_TARIFA"/>
+			<with-param name="PORCDESCUENTOS" query-param="PORCDESCUENTOS"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA , TRPANO, TRPCOD , TRPRAN, TRPDES, TRPRAN1, TRPRAN2, TRPPOR, PORCBOMB, TRPALUMBRADO, TRPINC,(CASE TRPFOR WHEN 0 THEN 'false' ELSE 'true' END) TRPFOR, TRPINT, TRPCAR,(CASE CONTROL WHEN 0 THEN 'false' ELSE 'true' END) CONTROL, GRUPO_TARIFA, PORCDESCUENTOS  FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = :ANO ORDER BY IP_TARIFAS.TRPANO DESC , IP_TARIFAS.TRPCOD) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER( '%' || :TRPCOD || '%')  AND (CASE WHEN TRPRAN IS NULL THEN ' ' ELSE UPPER(TRPRAN) END)  LIKE UPPER( '%' || :TRPRAN || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%')  AND (CASE WHEN TRPRAN1 IS NULL THEN ' ' ELSE UPPER(TRPRAN1) END)  LIKE UPPER( '%' || :TRPRAN1 || '%')  AND (CASE WHEN TRPRAN2 IS NULL THEN ' ' ELSE UPPER(TRPRAN2) END)  LIKE UPPER( '%' || :TRPRAN2 || '%')  AND (CASE WHEN TRPPOR IS NULL THEN ' ' ELSE UPPER(TRPPOR) END)  LIKE UPPER( '%' || :TRPPOR || '%')  AND (CASE WHEN PORCBOMB IS NULL THEN ' ' ELSE UPPER(PORCBOMB) END)  LIKE UPPER( '%' || :PORCBOMB || '%')  AND (CASE WHEN TRPALUMBRADO IS NULL THEN ' ' ELSE UPPER(TRPALUMBRADO) END)  LIKE UPPER( '%' || :TRPALUMBRADO || '%')  AND (CASE WHEN TRPINC IS NULL THEN ' ' ELSE UPPER(TRPINC) END)  LIKE UPPER( '%' || :TRPINC || '%')  AND (CASE WHEN TRPFOR IS NULL THEN ' ' ELSE UPPER(TRPFOR) END)  LIKE UPPER( '%' || :TRPFOR || '%')  AND (CASE WHEN TRPINT IS NULL THEN ' ' ELSE UPPER(TRPINT) END)  LIKE UPPER( '%' || :TRPINT || '%')  AND (CASE WHEN TRPCAR IS NULL THEN ' ' ELSE UPPER(TRPCAR) END)  LIKE UPPER( '%' || :TRPCAR || '%')  AND (CASE WHEN CONTROL IS NULL THEN ' ' ELSE UPPER(CONTROL) END)  LIKE UPPER( '%' || :CONTROL || '%')  AND (CASE WHEN GRUPO_TARIFA IS NULL THEN ' ' ELSE UPPER(GRUPO_TARIFA) END)  LIKE UPPER( '%' || :GRUPO_TARIFA || '%')  AND (CASE WHEN PORCDESCUENTOS IS NULL THEN ' ' ELSE UPPER(PORCDESCUENTOS) END)  LIKE UPPER( '%' || :PORCDESCUENTOS || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="TRPRAN1" sqlType="STRING"/>
+		<param name="TRPRAN2" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+		<param name="PORCBOMB" sqlType="STRING"/>
+		<param name="TRPALUMBRADO" sqlType="STRING"/>
+		<param name="TRPINC" sqlType="STRING"/>
+		<param name="TRPFOR" sqlType="STRING"/>
+		<param name="TRPINT" sqlType="STRING"/>
+		<param name="TRPCAR" sqlType="STRING"/>
+		<param name="CONTROL" sqlType="STRING"/>
+		<param name="GRUPO_TARIFA" sqlType="STRING"/>
+		<param name="PORCDESCUENTOS" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/numero">
+		<call-query href="getIptarifasNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="TRPRAN1" query-param="TRPRAN1"/>
+			<with-param name="TRPRAN2" query-param="TRPRAN2"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="PORCBOMB" query-param="PORCBOMB"/>
+			<with-param name="TRPALUMBRADO" query-param="TRPALUMBRADO"/>
+			<with-param name="TRPINC" query-param="TRPINC"/>
+			<with-param name="TRPFOR" query-param="TRPFOR"/>
+			<with-param name="TRPINT" query-param="TRPINT"/>
+			<with-param name="TRPCAR" query-param="TRPCAR"/>
+			<with-param name="CONTROL" query-param="CONTROL"/>
+			<with-param name="GRUPO_TARIFA" query-param="GRUPO_TARIFA"/>
+			<with-param name="PORCDESCUENTOS" query-param="PORCDESCUENTOS"/>
+
+		</call-query>
+	</resource>
+	<query id="updateIptarifas" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE IP_TARIFAS SET TRPANO=:TRPANO, TRPCOD=:TRPCOD, TRPRAN=:TRPRAN, TRPDES=:TRPDES, TRPRAN1=:TRPRAN1, TRPRAN2=:TRPRAN2, TRPPOR=:TRPPOR, PORCBOMB=:PORCBOMB, TRPALUMBRADO=:TRPALUMBRADO, TRPINC=:TRPINC, TRPFOR=:TRPFOR, TRPINT=:TRPINT, TRPCAR=:TRPCAR, CONTROL=:CONTROL, GRUPO_TARIFA=:GRUPO_TARIFA, PORCDESCUENTOS=:PORCDESCUENTOS, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE IP_TARIFAS.COMPANIA= :KEY_COMPANIA AND IP_TARIFAS.TRPCOD= :KEY_TRPCOD AND IP_TARIFAS.TRPANO= :KEY_TRPANO AND IP_TARIFAS.TRPRAN= :KEY_TRPRAN</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="TRPANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="TRPRAN1" sqlType="STRING"/>
+		<param name="TRPRAN2" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+		<param name="PORCBOMB" sqlType="STRING"/>
+		<param name="TRPALUMBRADO" sqlType="STRING"/>
+		<param name="TRPINC" sqlType="STRING"/>
+		<param name="TRPFOR" sqlType="STRING"/>
+		<param name="TRPINT" sqlType="STRING"/>
+		<param name="TRPCAR" sqlType="STRING"/>
+		<param name="CONTROL" sqlType="STRING"/>
+		<param name="GRUPO_TARIFA" sqlType="STRING"/>
+		<param name="PORCDESCUENTOS" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TRPCOD" sqlType="STRING"/>
+		<param name="KEY_TRPANO" sqlType="STRING"/>
+		<param name="KEY_TRPRAN" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="iptarifas">
+		<call-query href="updateIptarifas">
+			<with-param name="TRPANO" query-param="TRPANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="TRPRAN1" query-param="TRPRAN1"/>
+			<with-param name="TRPRAN2" query-param="TRPRAN2"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="PORCBOMB" query-param="PORCBOMB"/>
+			<with-param name="TRPALUMBRADO" query-param="TRPALUMBRADO"/>
+			<with-param name="TRPINC" query-param="TRPINC"/>
+			<with-param name="TRPFOR" query-param="TRPFOR"/>
+			<with-param name="TRPINT" query-param="TRPINT"/>
+			<with-param name="TRPCAR" query-param="TRPCAR"/>
+			<with-param name="CONTROL" query-param="CONTROL"/>
+			<with-param name="GRUPO_TARIFA" query-param="GRUPO_TARIFA"/>
+			<with-param name="PORCDESCUENTOS" query-param="PORCDESCUENTOS"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TRPCOD" query-param="KEY_TRPCOD"/>
+			<with-param name="KEY_TRPANO" query-param="KEY_TRPANO"/>
+			<with-param name="KEY_TRPRAN" query-param="KEY_TRPRAN"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasPagPorcentajePorDescuentoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_TARIFAS.TRPCOD, IP_TARIFAS.TRPDES, IP_TARIFAS.TRPPOR  FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA= :COMPANIA AND IP_TARIFAS.TRPANO = :ANO) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%')  AND (CASE WHEN TRPPOR IS NULL THEN ' ' ELSE UPPER(TRPPOR) END)  LIKE UPPER(:TRPPOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TRPCOD":"$TRPCOD","TRPDES":"$TRPDES","TRPPOR":"$TRPPOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/porcentajepordescuento/pag">
+		<call-query href="getIptarifasPagPorcentajePorDescuentoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasNumPorcentajePorDescuentoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_TARIFAS.TRPCOD, IP_TARIFAS.TRPDES, IP_TARIFAS.TRPPOR  FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA= :COMPANIA AND IP_TARIFAS.TRPANO = :ANO) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%')  AND (CASE WHEN TRPPOR IS NULL THEN ' ' ELSE UPPER(TRPPOR) END)  LIKE UPPER( '%' || :TRPPOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/porcentajepordescuento/num">
+		<call-query href="getIptarifasNumPorcentajePorDescuentoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasPagTodosPorCompaniaAnoTarifaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_TARIFAS.TRPCOD, IP_TARIFAS.TRPDES, IP_TARIFAS.TRPPOR, IP_TARIFAS.TRPRAN  FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = :ANOTARIFA) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%')  AND (CASE WHEN TRPPOR IS NULL THEN ' ' ELSE UPPER(TRPPOR) END)  LIKE UPPER(:TRPPOR || '%')  AND (CASE WHEN TRPRAN IS NULL THEN ' ' ELSE UPPER(TRPRAN) END)  LIKE UPPER(:TRPRAN || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TRPCOD":"$TRPCOD","TRPDES":"$TRPDES","TRPPOR":"$TRPPOR","TRPRAN":"$TRPRAN"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANOTARIFA" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/todosporcompaniaanotarifa/pag">
+		<call-query href="getIptarifasPagTodosPorCompaniaAnoTarifaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANOTARIFA" query-param="ANOTARIFA"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasNumTodosPorCompaniaAnoTarifaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_TARIFAS.TRPCOD, IP_TARIFAS.TRPDES, IP_TARIFAS.TRPPOR, IP_TARIFAS.TRPRAN  FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = :ANOTARIFA) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%')  AND (CASE WHEN TRPPOR IS NULL THEN ' ' ELSE UPPER(TRPPOR) END)  LIKE UPPER( '%' || :TRPPOR || '%')  AND (CASE WHEN TRPRAN IS NULL THEN ' ' ELSE UPPER(TRPRAN) END)  LIKE UPPER( '%' || :TRPRAN || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANOTARIFA" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/todosporcompaniaanotarifa/num">
+		<call-query href="getIptarifasNumTodosPorCompaniaAnoTarifaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANOTARIFA" query-param="ANOTARIFA"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasPagDeResolucionesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  IP_TARIFAS.TRPCOD, IP_TARIFAS.TRPRAN, IP_TARIFAS.TRPANO, IP_TARIFAS.TRPDES, IP_TARIFAS.TRPPOR  FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = :ANO) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPRAN IS NULL THEN ' ' ELSE UPPER(TRPRAN) END)  LIKE UPPER(:TRPRAN || '%')  AND (CASE WHEN TRPANO IS NULL THEN ' ' ELSE UPPER(TRPANO) END)  LIKE UPPER(:TRPANO || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%')  AND (CASE WHEN TRPPOR IS NULL THEN ' ' ELSE UPPER(TRPPOR) END)  LIKE UPPER(:TRPPOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TRPCOD":"$TRPCOD","TRPRAN":"$TRPRAN","TRPANO":"$TRPANO(type:integer)","TRPDES":"$TRPDES","TRPPOR":"$TRPPOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param name="TRPANO" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/deresoluciones/pag">
+		<call-query href="getIptarifasPagDeResolucionesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="TRPANO" query-param="TRPANO"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasNumDeResolucionesQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  IP_TARIFAS.TRPCOD, IP_TARIFAS.TRPRAN, IP_TARIFAS.TRPANO, IP_TARIFAS.TRPDES, IP_TARIFAS.TRPPOR  FROM IP_TARIFAS WHERE IP_TARIFAS.COMPANIA = :COMPANIA AND IP_TARIFAS.TRPANO = :ANO) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPRAN IS NULL THEN ' ' ELSE UPPER(TRPRAN) END)  LIKE UPPER( '%' || :TRPRAN || '%')  AND (CASE WHEN TRPANO IS NULL THEN ' ' ELSE UPPER(TRPANO) END)  LIKE UPPER( '%' || :TRPANO || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%')  AND (CASE WHEN TRPPOR IS NULL THEN ' ' ELSE UPPER(TRPPOR) END)  LIKE UPPER( '%' || :TRPPOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param name="TRPANO" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/deresoluciones/num">
+		<call-query href="getIptarifasNumDeResolucionesQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="TRPANO" query-param="TRPANO"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasPagRangosTarifaDeclaracionAutoavaluoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  TRPCOD, TRPRAN, TRPDES, TRPRAN1, TRPRAN2, TRPPOR  FROM IP_TARIFAS WHERE COMPANIA= :COMPANIA AND TRPANO = :PREANO ORDER BY TRPCOD) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPRAN IS NULL THEN ' ' ELSE UPPER(TRPRAN) END)  LIKE UPPER(:TRPRAN || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%')  AND (CASE WHEN TRPRAN1 IS NULL THEN ' ' ELSE UPPER(TRPRAN1) END)  LIKE UPPER(:TRPRAN1 || '%')  AND (CASE WHEN TRPRAN2 IS NULL THEN ' ' ELSE UPPER(TRPRAN2) END)  LIKE UPPER(:TRPRAN2 || '%')  AND (CASE WHEN TRPPOR IS NULL THEN ' ' ELSE UPPER(TRPPOR) END)  LIKE UPPER(:TRPPOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TRPCOD":"$TRPCOD","TRPRAN":"$TRPRAN","TRPDES":"$TRPDES","TRPRAN1":"$TRPRAN1","TRPRAN2":"$TRPRAN2","TRPPOR":"$TRPPOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="TRPRAN1" sqlType="STRING"/>
+		<param name="TRPRAN2" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/rangostarifadeclaracionautoavaluo/pag">
+		<call-query href="getIptarifasPagRangosTarifaDeclaracionAutoavaluoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="TRPRAN1" query-param="TRPRAN1"/>
+			<with-param name="TRPRAN2" query-param="TRPRAN2"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getIptarifasNumRangosTarifaDeclaracionAutoavaluoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  TRPCOD, TRPRAN, TRPDES, TRPRAN1, TRPRAN2, TRPPOR  FROM IP_TARIFAS WHERE COMPANIA= :COMPANIA AND TRPANO = :PREANO ORDER BY TRPCOD) WHERE (CASE WHEN TRPCOD IS NULL THEN ' ' ELSE UPPER(TRPCOD) END)  LIKE UPPER(:TRPCOD || '%')  AND (CASE WHEN TRPRAN IS NULL THEN ' ' ELSE UPPER(TRPRAN) END)  LIKE UPPER(:TRPRAN || '%')  AND (CASE WHEN TRPDES IS NULL THEN ' ' ELSE UPPER(TRPDES) END)  LIKE UPPER( '%' || :TRPDES || '%')  AND (CASE WHEN TRPRAN1 IS NULL THEN ' ' ELSE UPPER(TRPRAN1) END)  LIKE UPPER(:TRPRAN1 || '%')  AND (CASE WHEN TRPRAN2 IS NULL THEN ' ' ELSE UPPER(TRPRAN2) END)  LIKE UPPER(:TRPRAN2 || '%')  AND (CASE WHEN TRPPOR IS NULL THEN ' ' ELSE UPPER(TRPPOR) END)  LIKE UPPER(:TRPPOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREANO" sqlType="STRING"/>
+		<param name="TRPCOD" sqlType="STRING"/>
+		<param name="TRPRAN" sqlType="STRING"/>
+		<param name="TRPDES" sqlType="STRING"/>
+		<param name="TRPRAN1" sqlType="STRING"/>
+		<param name="TRPRAN2" sqlType="STRING"/>
+		<param name="TRPPOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="iptarifas/rangostarifadeclaracionautoavaluo/num">
+		<call-query href="getIptarifasNumRangosTarifaDeclaracionAutoavaluoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREANO" query-param="PREANO"/>
+			<with-param name="TRPCOD" query-param="TRPCOD"/>
+			<with-param name="TRPRAN" query-param="TRPRAN"/>
+			<with-param name="TRPDES" query-param="TRPDES"/>
+			<with-param name="TRPRAN1" query-param="TRPRAN1"/>
+			<with-param name="TRPRAN2" query-param="TRPRAN2"/>
+			<with-param name="TRPPOR" query-param="TRPPOR"/>
+
+		</call-query>
+	</resource>
+
+</data>

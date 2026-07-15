@@ -1,0 +1,57 @@
+CREATE OR REPLACE TRIGGER "BI_SP_D_RECAUDO_USUARIO" 
+  /*
+      NAME              : BI_SP_D_RECAUDO_USUARIO
+      AUTHORS           : SYSMAN  SAS
+      AUTHOR MIGRACION  : MIGUEL ANGEL ZANGUÑA HURTADO
+      DATE MIGRADOR     : 13/07/2017
+      TIME              : 15:07 PM
+      SOURCE MODULE     :
+      MODIFIER          :
+      DATE MODIFIED     :
+      TIME              :
+      DESCRIPTION       : Inserta los recaudos generales en la tabla SP_D_RECAUDO
+
+  */
+FOR INSERT ON SP_D_RECAUDO_USUARIO
+REFERENCING OLD AS OLD NEW AS NEW
+COMPOUND TRIGGER
+
+MI_TABLA           PCK_SUBTIPOS.TI_STRSQL;
+MI_CONDICION       PCK_SUBTIPOS.TI_CONDICION;
+
+/*
+BEFORE EACH ROW IS  --Ejecución antes de cada fila
+BEGIN
+END BEFORE EACH ROW;
+*/
+
+AFTER EACH ROW IS --Ejecución despues de cada fila,
+BEGIN
+
+    --Registra los abonos en los recaudos.
+    PCK_SERVICIOS_PUBLICOS_ABONOS.PR_REGISTRARRECAUDO
+        ( UN_COMPANIA       => :NEW.COMPANIA
+         ,UN_FECHARECAUDO   => :NEW.FECHA
+         ,UN_BANCO          => :NEW.BANCO
+         ,UN_PAQUETE        => :NEW.NUMEROPAQUETE
+         ,UN_CONCEPTO       => :NEW.CONCEPTO
+         ,UN_TIPO_RECAUDO   => :NEW.TIPOPAGO
+         ,UN_VALORDEUDA     => :NEW.VALORDEUDA
+         ,UN_VALORPERIODO   => :NEW.VALORPAGOPERIODO
+         ,UN_VALORFIN_ACT   => :NEW.VALORFINACT
+         ,UN_VALORFIN_ANT   => :NEW.VALORFINANT
+         ,UN_CREDITOABONADO => :NEW.CREDITOABONADO
+         ,UN_ABONOACT       => :NEW.VALORABONOACT
+         ,UN_ABONOANT       => :NEW.VALORABONOANT
+         ,UN_USUARIO        => :NEW.CREATED_BY);
+
+
+END AFTER EACH ROW;
+
+/*
+AFTER STATEMENT IS --Ejecución despues de una consulta DML
+BEGIN
+END AFTER STATEMENT;
+*/
+
+END;

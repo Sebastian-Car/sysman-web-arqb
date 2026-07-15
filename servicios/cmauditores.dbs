@@ -1,0 +1,172 @@
+﻿<data name="cmauditores" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getCmauditoresPagGetauditoresQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CM_AUDITORES.NIT AUDITOR, TERCERO.NOMBRE FROM CM_AUDITORES INNER JOIN TERCERO ON CM_AUDITORES.COMPANIA= TERCERO.COMPANIA AND CM_AUDITORES.NIT= TERCERO.NIT AND CM_AUDITORES.SUCURSAL= TERCERO.SUCURSAL WHERE CM_AUDITORES.COMPANIA = :COMPANIA) INI WHERE (CASE WHEN AUDITOR IS NULL THEN ' ' ELSE UPPER(AUDITOR) END) LIKE UPPER(CONCAT(:AUDITOR, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"AUDITOR":"$AUDITOR","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="AUDITOR" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cmauditores/getauditores/pag">
+		<call-query href="getCmauditoresPagGetauditoresQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="AUDITOR" query-param="AUDITOR"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmauditoresNumGetauditoresQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CM_AUDITORES.NIT AUDITOR, TERCERO.NOMBRE FROM CM_AUDITORES INNER JOIN TERCERO ON CM_AUDITORES.COMPANIA= TERCERO.COMPANIA AND CM_AUDITORES.NIT= TERCERO.NIT AND CM_AUDITORES.SUCURSAL= TERCERO.SUCURSAL WHERE CM_AUDITORES.COMPANIA = :COMPANIA) INI WHERE (CASE WHEN AUDITOR IS NULL THEN ' ' ELSE UPPER(AUDITOR) END) LIKE UPPER(CONCAT(:AUDITOR, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="AUDITOR" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmauditores/getauditores/num">
+		<call-query href="getCmauditoresNumGetauditoresQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="AUDITOR" query-param="AUDITOR"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="insertCmauditores" keyColumns="COMPANIA,NIT" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO CM_AUDITORES (COMPANIA, NIT, SUCURSAL, CARGO, ACTIVO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :NIT, :SUCURSAL, :CARGO, :ACTIVO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_NIT":"$NIT"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param defaultValue="0" name="ACTIVO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="cmauditores">
+		<call-query href="insertCmauditores">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="ACTIVO" query-param="ACTIVO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteCmauditores" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM CM_AUDITORES WHERE CM_AUDITORES.COMPANIA= :KEY_COMPANIA AND CM_AUDITORES.NIT= :KEY_NIT</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NIT" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="cmauditores">
+		<call-query href="deleteCmauditores">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NIT" query-param="KEY_NIT"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmauditoresPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CM_AUDITORES.COMPANIA, CM_AUDITORES.NIT, TERCERO.NOMBRE, CM_AUDITORES.CARGO, CM_AUDITORES.SUCURSAL,(CASE CM_AUDITORES.ACTIVO WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO FROM CM_AUDITORES INNER JOIN TERCERO ON CM_AUDITORES.COMPANIA = TERCERO.COMPANIA AND CM_AUDITORES.NIT = TERCERO.NIT AND CM_AUDITORES.SUCURSAL = TERCERO.SUCURSAL WHERE CM_AUDITORES.COMPANIA = :COMPANIA ORDER BY CM_AUDITORES.COMPANIA) INI WHERE (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END) LIKE UPPER(CONCAT(:NIT, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CARGO), '%')) AND (CASE WHEN ACTIVO IS NULL THEN ' ' ELSE UPPER(ACTIVO) END) LIKE UPPER(CONCAT(CONCAT('%',:ACTIVO), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NIT":"$NIT","NOMBRE":"$NOMBRE","CARGO":"$CARGO","SUCURSAL":"$SUCURSAL","ACTIVO":"$ACTIVO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="ACTIVO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="cmauditores">
+		<call-query href="getCmauditoresPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="ACTIVO" query-param="ACTIVO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmauditoresNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CM_AUDITORES.COMPANIA, CM_AUDITORES.NIT, TERCERO.NOMBRE, CM_AUDITORES.CARGO, CM_AUDITORES.SUCURSAL,(CASE CM_AUDITORES.ACTIVO WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO FROM CM_AUDITORES INNER JOIN TERCERO ON CM_AUDITORES.COMPANIA = TERCERO.COMPANIA AND CM_AUDITORES.NIT = TERCERO.NIT AND CM_AUDITORES.SUCURSAL = TERCERO.SUCURSAL WHERE CM_AUDITORES.COMPANIA = :COMPANIA ORDER BY CM_AUDITORES.COMPANIA) INI WHERE (CASE WHEN NIT IS NULL THEN ' ' ELSE UPPER(NIT) END) LIKE UPPER(CONCAT(:NIT, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN CARGO IS NULL THEN ' ' ELSE UPPER(CARGO) END) LIKE UPPER(CONCAT(CONCAT('%',:CARGO), '%')) AND (CASE WHEN ACTIVO IS NULL THEN ' ' ELSE UPPER(ACTIVO) END) LIKE UPPER(CONCAT(CONCAT('%',:ACTIVO), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="ACTIVO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmauditores/numero">
+		<call-query href="getCmauditoresNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="ACTIVO" query-param="ACTIVO"/>
+
+		</call-query>
+	</resource>
+	<query id="getCmauditoresRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COMPANIA, NIT,SUCURSAL,CARGO,(CASE ACTIVO WHEN 0 THEN 'false' ELSE 'true' END) ACTIVO FROM CM_AUDITORES WHERE CM_AUDITORES.COMPANIA= :KEY_COMPANIA AND CM_AUDITORES.NIT= :KEY_NIT</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","NIT":"$NIT","SUCURSAL":"$SUCURSAL","CARGO":"$CARGO","ACTIVO":"$ACTIVO(type:boolean)"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NIT" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="cmauditores/data">
+		<call-query href="getCmauditoresRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NIT" query-param="KEY_NIT"/>
+
+		</call-query>
+	</resource>
+	<query id="updateCmauditores" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE CM_AUDITORES SET COMPANIA=:COMPANIA, NIT=:NIT, SUCURSAL=:SUCURSAL, CARGO=:CARGO, ACTIVO=:ACTIVO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE CM_AUDITORES.COMPANIA= :KEY_COMPANIA AND CM_AUDITORES.NIT= :KEY_NIT</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="CARGO" sqlType="STRING"/>
+		<param name="ACTIVO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_NIT" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="cmauditores">
+		<call-query href="updateCmauditores">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="CARGO" query-param="CARGO"/>
+			<with-param name="ACTIVO" query-param="ACTIVO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_NIT" query-param="KEY_NIT"/>
+
+		</call-query>
+	</resource>
+
+</data>

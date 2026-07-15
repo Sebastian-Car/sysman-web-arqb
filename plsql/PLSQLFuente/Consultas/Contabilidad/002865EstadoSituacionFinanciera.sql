@@ -1,0 +1,284 @@
+MERGE INTO CONSULTAS FIN USING (SELECT '002865EstadoSituacionFinanciera' INFORME ,TO_CLOB(q'[SELECT COMPANIA,
+    SUM(NUEVO) NUEVO,
+    SUM(SANTERIOR) SANTERIOR,
+    CODIGO_SECCION,
+    NOMBRE,
+    SUM(NUEVO - SANTERIOR) AS VAR_ABSO,
+    SECCION,
+    NOMBRE_SECCION,
+    GRUPO
+FROM (WITH SITUACIONFINANCIERA AS (SELECT DISTINCT
+     SUBSTR(PLAN_CONTABLE.CODIGO,1,s$digitos$s) CODIGO,
+     PLAN_CONTABLE.COMPANIA,
+     PLAN_CONTABLE.CORRIENTE,
+     SUM(CASE WHEN s$mesTrabajo$s = 0 THEN
+            PLAN_CONTABLE.SALDO0
+          WHEN s$mesTrabajo$s = 1 THEN
+            PLAN_CONTABLE.SALDO1
+          WHEN s$mesTrabajo$s = 2 THEN
+            PLAN_CONTABLE.SALDO2
+          WHEN s$mesTrabajo$s = 3 THEN
+            PLAN_CONTABLE.SALDO3
+          WHEN s$mesTrabajo$s = 4 THEN
+            PLAN_CONTABLE.SALDO4
+          WHEN s$mesTrabajo$s = 5 THEN
+            PLAN_CONTABLE.SALDO5
+          WHEN s$mesTrabajo$s = 6 THEN
+            PLAN_CONTABLE.SALDO6
+          WHEN s$mesTrabajo$s = 7 THEN
+            PLAN_CONTABLE.SALDO7
+          WHEN s$mesTrabajo$s = 8 THEN
+            PLAN_CONTABLE.SALDO8
+          WHEN s$mesTrabajo$s = 9 THEN
+            PLAN_CONTABLE.SALDO9
+          WHEN s$mesTrabajo$s = 10 THEN
+            PLAN_CONTABLE.SALDO10
+          WHEN s$mesTrabajo$s = 11 THEN
+            PLAN_CONTABLE.SALDO11
+          WHEN s$mesTrabajo$s = 12 THEN
+            PLAN_CONTABLE.SALDO12
+          WHEN s$mesTrabajo$s = 13 THEN
+            PLAN_CONTABLE.SALDO13
+     END)  SANTERIOR,
+     0 NUEVO,
+     SUBSTR(CASE WHEN SUBSTR(PLAN_CONTABLE.CODIGO,1,1) = '0'   THEN 'z'
+            ELSE SUBSTR(PLAN_CONTABLE.CODIGO,1,1)
+              || CASE WHEN PLAN_CONTABLE.CORRIENTE IN (0) THEN 'NO CORRIENTE'
+                 ELSE 'CORRIENTE'
+                 END || SUBSTR(PLAN_CONTABLE.CODIGO,1,s$digitos$s)
+            END,1,1) CLASEORDEN
+ FROM
+     V_PLAN_CONTABLE PLAN_CONTABLE
+ WHERE
+     PLAN_CONTABLE.COMPANIA = 's$compania$s'
+     AND PLAN_CONTABLE.ANO =s$anioTrabajo$s
+     AND (PLAN_CONTABLE.MOVIMIENTO) <> 0
+     AND ( PLAN_CONTABLE.CODIGO LIKE ( '1%' )
+           OR PLAN_CONTABLE.CODIGO LIKE ( '2%' )
+           OR PLAN_CONTABLE.CODIGO LIKE ( '3%' )
+           OR PLAN_CONTABLE.CODIGO LIKE ( '8%' )
+           OR PLAN_CONTABLE.CODIGO LIKE ( '9%' ) )
+    GROUP BY SUBSTR(PLAN_CONTABLE.CODIGO,1,s$digitos$s), COMPANIA, CORRIENTE, SUBSTR(CASE WHEN SUBSTR(PLAN_CONTABLE.CODIGO,1,1) = '0'   THEN 'z'
+            ELSE SUBSTR(PLAN_CONTABLE.CODIGO,1,1)
+              || CASE WHEN PLAN_CONTABLE.CORRIENTE IN (0) THEN 'NO CORRIENTE'
+                 ELSE 'CORRIENTE'
+                 END || SUBSTR(PLAN_CONTABLE.CODIGO,1,s$digitos$s)
+            END,1,1)
+UNION
+SELECT SUBSTR(CODIGO,1,s$digitos$s) CODIGO, COMPANIA, CORRIENTE, SANTERIOR, NUEVO, CLASEORDEN
+        FROM( SELECT PLAN_CONTABLE.COMPANIA,
+                    PLAN_CONTABLE.ANO,
+CASE WHEN ((SUM (CASE WHEN PLAN_CONTABLE.CODIGO='4' THEN PLAN_CONTABLE.SALDOs$mesTrabajo$s ELSE 0 END)-
+                    SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='5' THEN PLAN_CONTABLE.SALDO]') || TO_CLOB(q'[s$mesTrabajo$s ELSE 0 END) -
+                    SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='6' THEN PLAN_CONTABLE.SALDOs$mesTrabajo$s ELSE 0 END) -
+                    SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='7' THEN PLAN_CONTABLE.SALDOs$mesTrabajo$s ELSE 0 END)) > 0) THEN
+                    PCK_SYSMAN_UTL.FC_PAR('s$compania$s','CUENTA DE UTILIDADES',PCK_DATOS.FC_MODULOCONTABILIDAD,SYSDATE) ELSE
+                    PCK_SYSMAN_UTL.FC_PAR('s$compania$s','CUENTA DE PERDIDAS',PCK_DATOS.FC_MODULOCONTABILIDAD,SYSDATE) END CODIGO,
+                    SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='4' THEN PLAN_CONTABLE.SALDOs$mesTrabajo$s ELSE 0 END)-
+                    SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='5' THEN PLAN_CONTABLE.SALDOs$mesTrabajo$s ELSE 0 END) -
+                    SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='6' THEN PLAN_CONTABLE.SALDOs$mesTrabajo$s ELSE 0 END) -
+                    SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='7' THEN PLAN_CONTABLE.SALDOs$mesTrabajo$s ELSE 0 END) SANTERIOR,
+                    0 NUEVO,
+                    '3' CLASEORDEN,
+                    PLAN_CONTABLE.CORRIENTE
+        FROM PLAN_CONTABLE
+        WHERE PLAN_CONTABLE.COMPANIA = 's$compania$s'
+              AND PLAN_CONTABLE.CODIGO IN ('4','5','6','7')
+                  AND PLAN_CONTABLE.ANO = s$anioTrabajo$s
+        GROUP BY PLAN_CONTABLE.COMPANIA,
+                 PLAN_CONTABLE.ANO,
+                 PLAN_CONTABLE.CORRIENTE)
+UNION
+SELECT DISTINCT
+SUBSTR(PLAN_CONTABLE.CODIGO,1,s$digitos$s) CODIGO,
+     PLAN_CONTABLE.COMPANIA,
+     PLAN_CONTABLE.CORRIENTE,
+     0  SANTERIOR,
+     SUM(CASE WHEN s$mesComparar$s = 0 THEN
+            PLAN_CONTABLE.SALDO0
+          WHEN s$mesComparar$s = 1 THEN
+            PLAN_CONTABLE.SALDO1
+          WHEN s$mesComparar$s = 2 THEN
+            PLAN_CONTABLE.SALDO2
+          WHEN s$mesComparar$s = 3 THEN
+            PLAN_CONTABLE.SALDO3
+          WHEN s$mesComparar$s = 4 THEN
+            PLAN_CONTABLE.SALDO4
+          WHEN s$mesComparar$s = 5 THEN
+            PLAN_CONTABLE.SALDO5
+          WHEN s$mesComparar$s = 6 THEN
+            PLAN_CONTABLE.SALDO6
+          WHEN s$mesComparar$s = 7 THEN
+            PLAN_CONTABLE.SALDO7
+          WHEN s$mesComparar$s = 8 THEN
+            PLAN_CONTABLE.SALDO8
+          WHEN s$mesComparar$s = 9 THEN
+            PLAN_CONTABLE.SALDO9
+          WHEN s$mesComparar$s = 10 THEN
+            PLAN_CONTABLE.SALDO10
+          WHEN s$mesComparar$s = 11 THEN
+            PLAN_CONTABLE.SALDO11
+          WHEN s$mesComparar$s = 12 THEN
+            PLAN_CONTABLE.SALDO12
+          WHEN s$mesComparar$s = 13 THEN
+            PLAN_CONTABLE.SALDO13
+     END) NUEVO,
+     SUBSTR(CASE WHEN SUBSTR(PLAN_CONTABLE.CODIGO,1,1) = '0'   THEN 'z'
+            ELSE SUBSTR(PLAN_CONTABLE.CODIGO,1,1)
+              || CASE WHEN PLAN_CONTABLE.CORRIENTE IN (0) THEN 'NO CORRIENTE'
+                 ELSE 'CORRIENTE'
+                 END || SUBSTR(PLAN_CONTABLE.CODIGO, 1, s$digitos$s)
+            END,1,1) C]') || TO_CLOB(q'[LASEORDEN
+ FROM
+     V_PLAN_CONTABLE PLAN_CONTABLE
+ WHERE
+     PLAN_CONTABLE.COMPANIA = 's$compania$s'
+     AND PLAN_CONTABLE.ANO = s$anioComparar$s
+     AND (PLAN_CONTABLE.MOVIMIENTO) <> 0
+     /*AND ( PLAN_CONTABLE.CODIGO LIKE ( '1%' )
+           OR PLAN_CONTABLE.CODIGO LIKE ( '2%' )
+           OR PLAN_CONTABLE.CODIGO LIKE ( '3%' )
+           OR PLAN_CONTABLE.CODIGO LIKE ( '8%' )
+           OR PLAN_CONTABLE.CODIGO LIKE ( '9%' ) )
+*/
+    GROUP BY SUBSTR(PLAN_CONTABLE.CODIGO,1,s$digitos$s), COMPANIA, CORRIENTE, SUBSTR(CASE WHEN SUBSTR(PLAN_CONTABLE.CODIGO,1,1) = '0'   THEN 'z'
+            ELSE SUBSTR(PLAN_CONTABLE.CODIGO,1,1)
+              || CASE WHEN PLAN_CONTABLE.CORRIENTE IN (0) THEN 'NO CORRIENTE'
+                 ELSE 'CORRIENTE'
+                 END || SUBSTR(PLAN_CONTABLE.CODIGO,1,s$digitos$s)
+            END,1,1)
+UNION
+     SELECT SUBSTR(CODIGO,1,s$digitos$s) CODIGO, COMPANIA, CORRIENTE, SANTERIOR, NUEVO, CLASEORDEN
+        FROM( SELECT PLAN_CONTABLE.COMPANIA,
+                    PLAN_CONTABLE.ANO,
+                    0 SANTERIOR,
+                    CASE WHEN ((SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='4' THEN PLAN_CONTABLE.SALDOs$mesComparar$s ELSE 0 END)-
+                    SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='5' THEN PLAN_CONTABLE.SALDOs$mesComparar$s ELSE 0 END) -
+                    SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='6' THEN PLAN_CONTABLE.SALDOs$mesComparar$s ELSE 0 END) -
+                    SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='7' THEN PLAN_CONTABLE.SALDOs$mesComparar$s ELSE 0 END)) > 0) THEN
+                    PCK_SYSMAN_UTL.FC_PAR('s$compania$s','CUENTA DE UTILIDADES',PCK_DATOS.FC_MODULOCONTABILIDAD,SYSDATE) ELSE
+                    PCK_SYSMAN_UTL.FC_PAR('s$compania$s','CUENTA DE PERDIDAS',PCK_DATOS.FC_MODULOCONTABILIDAD,SYSDATE) END CODIGO,
+                    SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='4' THEN PLAN_CONTABLE.SALDOs$mesComparar$s ELSE 0 END)-
+                    SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='5' THEN PLAN_CONTABLE.SALDOs$mesComparar$s ELSE 0 END) -
+                    SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='6' THEN PLAN_CONTABLE.SALDOs$mesComparar$s ELSE 0 END) -
+                    SUM ( CASE WHEN PLAN_CONTABLE.CODIGO='7' THEN PLAN_CONTABLE.SALDOs$mesComparar$s ELSE 0 END) NUEVO,
+                    '3' CLASEORDEN,
+                    PLAN_CONTABLE.CORRIENTE
+        FROM PLAN_CONTABLE
+        WHERE PLAN_CONTABLE.COMPANIA = 's$compania$s'
+              AND PLAN_CONTABLE.CODIGO IN ('4','5','6','7')
+                  AND PLAN_CONTABLE.ANO = s$anioComparar$s
+        GROUP BY PLAN_CONTABLE.COMPANIA,
+                 PLAN_CONTABLE.ANO,
+                 PLAN_CONTABLE.CORRIENTE)
+            )
+SELECT  SITUACIONFINANCIERA.CODIGO,
+CC.CODIGO CODIGO_SECCION,
+CC.NOMBRE,
+SITUACIONFINANCIERA.COMPANIA,
+SUM(SITUACIONFINANCIERA.SANTERIOR) SANTERIOR,
+SUM(SITUACIONFINANCIERA.NUEVO) NUEVO,
+SITUACIONFINANCIERA.CLASEORDEN,
+CASE WHEN SUBSTR(SITUACIONFINANCIERA.CODIGO,1,1) = '3'
+OR S]') || TO_CLOB(q'[UBSTR(SITUACIONFINANCIERA.CODIGO,1,1) = '2'
+OR SUBSTR(SITUACIONFINANCIERA.CODIGO,1,1) = '1' THEN
+'PT'
+ELSE ''
+END PP,
+(
+    CASE
+        WHEN SUBSTR(SITUACIONFINANCIERA.CODIGO,1,1) = '3' OR SUBSTR(SITUACIONFINANCIERA.CODIGO,1,1) = '2' THEN
+            (
+                CASE
+                    WHEN s$digitos$s = 2 AND CLASEORDEN = 3 THEN
+                        SUM(SITUACIONFINANCIERA.SANTERIOR) + (
+                            SELECT SUM(SANTERIOR)
+                            FROM SITUACIONFINANCIERA
+                            WHERE LENGTH(CODIGO) = s$digitos$s
+                                AND CLASEORDEN = 1
+                        ) - ((
+                            SELECT SUM(SANTERIOR)
+                            FROM SITUACIONFINANCIERA
+                            WHERE LENGTH(CODIGO) = s$digitos$s
+                                AND CLASEORDEN = 2
+                        ) + SUM(SITUACIONFINANCIERA.SANTERIOR))
+                    ELSE SUM(SITUACIONFINANCIERA.SANTERIOR)
+                END
+            )
+        ELSE 0
+    END
+) ANTACTIVOPATRIMONIO,
+(
+    CASE
+        WHEN SUBSTR(SITUACIONFINANCIERA.CODIGO,1,1) = '3' OR SUBSTR(SITUACIONFINANCIERA.CODIGO,1,1) = '2' THEN
+            (
+                CASE
+                    WHEN s$digitos$s = 2 AND CLASEORDEN = 3 THEN
+                        SUM(SITUACIONFINANCIERA.NUEVO) + (
+                            SELECT SUM(NUEVO)
+                            FROM SITUACIONFINANCIERA
+                            WHERE LENGTH(CODIGO) = s$digitos$s
+                                AND CLASEORDEN = 1
+                        ) - ((
+                            SELECT SUM(NUEVO)
+                            FROM SITUACIONFINANCIERA
+                            WHERE LENGTH(CODIGO) = s$digitos$s
+                                AND CLASEORDEN = 2
+                        ) + SUM(SITUACIONFINANCIERA.NUEVO))
+                    ELSE SUM(SITUACIONFINANCIERA.NUEVO)
+                END
+            )
+        ELSE 0
+    END
+)NUEACTIVOPATRIMONIO,
+      SC.CODIGO   SECCION,
+            SC.NOMBRE   NOMBRE_SECCION,
+            CASE
+                WHEN SC.CODIGO IN (
+                    '1',
+                    '2'
+                ) THEN
+                    '1'
+                WHEN SC.CODIGO IN (
+                    '3',
+                    '4'
+                ) THEN
+                    '2'
+                ELSE
+                    SC.CODIGO
+            END GRUPO
+FROM SITUACIONFINANCIERA
+LEFT JOIN PLAN_CONTABLE P
+ON situacionfinanciera.COMPANIA =  P.COMPANIA
+    AND s$anioComparar$s = P.ANO
+    AND situacionfinanciera.CODIGO =  P. CODIGO
+    INNER JOIN CONFIGURAR_CONCEPTOS   CC ON CC.COMPANIA = P.COMPANIA
+                                                  AND CC.ANO = P.ANO
+                                                  AND CC.CODIGO = P.CONCEPTOS_FINANCIEROS
+            INNER JOIN SECCIONES_CONCEPTOS    SC ON SC.COMPANIA = CC.COMPANIA
+              ]') || TO_CLOB(q'[                                   AND SC.CODIGO = CC.SECCION
+    WHERE LENGTH(SITUACIONFINANCIERA.CODIGO)=  s$digitos$s
+    AND SITUACIONFINANCIERA.CODIGO BETWEEN 's$codigoInicial$s' AND 's$codigoFinal$s'
+    AND CC.INFORME IN ('002865EstadoSituacionFinanciera')
+GROUP BY  SITUACIONFINANCIERA.CODIGO,
+            CC.CODIGO,
+            CC.NOMBRE,
+            SITUACIONFINANCIERA.COMPANIA,
+            SITUACIONFINANCIERA.CLASEORDEN,
+            SC.NOMBRE,
+            SC.CODIGO
+ORDER BY SITUACIONFINANCIERA.CODIGO)
+WHERE NUEVO <> 0 OR SANTERIOR <> 0
+GROUP BY
+    COMPANIA,
+    NOMBRE,
+    SECCION,
+    CODIGO_SECCION,
+    NOMBRE_SECCION,
+    GRUPO
+ORDER BY
+ CODIGO_SECCION,
+    GRUPO,
+    SECCION,
+    NOMBRE]') CONSULTA, 1 APLICACION ,TO_CLOB(q'[]') CONSULTA_OPCIONAL, NULL CREATED_BY, NULL MODIFIED_BY  FROM DUAL ) INI ON (INI.INFORME = FIN.INFORME )  WHEN MATCHED THEN  UPDATE SET FIN.CONSULTA =  INI.CONSULTA, FIN.APLICACION =  INI.APLICACION, FIN.CONSULTA_OPCIONAL =  INI.CONSULTA_OPCIONAL, FIN.MODIFIED_BY = INI.MODIFIED_BY, FIN.DATE_MODIFIED = SYSDATE  WHEN NOT MATCHED THEN  INSERT (INFORME,CONSULTA, APLICACION,CONSULTA_OPCIONAL,CREATED_BY,DATE_CREATED)  VALUES (INI.INFORME,INI.CONSULTA, INI.APLICACION,INI.CONSULTA_OPCIONAL,INI.CREATED_BY,SYSDATE);
+COMMIT;

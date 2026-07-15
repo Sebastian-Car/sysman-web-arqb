@@ -1,0 +1,192 @@
+﻿<data name="polizasactivos" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertPolizasactivos" keyColumns="COMPANIA,ASEGURADORA,SUCURSAL,NUMERO_POLIZA" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO POLIZAS_ACTIVOS (SUCURSAL, COMPANIA, CONSECUTIVO, NUMERO_POLIZA, ASEGURADORA, FECHAI, FECHAF, FECHAADQUISICION, DESCRIPCION, VALOR, SEL_GRUPO, SEL_ELEMENTO, SEL_SERIE, VIGENTE, ACTUALIZADA, DATE_CREATED, CREATED_BY) VALUES (:SUCURSAL, :COMPANIA, :CONSECUTIVO, :NUMERO_POLIZA, :ASEGURADORA, TO_DATE(:FECHAI,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHAF,'DD/MM/YYYY HH24:MI:SS'), TO_DATE(:FECHAADQUISICION,'DD/MM/YYYY HH24:MI:SS'), :DESCRIPCION, :VALOR, :SEL_GRUPO, :SEL_ELEMENTO, :SEL_SERIE, :VIGENTE, :ACTUALIZADA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ASEGURADORA":"$ASEGURADORA","KEY_SUCURSAL":"$SUCURSAL","KEY_NUMERO_POLIZA":"$NUMERO_POLIZA"}]}}		</result>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="NUMERO_POLIZA" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="ASEGURADORA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAI" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAF" sqlType="STRING"/>
+		<param defaultValue="" name="FECHAADQUISICION" sqlType="STRING"/>
+		<param defaultValue="" name="DESCRIPCION" sqlType="STRING"/>
+		<param defaultValue="0" name="VALOR" sqlType="STRING"/>
+		<param defaultValue="0" name="SEL_GRUPO" sqlType="STRING"/>
+		<param defaultValue="0" name="SEL_ELEMENTO" sqlType="STRING"/>
+		<param defaultValue="0" name="SEL_SERIE" sqlType="STRING"/>
+		<param defaultValue="0" name="VIGENTE" sqlType="STRING"/>
+		<param defaultValue="0" name="ACTUALIZADA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="polizasactivos">
+		<call-query href="insertPolizasactivos">
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="NUMERO_POLIZA" query-param="NUMERO_POLIZA"/>
+			<with-param name="ASEGURADORA" query-param="ASEGURADORA"/>
+			<with-param name="FECHAI" query-param="FECHAI"/>
+			<with-param name="FECHAF" query-param="FECHAF"/>
+			<with-param name="FECHAADQUISICION" query-param="FECHAADQUISICION"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="SEL_GRUPO" query-param="SEL_GRUPO"/>
+			<with-param name="SEL_ELEMENTO" query-param="SEL_ELEMENTO"/>
+			<with-param name="SEL_SERIE" query-param="SEL_SERIE"/>
+			<with-param name="VIGENTE" query-param="VIGENTE"/>
+			<with-param name="ACTUALIZADA" query-param="ACTUALIZADA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deletePolizasactivos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM POLIZAS_ACTIVOS WHERE POLIZAS_ACTIVOS.COMPANIA= :KEY_COMPANIA AND POLIZAS_ACTIVOS.ASEGURADORA= :KEY_ASEGURADORA AND POLIZAS_ACTIVOS.SUCURSAL= :KEY_SUCURSAL AND POLIZAS_ACTIVOS.NUMERO_POLIZA= :KEY_NUMERO_POLIZA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ASEGURADORA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_NUMERO_POLIZA" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="polizasactivos">
+		<call-query href="deletePolizasactivos">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ASEGURADORA" query-param="KEY_ASEGURADORA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_NUMERO_POLIZA" query-param="KEY_NUMERO_POLIZA"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasactivosPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  P.SUCURSAL ,P.ASEGURADORA ,P.COMPANIA ,P.CONSECUTIVO ,P.NUMERO_POLIZA ,A.NOMBRE NOMBREASEGURADORA ,TO_CHAR(P.FECHAI,'DD/MM/YYYY') FECHAI ,TO_CHAR(P.FECHAF,'DD/MM/YYYY') FECHAF ,P.DESCRIPCION ,P.VALOR ,(CASE P.ACTUALIZADA WHEN 0 THEN 'false' ELSE 'true' END) ACTUALIZADA FROM POLIZAS_ACTIVOS P INNER JOIN ASEGURADORA A ON P.COMPANIA = A.COMPANIA AND P.ASEGURADORA = A.NITASEGURADORA AND P.SUCURSAL = A.SUCURSAL WHERE P.COMPANIA = :COMPANIA ORDER BY P.CONSECUTIVO) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN NUMERO_POLIZA IS NULL THEN ' ' ELSE UPPER(NUMERO_POLIZA) END)  LIKE UPPER(:NUMERO_POLIZA || '%')  AND (CASE WHEN NOMBREASEGURADORA IS NULL THEN ' ' ELSE UPPER(NOMBREASEGURADORA) END)  LIKE UPPER( '%' || :NOMBREASEGURADORA || '%')  AND (CASE WHEN FECHAI IS NULL THEN ' ' ELSE UPPER(FECHAI) END)  LIKE UPPER( '%' || :FECHAI || '%')  AND (CASE WHEN FECHAF IS NULL THEN ' ' ELSE UPPER(FECHAF) END)  LIKE UPPER( '%' || :FECHAF || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER(:VALOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SUCURSAL":"$SUCURSAL","ASEGURADORA":"$ASEGURADORA","COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO(type:integer)","NUMERO_POLIZA":"$NUMERO_POLIZA","NOMBREASEGURADORA":"$NOMBREASEGURADORA","FECHAI":"$FECHAI","FECHAF":"$FECHAF","DESCRIPCION":"$DESCRIPCION","VALOR":"$VALOR","ACTUALIZADA":"$ACTUALIZADA(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="NUMERO_POLIZA" sqlType="STRING"/>
+		<param name="NOMBREASEGURADORA" sqlType="STRING"/>
+		<param name="FECHAI" sqlType="STRING"/>
+		<param name="FECHAF" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="polizasactivos">
+		<call-query href="getPolizasactivosPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="NUMERO_POLIZA" query-param="NUMERO_POLIZA"/>
+			<with-param name="NOMBREASEGURADORA" query-param="NOMBREASEGURADORA"/>
+			<with-param name="FECHAI" query-param="FECHAI"/>
+			<with-param name="FECHAF" query-param="FECHAF"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasactivosNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  P.SUCURSAL ,P.ASEGURADORA ,P.COMPANIA ,P.CONSECUTIVO ,P.NUMERO_POLIZA ,A.NOMBRE NOMBREASEGURADORA ,TO_CHAR(P.FECHAI,'DD/MM/YYYY') FECHAI ,TO_CHAR(P.FECHAF,'DD/MM/YYYY') FECHAF ,P.DESCRIPCION ,P.VALOR ,(CASE P.ACTUALIZADA WHEN 0 THEN 'false' ELSE 'true' END) ACTUALIZADA FROM POLIZAS_ACTIVOS P INNER JOIN ASEGURADORA A ON P.COMPANIA = A.COMPANIA AND P.ASEGURADORA = A.NITASEGURADORA AND P.SUCURSAL = A.SUCURSAL WHERE P.COMPANIA = :COMPANIA ORDER BY P.CONSECUTIVO) WHERE (CASE WHEN CONSECUTIVO IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO) END)  LIKE UPPER(:CONSECUTIVO || '%')  AND (CASE WHEN NUMERO_POLIZA IS NULL THEN ' ' ELSE UPPER(NUMERO_POLIZA) END)  LIKE UPPER( '%' || :NUMERO_POLIZA || '%')  AND (CASE WHEN NOMBREASEGURADORA IS NULL THEN ' ' ELSE UPPER(NOMBREASEGURADORA) END)  LIKE UPPER( '%' || :NOMBREASEGURADORA || '%')  AND (CASE WHEN FECHAI IS NULL THEN ' ' ELSE UPPER(FECHAI) END)  LIKE UPPER( '%' || :FECHAI || '%')  AND (CASE WHEN FECHAF IS NULL THEN ' ' ELSE UPPER(FECHAF) END)  LIKE UPPER( '%' || :FECHAF || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN VALOR IS NULL THEN ' ' ELSE UPPER(VALOR) END)  LIKE UPPER( '%' || :VALOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="NUMERO_POLIZA" sqlType="STRING"/>
+		<param name="NOMBREASEGURADORA" sqlType="STRING"/>
+		<param name="FECHAI" sqlType="STRING"/>
+		<param name="FECHAF" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="polizasactivos/numero">
+		<call-query href="getPolizasactivosNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="NUMERO_POLIZA" query-param="NUMERO_POLIZA"/>
+			<with-param name="NOMBREASEGURADORA" query-param="NOMBREASEGURADORA"/>
+			<with-param name="FECHAI" query-param="FECHAI"/>
+			<with-param name="FECHAF" query-param="FECHAF"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+
+		</call-query>
+	</resource>
+	<query id="getPolizasactivosRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  POLIZAS_ACTIVOS.SUCURSAL ,POLIZAS_ACTIVOS.COMPANIA ,POLIZAS_ACTIVOS.CONSECUTIVO ,POLIZAS_ACTIVOS.NUMERO_POLIZA ,POLIZAS_ACTIVOS.ASEGURADORA ,ASEGURADORA.NOMBRE NOMBREASEGURADORA ,(TO_CHAR(POLIZAS_ACTIVOS.FECHAI,'DD/MM/YYYY HH24:MI:SS')) FECHAI,(TO_CHAR(POLIZAS_ACTIVOS.FECHAF,'DD/MM/YYYY HH24:MI:SS')) FECHAF,(TO_CHAR(POLIZAS_ACTIVOS.FECHAADQUISICION,'DD/MM/YYYY HH24:MI:SS')) FECHAADQUISICION,POLIZAS_ACTIVOS.DESCRIPCION ,POLIZAS_ACTIVOS.VALOR ,(CASE POLIZAS_ACTIVOS.SEL_GRUPO WHEN 0 THEN 'false' ELSE 'true' END) SEL_GRUPO,(CASE POLIZAS_ACTIVOS.SEL_ELEMENTO WHEN 0 THEN 'false' ELSE 'true' END) SEL_ELEMENTO,(CASE POLIZAS_ACTIVOS.SEL_SERIE WHEN 0 THEN 'false' ELSE 'true' END) SEL_SERIE,(CASE POLIZAS_ACTIVOS.VIGENTE WHEN 0 THEN 'false' ELSE 'true' END) VIGENTE,(CASE POLIZAS_ACTIVOS.ACTUALIZADA WHEN 0 THEN 'false' ELSE 'true' END) ACTUALIZADA,(TO_CHAR(POLIZAS_ACTIVOS.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, POLIZAS_ACTIVOS.CREATED_BY,(TO_CHAR(POLIZAS_ACTIVOS.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED, POLIZAS_ACTIVOS.MODIFIED_BY  FROM POLIZAS_ACTIVOS INNER JOIN ASEGURADORA ON POLIZAS_ACTIVOS.COMPANIA = ASEGURADORA.COMPANIA AND POLIZAS_ACTIVOS.ASEGURADORA = ASEGURADORA.NITASEGURADORA AND POLIZAS_ACTIVOS.SUCURSAL = ASEGURADORA.SUCURSAL WHERE POLIZAS_ACTIVOS.COMPANIA= :KEY_COMPANIA AND POLIZAS_ACTIVOS.ASEGURADORA= :KEY_ASEGURADORA AND POLIZAS_ACTIVOS.SUCURSAL= :KEY_SUCURSAL AND POLIZAS_ACTIVOS.NUMERO_POLIZA= :KEY_NUMERO_POLIZA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SUCURSAL":"$SUCURSAL","COMPANIA":"$COMPANIA","CONSECUTIVO":"$CONSECUTIVO(type:integer)","NUMERO_POLIZA":"$NUMERO_POLIZA","ASEGURADORA":"$ASEGURADORA","NOMBREASEGURADORA":"$NOMBREASEGURADORA","FECHAI":"$FECHAI","FECHAF":"$FECHAF","FECHAADQUISICION":"$FECHAADQUISICION","DESCRIPCION":"$DESCRIPCION","VALOR":"$VALOR","SEL_GRUPO":"$SEL_GRUPO(type:boolean)","SEL_ELEMENTO":"$SEL_ELEMENTO(type:boolean)","SEL_SERIE":"$SEL_SERIE(type:boolean)","VIGENTE":"$VIGENTE(type:boolean)","ACTUALIZADA":"$ACTUALIZADA(type:boolean)","DATE_CREATED":"$DATE_CREATED","CREATED_BY":"$CREATED_BY","DATE_MODIFIED":"$DATE_MODIFIED","MODIFIED_BY":"$MODIFIED_BY"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ASEGURADORA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_NUMERO_POLIZA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="polizasactivos/data">
+		<call-query href="getPolizasactivosRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ASEGURADORA" query-param="KEY_ASEGURADORA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_NUMERO_POLIZA" query-param="KEY_NUMERO_POLIZA"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePolizasactivos" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE POLIZAS_ACTIVOS SET CONSECUTIVO=:CONSECUTIVO, FECHAI=TO_DATE(:FECHAI,'DD/MM/YYYY HH24:MI:SS'), FECHAF=TO_DATE(:FECHAF,'DD/MM/YYYY HH24:MI:SS'), FECHAADQUISICION=TO_DATE(:FECHAADQUISICION,'DD/MM/YYYY HH24:MI:SS'), DESCRIPCION=:DESCRIPCION, VALOR=:VALOR, SEL_GRUPO=:SEL_GRUPO, SEL_ELEMENTO=:SEL_ELEMENTO, SEL_SERIE=:SEL_SERIE, VIGENTE=:VIGENTE, ACTUALIZADA=:ACTUALIZADA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE POLIZAS_ACTIVOS.COMPANIA= :KEY_COMPANIA AND POLIZAS_ACTIVOS.ASEGURADORA= :KEY_ASEGURADORA AND POLIZAS_ACTIVOS.SUCURSAL= :KEY_SUCURSAL AND POLIZAS_ACTIVOS.NUMERO_POLIZA= :KEY_NUMERO_POLIZA</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="CONSECUTIVO" sqlType="STRING"/>
+		<param name="FECHAI" sqlType="STRING"/>
+		<param name="FECHAF" sqlType="STRING"/>
+		<param name="FECHAADQUISICION" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="VALOR" sqlType="STRING"/>
+		<param name="SEL_GRUPO" sqlType="STRING"/>
+		<param name="SEL_ELEMENTO" sqlType="STRING"/>
+		<param name="SEL_SERIE" sqlType="STRING"/>
+		<param name="VIGENTE" sqlType="STRING"/>
+		<param name="ACTUALIZADA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ASEGURADORA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+		<param name="KEY_NUMERO_POLIZA" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="polizasactivos">
+		<call-query href="updatePolizasactivos">
+			<with-param name="CONSECUTIVO" query-param="CONSECUTIVO"/>
+			<with-param name="FECHAI" query-param="FECHAI"/>
+			<with-param name="FECHAF" query-param="FECHAF"/>
+			<with-param name="FECHAADQUISICION" query-param="FECHAADQUISICION"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="VALOR" query-param="VALOR"/>
+			<with-param name="SEL_GRUPO" query-param="SEL_GRUPO"/>
+			<with-param name="SEL_ELEMENTO" query-param="SEL_ELEMENTO"/>
+			<with-param name="SEL_SERIE" query-param="SEL_SERIE"/>
+			<with-param name="VIGENTE" query-param="VIGENTE"/>
+			<with-param name="ACTUALIZADA" query-param="ACTUALIZADA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ASEGURADORA" query-param="KEY_ASEGURADORA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+			<with-param name="KEY_NUMERO_POLIZA" query-param="KEY_NUMERO_POLIZA"/>
+
+		</call-query>
+	</resource>
+
+</data>

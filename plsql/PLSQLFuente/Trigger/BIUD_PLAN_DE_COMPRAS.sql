@@ -1,0 +1,67 @@
+CREATE OR REPLACE TRIGGER "BIUD_PLAN_DE_COMPRAS"  
+/*
+  NAME              : BIUD_PLAN_DE_COMPRAS
+  AUTHORS           : SYSMAN
+  AUTHOR MIGRACION  : Juan Carlos Rodríguez Amézquita
+  DATE MIGRADOR     : 30/10/2017
+  TIME              : 03:41 PM
+  DESCRIPTION       : Trigger antes de insertar, actualizar  y  eliminar para la 
+                      tabla PLAN_DE_COMPRAS. No permite hacer operaciones cuando 
+                      el plan de compras está aprobado para el año asociado.
+  MODIFIER          : 
+  DATE MODIFIED     : 
+  TIME              : 
+*/
+BEFORE INSERT OR UPDATE OR DELETE ON PLAN_DE_COMPRAS 
+FOR EACH ROW 
+DECLARE
+  MI_COMPANIA                       COMPANIA.CODIGO%TYPE;
+  MI_ANO                            ANO.NUMERO%TYPE;
+BEGIN
+
+IF PCK_GENERALES.FC_CONS_CAMBIONIT() IN (0) THEN --VALIDACION PARA CUANDO SE ESTA CAMBIANDO EL NIT AL TERCERO
+
+  -- Captura de datos
+  IF INSERTING THEN
+    MI_COMPANIA := :NEW.COMPANIA;
+    MI_ANO      := :NEW.ANO;
+  ELSIF UPDATING OR DELETING THEN
+    MI_COMPANIA := :OLD.COMPANIA;
+    MI_ANO      := :OLD.ANO;
+  END IF;
+  -- Validación del indicador PLANAPROBADO
+  DECLARE
+    MI_PLANAPROBADO                 ANO.PLANAPROBADO%TYPE;
+    MI_ACCION                       VARCHAR(10 CHAR);
+    MI_REEMPLAZOS                   PCK_SUBTIPOS.TI_CLAVEVALOR;
+  BEGIN
+    SELECT PLANAPROBADO
+    INTO MI_PLANAPROBADO
+    FROM ANO
+    WHERE COMPANIA      = MI_COMPANIA
+    AND NUMERO          = MI_ANO;
+    IF MI_PLANAPROBADO <> 0 THEN
+      RAISE PCK_EXCEPCIONES.EXC_PLANEACION;
+    END IF;
+  EXCEPTION
+  WHEN PCK_EXCEPCIONES.EXC_PLANEACION THEN
+    IF INSERTING THEN
+      MI_ACCION := 'crear';
+    ELSIF UPDATING THEN
+      MI_ACCION := 'actualizar';
+    ELSIF DELETING THEN
+      MI_ACCION := 'eliminar';
+    END IF;
+    MI_REEMPLAZOS(1).CLAVE := 'ACCION';
+    MI_REEMPLAZOS(1).VALOR := MI_ACCION;
+    MI_REEMPLAZOS(2).CLAVE := 'NUMERO';
+    MI_REEMPLAZOS(2).VALOR := MI_ANO;
+    PCK_ERR_MSG.RAISE_WITH_MSG(
+      UN_EXC_COD => SQLCODE
+    , UN_TABLAERROR => 'PLAN_DE_COMPRAS'
+    , UN_ERROR_COD  => PCK_ERRORES.ERR_PLANEACION_PLAN_APROBADO
+    , UN_REEMPLAZOS => MI_REEMPLAZOS);
+  END;
+  
+  END IF;
+END;

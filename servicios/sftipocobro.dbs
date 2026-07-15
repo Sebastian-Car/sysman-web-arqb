@@ -1,0 +1,978 @@
+﻿<data name="sftipocobro" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getSftipocobroAniosordendescQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT ANO  FROM SF_TIPO_COBRO WHERE COMPANIA = :COMPANIA ORDER BY ANO DESC</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/aniosordendesc">
+		<call-query href="getSftipocobroAniosordendescQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroNombresporanioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGO, UPPER(NOMBRE) NOMBRE  FROM SF_TIPO_COBRO WHERE COMPANIA = :COMPANIA AND ANO = :ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/nombresporanio">
+		<call-query href="getSftipocobroNombresporanioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroNombresporanioycodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CODIGO, UPPER(NOMBRE) NOMBRE FROM SF_TIPO_COBRO WHERE COMPANIA =:COMPANIA AND ANO =:ANO AND INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE(:CODIGO,' ','') ),CONCAT('',CONCAT(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE (CODIGO,' ','') ),'') ),1) &gt; 0</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/nombresporanioycod">
+		<call-query href="getSftipocobroNombresporanioycodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroPagTodosPorTipoFacturaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  SF_TIPO_COBRO.CODIGO, SF_TIPO_COBRO.NOMBRE, SF_TIPO_COBRO.ANO  FROM SF_TIPO_COBRO WHERE SF_TIPO_COBRO.COMPANIA=:COMPANIA AND SF_TIPO_COBRO.CODIGO = :TIPOCOBRO AND SF_TIPO_COBRO.ANO = :ANOCOBRO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","ANO":"$ANO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="ANOCOBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/todosportipofactura/pag">
+		<call-query href="getSftipocobroPagTodosPorTipoFacturaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="ANOCOBRO" query-param="ANOCOBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroNumTodosPorTipoFacturaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  SF_TIPO_COBRO.CODIGO, SF_TIPO_COBRO.NOMBRE, SF_TIPO_COBRO.ANO  FROM SF_TIPO_COBRO WHERE SF_TIPO_COBRO.COMPANIA=:COMPANIA AND SF_TIPO_COBRO.CODIGO = :TIPOCOBRO AND SF_TIPO_COBRO.ANO = :ANOCOBRO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%')  AND (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END)  LIKE UPPER(:ANO || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="ANOCOBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/todosportipofactura/num">
+		<call-query href="getSftipocobroNumTodosPorTipoFacturaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="ANOCOBRO" query-param="ANOCOBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroPagCodnommanejainventarioporanioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, UPPER(NOMBRE) NOMBRE,(CASE MANEJA_INVENTARIO WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_INVENTARIO,(CASE INTERFAZ_RECAUDO WHEN 0 THEN 'false' ELSE 'true' END) INTERFAZ_RECAUDO,(CASE TIPOCOBRO_NOFACTURADO WHEN 0 THEN 'false' ELSE 'true' END) TIPOCOBRO_NOFACTURADO, CPTE_RECAUDO,(CASE MANEJA_RECAUDOTERCEROS WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_RECAUDOTERCEROS, CLASE_CUENTASRECAUDO,(CASE INDPRELIQUIDACION WHEN 0 THEN 'false' ELSE 'true' END) INDPRELIQUIDACION,(CASE APLCUENTAREC WHEN 0 THEN 'false' ELSE 'true' END) APLCUENTAREC, REF_FACTURACION, TIPOFACTURA_RECAUDO FROM SF_TIPO_COBRO WHERE COMPANIA =:COMPANIA AND ANO =:ANO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN MANEJA_INVENTARIO IS NULL THEN ' ' ELSE UPPER(MANEJA_INVENTARIO) END) LIKE UPPER(CONCAT(:MANEJA_INVENTARIO, '%')) AND (CASE WHEN INTERFAZ_RECAUDO IS NULL THEN ' ' ELSE UPPER(INTERFAZ_RECAUDO) END) LIKE UPPER(CONCAT(:INTERFAZ_RECAUDO, '%')) AND (CASE WHEN TIPOCOBRO_NOFACTURADO IS NULL THEN ' ' ELSE UPPER(TIPOCOBRO_NOFACTURADO) END) LIKE UPPER(CONCAT(:TIPOCOBRO_NOFACTURADO, '%')) AND (CASE WHEN CPTE_RECAUDO IS NULL THEN ' ' ELSE UPPER(CPTE_RECAUDO) END) LIKE UPPER(CONCAT(CONCAT('%',:CPTE_RECAUDO), '%')) AND (CASE WHEN MANEJA_RECAUDOTERCEROS IS NULL THEN ' ' ELSE UPPER(MANEJA_RECAUDOTERCEROS) END) LIKE UPPER(CONCAT(:MANEJA_RECAUDOTERCEROS, '%')) AND (CASE WHEN CLASE_CUENTASRECAUDO IS NULL THEN ' ' ELSE UPPER(CLASE_CUENTASRECAUDO) END) LIKE UPPER(CONCAT(CONCAT('%',:CLASE_CUENTASRECAUDO), '%')) AND (CASE WHEN INDPRELIQUIDACION IS NULL THEN ' ' ELSE UPPER(INDPRELIQUIDACION) END) LIKE UPPER(CONCAT(:INDPRELIQUIDACION, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","MANEJA_INVENTARIO":"$MANEJA_INVENTARIO(type:boolean)","INTERFAZ_RECAUDO":"$INTERFAZ_RECAUDO(type:boolean)","TIPOCOBRO_NOFACTURADO":"$TIPOCOBRO_NOFACTURADO(type:boolean)","CPTE_RECAUDO":"$CPTE_RECAUDO","MANEJA_RECAUDOTERCEROS":"$MANEJA_RECAUDOTERCEROS(type:boolean)","CLASE_CUENTASRECAUDO":"$CLASE_CUENTASRECAUDO","INDPRELIQUIDACION":"$INDPRELIQUIDACION(type:boolean)","APLCUENTAREC":"$APLCUENTAREC(type:boolean)","REF_FACTURACION":"$REF_FACTURACION","TIPOFACTURA_RECAUDO":"$TIPOFACTURA_RECAUDO(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MANEJA_INVENTARIO" sqlType="STRING"/>
+		<param name="INTERFAZ_RECAUDO" sqlType="STRING"/>
+		<param name="TIPOCOBRO_NOFACTURADO" sqlType="STRING"/>
+		<param name="CPTE_RECAUDO" sqlType="STRING"/>
+		<param name="MANEJA_RECAUDOTERCEROS" sqlType="STRING"/>
+		<param name="CLASE_CUENTASRECAUDO" sqlType="STRING"/>
+		<param name="INDPRELIQUIDACION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codnommanejainventarioporanio/pag">
+		<call-query href="getSftipocobroPagCodnommanejainventarioporanioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MANEJA_INVENTARIO" query-param="MANEJA_INVENTARIO"/>
+			<with-param name="INTERFAZ_RECAUDO" query-param="INTERFAZ_RECAUDO"/>
+			<with-param name="TIPOCOBRO_NOFACTURADO" query-param="TIPOCOBRO_NOFACTURADO"/>
+			<with-param name="CPTE_RECAUDO" query-param="CPTE_RECAUDO"/>
+			<with-param name="MANEJA_RECAUDOTERCEROS" query-param="MANEJA_RECAUDOTERCEROS"/>
+			<with-param name="CLASE_CUENTASRECAUDO" query-param="CLASE_CUENTASRECAUDO"/>
+			<with-param name="INDPRELIQUIDACION" query-param="INDPRELIQUIDACION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroNumCodnommanejainventarioporanioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, UPPER(NOMBRE) NOMBRE,(CASE MANEJA_INVENTARIO WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_INVENTARIO,(CASE INTERFAZ_RECAUDO WHEN 0 THEN 'false' ELSE 'true' END) INTERFAZ_RECAUDO,(CASE TIPOCOBRO_NOFACTURADO WHEN 0 THEN 'false' ELSE 'true' END) TIPOCOBRO_NOFACTURADO, CPTE_RECAUDO,(CASE MANEJA_RECAUDOTERCEROS WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_RECAUDOTERCEROS, CLASE_CUENTASRECAUDO,(CASE INDPRELIQUIDACION WHEN 0 THEN 'false' ELSE 'true' END) INDPRELIQUIDACION,(CASE APLCUENTAREC WHEN 0 THEN 'false' ELSE 'true' END) APLCUENTAREC, REF_FACTURACION, TIPOFACTURA_RECAUDO FROM SF_TIPO_COBRO WHERE COMPANIA =:COMPANIA AND ANO =:ANO) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN MANEJA_INVENTARIO IS NULL THEN ' ' ELSE UPPER(MANEJA_INVENTARIO) END) LIKE UPPER(CONCAT(:MANEJA_INVENTARIO, '%')) AND (CASE WHEN INTERFAZ_RECAUDO IS NULL THEN ' ' ELSE UPPER(INTERFAZ_RECAUDO) END) LIKE UPPER(CONCAT(:INTERFAZ_RECAUDO, '%')) AND (CASE WHEN TIPOCOBRO_NOFACTURADO IS NULL THEN ' ' ELSE UPPER(TIPOCOBRO_NOFACTURADO) END) LIKE UPPER(CONCAT(:TIPOCOBRO_NOFACTURADO, '%')) AND (CASE WHEN CPTE_RECAUDO IS NULL THEN ' ' ELSE UPPER(CPTE_RECAUDO) END) LIKE UPPER(CONCAT(CONCAT('%',:CPTE_RECAUDO), '%')) AND (CASE WHEN MANEJA_RECAUDOTERCEROS IS NULL THEN ' ' ELSE UPPER(MANEJA_RECAUDOTERCEROS) END) LIKE UPPER(CONCAT(:MANEJA_RECAUDOTERCEROS, '%')) AND (CASE WHEN CLASE_CUENTASRECAUDO IS NULL THEN ' ' ELSE UPPER(CLASE_CUENTASRECAUDO) END) LIKE UPPER(CONCAT(CONCAT('%',:CLASE_CUENTASRECAUDO), '%')) AND (CASE WHEN INDPRELIQUIDACION IS NULL THEN ' ' ELSE UPPER(INDPRELIQUIDACION) END) LIKE UPPER(CONCAT(:INDPRELIQUIDACION, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MANEJA_INVENTARIO" sqlType="STRING"/>
+		<param name="INTERFAZ_RECAUDO" sqlType="STRING"/>
+		<param name="TIPOCOBRO_NOFACTURADO" sqlType="STRING"/>
+		<param name="CPTE_RECAUDO" sqlType="STRING"/>
+		<param name="MANEJA_RECAUDOTERCEROS" sqlType="STRING"/>
+		<param name="CLASE_CUENTASRECAUDO" sqlType="STRING"/>
+		<param name="INDPRELIQUIDACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codnommanejainventarioporanio/num">
+		<call-query href="getSftipocobroNumCodnommanejainventarioporanioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MANEJA_INVENTARIO" query-param="MANEJA_INVENTARIO"/>
+			<with-param name="INTERFAZ_RECAUDO" query-param="INTERFAZ_RECAUDO"/>
+			<with-param name="TIPOCOBRO_NOFACTURADO" query-param="TIPOCOBRO_NOFACTURADO"/>
+			<with-param name="CPTE_RECAUDO" query-param="CPTE_RECAUDO"/>
+			<with-param name="MANEJA_RECAUDOTERCEROS" query-param="MANEJA_RECAUDOTERCEROS"/>
+			<with-param name="CLASE_CUENTASRECAUDO" query-param="CLASE_CUENTASRECAUDO"/>
+			<with-param name="INDPRELIQUIDACION" query-param="INDPRELIQUIDACION"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroPagCodnomporanioycodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT CODIGO, UPPER(NOMBRE) NOMBRE,(CASE MANEJA_INVENTARIO WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_INVENTARIO,(CASE INTERFAZ_RECAUDO WHEN 0 THEN 'false' ELSE 'true' END) INTERFAZ_RECAUDO,(CASE TIPOCOBRO_NOFACTURADO WHEN 0 THEN 'false' ELSE 'true' END) TIPOCOBRO_NOFACTURADO, CPTE_RECAUDO,(CASE MANEJA_RECAUDOTERCEROS WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_RECAUDOTERCEROS, CLASE_CUENTASRECAUDO,(CASE INDPRELIQUIDACION WHEN 0 THEN 'false' ELSE 'true' END) INDPRELIQUIDACION FROM SF_TIPO_COBRO WHERE COMPANIA =:COMPANIA AND ANO =:ANO AND INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE(:TIPOCOBRO,' ','') ),CONCAT('',CONCAT(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS( REPLACE(CODIGO,' ','') ),'') ),1) &gt; 0) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN MANEJA_INVENTARIO IS NULL THEN ' ' ELSE UPPER(MANEJA_INVENTARIO) END) LIKE UPPER(CONCAT(:MANEJA_INVENTARIO, '%')) AND (CASE WHEN INTERFAZ_RECAUDO IS NULL THEN ' ' ELSE UPPER(INTERFAZ_RECAUDO) END) LIKE UPPER(CONCAT(:INTERFAZ_RECAUDO, '%')) AND (CASE WHEN TIPOCOBRO_NOFACTURADO IS NULL THEN ' ' ELSE UPPER(TIPOCOBRO_NOFACTURADO) END) LIKE UPPER(CONCAT(:TIPOCOBRO_NOFACTURADO, '%')) AND (CASE WHEN CPTE_RECAUDO IS NULL THEN ' ' ELSE UPPER(CPTE_RECAUDO) END) LIKE UPPER(CONCAT(CONCAT('%',:CPTE_RECAUDO), '%')) AND (CASE WHEN MANEJA_RECAUDOTERCEROS IS NULL THEN ' ' ELSE UPPER(MANEJA_RECAUDOTERCEROS) END) LIKE UPPER(CONCAT(:MANEJA_RECAUDOTERCEROS, '%')) AND (CASE WHEN CLASE_CUENTASRECAUDO IS NULL THEN ' ' ELSE UPPER(CLASE_CUENTASRECAUDO) END) LIKE UPPER(CONCAT(CONCAT('%',:CLASE_CUENTASRECAUDO), '%')) AND (CASE WHEN INDPRELIQUIDACION IS NULL THEN ' ' ELSE UPPER(INDPRELIQUIDACION) END) LIKE UPPER(CONCAT(:INDPRELIQUIDACION, '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","MANEJA_INVENTARIO":"$MANEJA_INVENTARIO(type:boolean)","INTERFAZ_RECAUDO":"$INTERFAZ_RECAUDO(type:boolean)","TIPOCOBRO_NOFACTURADO":"$TIPOCOBRO_NOFACTURADO(type:boolean)","CPTE_RECAUDO":"$CPTE_RECAUDO","MANEJA_RECAUDOTERCEROS":"$MANEJA_RECAUDOTERCEROS(type:boolean)","CLASE_CUENTASRECAUDO":"$CLASE_CUENTASRECAUDO","INDPRELIQUIDACION":"$INDPRELIQUIDACION(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MANEJA_INVENTARIO" sqlType="STRING"/>
+		<param name="INTERFAZ_RECAUDO" sqlType="STRING"/>
+		<param name="TIPOCOBRO_NOFACTURADO" sqlType="STRING"/>
+		<param name="CPTE_RECAUDO" sqlType="STRING"/>
+		<param name="MANEJA_RECAUDOTERCEROS" sqlType="STRING"/>
+		<param name="CLASE_CUENTASRECAUDO" sqlType="STRING"/>
+		<param name="INDPRELIQUIDACION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codnomporanioycod/pag">
+		<call-query href="getSftipocobroPagCodnomporanioycodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MANEJA_INVENTARIO" query-param="MANEJA_INVENTARIO"/>
+			<with-param name="INTERFAZ_RECAUDO" query-param="INTERFAZ_RECAUDO"/>
+			<with-param name="TIPOCOBRO_NOFACTURADO" query-param="TIPOCOBRO_NOFACTURADO"/>
+			<with-param name="CPTE_RECAUDO" query-param="CPTE_RECAUDO"/>
+			<with-param name="MANEJA_RECAUDOTERCEROS" query-param="MANEJA_RECAUDOTERCEROS"/>
+			<with-param name="CLASE_CUENTASRECAUDO" query-param="CLASE_CUENTASRECAUDO"/>
+			<with-param name="INDPRELIQUIDACION" query-param="INDPRELIQUIDACION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroNumCodnomporanioycodQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT CODIGO, UPPER(NOMBRE) NOMBRE,(CASE MANEJA_INVENTARIO WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_INVENTARIO,(CASE INTERFAZ_RECAUDO WHEN 0 THEN 'false' ELSE 'true' END) INTERFAZ_RECAUDO,(CASE TIPOCOBRO_NOFACTURADO WHEN 0 THEN 'false' ELSE 'true' END) TIPOCOBRO_NOFACTURADO, CPTE_RECAUDO,(CASE MANEJA_RECAUDOTERCEROS WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_RECAUDOTERCEROS, CLASE_CUENTASRECAUDO,(CASE INDPRELIQUIDACION WHEN 0 THEN 'false' ELSE 'true' END) INDPRELIQUIDACION FROM SF_TIPO_COBRO WHERE COMPANIA =:COMPANIA AND ANO =:ANO AND INSTR(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS(REPLACE(:TIPOCOBRO,' ','') ),CONCAT('',CONCAT(PCK_SYSMAN_UTL.FC_COLOCARCOMILLAS( REPLACE(CODIGO,' ','') ),'') ),1) &gt; 0) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN MANEJA_INVENTARIO IS NULL THEN ' ' ELSE UPPER(MANEJA_INVENTARIO) END) LIKE UPPER(CONCAT(:MANEJA_INVENTARIO, '%')) AND (CASE WHEN INTERFAZ_RECAUDO IS NULL THEN ' ' ELSE UPPER(INTERFAZ_RECAUDO) END) LIKE UPPER(CONCAT(:INTERFAZ_RECAUDO, '%')) AND (CASE WHEN TIPOCOBRO_NOFACTURADO IS NULL THEN ' ' ELSE UPPER(TIPOCOBRO_NOFACTURADO) END) LIKE UPPER(CONCAT(:TIPOCOBRO_NOFACTURADO, '%')) AND (CASE WHEN CPTE_RECAUDO IS NULL THEN ' ' ELSE UPPER(CPTE_RECAUDO) END) LIKE UPPER(CONCAT(CONCAT('%',:CPTE_RECAUDO), '%')) AND (CASE WHEN MANEJA_RECAUDOTERCEROS IS NULL THEN ' ' ELSE UPPER(MANEJA_RECAUDOTERCEROS) END) LIKE UPPER(CONCAT(:MANEJA_RECAUDOTERCEROS, '%')) AND (CASE WHEN CLASE_CUENTASRECAUDO IS NULL THEN ' ' ELSE UPPER(CLASE_CUENTASRECAUDO) END) LIKE UPPER(CONCAT(CONCAT('%',:CLASE_CUENTASRECAUDO), '%')) AND (CASE WHEN INDPRELIQUIDACION IS NULL THEN ' ' ELSE UPPER(INDPRELIQUIDACION) END) LIKE UPPER(CONCAT(:INDPRELIQUIDACION, '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MANEJA_INVENTARIO" sqlType="STRING"/>
+		<param name="INTERFAZ_RECAUDO" sqlType="STRING"/>
+		<param name="TIPOCOBRO_NOFACTURADO" sqlType="STRING"/>
+		<param name="CPTE_RECAUDO" sqlType="STRING"/>
+		<param name="MANEJA_RECAUDOTERCEROS" sqlType="STRING"/>
+		<param name="CLASE_CUENTASRECAUDO" sqlType="STRING"/>
+		<param name="INDPRELIQUIDACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codnomporanioycod/num">
+		<call-query href="getSftipocobroNumCodnomporanioycodQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MANEJA_INVENTARIO" query-param="MANEJA_INVENTARIO"/>
+			<with-param name="INTERFAZ_RECAUDO" query-param="INTERFAZ_RECAUDO"/>
+			<with-param name="TIPOCOBRO_NOFACTURADO" query-param="TIPOCOBRO_NOFACTURADO"/>
+			<with-param name="CPTE_RECAUDO" query-param="CPTE_RECAUDO"/>
+			<with-param name="MANEJA_RECAUDOTERCEROS" query-param="MANEJA_RECAUDOTERCEROS"/>
+			<with-param name="CLASE_CUENTASRECAUDO" query-param="CLASE_CUENTASRECAUDO"/>
+			<with-param name="INDPRELIQUIDACION" query-param="INDPRELIQUIDACION"/>
+
+		</call-query>
+	</resource>
+	<query id="insertSftipocobro" keyColumns="COMPANIA,ANO,CODIGO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO SF_TIPO_COBRO (COMPANIA, ANO, CODIGO, NOMBRE, PERIODICIDAD, CONCEPTODEUCAPITAL, CONCEPTODEUINTERES, CONCEPTOSANCION, GENERADEUDA, MANEJAESTRATO, VENCIMIENTO_FACTURACION, DIAS_VALIDEZ, MANEJA_INVENTARIO, CONSECUTIVO_FACTURACION, CPTE_RECAUDO, TIPOCPTE_ANULACION, MANEJA_RESFACTURACION, NORES_FACTURACION, FECRES_FACTURACION, NOINICIAL_FACTURACION, NOFINAL_FACTURACION, FORMATO_FACTURA, LEYENDA_FACTURA, IND_DERECHOSCONEXION, INTERFAZ_RECAUDO, TIPOFACTURA_RECAUDO, TIPOCOBRO_NOFACTURADO, MANEJA_RECAUDOTERCEROS, CLASE_CUENTASRECAUDO, BASEORIGINAL, LIQUIDACION, CODIGOEAN, NOAPLICACAUSACION, INICIAEN, BANCO_CUENTA1, BANCO_CUENTA2, BANCO_CUENTA3, BANCO_CUENTA4, INDPRELIQUIDACION, APLCUENTAREC, MANEJATARIFABASE, MANEJADESCRIP_EST, CPTE_DIFERIDA, FORMATO_PLANTILLA, MAN_ACUERDO_PRED, CLAVETECNICA, FECHA_FIN_RESOLUCION, TIPO_MEDIOPAGO, TIPO_MONEDA, TIPOFACDIAN, FORMATO_FAC_ELECTRONICA, MANEJA_CARTERA, MANEJA_INTERES_CARTERA, CPTE_CAUSACION_INTERES, TIPOCPTE_DEVOLUCION, CONSECUTIVO_COBRO, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :ANO, :CODIGO, :NOMBRE, :PERIODICIDAD, :CONCEPTODEUCAPITAL, :CONCEPTODEUINTERES, :CONCEPTOSANCION, :GENERADEUDA, :MANEJAESTRATO, :VENCIMIENTO_FACTURACION, :DIAS_VALIDEZ, :MANEJA_INVENTARIO, :CONSECUTIVO_FACTURACION, :CPTE_RECAUDO, :TIPOCPTE_ANULACION, :MANEJA_RESFACTURACION, :NORES_FACTURACION, TO_DATE(:FECRES_FACTURACION,'DD/MM/YYYY HH24:MI:SS'), :NOINICIAL_FACTURACION, :NOFINAL_FACTURACION, :FORMATO_FACTURA, :LEYENDA_FACTURA, :IND_DERECHOSCONEXION, :INTERFAZ_RECAUDO, :TIPOFACTURA_RECAUDO, :TIPOCOBRO_NOFACTURADO, :MANEJA_RECAUDOTERCEROS, :CLASE_CUENTASRECAUDO, :BASEORIGINAL, :LIQUIDACION, :CODIGOEAN, :NOAPLICACAUSACION, :INICIAEN, :BANCO_CUENTA1, :BANCO_CUENTA2, :BANCO_CUENTA3, :BANCO_CUENTA4, :INDPRELIQUIDACION, :APLCUENTAREC, :MANEJATARIFABASE, :MANEJADESCRIP_EST, :CPTE_DIFERIDA, :FORMATO_PLANTILLA, :MAN_ACUERDO_PRED, :CLAVETECNICA, TO_DATE(:FECHA_FIN_RESOLUCION,'DD/MM/YYYY HH24:MI:SS'), :TIPO_MEDIOPAGO, :TIPO_MONEDA, :TIPOFACDIAN, :FORMATO_FAC_ELECTRONICA, :MANEJA_CARTERA, :MANEJA_INTERES_CARTERA, :CPTE_CAUSACION_INTERES, :TIPOCPTE_DEVOLUCION, :CONSECUTIVO_COBRO, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_ANO":"$ANO(type:integer)","KEY_CODIGO":"$CODIGO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param defaultValue="" name="PERIODICIDAD" sqlType="STRING"/>
+		<param defaultValue="" name="CONCEPTODEUCAPITAL" sqlType="STRING"/>
+		<param defaultValue="" name="CONCEPTODEUINTERES" sqlType="STRING"/>
+		<param defaultValue="" name="CONCEPTOSANCION" sqlType="STRING"/>
+		<param defaultValue="0" name="GENERADEUDA" sqlType="STRING"/>
+		<param defaultValue="0" name="MANEJAESTRATO" sqlType="STRING"/>
+		<param name="VENCIMIENTO_FACTURACION" sqlType="STRING"/>
+		<param defaultValue="0" name="DIAS_VALIDEZ" sqlType="STRING"/>
+		<param defaultValue="0" name="MANEJA_INVENTARIO" sqlType="STRING"/>
+		<param defaultValue="" name="CONSECUTIVO_FACTURACION" sqlType="STRING"/>
+		<param defaultValue="" name="CPTE_RECAUDO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPOCPTE_ANULACION" sqlType="STRING"/>
+		<param defaultValue="0" name="MANEJA_RESFACTURACION" sqlType="STRING"/>
+		<param defaultValue="" name="NORES_FACTURACION" sqlType="STRING"/>
+		<param defaultValue="" name="FECRES_FACTURACION" sqlType="STRING"/>
+		<param defaultValue="" name="NOINICIAL_FACTURACION" sqlType="STRING"/>
+		<param defaultValue="" name="NOFINAL_FACTURACION" sqlType="STRING"/>
+		<param defaultValue="" name="FORMATO_FACTURA" sqlType="STRING"/>
+		<param defaultValue="" name="LEYENDA_FACTURA" sqlType="STRING"/>
+		<param defaultValue="0" name="IND_DERECHOSCONEXION" sqlType="STRING"/>
+		<param defaultValue="0" name="INTERFAZ_RECAUDO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPOFACTURA_RECAUDO" sqlType="STRING"/>
+		<param defaultValue="0" name="TIPOCOBRO_NOFACTURADO" sqlType="STRING"/>
+		<param defaultValue="0" name="MANEJA_RECAUDOTERCEROS" sqlType="STRING"/>
+		<param defaultValue="" name="CLASE_CUENTASRECAUDO" sqlType="STRING"/>
+		<param defaultValue="0" name="BASEORIGINAL" sqlType="STRING"/>
+		<param defaultValue="0" name="LIQUIDACION" sqlType="STRING"/>
+		<param defaultValue="" name="CODIGOEAN" sqlType="STRING"/>
+		<param defaultValue="0" name="NOAPLICACAUSACION" sqlType="STRING"/>
+		<param defaultValue="0" name="INICIAEN" sqlType="STRING"/>
+		<param defaultValue="" name="BANCO_CUENTA1" sqlType="STRING"/>
+		<param defaultValue="" name="BANCO_CUENTA2" sqlType="STRING"/>
+		<param defaultValue="" name="BANCO_CUENTA3" sqlType="STRING"/>
+		<param defaultValue="" name="BANCO_CUENTA4" sqlType="STRING"/>
+		<param defaultValue="0" name="INDPRELIQUIDACION" sqlType="STRING"/>
+		<param defaultValue="0" name="APLCUENTAREC" sqlType="STRING"/>
+		<param defaultValue="0" name="MANEJATARIFABASE" sqlType="STRING"/>
+		<param defaultValue="0" name="MANEJADESCRIP_EST" sqlType="STRING"/>
+		<param defaultValue="" name="CPTE_DIFERIDA" sqlType="STRING"/>
+		<param defaultValue="" name="FORMATO_PLANTILLA" sqlType="STRING"/>
+		<param defaultValue="0" name="MAN_ACUERDO_PRED" sqlType="STRING"/>
+		<param defaultValue="" name="CLAVETECNICA" sqlType="STRING"/>
+		<param defaultValue="" name="FECHA_FIN_RESOLUCION" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_MEDIOPAGO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPO_MONEDA" sqlType="STRING"/>
+		<param defaultValue="" name="TIPOFACDIAN" sqlType="STRING"/>
+		<param defaultValue="" name="FORMATO_FAC_ELECTRONICA" sqlType="STRING"/>
+		<param defaultValue="0" name="MANEJA_CARTERA" sqlType="STRING"/>
+		<param defaultValue="0" name="MANEJA_INTERES_CARTERA" sqlType="STRING"/>
+		<param defaultValue="" name="CPTE_CAUSACION_INTERES" sqlType="STRING"/>
+		<param defaultValue="" name="TIPOCPTE_DEVOLUCION" sqlType="STRING"/>
+		<param defaultValue="0" name="CONSECUTIVO_COBRO" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="sftipocobro">
+		<call-query href="insertSftipocobro">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PERIODICIDAD" query-param="PERIODICIDAD"/>
+			<with-param name="CONCEPTODEUCAPITAL" query-param="CONCEPTODEUCAPITAL"/>
+			<with-param name="CONCEPTODEUINTERES" query-param="CONCEPTODEUINTERES"/>
+			<with-param name="CONCEPTOSANCION" query-param="CONCEPTOSANCION"/>
+			<with-param name="GENERADEUDA" query-param="GENERADEUDA"/>
+			<with-param name="MANEJAESTRATO" query-param="MANEJAESTRATO"/>
+			<with-param name="VENCIMIENTO_FACTURACION" query-param="VENCIMIENTO_FACTURACION"/>
+			<with-param name="DIAS_VALIDEZ" query-param="DIAS_VALIDEZ"/>
+			<with-param name="MANEJA_INVENTARIO" query-param="MANEJA_INVENTARIO"/>
+			<with-param name="CONSECUTIVO_FACTURACION" query-param="CONSECUTIVO_FACTURACION"/>
+			<with-param name="CPTE_RECAUDO" query-param="CPTE_RECAUDO"/>
+			<with-param name="TIPOCPTE_ANULACION" query-param="TIPOCPTE_ANULACION"/>
+			<with-param name="MANEJA_RESFACTURACION" query-param="MANEJA_RESFACTURACION"/>
+			<with-param name="NORES_FACTURACION" query-param="NORES_FACTURACION"/>
+			<with-param name="FECRES_FACTURACION" query-param="FECRES_FACTURACION"/>
+			<with-param name="NOINICIAL_FACTURACION" query-param="NOINICIAL_FACTURACION"/>
+			<with-param name="NOFINAL_FACTURACION" query-param="NOFINAL_FACTURACION"/>
+			<with-param name="FORMATO_FACTURA" query-param="FORMATO_FACTURA"/>
+			<with-param name="LEYENDA_FACTURA" query-param="LEYENDA_FACTURA"/>
+			<with-param name="IND_DERECHOSCONEXION" query-param="IND_DERECHOSCONEXION"/>
+			<with-param name="INTERFAZ_RECAUDO" query-param="INTERFAZ_RECAUDO"/>
+			<with-param name="TIPOFACTURA_RECAUDO" query-param="TIPOFACTURA_RECAUDO"/>
+			<with-param name="TIPOCOBRO_NOFACTURADO" query-param="TIPOCOBRO_NOFACTURADO"/>
+			<with-param name="MANEJA_RECAUDOTERCEROS" query-param="MANEJA_RECAUDOTERCEROS"/>
+			<with-param name="CLASE_CUENTASRECAUDO" query-param="CLASE_CUENTASRECAUDO"/>
+			<with-param name="BASEORIGINAL" query-param="BASEORIGINAL"/>
+			<with-param name="LIQUIDACION" query-param="LIQUIDACION"/>
+			<with-param name="CODIGOEAN" query-param="CODIGOEAN"/>
+			<with-param name="NOAPLICACAUSACION" query-param="NOAPLICACAUSACION"/>
+			<with-param name="INICIAEN" query-param="INICIAEN"/>
+			<with-param name="BANCO_CUENTA1" query-param="BANCO_CUENTA1"/>
+			<with-param name="BANCO_CUENTA2" query-param="BANCO_CUENTA2"/>
+			<with-param name="BANCO_CUENTA3" query-param="BANCO_CUENTA3"/>
+			<with-param name="BANCO_CUENTA4" query-param="BANCO_CUENTA4"/>
+			<with-param name="INDPRELIQUIDACION" query-param="INDPRELIQUIDACION"/>
+			<with-param name="APLCUENTAREC" query-param="APLCUENTAREC"/>
+			<with-param name="MANEJATARIFABASE" query-param="MANEJATARIFABASE"/>
+			<with-param name="MANEJADESCRIP_EST" query-param="MANEJADESCRIP_EST"/>
+			<with-param name="CPTE_DIFERIDA" query-param="CPTE_DIFERIDA"/>
+			<with-param name="FORMATO_PLANTILLA" query-param="FORMATO_PLANTILLA"/>
+			<with-param name="MAN_ACUERDO_PRED" query-param="MAN_ACUERDO_PRED"/>
+			<with-param name="CLAVETECNICA" query-param="CLAVETECNICA"/>
+			<with-param name="FECHA_FIN_RESOLUCION" query-param="FECHA_FIN_RESOLUCION"/>
+			<with-param name="TIPO_MEDIOPAGO" query-param="TIPO_MEDIOPAGO"/>
+			<with-param name="TIPO_MONEDA" query-param="TIPO_MONEDA"/>
+			<with-param name="TIPOFACDIAN" query-param="TIPOFACDIAN"/>
+			<with-param name="FORMATO_FAC_ELECTRONICA" query-param="FORMATO_FAC_ELECTRONICA"/>
+			<with-param name="MANEJA_CARTERA" query-param="MANEJA_CARTERA"/>
+			<with-param name="MANEJA_INTERES_CARTERA" query-param="MANEJA_INTERES_CARTERA"/>
+			<with-param name="CPTE_CAUSACION_INTERES" query-param="CPTE_CAUSACION_INTERES"/>
+			<with-param name="TIPOCPTE_DEVOLUCION" query-param="TIPOCPTE_DEVOLUCION"/>
+			<with-param name="CONSECUTIVO_COBRO" query-param="CONSECUTIVO_COBRO"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteSftipocobro" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM SF_TIPO_COBRO WHERE SF_TIPO_COBRO.COMPANIA= :KEY_COMPANIA AND SF_TIPO_COBRO.ANO= :KEY_ANO AND SF_TIPO_COBRO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="INTEGER"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="sftipocobro">
+		<call-query href="deleteSftipocobro">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT COMPANIA, ANO, CODIGO, NOMBRE,(CASE MANEJA_INVENTARIO WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_INVENTARIO,(CASE INTERFAZ_RECAUDO WHEN 0 THEN 'false' ELSE 'true' END) INTERFAZ_RECAUDO, CONSECUTIVO_FACTURACION FROM SF_TIPO_COBRO WHERE COMPANIA =:COMPANIA ORDER BY ANO DESC ,CODIGO) INI WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(:ANO, '%')) AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN MANEJA_INVENTARIO IS NULL THEN ' ' ELSE UPPER(MANEJA_INVENTARIO) END) LIKE UPPER(CONCAT(CONCAT('%',:MANEJA_INVENTARIO), '%')) AND (CASE WHEN INTERFAZ_RECAUDO IS NULL THEN ' ' ELSE UPPER(INTERFAZ_RECAUDO) END) LIKE UPPER(CONCAT(CONCAT('%',:INTERFAZ_RECAUDO), '%')) AND (CASE WHEN CONSECUTIVO_FACTURACION IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO_FACTURACION) END) LIKE UPPER(CONCAT(CONCAT('%',:CONSECUTIVO_FACTURACION), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","MANEJA_INVENTARIO":"$MANEJA_INVENTARIO(type:boolean)","INTERFAZ_RECAUDO":"$INTERFAZ_RECAUDO(type:boolean)","CONSECUTIVO_FACTURACION":"$CONSECUTIVO_FACTURACION(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MANEJA_INVENTARIO" sqlType="STRING"/>
+		<param name="INTERFAZ_RECAUDO" sqlType="STRING"/>
+		<param name="CONSECUTIVO_FACTURACION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro">
+		<call-query href="getSftipocobroPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MANEJA_INVENTARIO" query-param="MANEJA_INVENTARIO"/>
+			<with-param name="INTERFAZ_RECAUDO" query-param="INTERFAZ_RECAUDO"/>
+			<with-param name="CONSECUTIVO_FACTURACION" query-param="CONSECUTIVO_FACTURACION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT COMPANIA, ANO, CODIGO, NOMBRE,(CASE MANEJA_INVENTARIO WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_INVENTARIO,(CASE INTERFAZ_RECAUDO WHEN 0 THEN 'false' ELSE 'true' END) INTERFAZ_RECAUDO, CONSECUTIVO_FACTURACION FROM SF_TIPO_COBRO WHERE COMPANIA =:COMPANIA ORDER BY ANO DESC ,CODIGO) INI WHERE (CASE WHEN ANO IS NULL THEN ' ' ELSE UPPER(ANO) END) LIKE UPPER(CONCAT(:ANO, '%')) AND (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) AND (CASE WHEN MANEJA_INVENTARIO IS NULL THEN ' ' ELSE UPPER(MANEJA_INVENTARIO) END) LIKE UPPER(CONCAT(CONCAT('%',:MANEJA_INVENTARIO), '%')) AND (CASE WHEN INTERFAZ_RECAUDO IS NULL THEN ' ' ELSE UPPER(INTERFAZ_RECAUDO) END) LIKE UPPER(CONCAT(CONCAT('%',:INTERFAZ_RECAUDO), '%')) AND (CASE WHEN CONSECUTIVO_FACTURACION IS NULL THEN ' ' ELSE UPPER(CONSECUTIVO_FACTURACION) END) LIKE UPPER(CONCAT(CONCAT('%',:CONSECUTIVO_FACTURACION), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="MANEJA_INVENTARIO" sqlType="STRING"/>
+		<param name="INTERFAZ_RECAUDO" sqlType="STRING"/>
+		<param name="CONSECUTIVO_FACTURACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/numero">
+		<call-query href="getSftipocobroNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="MANEJA_INVENTARIO" query-param="MANEJA_INVENTARIO"/>
+			<with-param name="INTERFAZ_RECAUDO" query-param="INTERFAZ_RECAUDO"/>
+			<with-param name="CONSECUTIVO_FACTURACION" query-param="CONSECUTIVO_FACTURACION"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroRegistroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COMPANIA , ANO , CODIGO , NOMBRE , PERIODICIDAD , CONCEPTODEUCAPITAL , CONCEPTODEUINTERES , CONCEPTOSANCION ,(CASE GENERADEUDA WHEN 0 THEN 'false' ELSE 'true' END) GENERADEUDA,(CASE MANEJAESTRATO WHEN 0 THEN 'false' ELSE 'true' END) MANEJAESTRATO, VENCIMIENTO_FACTURACION , DIAS_VALIDEZ ,(CASE MANEJA_INVENTARIO WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_INVENTARIO, CONSECUTIVO_FACTURACION , CPTE_RECAUDO , TIPOCPTE_ANULACION ,(CASE MANEJA_RESFACTURACION WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_RESFACTURACION, NORES_FACTURACION ,(TO_CHAR(FECRES_FACTURACION,'DD/MM/YYYY HH24:MI:SS')) FECRES_FACTURACION, NOINICIAL_FACTURACION , NOFINAL_FACTURACION , FORMATO_FACTURA , LEYENDA_FACTURA ,(CASE IND_DERECHOSCONEXION WHEN 0 THEN 'false' ELSE 'true' END) IND_DERECHOSCONEXION,(CASE INTERFAZ_RECAUDO WHEN 0 THEN 'false' ELSE 'true' END) INTERFAZ_RECAUDO, TIPOFACTURA_RECAUDO ,(CASE TIPOCOBRO_NOFACTURADO WHEN 0 THEN 'false' ELSE 'true' END) TIPOCOBRO_NOFACTURADO,(CASE MANEJA_RECAUDOTERCEROS WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_RECAUDOTERCEROS, CLASE_CUENTASRECAUDO , BASEORIGINAL ,(CASE LIQUIDACION WHEN 0 THEN 'false' ELSE 'true' END) LIQUIDACION, CODIGOEAN ,(CASE NOAPLICACAUSACION WHEN 0 THEN 'false' ELSE 'true' END) NOAPLICACAUSACION, INICIAEN , BANCO_CUENTA1 , BANCO_CUENTA2 , BANCO_CUENTA3 , BANCO_CUENTA4 ,(CASE INDPRELIQUIDACION WHEN 0 THEN 'false' ELSE 'true' END) INDPRELIQUIDACION, CREATED_BY ,(TO_CHAR(DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, MODIFIED_BY ,(TO_CHAR(DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED,(CASE APLCUENTAREC WHEN 0 THEN 'false' ELSE 'true' END) APLCUENTAREC,(CASE MANEJATARIFABASE WHEN 0 THEN 'false' ELSE 'true' END) MANEJATARIFABASE,(CASE MANEJADESCRIP_EST WHEN 0 THEN 'false' ELSE 'true' END) MANEJADESCRIP_EST,CPTE_DIFERIDA,FORMATO_PLANTILLA,(CASE MAN_ACUERDO_PRED WHEN 0 THEN 'false' ELSE 'true' END) MAN_ACUERDO_PRED, REF_FACTURACION,CLAVETECNICA,(TO_CHAR(FECHA_FIN_RESOLUCION,'DD/MM/YYYY HH24:MI:SS')) FECHA_FIN_RESOLUCION, TIPO_MEDIOPAGO,TIPO_MONEDA,TIPOFACDIAN,FORMATO_FAC_ELECTRONICA,(CASE MANEJA_CARTERA WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_CARTERA,(CASE MANEJA_INTERES_CARTERA WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_INTERES_CARTERA,CPTE_CAUSACION_INTERES, TIPOCPTE_DEVOLUCION,CONSECUTIVO_COBRO FROM SF_TIPO_COBRO WHERE SF_TIPO_COBRO.COMPANIA= :KEY_COMPANIA AND SF_TIPO_COBRO.ANO= :KEY_ANO AND SF_TIPO_COBRO.CODIGO= :KEY_CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ANO":"$ANO(type:integer)","CODIGO":"$CODIGO","NOMBRE":"$NOMBRE","PERIODICIDAD":"$PERIODICIDAD","CONCEPTODEUCAPITAL":"$CONCEPTODEUCAPITAL","CONCEPTODEUINTERES":"$CONCEPTODEUINTERES","CONCEPTOSANCION":"$CONCEPTOSANCION","GENERADEUDA":"$GENERADEUDA(type:boolean)","MANEJAESTRATO":"$MANEJAESTRATO(type:boolean)","VENCIMIENTO_FACTURACION":"$VENCIMIENTO_FACTURACION","DIAS_VALIDEZ":"$DIAS_VALIDEZ(type:integer)","MANEJA_INVENTARIO":"$MANEJA_INVENTARIO(type:boolean)","CONSECUTIVO_FACTURACION":"$CONSECUTIVO_FACTURACION(type:long)","CPTE_RECAUDO":"$CPTE_RECAUDO","TIPOCPTE_ANULACION":"$TIPOCPTE_ANULACION","MANEJA_RESFACTURACION":"$MANEJA_RESFACTURACION(type:boolean)","NORES_FACTURACION":"$NORES_FACTURACION","FECRES_FACTURACION":"$FECRES_FACTURACION","NOINICIAL_FACTURACION":"$NOINICIAL_FACTURACION(type:long)","NOFINAL_FACTURACION":"$NOFINAL_FACTURACION(type:long)","FORMATO_FACTURA":"$FORMATO_FACTURA","LEYENDA_FACTURA":"$LEYENDA_FACTURA","IND_DERECHOSCONEXION":"$IND_DERECHOSCONEXION(type:boolean)","INTERFAZ_RECAUDO":"$INTERFAZ_RECAUDO(type:boolean)","TIPOFACTURA_RECAUDO":"$TIPOFACTURA_RECAUDO(type:integer)","TIPOCOBRO_NOFACTURADO":"$TIPOCOBRO_NOFACTURADO(type:boolean)","MANEJA_RECAUDOTERCEROS":"$MANEJA_RECAUDOTERCEROS(type:boolean)","CLASE_CUENTASRECAUDO":"$CLASE_CUENTASRECAUDO","BASEORIGINAL":"$BASEORIGINAL(type:long)","LIQUIDACION":"$LIQUIDACION(type:boolean)","CODIGOEAN":"$CODIGOEAN","NOAPLICACAUSACION":"$NOAPLICACAUSACION(type:boolean)","INICIAEN":"$INICIAEN(type:long)","BANCO_CUENTA1":"$BANCO_CUENTA1","BANCO_CUENTA2":"$BANCO_CUENTA2","BANCO_CUENTA3":"$BANCO_CUENTA3","BANCO_CUENTA4":"$BANCO_CUENTA4","INDPRELIQUIDACION":"$INDPRELIQUIDACION(type:boolean)","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED","APLCUENTAREC":"$APLCUENTAREC(type:boolean)","MANEJATARIFABASE":"$MANEJATARIFABASE(type:boolean)","MANEJADESCRIP_EST":"$MANEJADESCRIP_EST(type:boolean)","CPTE_DIFERIDA":"$CPTE_DIFERIDA","FORMATO_PLANTILLA":"$FORMATO_PLANTILLA","MAN_ACUERDO_PRED":"$MAN_ACUERDO_PRED(type:boolean)","REF_FACTURACION":"$REF_FACTURACION","CLAVETECNICA":"$CLAVETECNICA","FECHA_FIN_RESOLUCION":"$FECHA_FIN_RESOLUCION","TIPO_MEDIOPAGO":"$TIPO_MEDIOPAGO","TIPO_MONEDA":"$TIPO_MONEDA","TIPOFACDIAN":"$TIPOFACDIAN","FORMATO_FAC_ELECTRONICA":"$FORMATO_FAC_ELECTRONICA","MANEJA_CARTERA":"$MANEJA_CARTERA(type:boolean)","MANEJA_INTERES_CARTERA":"$MANEJA_INTERES_CARTERA(type:boolean)","CPTE_CAUSACION_INTERES":"$CPTE_CAUSACION_INTERES","TIPOCPTE_DEVOLUCION":"$TIPOCPTE_DEVOLUCION","CONSECUTIVO_COBRO":"$CONSECUTIVO_COBRO"}]}}		</result>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/data">
+		<call-query href="getSftipocobroRegistroQuery">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="updateSftipocobro" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE SF_TIPO_COBRO SET ANO=:ANO, CODIGO=:CODIGO, NOMBRE=:NOMBRE, PERIODICIDAD=:PERIODICIDAD, CONCEPTODEUCAPITAL=:CONCEPTODEUCAPITAL, CONCEPTODEUINTERES=:CONCEPTODEUINTERES, CONCEPTOSANCION=:CONCEPTOSANCION, GENERADEUDA=:GENERADEUDA, MANEJAESTRATO=:MANEJAESTRATO, VENCIMIENTO_FACTURACION=:VENCIMIENTO_FACTURACION, DIAS_VALIDEZ=:DIAS_VALIDEZ, MANEJA_INVENTARIO=:MANEJA_INVENTARIO, CONSECUTIVO_FACTURACION=:CONSECUTIVO_FACTURACION, CPTE_RECAUDO=:CPTE_RECAUDO, TIPOCPTE_ANULACION=:TIPOCPTE_ANULACION, MANEJA_RESFACTURACION=:MANEJA_RESFACTURACION, NORES_FACTURACION=:NORES_FACTURACION, FECRES_FACTURACION=TO_DATE(:FECRES_FACTURACION,'DD/MM/YYYY HH24:MI:SS'), NOINICIAL_FACTURACION=:NOINICIAL_FACTURACION, NOFINAL_FACTURACION=:NOFINAL_FACTURACION, FORMATO_FACTURA=:FORMATO_FACTURA, LEYENDA_FACTURA=:LEYENDA_FACTURA, IND_DERECHOSCONEXION=:IND_DERECHOSCONEXION, INTERFAZ_RECAUDO=:INTERFAZ_RECAUDO, TIPOFACTURA_RECAUDO=:TIPOFACTURA_RECAUDO, TIPOCOBRO_NOFACTURADO=:TIPOCOBRO_NOFACTURADO, MANEJA_RECAUDOTERCEROS=:MANEJA_RECAUDOTERCEROS, CLASE_CUENTASRECAUDO=:CLASE_CUENTASRECAUDO, BASEORIGINAL=:BASEORIGINAL, LIQUIDACION=:LIQUIDACION, CODIGOEAN=:CODIGOEAN, NOAPLICACAUSACION=:NOAPLICACAUSACION, INICIAEN=:INICIAEN, BANCO_CUENTA1=:BANCO_CUENTA1, BANCO_CUENTA2=:BANCO_CUENTA2, BANCO_CUENTA3=:BANCO_CUENTA3, BANCO_CUENTA4=:BANCO_CUENTA4, INDPRELIQUIDACION=:INDPRELIQUIDACION, APLCUENTAREC=:APLCUENTAREC, MANEJATARIFABASE=:MANEJATARIFABASE, MANEJADESCRIP_EST=:MANEJADESCRIP_EST, CPTE_DIFERIDA=:CPTE_DIFERIDA, FORMATO_PLANTILLA=:FORMATO_PLANTILLA, MAN_ACUERDO_PRED=:MAN_ACUERDO_PRED, REF_FACTURACION=:REF_FACTURACION, CLAVETECNICA=:CLAVETECNICA, FECHA_FIN_RESOLUCION=TO_DATE(:FECHA_FIN_RESOLUCION,'DD/MM/YYYY HH24:MI:SS'), TIPO_MEDIOPAGO=:TIPO_MEDIOPAGO, TIPO_MONEDA=:TIPO_MONEDA, TIPOFACDIAN=:TIPOFACDIAN, FORMATO_FAC_ELECTRONICA=:FORMATO_FAC_ELECTRONICA, MANEJA_CARTERA=:MANEJA_CARTERA, MANEJA_INTERES_CARTERA=:MANEJA_INTERES_CARTERA, CPTE_CAUSACION_INTERES=:CPTE_CAUSACION_INTERES, TIPOCPTE_DEVOLUCION=:TIPOCPTE_DEVOLUCION, CONSECUTIVO_COBRO=:CONSECUTIVO_COBRO, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE SF_TIPO_COBRO.COMPANIA= :KEY_COMPANIA AND SF_TIPO_COBRO.ANO= :KEY_ANO AND SF_TIPO_COBRO.CODIGO= :KEY_CODIGO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PERIODICIDAD" sqlType="STRING"/>
+		<param name="CONCEPTODEUCAPITAL" sqlType="STRING"/>
+		<param name="CONCEPTODEUINTERES" sqlType="STRING"/>
+		<param name="CONCEPTOSANCION" sqlType="STRING"/>
+		<param name="GENERADEUDA" sqlType="STRING"/>
+		<param name="MANEJAESTRATO" sqlType="STRING"/>
+		<param name="VENCIMIENTO_FACTURACION" sqlType="STRING"/>
+		<param name="DIAS_VALIDEZ" sqlType="STRING"/>
+		<param name="MANEJA_INVENTARIO" sqlType="STRING"/>
+		<param name="CONSECUTIVO_FACTURACION" sqlType="STRING"/>
+		<param name="CPTE_RECAUDO" sqlType="STRING"/>
+		<param name="TIPOCPTE_ANULACION" sqlType="STRING"/>
+		<param name="MANEJA_RESFACTURACION" sqlType="STRING"/>
+		<param name="NORES_FACTURACION" sqlType="STRING"/>
+		<param name="FECRES_FACTURACION" sqlType="STRING"/>
+		<param name="NOINICIAL_FACTURACION" sqlType="STRING"/>
+		<param name="NOFINAL_FACTURACION" sqlType="STRING"/>
+		<param name="FORMATO_FACTURA" sqlType="STRING"/>
+		<param name="LEYENDA_FACTURA" sqlType="STRING"/>
+		<param name="IND_DERECHOSCONEXION" sqlType="STRING"/>
+		<param name="INTERFAZ_RECAUDO" sqlType="STRING"/>
+		<param name="TIPOFACTURA_RECAUDO" sqlType="STRING"/>
+		<param name="TIPOCOBRO_NOFACTURADO" sqlType="STRING"/>
+		<param name="MANEJA_RECAUDOTERCEROS" sqlType="STRING"/>
+		<param name="CLASE_CUENTASRECAUDO" sqlType="STRING"/>
+		<param name="BASEORIGINAL" sqlType="STRING"/>
+		<param name="LIQUIDACION" sqlType="STRING"/>
+		<param name="CODIGOEAN" sqlType="STRING"/>
+		<param name="NOAPLICACAUSACION" sqlType="STRING"/>
+		<param name="INICIAEN" sqlType="STRING"/>
+		<param name="BANCO_CUENTA1" sqlType="STRING"/>
+		<param name="BANCO_CUENTA2" sqlType="STRING"/>
+		<param name="BANCO_CUENTA3" sqlType="STRING"/>
+		<param name="BANCO_CUENTA4" sqlType="STRING"/>
+		<param name="INDPRELIQUIDACION" sqlType="STRING"/>
+		<param name="APLCUENTAREC" sqlType="STRING"/>
+		<param name="MANEJATARIFABASE" sqlType="STRING"/>
+		<param name="MANEJADESCRIP_EST" sqlType="STRING"/>
+		<param name="CPTE_DIFERIDA" sqlType="STRING"/>
+		<param name="FORMATO_PLANTILLA" sqlType="STRING"/>
+		<param name="MAN_ACUERDO_PRED" sqlType="STRING"/>
+		<param name="REF_FACTURACION" sqlType="STRING"/>
+		<param name="CLAVETECNICA" sqlType="STRING"/>
+		<param name="FECHA_FIN_RESOLUCION" sqlType="STRING"/>
+		<param name="TIPO_MEDIOPAGO" sqlType="STRING"/>
+		<param name="TIPO_MONEDA" sqlType="STRING"/>
+		<param name="TIPOFACDIAN" sqlType="STRING"/>
+		<param name="FORMATO_FAC_ELECTRONICA" sqlType="STRING"/>
+		<param name="MANEJA_CARTERA" sqlType="STRING"/>
+		<param name="MANEJA_INTERES_CARTERA" sqlType="STRING"/>
+		<param name="CPTE_CAUSACION_INTERES" sqlType="STRING"/>
+		<param name="TIPOCPTE_DEVOLUCION" sqlType="STRING"/>
+		<param name="CONSECUTIVO_COBRO" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_ANO" sqlType="STRING"/>
+		<param name="KEY_CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="sftipocobro">
+		<call-query href="updateSftipocobro">
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PERIODICIDAD" query-param="PERIODICIDAD"/>
+			<with-param name="CONCEPTODEUCAPITAL" query-param="CONCEPTODEUCAPITAL"/>
+			<with-param name="CONCEPTODEUINTERES" query-param="CONCEPTODEUINTERES"/>
+			<with-param name="CONCEPTOSANCION" query-param="CONCEPTOSANCION"/>
+			<with-param name="GENERADEUDA" query-param="GENERADEUDA"/>
+			<with-param name="MANEJAESTRATO" query-param="MANEJAESTRATO"/>
+			<with-param name="VENCIMIENTO_FACTURACION" query-param="VENCIMIENTO_FACTURACION"/>
+			<with-param name="DIAS_VALIDEZ" query-param="DIAS_VALIDEZ"/>
+			<with-param name="MANEJA_INVENTARIO" query-param="MANEJA_INVENTARIO"/>
+			<with-param name="CONSECUTIVO_FACTURACION" query-param="CONSECUTIVO_FACTURACION"/>
+			<with-param name="CPTE_RECAUDO" query-param="CPTE_RECAUDO"/>
+			<with-param name="TIPOCPTE_ANULACION" query-param="TIPOCPTE_ANULACION"/>
+			<with-param name="MANEJA_RESFACTURACION" query-param="MANEJA_RESFACTURACION"/>
+			<with-param name="NORES_FACTURACION" query-param="NORES_FACTURACION"/>
+			<with-param name="FECRES_FACTURACION" query-param="FECRES_FACTURACION"/>
+			<with-param name="NOINICIAL_FACTURACION" query-param="NOINICIAL_FACTURACION"/>
+			<with-param name="NOFINAL_FACTURACION" query-param="NOFINAL_FACTURACION"/>
+			<with-param name="FORMATO_FACTURA" query-param="FORMATO_FACTURA"/>
+			<with-param name="LEYENDA_FACTURA" query-param="LEYENDA_FACTURA"/>
+			<with-param name="IND_DERECHOSCONEXION" query-param="IND_DERECHOSCONEXION"/>
+			<with-param name="INTERFAZ_RECAUDO" query-param="INTERFAZ_RECAUDO"/>
+			<with-param name="TIPOFACTURA_RECAUDO" query-param="TIPOFACTURA_RECAUDO"/>
+			<with-param name="TIPOCOBRO_NOFACTURADO" query-param="TIPOCOBRO_NOFACTURADO"/>
+			<with-param name="MANEJA_RECAUDOTERCEROS" query-param="MANEJA_RECAUDOTERCEROS"/>
+			<with-param name="CLASE_CUENTASRECAUDO" query-param="CLASE_CUENTASRECAUDO"/>
+			<with-param name="BASEORIGINAL" query-param="BASEORIGINAL"/>
+			<with-param name="LIQUIDACION" query-param="LIQUIDACION"/>
+			<with-param name="CODIGOEAN" query-param="CODIGOEAN"/>
+			<with-param name="NOAPLICACAUSACION" query-param="NOAPLICACAUSACION"/>
+			<with-param name="INICIAEN" query-param="INICIAEN"/>
+			<with-param name="BANCO_CUENTA1" query-param="BANCO_CUENTA1"/>
+			<with-param name="BANCO_CUENTA2" query-param="BANCO_CUENTA2"/>
+			<with-param name="BANCO_CUENTA3" query-param="BANCO_CUENTA3"/>
+			<with-param name="BANCO_CUENTA4" query-param="BANCO_CUENTA4"/>
+			<with-param name="INDPRELIQUIDACION" query-param="INDPRELIQUIDACION"/>
+			<with-param name="APLCUENTAREC" query-param="APLCUENTAREC"/>
+			<with-param name="MANEJATARIFABASE" query-param="MANEJATARIFABASE"/>
+			<with-param name="MANEJADESCRIP_EST" query-param="MANEJADESCRIP_EST"/>
+			<with-param name="CPTE_DIFERIDA" query-param="CPTE_DIFERIDA"/>
+			<with-param name="FORMATO_PLANTILLA" query-param="FORMATO_PLANTILLA"/>
+			<with-param name="MAN_ACUERDO_PRED" query-param="MAN_ACUERDO_PRED"/>
+			<with-param name="REF_FACTURACION" query-param="REF_FACTURACION"/>
+			<with-param name="CLAVETECNICA" query-param="CLAVETECNICA"/>
+			<with-param name="FECHA_FIN_RESOLUCION" query-param="FECHA_FIN_RESOLUCION"/>
+			<with-param name="TIPO_MEDIOPAGO" query-param="TIPO_MEDIOPAGO"/>
+			<with-param name="TIPO_MONEDA" query-param="TIPO_MONEDA"/>
+			<with-param name="TIPOFACDIAN" query-param="TIPOFACDIAN"/>
+			<with-param name="FORMATO_FAC_ELECTRONICA" query-param="FORMATO_FAC_ELECTRONICA"/>
+			<with-param name="MANEJA_CARTERA" query-param="MANEJA_CARTERA"/>
+			<with-param name="MANEJA_INTERES_CARTERA" query-param="MANEJA_INTERES_CARTERA"/>
+			<with-param name="CPTE_CAUSACION_INTERES" query-param="CPTE_CAUSACION_INTERES"/>
+			<with-param name="TIPOCPTE_DEVOLUCION" query-param="TIPOCPTE_DEVOLUCION"/>
+			<with-param name="CONSECUTIVO_COBRO" query-param="CONSECUTIVO_COBRO"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_ANO" query-param="KEY_ANO"/>
+			<with-param name="KEY_CODIGO" query-param="KEY_CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroFormatofacturaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  FORMATO_FACTURA,(CASE MANEJA_RESFACTURACION WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_RESFACTURACION,NORES_FACTURACION,(TO_CHAR(FECRES_FACTURACION,'DD/MM/YYYY HH24:MI:SS')) FECRES_FACTURACION, NOINICIAL_FACTURACION, NOFINAL_FACTURACION  FROM SF_TIPO_COBRO WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND CODIGO = :TIPOCOBRO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FORMATO_FACTURA":"$FORMATO_FACTURA","MANEJA_RESFACTURACION":"$MANEJA_RESFACTURACION(type:boolean)","NORES_FACTURACION":"$NORES_FACTURACION","FECRES_FACTURACION":"$FECRES_FACTURACION","NOINICIAL_FACTURACION":"$NOINICIAL_FACTURACION(type:long)","NOFINAL_FACTURACION":"$NOFINAL_FACTURACION(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/formatofactura">
+		<call-query href="getSftipocobroFormatofacturaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroTodosPorCompaniaTipoCobroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  FORMATO_FACTURA  FROM SF_TIPO_COBRO WHERE COMPANIA = :COMPANIA AND ANO = EXTRACT(YEAR FROM SYSDATE) AND CODIGO = :TIPOCOBRO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FORMATO_FACTURA":"$FORMATO_FACTURA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/todosporcompaniatipocobro">
+		<call-query href="getSftipocobroTodosPorCompaniaTipoCobroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroPagCodigoYNombrePorTipocobroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT SF_TIPO_COBRO.CODIGO, SF_TIPO_COBRO.NOMBRE  FROM SF_TIPO_COBRO WHERE SF_TIPO_COBRO.COMPANIA = :COMPANIA AND SF_TIPO_COBRO.CODIGO = :TIPOCOBRO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codigoynombreportipocobro/pag">
+		<call-query href="getSftipocobroPagCodigoYNombrePorTipocobroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroNumCodigoYNombrePorTipocobroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT SF_TIPO_COBRO.CODIGO, SF_TIPO_COBRO.NOMBRE  FROM SF_TIPO_COBRO WHERE SF_TIPO_COBRO.COMPANIA = :COMPANIA AND SF_TIPO_COBRO.CODIGO = :TIPOCOBRO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codigoynombreportipocobro/num">
+		<call-query href="getSftipocobroNumCodigoYNombrePorTipocobroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroListaNombrePorTipoDeCobroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  DISTINCT SF_TIPO_COBRO.CODIGO, SF_TIPO_COBRO.NOMBRE  FROM SF_TIPO_COBRO WHERE SF_TIPO_COBRO.COMPANIA = :COMPANIA AND SF_TIPO_COBRO.CODIGO = :TIPOCOBRO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/listanombreportipodecobro">
+		<call-query href="getSftipocobroListaNombrePorTipoDeCobroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroPagCodigoYNombrePorAnioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  DISTINCT SF_TIPO_COBRO.CODIGO, SF_TIPO_COBRO.NOMBRE  FROM SF_TIPO_COBRO WHERE SF_TIPO_COBRO.COMPANIA = :COMPANIA AND SF_TIPO_COBRO.ANO = :ANO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codigoynombreporanio/pag">
+		<call-query href="getSftipocobroPagCodigoYNombrePorAnioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroNumCodigoYNombrePorAnioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  DISTINCT SF_TIPO_COBRO.CODIGO, SF_TIPO_COBRO.NOMBRE  FROM SF_TIPO_COBRO WHERE SF_TIPO_COBRO.COMPANIA = :COMPANIA AND SF_TIPO_COBRO.ANO = :ANO) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codigoynombreporanio/num">
+		<call-query href="getSftipocobroNumCodigoYNombrePorAnioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroPagCodigonombreportipocobroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM SF_CONCEPTOS WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND TIPOCOBRO = :TIPOCOBRO ORDER BY NOMBRE) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codigonombreportipocobro/pag">
+		<call-query href="getSftipocobroPagCodigonombreportipocobroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroNumCodigonombreportipocobroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  CODIGO, NOMBRE  FROM SF_CONCEPTOS WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND TIPOCOBRO = :TIPOCOBRO ORDER BY NOMBRE) WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END)  LIKE UPPER(:CODIGO || '%')  AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END)  LIKE UPPER( '%' || :NOMBRE || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codigonombreportipocobro/num">
+		<call-query href="getSftipocobroNumCodigonombreportipocobroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroLiquidacionTipocobroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE LIQUIDACION WHEN 0 THEN 'false' ELSE 'true' END) LIQUIDACION FROM SF_TIPO_COBRO WHERE COMPANIA = :COMPANIA AND CODIGO = :TIPOCOBRO AND ANO = :ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"LIQUIDACION":"$LIQUIDACION(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/liquidaciontipocobro">
+		<call-query href="getSftipocobroLiquidacionTipocobroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroCodigoYNombrePorCodigoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  SF_TIPO_COBRO.CODIGO, SF_TIPO_COBRO.NOMBRE  FROM SF_TIPO_COBRO WHERE SF_TIPO_COBRO.COMPANIA=:COMPANIA AND SF_TIPO_COBRO.CODIGO = :TIPOCOBRO AND SF_TIPO_COBRO.ANO = :ANOCOBRO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="ANOCOBRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codigoynombreporcodigo">
+		<call-query href="getSftipocobroCodigoYNombrePorCodigoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="ANOCOBRO" query-param="ANOCOBRO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroIndNoaplicacaisacionPorAnioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE NOAPLICACAUSACION WHEN 0 THEN 'false' ELSE 'true' END) NOAPLICACAUSACION FROM SF_TIPO_COBRO WHERE COMPANIA = :COMPANIA AND CODIGO = :TIPOCOBRO AND ANO = :ANOCOBRO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOAPLICACAUSACION":"$NOAPLICACAUSACION(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="ANOCOBRO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/indnoaplicacaisacionporanio">
+		<call-query href="getSftipocobroIndNoaplicacaisacionPorAnioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="ANOCOBRO" query-param="ANOCOBRO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroManejaDescripcionYTarfaBaseQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE MANEJADESCRIP_EST WHEN 0 THEN 'false' ELSE 'true' END) MANEJADESCRIP_EST,(CASE MANEJATARIFABASE WHEN 0 THEN 'false' ELSE 'true' END) MANEJATARIFABASE,CODIGOEAN  FROM SF_TIPO_COBRO WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"MANEJADESCRIP_EST":"$MANEJADESCRIP_EST(type:boolean)","MANEJATARIFABASE":"$MANEJATARIFABASE(type:boolean)","CODIGOEAN":"$CODIGOEAN"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/manejadescripcionytarfabase">
+		<call-query href="getSftipocobroManejaDescripcionYTarfaBaseQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroCodigoeanQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  CODIGOEAN  FROM SF_TIPO_COBRO WHERE SF_TIPO_COBRO.COMPANIA = :COMPANIA AND SF_TIPO_COBRO.ANO = :ANO AND SF_TIPO_COBRO.CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGOEAN":"$CODIGOEAN"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codigoean">
+		<call-query href="getSftipocobroCodigoeanQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroManejaacuerdopredialQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE MAN_ACUERDO_PRED WHEN 0 THEN 'false' ELSE 'true' END) MAN_ACUERDO_PRED FROM SF_TIPO_COBRO WHERE COMPANIA = :COMPANIA AND ANO = :ANO AND CODIGO = :TIPO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"MAN_ACUERDO_PRED":"$MAN_ACUERDO_PRED(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="TIPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/manejaacuerdopredial">
+		<call-query href="getSftipocobroManejaacuerdopredialQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="TIPO" query-param="TIPO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroFormatoFactElectronicaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT FORMATO_FAC_ELECTRONICA AS FORMATO, REF_FACTURACION AS PREFIJO FROM SF_TIPO_COBRO WHERE CODIGO =:CODIGO AND ANO =:ANO AND COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FORMATO":"$FORMATO","PREFIJO":"$PREFIJO"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/formatofactelectronica">
+		<call-query href="getSftipocobroFormatoFactElectronicaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="ANO" query-param="ANO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroAplicacausacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE NOAPLICACAUSACION WHEN 0 THEN 'false' ELSE 'true' END) NOAPLICACAUSACION FROM SF_TIPO_COBRO WHERE SF_TIPO_COBRO.CODIGO=:TIPOCOBRO AND SF_TIPO_COBRO.COMPANIA=:COMPANIA AND SF_TIPO_COBRO.ANO=:ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"NOAPLICACAUSACION":"$NOAPLICACAUSACION(type:boolean)"}]}}		</result>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/aplicacausacion">
+		<call-query href="getSftipocobroAplicacausacionQuery">
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroCodigoPorTipoRecaudoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CODIGO ,(CASE INTERFAZ_RECAUDO WHEN 0 THEN 'false' ELSE 'true' END) INTERFAZ_RECAUDO FROM SF_TIPO_COBRO WHERE COMPANIA = :COMPANIA AND ANO = :ANIO AND TIPOFACTURA_RECAUDO= :TIPORECAUDO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","INTERFAZ_RECAUDO":"$INTERFAZ_RECAUDO(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="TIPORECAUDO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codigoportiporecaudo">
+		<call-query href="getSftipocobroCodigoPorTipoRecaudoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="TIPORECAUDO" query-param="TIPORECAUDO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroManejaresfacturacionQuery"  useConfig="sysmandsunist">
+		<sql>SELECT (CASE MANEJA_RESFACTURACION WHEN 0 THEN 'false' ELSE 'true' END) MANEJA_RESFACTURACION FROM SF_TIPO_COBRO WHERE COMPANIA = :COMPANIA AND CODIGO = :TIPOCOBRO AND ANO = :ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"MANEJA_RESFACTURACION":"$MANEJA_RESFACTURACION(type:boolean)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOBRO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/manejaresfacturacion">
+		<call-query href="getSftipocobroManejaresfacturacionQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOBRO" query-param="TIPOCOBRO"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+
+<query id="getSftipocobroPagCodigonombreporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT DISTINCT CODIGO,NOMBRE FROM SF_TIPO_COBRO WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CODIGO":"$CODIGO","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codigonombreporcompania/pag">
+		<call-query href="getSftipocobroPagCodigonombreporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroNumCodigonombreporcompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT DISTINCT CODIGO,NOMBRE FROM SF_TIPO_COBRO WHERE COMPANIA = :COMPANIA) INI WHERE (CASE WHEN CODIGO IS NULL THEN ' ' ELSE UPPER(CODIGO) END) LIKE UPPER(CONCAT(:CODIGO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/codigonombreporcompania/num">
+		<call-query href="getSftipocobroNumCodigonombreporcompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroGetcodigoformatoporcodigocobroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT FORMATO_FAC_ELECTRONICA AS FORMATO FROM SF_TIPO_COBRO WHERE CODIGO =:PREFIJO AND ANO =:ANO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"FORMATO":"$FORMATO"}]}}		</result>
+		<param name="PREFIJO" sqlType="STRING"/>
+		<param name="ANO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/getcodigoformatoporcodigocobro">
+		<call-query href="getSftipocobroGetcodigoformatoporcodigocobroQuery">
+			<with-param name="PREFIJO" query-param="PREFIJO"/>
+			<with-param name="ANO" query-param="ANO"/>
+
+		</call-query>
+	</resource>
+	<query id="getSftipocobroComprecaudoQuery"  useConfig="sysmandsunist">
+		<sql>SELECT CPTE_RECAUDO FROM SF_TIPO_COBRO WHERE COMPANIA = :COMPANIA AND ANO = :ANIO AND CODIGO = :CODIGO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"CPTE_RECAUDO":"$CPTE_RECAUDO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="ANIO" sqlType="STRING"/>
+		<param name="CODIGO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="sftipocobro/comprecaudo">
+		<call-query href="getSftipocobroComprecaudoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="ANIO" query-param="ANIO"/>
+			<with-param name="CODIGO" query-param="CODIGO"/>
+
+		</call-query>
+	</resource>
+</data>

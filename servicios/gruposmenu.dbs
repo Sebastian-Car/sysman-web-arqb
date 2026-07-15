@@ -1,0 +1,144 @@
+﻿<data name="gruposmenu" transports="http https local">
+	<config enableOData="false" id="sysmanirisst">
+		<property name="carbon_datasource_name">SYSMANIRISST</property>
+	</config>
+	<query id="getGruposmenuMenusporgrupoQuery"  useConfig="sysmanirisst">
+		<sql>SELECT  MENU  FROM GRUPO_MENU WHERE COMPANIA = :COMPANIA AND GRUPO = :GRUPO ORDER BY MENU</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"MENU":"$MENU(type:long)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="GRUPO" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="gruposmenu/menusporgrupo">
+		<call-query href="getGruposmenuMenusporgrupoQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="GRUPO" query-param="GRUPO"/>
+
+		</call-query>
+	</resource>
+	<query id="insertGruposmenu" keyColumns="COMPANIA,GRUPO,MENU,APLICACION" returnGeneratedKeys="true" useConfig="sysmanirisst">
+		<sql>INSERT INTO GRUPO_MENU (COMPANIA, GRUPO, MENU, VER, APLICACION, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :GRUPO, :MENU, :VER, :APLICACION, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_GRUPO":"$GRUPO","KEY_MENU":"$MENU","KEY_APLICACION":"$APLICACION(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="MENU" sqlType="STRING"/>
+		<param defaultValue="0" name="VER" sqlType="STRING"/>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="gruposmenu">
+		<call-query href="insertGruposmenu">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="MENU" query-param="MENU"/>
+			<with-param name="VER" query-param="VER"/>
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteGruposmenu" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>DELETE FROM GRUPO_MENU WHERE GRUPO_MENU.COMPANIA= :KEY_COMPANIA AND GRUPO_MENU.GRUPO= :KEY_GRUPO AND GRUPO_MENU.MENU= :KEY_MENU AND GRUPO_MENU.APLICACION= :KEY_APLICACION</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_GRUPO" sqlType="STRING"/>
+		<param name="KEY_MENU" sqlType="STRING"/>
+		<param name="KEY_APLICACION" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="DELETE" path="gruposmenu">
+		<call-query href="deleteGruposmenu">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_GRUPO" query-param="KEY_GRUPO"/>
+			<with-param name="KEY_MENU" query-param="KEY_MENU"/>
+			<with-param name="KEY_APLICACION" query-param="KEY_APLICACION"/>
+
+		</call-query>
+	</resource>
+	<query id="getGruposmenuPaginaQuery"  useConfig="sysmanirisst">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  GM.COMPANIA, GM.GRUPO, GM.MENU,MD.DESCRIPCION,(CASE GM.VER WHEN 0 THEN 'false' ELSE 'true' END) VER, GM.APLICACION  FROM GRUPO_MENU GM INNER JOIN MENU_D MD ON(GM.MENU=MD.MENU) WHERE GRUPO = :CODIGO AND COMPANIA = :COMPANIA ORDER BY GM.MENU) WHERE (CASE WHEN MENU IS NULL THEN ' ' ELSE UPPER(MENU) END)  LIKE UPPER(:MENU || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN VER IS NULL THEN ' ' ELSE UPPER(VER) END)  LIKE UPPER(:VER || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","GRUPO":"$GRUPO","MENU":"$MENU(type:long)","DESCRIPCION":"$DESCRIPCION","VER":"$VER(type:boolean)","APLICACION":"$APLICACION(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="MENU" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="VER" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="gruposmenu">
+		<call-query href="getGruposmenuPaginaQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="MENU" query-param="MENU"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="VER" query-param="VER"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getGruposmenuNumeroQuery"  useConfig="sysmanirisst">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  GM.COMPANIA, GM.GRUPO, GM.MENU,MD.DESCRIPCION,(CASE GM.VER WHEN 0 THEN 'false' ELSE 'true' END) VER, GM.APLICACION  FROM GRUPO_MENU GM INNER JOIN MENU_D MD ON(GM.MENU=MD.MENU) WHERE GRUPO = :CODIGO AND COMPANIA = :COMPANIA ORDER BY GM.MENU) WHERE (CASE WHEN MENU IS NULL THEN ' ' ELSE UPPER(MENU) END)  LIKE UPPER(:MENU || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN VER IS NULL THEN ' ' ELSE UPPER(VER) END)  LIKE UPPER(:VER || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="CODIGO" sqlType="STRING"/>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="MENU" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="VER" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="gruposmenu/numero">
+		<call-query href="getGruposmenuNumeroQuery">
+			<with-param name="CODIGO" query-param="CODIGO"/>
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="MENU" query-param="MENU"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="VER" query-param="VER"/>
+
+		</call-query>
+	</resource>
+	<query id="updateGruposmenu" returnUpdatedRowCount="true" useConfig="sysmanirisst">
+		<sql>UPDATE GRUPO_MENU SET COMPANIA=:COMPANIA, GRUPO=:GRUPO, MENU=:MENU, VER=:VER, APLICACION=:APLICACION, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE GRUPO_MENU.COMPANIA= :KEY_COMPANIA AND GRUPO_MENU.GRUPO= :KEY_GRUPO AND GRUPO_MENU.MENU= :KEY_MENU AND GRUPO_MENU.APLICACION= :KEY_APLICACION</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="GRUPO" sqlType="STRING"/>
+		<param name="MENU" sqlType="STRING"/>
+		<param name="VER" sqlType="STRING"/>
+		<param name="APLICACION" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_GRUPO" sqlType="STRING"/>
+		<param name="KEY_MENU" sqlType="STRING"/>
+		<param name="KEY_APLICACION" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="gruposmenu">
+		<call-query href="updateGruposmenu">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="GRUPO" query-param="GRUPO"/>
+			<with-param name="MENU" query-param="MENU"/>
+			<with-param name="VER" query-param="VER"/>
+			<with-param name="APLICACION" query-param="APLICACION"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_GRUPO" query-param="KEY_GRUPO"/>
+			<with-param name="KEY_MENU" query-param="KEY_MENU"/>
+			<with-param name="KEY_APLICACION" query-param="KEY_APLICACION"/>
+
+		</call-query>
+	</resource>
+
+</data>

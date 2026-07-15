@@ -1,0 +1,146 @@
+﻿<data name="espolizaest" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertEspolizaest" keyColumns="COMPANIA,COD_POLIZA,COD_ESTUDIO" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO ES_POLIZA_EST (COMPANIA, COD_POLIZA, COD_ESTUDIO, TIPOPOLIZA, AMPARO, PORCENTAJE, UNIDAD_MEDIDA, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :COD_POLIZA, :COD_ESTUDIO, :TIPOPOLIZA, :AMPARO, :PORCENTAJE, :UNIDAD_MEDIDA, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_COD_POLIZA":"$COD_POLIZA(type:integer)","KEY_COD_ESTUDIO":"$COD_ESTUDIO"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_POLIZA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param defaultValue="" name="TIPOPOLIZA" sqlType="STRING"/>
+		<param defaultValue="" name="AMPARO" sqlType="STRING"/>
+		<param defaultValue="0" name="PORCENTAJE" sqlType="STRING"/>
+		<param defaultValue="" name="UNIDAD_MEDIDA" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="espolizaest">
+		<call-query href="insertEspolizaest">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_POLIZA" query-param="COD_POLIZA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="TIPOPOLIZA" query-param="TIPOPOLIZA"/>
+			<with-param name="AMPARO" query-param="AMPARO"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="UNIDAD_MEDIDA" query-param="UNIDAD_MEDIDA"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteEspolizaest" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM ES_POLIZA_EST WHERE ES_POLIZA_EST.COMPANIA= :KEY_COMPANIA AND ES_POLIZA_EST.COD_POLIZA= :KEY_COD_POLIZA AND ES_POLIZA_EST.COD_ESTUDIO= :KEY_COD_ESTUDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_POLIZA" sqlType="INTEGER"/>
+		<param name="KEY_COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="espolizaest">
+		<call-query href="deleteEspolizaest">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_POLIZA" query-param="KEY_COD_POLIZA"/>
+			<with-param name="KEY_COD_ESTUDIO" query-param="KEY_COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEspolizaestPaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  ES_POLIZA_EST.COMPANIA, ES_POLIZA_EST.COD_POLIZA, ES_POLIZA_EST.COD_ESTUDIO, ES_POLIZA_EST.TIPOPOLIZA, TIPOPOLIZA.DESCRIPCION, ES_POLIZA_EST.AMPARO, ES_POLIZA_EST.PORCENTAJE, ES_POLIZA_EST.UNIDAD_MEDIDA  FROM ES_POLIZA_EST INNER JOIN TIPOPOLIZA ON ES_POLIZA_EST.TIPOPOLIZA =TIPOPOLIZA.CODIGO WHERE ES_POLIZA_EST.COMPANIA = :COMPANIA AND ES_POLIZA_EST.COD_ESTUDIO = :COD_ESTUDIO) WHERE (CASE WHEN COMPANIA IS NULL THEN ' ' ELSE UPPER(COMPANIA) END)  LIKE UPPER(:COMPANIA || '%')  AND (CASE WHEN COD_POLIZA IS NULL THEN ' ' ELSE UPPER(COD_POLIZA) END)  LIKE UPPER(:COD_POLIZA || '%')  AND (CASE WHEN COD_ESTUDIO IS NULL THEN ' ' ELSE UPPER(COD_ESTUDIO) END)  LIKE UPPER(:COD_ESTUDIO || '%')  AND (CASE WHEN TIPOPOLIZA IS NULL THEN ' ' ELSE UPPER(TIPOPOLIZA) END)  LIKE UPPER(:TIPOPOLIZA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN AMPARO IS NULL THEN ' ' ELSE UPPER(AMPARO) END)  LIKE UPPER( '%' || :AMPARO || '%')  AND (CASE WHEN PORCENTAJE IS NULL THEN ' ' ELSE UPPER(PORCENTAJE) END)  LIKE UPPER(:PORCENTAJE || '%')  AND (CASE WHEN UNIDAD_MEDIDA IS NULL THEN ' ' ELSE UPPER(UNIDAD_MEDIDA) END)  LIKE UPPER(:UNIDAD_MEDIDA || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","COD_POLIZA":"$COD_POLIZA(type:integer)","COD_ESTUDIO":"$COD_ESTUDIO","TIPOPOLIZA":"$TIPOPOLIZA","DESCRIPCION":"$DESCRIPCION","AMPARO":"$AMPARO","PORCENTAJE":"$PORCENTAJE","UNIDAD_MEDIDA":"$UNIDAD_MEDIDA"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="COD_POLIZA" sqlType="STRING"/>
+		<param name="TIPOPOLIZA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="AMPARO" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+		<param name="UNIDAD_MEDIDA" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="espolizaest">
+		<call-query href="getEspolizaestPaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="COD_POLIZA" query-param="COD_POLIZA"/>
+			<with-param name="TIPOPOLIZA" query-param="TIPOPOLIZA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="AMPARO" query-param="AMPARO"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="UNIDAD_MEDIDA" query-param="UNIDAD_MEDIDA"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getEspolizaestNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  ES_POLIZA_EST.COMPANIA, ES_POLIZA_EST.COD_POLIZA, ES_POLIZA_EST.COD_ESTUDIO, ES_POLIZA_EST.TIPOPOLIZA, TIPOPOLIZA.DESCRIPCION, ES_POLIZA_EST.AMPARO, ES_POLIZA_EST.PORCENTAJE, ES_POLIZA_EST.UNIDAD_MEDIDA  FROM ES_POLIZA_EST INNER JOIN TIPOPOLIZA ON ES_POLIZA_EST.TIPOPOLIZA =TIPOPOLIZA.CODIGO WHERE ES_POLIZA_EST.COMPANIA = :COMPANIA AND ES_POLIZA_EST.COD_ESTUDIO = :COD_ESTUDIO) WHERE (CASE WHEN COMPANIA IS NULL THEN ' ' ELSE UPPER(COMPANIA) END)  LIKE UPPER(:COMPANIA || '%')  AND (CASE WHEN COD_POLIZA IS NULL THEN ' ' ELSE UPPER(COD_POLIZA) END)  LIKE UPPER(:COD_POLIZA || '%')  AND (CASE WHEN COD_ESTUDIO IS NULL THEN ' ' ELSE UPPER(COD_ESTUDIO) END)  LIKE UPPER(:COD_ESTUDIO || '%')  AND (CASE WHEN TIPOPOLIZA IS NULL THEN ' ' ELSE UPPER(TIPOPOLIZA) END)  LIKE UPPER(:TIPOPOLIZA || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%')  AND (CASE WHEN AMPARO IS NULL THEN ' ' ELSE UPPER(AMPARO) END)  LIKE UPPER( '%' || :AMPARO || '%')  AND (CASE WHEN PORCENTAJE IS NULL THEN ' ' ELSE UPPER(PORCENTAJE) END)  LIKE UPPER(:PORCENTAJE || '%')  AND (CASE WHEN UNIDAD_MEDIDA IS NULL THEN ' ' ELSE UPPER(UNIDAD_MEDIDA) END)  LIKE UPPER(:UNIDAD_MEDIDA || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="COD_POLIZA" sqlType="STRING"/>
+		<param name="TIPOPOLIZA" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="AMPARO" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+		<param name="UNIDAD_MEDIDA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="espolizaest/numero">
+		<call-query href="getEspolizaestNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="COD_POLIZA" query-param="COD_POLIZA"/>
+			<with-param name="TIPOPOLIZA" query-param="TIPOPOLIZA"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="AMPARO" query-param="AMPARO"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="UNIDAD_MEDIDA" query-param="UNIDAD_MEDIDA"/>
+
+		</call-query>
+	</resource>
+	<query id="updateEspolizaest" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE ES_POLIZA_EST SET COMPANIA=:COMPANIA, COD_POLIZA=:COD_POLIZA, COD_ESTUDIO=:COD_ESTUDIO, TIPOPOLIZA=:TIPOPOLIZA, AMPARO=:AMPARO, PORCENTAJE=:PORCENTAJE, UNIDAD_MEDIDA=:UNIDAD_MEDIDA, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE ES_POLIZA_EST.COMPANIA= :KEY_COMPANIA AND ES_POLIZA_EST.COD_POLIZA= :KEY_COD_POLIZA AND ES_POLIZA_EST.COD_ESTUDIO= :KEY_COD_ESTUDIO</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="COD_POLIZA" sqlType="STRING"/>
+		<param name="COD_ESTUDIO" sqlType="STRING"/>
+		<param name="TIPOPOLIZA" sqlType="STRING"/>
+		<param name="AMPARO" sqlType="STRING"/>
+		<param name="PORCENTAJE" sqlType="STRING"/>
+		<param name="UNIDAD_MEDIDA" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_COD_POLIZA" sqlType="STRING"/>
+		<param name="KEY_COD_ESTUDIO" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="espolizaest">
+		<call-query href="updateEspolizaest">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="COD_POLIZA" query-param="COD_POLIZA"/>
+			<with-param name="COD_ESTUDIO" query-param="COD_ESTUDIO"/>
+			<with-param name="TIPOPOLIZA" query-param="TIPOPOLIZA"/>
+			<with-param name="AMPARO" query-param="AMPARO"/>
+			<with-param name="PORCENTAJE" query-param="PORCENTAJE"/>
+			<with-param name="UNIDAD_MEDIDA" query-param="UNIDAD_MEDIDA"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_COD_POLIZA" query-param="KEY_COD_POLIZA"/>
+			<with-param name="KEY_COD_ESTUDIO" query-param="KEY_COD_ESTUDIO"/>
+
+		</call-query>
+	</resource>
+
+</data>

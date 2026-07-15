@@ -1,0 +1,134 @@
+﻿<data name="natasistentescomite" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="insertNatasistentescomite" keyColumns="COMPANIA,TIPOCOMITE,NUMERO_COMITE,NUMERO_DCTO,SUCURSAL" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO NAT_ASISTENTESCOMITE (COMPANIA, TIPOCOMITE, NUMERO_COMITE, NUMERO_DCTO, SUCURSAL, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :TIPOCOMITE, :NUMERO_COMITE, :NUMERO_DCTO, :SUCURSAL, :DATE_CREATED, :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_TIPOCOMITE":"$TIPOCOMITE(type:integer)","KEY_NUMERO_COMITE":"$NUMERO_COMITE(type:long)","KEY_NUMERO_DCTO":"$NUMERO_DCTO","KEY_SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOMITE" sqlType="STRING"/>
+		<param name="NUMERO_COMITE" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="NUMERO_DCTO" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="natasistentescomite">
+		<call-query href="insertNatasistentescomite">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOMITE" query-param="TIPOCOMITE"/>
+			<with-param name="NUMERO_COMITE" query-param="NUMERO_COMITE"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deleteNatasistentescomite" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM NAT_ASISTENTESCOMITE WHERE NAT_ASISTENTESCOMITE.COMPANIA= :KEY_COMPANIA AND NAT_ASISTENTESCOMITE.TIPOCOMITE= :KEY_TIPOCOMITE AND NAT_ASISTENTESCOMITE.NUMERO_COMITE= :KEY_NUMERO_COMITE AND NAT_ASISTENTESCOMITE.NUMERO_DCTO= :KEY_NUMERO_DCTO AND NAT_ASISTENTESCOMITE.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPOCOMITE" sqlType="INTEGER"/>
+		<param name="KEY_NUMERO_COMITE" sqlType="STRING"/>
+		<param name="KEY_NUMERO_DCTO" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="natasistentescomite">
+		<call-query href="deleteNatasistentescomite">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPOCOMITE" query-param="KEY_TIPOCOMITE"/>
+			<with-param name="KEY_NUMERO_COMITE" query-param="KEY_NUMERO_COMITE"/>
+			<with-param name="KEY_NUMERO_DCTO" query-param="KEY_NUMERO_DCTO"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatasistentescomitePaginaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT NAC.COMPANIA, NAC.TIPOCOMITE, NAC.NUMERO_COMITE, NAC.NUMERO_DCTO, CONCAT(TER.NOMBRE1,CONCAT(' ',CONCAT(TER.NOMBRE2,CONCAT(' ',CONCAT(TER.APELLIDO1,CONCAT(' ',APELLIDO2) ) ) ) ) ) NOMBRE, NAC.SUCURSAL FROM NAT_ASISTENTESCOMITE NAC INNER JOIN TERCERO TER ON NAC.COMPANIA = TER.COMPANIA AND NAC.NUMERO_DCTO = TER.NIT AND NAC.SUCURSAL = TER.SUCURSAL WHERE NAC.COMPANIA =:COMPANIA AND NAC.TIPOCOMITE =:TIPOCOMITE AND NAC.NUMERO_COMITE =:NUMERO_COMITE) INI WHERE (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END) LIKE UPPER(CONCAT(:NUMERO_DCTO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A WHERE ROWNUM &lt;= (:PAGINICIO + :PAGTAMANIO)) FIN WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","TIPOCOMITE":"$TIPOCOMITE(type:integer)","NUMERO_COMITE":"$NUMERO_COMITE(type:long)","NUMERO_DCTO":"$NUMERO_DCTO","NOMBRE":"$NOMBRE","SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOMITE" sqlType="STRING"/>
+		<param name="NUMERO_COMITE" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="natasistentescomite">
+		<call-query href="getNatasistentescomitePaginaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOMITE" query-param="TIPOCOMITE"/>
+			<with-param name="NUMERO_COMITE" query-param="NUMERO_COMITE"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getNatasistentescomiteNumeroQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT NAC.COMPANIA, NAC.TIPOCOMITE, NAC.NUMERO_COMITE, NAC.NUMERO_DCTO, CONCAT(TER.NOMBRE1,CONCAT(' ',CONCAT(TER.NOMBRE2,CONCAT(' ',CONCAT(TER.APELLIDO1,CONCAT(' ',APELLIDO2) ) ) ) ) ) NOMBRE, NAC.SUCURSAL FROM NAT_ASISTENTESCOMITE NAC INNER JOIN TERCERO TER ON NAC.COMPANIA = TER.COMPANIA AND NAC.NUMERO_DCTO = TER.NIT AND NAC.SUCURSAL = TER.SUCURSAL WHERE NAC.COMPANIA =:COMPANIA AND NAC.TIPOCOMITE =:TIPOCOMITE AND NAC.NUMERO_COMITE =:NUMERO_COMITE) INI WHERE (CASE WHEN NUMERO_DCTO IS NULL THEN ' ' ELSE UPPER(NUMERO_DCTO) END) LIKE UPPER(CONCAT(:NUMERO_DCTO, '%')) AND (CASE WHEN NOMBRE IS NULL THEN ' ' ELSE UPPER(NOMBRE) END) LIKE UPPER(CONCAT(CONCAT('%',:NOMBRE), '%')) ) A) FIN</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOMITE" sqlType="STRING"/>
+		<param name="NUMERO_COMITE" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="NOMBRE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="natasistentescomite/numero">
+		<call-query href="getNatasistentescomiteNumeroQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOMITE" query-param="TIPOCOMITE"/>
+			<with-param name="NUMERO_COMITE" query-param="NUMERO_COMITE"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="NOMBRE" query-param="NOMBRE"/>
+
+		</call-query>
+	</resource>
+	<query id="updateNatasistentescomite" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE NAT_ASISTENTESCOMITE SET COMPANIA=:COMPANIA, TIPOCOMITE=:TIPOCOMITE, NUMERO_COMITE=:NUMERO_COMITE, NUMERO_DCTO=:NUMERO_DCTO, SUCURSAL=:SUCURSAL, MODIFIED_BY=:MODIFIED_BY, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS') WHERE NAT_ASISTENTESCOMITE.COMPANIA= :KEY_COMPANIA AND NAT_ASISTENTESCOMITE.TIPOCOMITE= :KEY_TIPOCOMITE AND NAT_ASISTENTESCOMITE.NUMERO_COMITE= :KEY_NUMERO_COMITE AND NAT_ASISTENTESCOMITE.NUMERO_DCTO= :KEY_NUMERO_DCTO AND NAT_ASISTENTESCOMITE.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="TIPOCOMITE" sqlType="STRING"/>
+		<param name="NUMERO_COMITE" sqlType="STRING"/>
+		<param name="NUMERO_DCTO" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_TIPOCOMITE" sqlType="STRING"/>
+		<param name="KEY_NUMERO_COMITE" sqlType="STRING"/>
+		<param name="KEY_NUMERO_DCTO" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="natasistentescomite">
+		<call-query href="updateNatasistentescomite">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="TIPOCOMITE" query-param="TIPOCOMITE"/>
+			<with-param name="NUMERO_COMITE" query-param="NUMERO_COMITE"/>
+			<with-param name="NUMERO_DCTO" query-param="NUMERO_DCTO"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_TIPOCOMITE" query-param="KEY_TIPOCOMITE"/>
+			<with-param name="KEY_NUMERO_COMITE" query-param="KEY_NUMERO_COMITE"/>
+			<with-param name="KEY_NUMERO_DCTO" query-param="KEY_NUMERO_DCTO"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+
+</data>

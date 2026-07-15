@@ -1,0 +1,88 @@
+﻿<data name="adiciones" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getAdicionesTodasPorCompaniaSelSerieQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  ADICIONES.RESPONSABLE_ORDENA, ADICIONES.DESCRIPCION, TERCERO.NOMBRE  FROM ADICIONES INNER JOIN TERCERO ON ADICIONES.COMPANIA = TERCERO.COMPANIA AND ADICIONES.SUCURSAL = TERCERO.SUCURSAL AND ADICIONES.RESPONSABLE_ORDENA = TERCERO.NIT WHERE ADICIONES.COMPANIA = :COMPANIA AND ADICIONES.ID_PREDIO = :SELECCION AND ADICIONES.SERIE_PLACA = :SERIE AND ADICIONES.TIPO_MOVIMIENTO = :TIPOMOVIMIENTO AND ADICIONES.NUMERO_MOV = :NUMEROMOVIMIENTO AND ADICIONES.TIPO_INMUEBLE = :TIPOINMUEBLE</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"RESPONSABLE_ORDENA":"$RESPONSABLE_ORDENA","DESCRIPCION":"$DESCRIPCION","NOMBRE":"$NOMBRE"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SELECCION" sqlType="STRING"/>
+		<param name="SERIE" sqlType="STRING"/>
+		<param name="TIPOMOVIMIENTO" sqlType="STRING"/>
+		<param name="NUMEROMOVIMIENTO" sqlType="STRING"/>
+		<param name="TIPOINMUEBLE" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="adiciones/todasporcompaniaselserie">
+		<call-query href="getAdicionesTodasPorCompaniaSelSerieQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SELECCION" query-param="SELECCION"/>
+			<with-param name="SERIE" query-param="SERIE"/>
+			<with-param name="TIPOMOVIMIENTO" query-param="TIPOMOVIMIENTO"/>
+			<with-param name="NUMEROMOVIMIENTO" query-param="NUMEROMOVIMIENTO"/>
+			<with-param name="TIPOINMUEBLE" query-param="TIPOINMUEBLE"/>
+
+		</call-query>
+	</resource>
+	<query id="getAdicionesPagTodosPorCodigoPredioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  COMPANIA, ID_PREDIO, SERIE_PLACA, NUMERO_MOV,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, ANO_CONSTRUCCION, VALOR_CONSTRUCCION, COD_INVENTARIO, VIDA_UTIL, DESCRIPCION  FROM ADICIONES WHERE COMPANIA = :COMPANIA AND ID_PREDIO = :PREDIO) WHERE (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN ANO_CONSTRUCCION IS NULL THEN ' ' ELSE UPPER(ANO_CONSTRUCCION) END)  LIKE UPPER( '%' || :ANO_CONSTRUCCION || '%')  AND (CASE WHEN VALOR_CONSTRUCCION IS NULL THEN ' ' ELSE UPPER(VALOR_CONSTRUCCION) END)  LIKE UPPER( '%' || :VALOR_CONSTRUCCION || '%')  AND (CASE WHEN COD_INVENTARIO IS NULL THEN ' ' ELSE UPPER(COD_INVENTARIO) END)  LIKE UPPER( '%' || :COD_INVENTARIO || '%')  AND (CASE WHEN VIDA_UTIL IS NULL THEN ' ' ELSE UPPER(VIDA_UTIL) END)  LIKE UPPER( '%' || :VIDA_UTIL || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","ID_PREDIO":"$ID_PREDIO","SERIE_PLACA":"$SERIE_PLACA(type:long)","NUMERO_MOV":"$NUMERO_MOV(type:long)","FECHA":"$FECHA","ANO_CONSTRUCCION":"$ANO_CONSTRUCCION(type:integer)","VALOR_CONSTRUCCION":"$VALOR_CONSTRUCCION","COD_INVENTARIO":"$COD_INVENTARIO","VIDA_UTIL":"$VIDA_UTIL","DESCRIPCION":"$DESCRIPCION"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ANO_CONSTRUCCION" sqlType="STRING"/>
+		<param name="VALOR_CONSTRUCCION" sqlType="STRING"/>
+		<param name="COD_INVENTARIO" sqlType="STRING"/>
+		<param name="VIDA_UTIL" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="adiciones/todosporcodigopredio/pag">
+		<call-query href="getAdicionesPagTodosPorCodigoPredioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ANO_CONSTRUCCION" query-param="ANO_CONSTRUCCION"/>
+			<with-param name="VALOR_CONSTRUCCION" query-param="VALOR_CONSTRUCCION"/>
+			<with-param name="COD_INVENTARIO" query-param="COD_INVENTARIO"/>
+			<with-param name="VIDA_UTIL" query-param="VIDA_UTIL"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getAdicionesNumTodosPorCodigoPredioQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  COMPANIA, ID_PREDIO, SERIE_PLACA, NUMERO_MOV,(TO_CHAR(FECHA,'DD/MM/YYYY HH24:MI:SS')) FECHA, ANO_CONSTRUCCION, VALOR_CONSTRUCCION, COD_INVENTARIO, VIDA_UTIL, DESCRIPCION  FROM ADICIONES WHERE COMPANIA = :COMPANIA AND ID_PREDIO = :PREDIO) WHERE (CASE WHEN SERIE_PLACA IS NULL THEN ' ' ELSE UPPER(SERIE_PLACA) END)  LIKE UPPER( '%' || :SERIE_PLACA || '%')  AND (CASE WHEN FECHA IS NULL THEN ' ' ELSE UPPER(FECHA) END)  LIKE UPPER( '%' || :FECHA || '%')  AND (CASE WHEN ANO_CONSTRUCCION IS NULL THEN ' ' ELSE UPPER(ANO_CONSTRUCCION) END)  LIKE UPPER( '%' || :ANO_CONSTRUCCION || '%')  AND (CASE WHEN VALOR_CONSTRUCCION IS NULL THEN ' ' ELSE UPPER(VALOR_CONSTRUCCION) END)  LIKE UPPER( '%' || :VALOR_CONSTRUCCION || '%')  AND (CASE WHEN COD_INVENTARIO IS NULL THEN ' ' ELSE UPPER(COD_INVENTARIO) END)  LIKE UPPER( '%' || :COD_INVENTARIO || '%')  AND (CASE WHEN VIDA_UTIL IS NULL THEN ' ' ELSE UPPER(VIDA_UTIL) END)  LIKE UPPER( '%' || :VIDA_UTIL || '%')  AND (CASE WHEN DESCRIPCION IS NULL THEN ' ' ELSE UPPER(DESCRIPCION) END)  LIKE UPPER( '%' || :DESCRIPCION || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="PREDIO" sqlType="STRING"/>
+		<param name="SERIE_PLACA" sqlType="STRING"/>
+		<param name="FECHA" sqlType="STRING"/>
+		<param name="ANO_CONSTRUCCION" sqlType="STRING"/>
+		<param name="VALOR_CONSTRUCCION" sqlType="STRING"/>
+		<param name="COD_INVENTARIO" sqlType="STRING"/>
+		<param name="VIDA_UTIL" sqlType="STRING"/>
+		<param name="DESCRIPCION" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="adiciones/todosporcodigopredio/num">
+		<call-query href="getAdicionesNumTodosPorCodigoPredioQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="PREDIO" query-param="PREDIO"/>
+			<with-param name="SERIE_PLACA" query-param="SERIE_PLACA"/>
+			<with-param name="FECHA" query-param="FECHA"/>
+			<with-param name="ANO_CONSTRUCCION" query-param="ANO_CONSTRUCCION"/>
+			<with-param name="VALOR_CONSTRUCCION" query-param="VALOR_CONSTRUCCION"/>
+			<with-param name="COD_INVENTARIO" query-param="COD_INVENTARIO"/>
+			<with-param name="VIDA_UTIL" query-param="VIDA_UTIL"/>
+			<with-param name="DESCRIPCION" query-param="DESCRIPCION"/>
+
+		</call-query>
+	</resource>
+
+</data>

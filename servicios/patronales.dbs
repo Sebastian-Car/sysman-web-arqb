@@ -1,0 +1,144 @@
+﻿<data name="patronales" transports="http https local">
+	<config enableOData="false" id="sysmandsunist">
+		<property name="carbon_datasource_name">SYSMANDSUNIST</property>
+	</config>
+	<query id="getPatronalesTodosPorCompaniaYNitQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PATRONALES.COMPANIA, PATRONALES.SUCURSAL, PATRONALES.FACTOR, PATRONALES.PAIS , PATRONALES.NIT, PATRONALES.DEPARTAMENTO, PATRONALES.CIUDAD , DEPARTAMENTO.NOMBRE NOMBRE_DEPARTAMENTO, CIUDAD.NOMBRE NOMBRE_CIUDAD, PAISES.NOMBRE NOMBRE_PAIS, PATRONALES.CREATED_BY,(TO_CHAR(PATRONALES.DATE_CREATED,'DD/MM/YYYY HH24:MI:SS')) DATE_CREATED, PATRONALES.MODIFIED_BY,(TO_CHAR(PATRONALES.DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS')) DATE_MODIFIED FROM PATRONALES LEFT JOIN DEPARTAMENTO ON PATRONALES.DEPARTAMENTO = DEPARTAMENTO.CODIGO AND PATRONALES.PAIS = DEPARTAMENTO.PAIS LEFT JOIN CIUDAD ON PATRONALES.PAIS = CIUDAD.PAIS AND PATRONALES.DEPARTAMENTO = CIUDAD.DEPARTAMENTO AND PATRONALES.CIUDAD =CIUDAD.CODIGO LEFT JOIN PAISES ON PATRONALES.PAIS = PAISES.PAIS WHERE PATRONALES.COMPANIA = :COMPANIA AND NIT= :NIT ORDER BY PATRONALES.COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"COMPANIA":"$COMPANIA","SUCURSAL":"$SUCURSAL","FACTOR":"$FACTOR","PAIS":"$PAIS","NIT":"$NIT","DEPARTAMENTO":"$DEPARTAMENTO","CIUDAD":"$CIUDAD","NOMBRE_DEPARTAMENTO":"$NOMBRE_DEPARTAMENTO","NOMBRE_CIUDAD":"$NOMBRE_CIUDAD","NOMBRE_PAIS":"$NOMBRE_PAIS","CREATED_BY":"$CREATED_BY","DATE_CREATED":"$DATE_CREATED","MODIFIED_BY":"$MODIFIED_BY","DATE_MODIFIED":"$DATE_MODIFIED"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="NIT" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="patronales/todosporcompaniaynit">
+		<call-query href="getPatronalesTodosPorCompaniaYNitQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="NIT" query-param="NIT"/>
+
+		</call-query>
+	</resource>
+	<query id="getPatronalesTodosPorCompaniaQuery"  useConfig="sysmandsunist">
+		<sql>SELECT  PATRONALES.SUCURSAL, PATRONALES.FACTOR  FROM PATRONALES WHERE PATRONALES.COMPANIA = :COMPANIA</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SUCURSAL":"$SUCURSAL","FACTOR":"$FACTOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="patronales/todosporcompania">
+		<call-query href="getPatronalesTodosPorCompaniaQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+
+		</call-query>
+	</resource>
+	<query id="getPatronalesPagTodosPorOrdenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT * FROM ( SELECT A.*, ROWNUM RNUM FROM(SELECT * FROM (SELECT  PATRONALES.SUCURSAL, PATRONALES.FACTOR  FROM PATRONALES WHERE PATRONALES.COMPANIA = :COMPANIA ORDER BY PATRONALES.SUCURSAL) WHERE (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END)  LIKE UPPER(:SUCURSAL || '%')  AND (CASE WHEN FACTOR IS NULL THEN ' ' ELSE UPPER(FACTOR) END)  LIKE UPPER( '%' || :FACTOR || '%') ) A WHERE ROWNUM &lt;=  (:PAGINICIO + :PAGTAMANIO)) WHERE RNUM &gt; :PAGINICIO</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"SUCURSAL":"$SUCURSAL","FACTOR":"$FACTOR"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="FACTOR" sqlType="STRING"/>
+		<param name="PAGINICIO" sqlType="INTEGER"/>
+		<param name="PAGTAMANIO" sqlType="INTEGER"/>
+
+	</query>
+	<resource method="GET" path="patronales/todospororden/pag">
+		<call-query href="getPatronalesPagTodosPorOrdenQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="FACTOR" query-param="FACTOR"/>
+			<with-param name="PAGINICIO" query-param="PAGINICIO"/>
+			<with-param name="PAGTAMANIO" query-param="PAGTAMANIO"/>
+
+		</call-query>
+	</resource>
+	<query id="getPatronalesNumTodosPorOrdenQuery"  useConfig="sysmandsunist">
+		<sql>SELECT COUNT(1) AS TOTAL FROM(SELECT * FROM (SELECT * FROM (SELECT  PATRONALES.SUCURSAL, PATRONALES.FACTOR  FROM PATRONALES WHERE PATRONALES.COMPANIA = :COMPANIA ORDER BY PATRONALES.SUCURSAL) WHERE (CASE WHEN SUCURSAL IS NULL THEN ' ' ELSE UPPER(SUCURSAL) END)  LIKE UPPER(:SUCURSAL || '%')  AND (CASE WHEN FACTOR IS NULL THEN ' ' ELSE UPPER(FACTOR) END)  LIKE UPPER( '%' || :FACTOR || '%') ))</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"TOTAL":"$TOTAL(type:integer)"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="FACTOR" sqlType="STRING"/>
+
+	</query>
+	<resource method="GET" path="patronales/todospororden/num">
+		<call-query href="getPatronalesNumTodosPorOrdenQuery">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="FACTOR" query-param="FACTOR"/>
+
+		</call-query>
+	</resource>
+	<query id="insertPatronales" keyColumns="COMPANIA,SUCURSAL" returnGeneratedKeys="true" useConfig="sysmandsunist">
+		<sql>INSERT INTO PATRONALES (COMPANIA, SUCURSAL, FACTOR, PAIS, NIT, DEPARTAMENTO, CIUDAD, DATE_CREATED, CREATED_BY) VALUES (:COMPANIA, :SUCURSAL, :FACTOR, :PAIS, :NIT, :DEPARTAMENTO, :CIUDAD, TO_DATE(:DATE_CREATED,'DD/MM/YYYY HH24:MI:SS'), :CREATED_BY)</sql>
+		<result outputType="json">{"elementos":{"elemento":[{"KEY_COMPANIA":"$COMPANIA","KEY_SUCURSAL":"$SUCURSAL"}]}}		</result>
+		<param name="COMPANIA" sqlType="STRING"/>
+		<param defaultValue="999" name="SUCURSAL" sqlType="STRING"/>
+		<param defaultValue="" name="FACTOR" sqlType="STRING"/>
+		<param name="PAIS" sqlType="STRING"/>
+		<param defaultValue="999999999999999999" name="NIT" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+		<param name="DATE_CREATED" sqlType="STRING"/>
+		<param name="CREATED_BY" sqlType="STRING"/>
+
+	</query>
+	<resource method="POST" path="patronales">
+		<call-query href="insertPatronales">
+			<with-param name="COMPANIA" query-param="COMPANIA"/>
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="FACTOR" query-param="FACTOR"/>
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="NIT" query-param="NIT"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+			<with-param name="DATE_CREATED" query-param="DATE_CREATED"/>
+			<with-param name="CREATED_BY" query-param="CREATED_BY"/>
+
+		</call-query>
+	</resource>
+	<query id="deletePatronales" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>DELETE FROM PATRONALES WHERE PATRONALES.COMPANIA= :KEY_COMPANIA AND PATRONALES.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="DELETE" path="patronales">
+		<call-query href="deletePatronales">
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+	<query id="updatePatronales" returnUpdatedRowCount="true" useConfig="sysmandsunist">
+		<sql>UPDATE PATRONALES SET SUCURSAL=:SUCURSAL, FACTOR=:FACTOR, PAIS=:PAIS, DEPARTAMENTO=:DEPARTAMENTO, CIUDAD=:CIUDAD, DATE_MODIFIED=TO_DATE(:DATE_MODIFIED,'DD/MM/YYYY HH24:MI:SS'), MODIFIED_BY=:MODIFIED_BY WHERE PATRONALES.COMPANIA= :KEY_COMPANIA AND PATRONALES.SUCURSAL= :KEY_SUCURSAL</sql>
+ 		<result element="elementos" rowName="elemento" useColumnNumbers="true"> 
+    		<element column="1" name="TOTAL" xsdType="integer"/> 
+ 		</result> 
+
+		<param name="SUCURSAL" sqlType="STRING"/>
+		<param name="FACTOR" sqlType="STRING"/>
+		<param name="PAIS" sqlType="STRING"/>
+		<param name="DEPARTAMENTO" sqlType="STRING"/>
+		<param name="CIUDAD" sqlType="STRING"/>
+		<param name="DATE_MODIFIED" sqlType="STRING"/>
+		<param name="MODIFIED_BY" sqlType="STRING"/>
+		<param name="KEY_COMPANIA" sqlType="STRING"/>
+		<param name="KEY_SUCURSAL" sqlType="STRING"/>
+
+	</query>
+	<resource method="PUT" path="patronales">
+		<call-query href="updatePatronales">
+			<with-param name="SUCURSAL" query-param="SUCURSAL"/>
+			<with-param name="FACTOR" query-param="FACTOR"/>
+			<with-param name="PAIS" query-param="PAIS"/>
+			<with-param name="DEPARTAMENTO" query-param="DEPARTAMENTO"/>
+			<with-param name="CIUDAD" query-param="CIUDAD"/>
+			<with-param name="DATE_MODIFIED" query-param="DATE_MODIFIED"/>
+			<with-param name="MODIFIED_BY" query-param="MODIFIED_BY"/>
+			<with-param name="KEY_COMPANIA" query-param="KEY_COMPANIA"/>
+			<with-param name="KEY_SUCURSAL" query-param="KEY_SUCURSAL"/>
+
+		</call-query>
+	</resource>
+
+</data>
